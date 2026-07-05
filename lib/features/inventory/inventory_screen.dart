@@ -161,6 +161,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
           quantityKg: draft.quantityKg,
           note: draft.note,
         );
+      case StockMovementType.purchaseIntake:
+        return;
     }
   }
 }

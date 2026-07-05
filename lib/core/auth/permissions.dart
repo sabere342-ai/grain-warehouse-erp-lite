@@ -8,6 +8,8 @@ class Permissions {
     required this.canCreateSupplierPayment,
     required this.canCreateExpense,
     required this.canCreateStockAdjustment,
+    required this.canManageSuppliers,
+    required this.canCreatePurchaseIntake,
     required this.canCancelInvoice,
     required this.canManageProducts,
     required this.canViewAuditLogs,
@@ -21,6 +23,8 @@ class Permissions {
   final bool canCreateSupplierPayment;
   final bool canCreateExpense;
   final bool canCreateStockAdjustment;
+  final bool canManageSuppliers;
+  final bool canCreatePurchaseIntake;
   final bool canCancelInvoice;
   final bool canManageProducts;
   final bool canViewAuditLogs;
@@ -34,6 +38,8 @@ class Permissions {
     canCreateSupplierPayment: true,
     canCreateExpense: true,
     canCreateStockAdjustment: true,
+    canManageSuppliers: true,
+    canCreatePurchaseIntake: true,
     canCancelInvoice: true,
     canManageProducts: true,
     canViewAuditLogs: true,
@@ -48,6 +54,8 @@ class Permissions {
     canCreateSupplierPayment: false,
     canCreateExpense: true,
     canCreateStockAdjustment: false,
+    canManageSuppliers: false,
+    canCreatePurchaseIntake: false,
     canCancelInvoice: false,
     canManageProducts: false,
     canViewAuditLogs: false,
@@ -71,6 +79,8 @@ class Permissions {
         canCreateSupplierPayment &&
         canCreateExpense &&
         canCreateStockAdjustment &&
+        canManageSuppliers &&
+        canCreatePurchaseIntake &&
         canCancelInvoice &&
         canManageProducts &&
         canViewAuditLogs &&
