@@ -2,7 +2,8 @@ enum StockMovementType {
   openingBalance,
   manualIncrease,
   manualDecrease,
-  purchaseIntake;
+  purchaseIntake,
+  sale;
 
   String get labelAr {
     switch (this) {
@@ -14,6 +15,8 @@ enum StockMovementType {
         return 'نقص يدوي';
       case StockMovementType.purchaseIntake:
         return 'استلام شراء';
+      case StockMovementType.sale:
+        return 'بيع';
     }
   }
 
@@ -24,6 +27,7 @@ enum StockMovementType {
       case StockMovementType.purchaseIntake:
         return true;
       case StockMovementType.manualDecrease:
+      case StockMovementType.sale:
         return false;
     }
   }

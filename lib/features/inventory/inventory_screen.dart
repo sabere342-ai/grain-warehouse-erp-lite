@@ -163,6 +163,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
         );
       case StockMovementType.purchaseIntake:
         return;
+      case StockMovementType.sale:
+        return;
     }
   }
 }

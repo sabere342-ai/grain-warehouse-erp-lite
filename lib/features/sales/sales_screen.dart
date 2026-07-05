@@ -1,15 +1,346 @@
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/placeholder_feature_screen.dart';
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
-class SalesScreen extends StatelessWidget {
-  const SalesScreen({super.key});
+class SalesScreen extends StatefulWidget {
+  const SalesScreen({super.key, this.controller});
+
+  final SaleController? controller;
+
+  @override
+  State<SalesScreen> createState() => _SalesScreenState();
+}
+
+class _SalesScreenState extends State<SalesScreen> {
+  late final SaleController _controller;
+  late final bool _ownsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsController = widget.controller == null;
+    _controller = widget.controller ??
+        SaleController(
+          saleRepository: AppRepositories.saleRepository,
+          productRepository: AppRepositories.productRepository,
+        );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = AuthScope.of(context).state.user;
+      if (user != null) {
+        _controller.load(user);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const PlaceholderFeatureScreen(
-      title: 'المبيعات',
-      subtitle: 'مكان فواتير البيع لاحقا مع سعر صنف قابل للتعديل.',
-      icon: Icons.point_of_sale_rounded,
+    final user = AuthScope.of(context).state.user;
+    final textTheme = Theme.of(context).textTheme;
+
+    if (user == null) {
+      return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض المبيعات.'));
+    }
+
+    final canCreate = user.permissions.canCreateSale;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return ListView(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('المبيعات', style: textTheme.headlineMedium),
+                      const SizedBox(height: 6),
+                      Text(
+                        'تسجيل بيع كميات الحبوب وخفض المخزون بالحركات فقط.',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (canCreate)
+                  FilledButton.icon(
+                    onPressed: _controller.products.isEmpty
+                        ? null
+                        : () => _showSaleForm(context, user: user),
+                    icon: const Icon(Icons.point_of_sale_rounded),
+                    label: const Text('تسجيل بيع'),
+                  ),
+              ],
+            ),
+            if (_controller.errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _controller.errorMessage!,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            if (_controller.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_controller.sales.isEmpty)
+              const PremiumCard(child: Text('لا توجد مبيعات مسجلة بعد.'))
+            else
+              ..._controller.sales.reversed.map(
+                (sale) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _SaleCard(
+                    sale: sale,
+                    productName: _controller.productName(sale.productId),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
+
+  Future<void> _showSaleForm(
+    BuildContext context, {
+    required user,
+  }) async {
+    final result = await showDialog<_SaleFormResult>(
+      context: context,
+      builder: (context) => _SaleFormDialog(products: _controller.products),
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    await _controller.createSale(
+      user: user,
+      productId: result.productId,
+      quantityKg: result.quantityKg,
+      salePriceQirshPerKg: result.salePriceQirshPerKg,
+      notes: result.notes,
+    );
+  }
+}
+
+class _SaleCard extends StatelessWidget {
+  const _SaleCard({
+    required this.sale,
+    required this.productName,
+  });
+
+  final SaleRecord sale;
+  final String productName;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(productName, style: textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              Text('الكمية: ${sale.quantityKg} كجم'),
+              Text('السعر: ${sale.salePriceQirshPerKg} قرش/كجم'),
+              Text('الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}'),
+              Text('الوقت: ${_formatDateTime(sale.createdAt)}'),
+            ],
+          ),
+          if (sale.notes != null) ...[
+            const SizedBox(height: 8),
+            Text(sale.notes!),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    final date =
+        '${local.year}-${_twoDigits(local.month)}-${_twoDigits(local.day)}';
+    final time =
+        '${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
+
+    return '$date $time';
+  }
+
+  String _twoDigits(int value) {
+    return value.toString().padLeft(2, '0');
+  }
+}
+
+class _SaleFormDialog extends StatefulWidget {
+  const _SaleFormDialog({required this.products});
+
+  final List<Product> products;
+
+  @override
+  State<_SaleFormDialog> createState() => _SaleFormDialogState();
+}
+
+class _SaleFormDialogState extends State<_SaleFormDialog> {
+  late String _productId = widget.products.first.id;
+  final _quantityController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _notesController = TextEditingController();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    _priceController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    final price = int.tryParse(_priceController.text.trim());
+    final total = quantity != null && quantity > 0 && price != null && price > 0
+        ? quantity * price
+        : null;
+
+    return AlertDialog(
+      title: const Text('تسجيل بيع'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: _productId,
+              decoration: const InputDecoration(labelText: 'الصنف'),
+              items: [
+                for (final product in widget.products)
+                  DropdownMenuItem(
+                    value: product.id,
+                    child: Text(product.name),
+                  ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _productId = value);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _quantityController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'الكمية بالكجم'),
+              onChanged: (_) => setState(() {}),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'سعر البيع قرش/كجم',
+              ),
+              onChanged: (_) => setState(() {}),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                total == null
+                    ? 'الإجمالي: -'
+                    : 'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(total)}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('حفظ البيع'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    final price = int.tryParse(_priceController.text.trim());
+    if (quantity == null || quantity <= 0) {
+      setState(() => _errorMessage = 'ادخل كمية صحيحة موجبة بالكجم.');
+      return;
+    }
+    if (price == null || price <= 0) {
+      setState(() => _errorMessage = 'ادخل سعر بيع صحيح موجب قرش/كجم.');
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _SaleFormResult(
+        productId: _productId,
+        quantityKg: quantity,
+        salePriceQirshPerKg: price,
+        notes: _notesController.text,
+      ),
+    );
+  }
+}
+
+class _SaleFormResult {
+  const _SaleFormResult({
+    required this.productId,
+    required this.quantityKg,
+    required this.salePriceQirshPerKg,
+    this.notes,
+  });
+
+  final String productId;
+  final int quantityKg;
+  final int salePriceQirshPerKg;
+  final String? notes;
 }
