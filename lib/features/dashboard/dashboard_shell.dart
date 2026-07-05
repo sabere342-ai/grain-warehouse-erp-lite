@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
@@ -33,34 +36,65 @@ class _DashboardShellState extends State<DashboardShell> {
     _ShellDestination(
         'المصروفات', Icons.receipt_long_rounded, ExpensesScreen()),
     _ShellDestination('التقارير', Icons.bar_chart_rounded, ReportsScreen()),
-    _ShellDestination('الإعدادات', Icons.settings_rounded, SettingsScreen()),
+    _ShellDestination(
+      'سجل التدقيق',
+      Icons.fact_check_rounded,
+      AuditLogsScreen(),
+      requiresAuditLogs: true,
+    ),
+    _ShellDestination(
+      'الإعدادات',
+      Icons.settings_rounded,
+      SettingsScreen(),
+      requiresSettings: true,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthScope.of(context);
+    final user = auth.state.user;
+
+    if (user == null || !user.isActive) {
+      return const Scaffold(
+        body: Center(child: Text('يجب تسجيل الدخول للمتابعة.')),
+      );
+    }
+
+    final visibleDestinations = _destinations
+        .where((destination) => destination.isVisibleFor(user))
+        .toList(growable: false);
+    final selectedIndex =
+        _selectedIndex >= visibleDestinations.length ? 0 : _selectedIndex;
+    final selected = visibleDestinations[selectedIndex];
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final selected = _destinations[_selectedIndex];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(selected.label),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsetsDirectional.only(end: 16),
-            child: Center(child: Text('مخزن الحبوب')),
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: Center(child: Text(user.role.labelAr)),
           ),
+          IconButton(
+            tooltip: 'تسجيل الخروج',
+            onPressed: () => auth.signOut(),
+            icon: const Icon(Icons.logout_rounded),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Row(
         children: [
           if (isDesktop)
             NavigationRail(
-              selectedIndex: _selectedIndex,
+              selectedIndex: selectedIndex,
               onDestinationSelected: _setSelectedIndex,
               labelType: NavigationRailLabelType.all,
               minWidth: 96,
               destinations: [
-                for (final destination in _destinations)
+                for (final destination in visibleDestinations)
                   NavigationRailDestination(
                     icon: Icon(destination.icon),
                     label: Text(destination.label),
@@ -81,11 +115,11 @@ class _DashboardShellState extends State<DashboardShell> {
       bottomNavigationBar: isDesktop
           ? null
           : NavigationBar(
-              selectedIndex: _selectedIndex > 4 ? 0 : _selectedIndex,
+              selectedIndex: selectedIndex > 4 ? 0 : selectedIndex,
               onDestinationSelected: _setSelectedIndex,
               indicatorColor: AppColors.surfaceAlt,
               destinations: [
-                for (final destination in _destinations.take(5))
+                for (final destination in visibleDestinations.take(5))
                   NavigationDestination(
                     icon: Icon(destination.icon),
                     label: destination.label,
@@ -101,9 +135,28 @@ class _DashboardShellState extends State<DashboardShell> {
 }
 
 class _ShellDestination {
-  const _ShellDestination(this.label, this.icon, this.screen);
+  const _ShellDestination(
+    this.label,
+    this.icon,
+    this.screen, {
+    this.requiresSettings = false,
+    this.requiresAuditLogs = false,
+  });
 
   final String label;
   final IconData icon;
   final Widget screen;
+  final bool requiresSettings;
+  final bool requiresAuditLogs;
+
+  bool isVisibleFor(AppUser user) {
+    if (requiresSettings) {
+      return user.permissions.canAccessSettings;
+    }
+    if (requiresAuditLogs) {
+      return user.permissions.canViewAuditLogs;
+    }
+
+    return true;
+  }
 }

@@ -18,7 +18,7 @@ class DashboardScreen extends StatelessWidget {
             final columns = constraints.maxWidth >= 900 ? 4 : 2;
             return GridView.count(
               crossAxisCount: columns,
-              childAspectRatio: constraints.maxWidth >= 900 ? 1.8 : 1.35,
+              childAspectRatio: constraints.maxWidth >= 900 ? 1.35 : 1.15,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisSpacing: 12,
@@ -57,18 +57,32 @@ class _MetricCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return PremiumCard(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.olive),
-          Text(label, style: textTheme.titleMedium),
+          Icon(icon, color: AppColors.olive, size: 22),
+          const SizedBox(height: 8),
           Text(
-            value,
-            textDirection: TextDirection.ltr,
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppColors.text,
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                textDirection: TextDirection.ltr,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.text,
+                ),
+              ),
             ),
           ),
         ],

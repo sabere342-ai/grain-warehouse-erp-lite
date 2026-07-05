@@ -3,20 +3,22 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class FirstOwnerSetupScreen extends StatefulWidget {
+  const FirstOwnerSetupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<FirstOwnerSetupScreen> createState() => _FirstOwnerSetupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _FirstOwnerSetupScreenState extends State<FirstOwnerSetupScreen> {
+  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -33,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
+              constraints: const BoxConstraints(maxWidth: 500),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: PremiumCard(
@@ -43,19 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Icon(
-                        Icons.warehouse_rounded,
+                        Icons.admin_panel_settings_rounded,
                         size: 52,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                       const SizedBox(height: 18),
                       Text(
-                        'Grain Warehouse ERP Lite',
+                        'إعداد المالك الأول',
                         textAlign: TextAlign.center,
                         style: textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'نظام مبسط لمخزن حبوب واحد',
+                        'لا يوجد مالك مسجل لهذا المخزن. أنشئ حساب المالك للبدء.',
                         textAlign: TextAlign.center,
                         style: textTheme.bodyLarge?.copyWith(
                           color: AppColors.mutedText,
@@ -63,11 +65,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       TextField(
+                        controller: _nameController,
+                        textDirection: TextDirection.rtl,
+                        decoration: const InputDecoration(
+                          labelText: 'اسم المالك',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
                         controller: _phoneController,
                         textDirection: TextDirection.rtl,
                         decoration: const InputDecoration(
                           labelText: 'رقم الهاتف',
-                          prefixIcon: Icon(Icons.person_outline_rounded),
+                          prefixIcon: Icon(Icons.phone_outlined),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -93,8 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       FilledButton.icon(
                         onPressed: _isSubmitting ? null : _submit,
-                        icon: const Icon(Icons.login_rounded),
-                        label: Text(_isSubmitting ? 'جاري الدخول...' : 'دخول'),
+                        icon: const Icon(Icons.check_circle_rounded),
+                        label: Text(_isSubmitting
+                            ? 'جاري الحفظ...'
+                            : 'إنشاء حساب المالك'),
                       ),
                     ],
                   ),
@@ -109,7 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
-    await AuthScope.of(context).signIn(
+    await AuthScope.of(context).createFirstOwner(
+      name: _nameController.text,
       phone: _phoneController.text,
       password: _passwordController.text,
     );
