@@ -15,6 +15,7 @@ void main() {
       expect(permissions.canCreateStockAdjustment, isTrue);
       expect(permissions.canManageSuppliers, isTrue);
       expect(permissions.canCreatePurchaseIntake, isTrue);
+      expect(permissions.canViewReports, isTrue);
       expect(permissions.canViewAuditLogs, isTrue);
       expect(permissions.canApproveBelowMinimumPrice, isTrue);
     });
@@ -33,6 +34,7 @@ void main() {
       expect(permissions.canCreateStockAdjustment, isFalse);
       expect(permissions.canManageSuppliers, isFalse);
       expect(permissions.canCreatePurchaseIntake, isFalse);
+      expect(permissions.canViewReports, isFalse);
       expect(permissions.canViewAuditLogs, isFalse);
       expect(permissions.canApproveBelowMinimumPrice, isFalse);
     });
@@ -61,6 +63,10 @@ void main() {
 
     test('employee cannot view audit logs', () {
       expect(Permissions.employee.canViewAuditLogs, isFalse);
+    });
+
+    test('employee cannot view reports', () {
+      expect(Permissions.employee.canViewReports, isFalse);
     });
   });
 

@@ -12,6 +12,7 @@ class Permissions {
     required this.canCreatePurchaseIntake,
     required this.canCancelInvoice,
     required this.canManageProducts,
+    required this.canViewReports,
     required this.canViewAuditLogs,
     required this.canAccessSettings,
     required this.canApproveBelowMinimumPrice,
@@ -27,6 +28,7 @@ class Permissions {
   final bool canCreatePurchaseIntake;
   final bool canCancelInvoice;
   final bool canManageProducts;
+  final bool canViewReports;
   final bool canViewAuditLogs;
   final bool canAccessSettings;
   final bool canApproveBelowMinimumPrice;
@@ -42,6 +44,7 @@ class Permissions {
     canCreatePurchaseIntake: true,
     canCancelInvoice: true,
     canManageProducts: true,
+    canViewReports: true,
     canViewAuditLogs: true,
     canAccessSettings: true,
     canApproveBelowMinimumPrice: true,
@@ -58,6 +61,7 @@ class Permissions {
     canCreatePurchaseIntake: false,
     canCancelInvoice: false,
     canManageProducts: false,
+    canViewReports: false,
     canViewAuditLogs: false,
     canAccessSettings: false,
     canApproveBelowMinimumPrice: false,
@@ -83,6 +87,7 @@ class Permissions {
         canCreatePurchaseIntake &&
         canCancelInvoice &&
         canManageProducts &&
+        canViewReports &&
         canViewAuditLogs &&
         canAccessSettings &&
         canApproveBelowMinimumPrice;

@@ -37,7 +37,12 @@ class _DashboardShellState extends State<DashboardShell> {
         'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
     _ShellDestination(
         'المصروفات', Icons.receipt_long_rounded, ExpensesScreen()),
-    _ShellDestination('التقارير', Icons.bar_chart_rounded, ReportsScreen()),
+    _ShellDestination(
+      'التقارير',
+      Icons.bar_chart_rounded,
+      ReportsScreen(),
+      requiresReports: true,
+    ),
     _ShellDestination(
       'سجل التدقيق',
       Icons.fact_check_rounded,
@@ -143,6 +148,7 @@ class _ShellDestination {
     this.screen, {
     this.requiresSettings = false,
     this.requiresAuditLogs = false,
+    this.requiresReports = false,
   });
 
   final String label;
@@ -150,6 +156,7 @@ class _ShellDestination {
   final Widget screen;
   final bool requiresSettings;
   final bool requiresAuditLogs;
+  final bool requiresReports;
 
   bool isVisibleFor(AppUser user) {
     if (requiresSettings) {
@@ -157,6 +164,9 @@ class _ShellDestination {
     }
     if (requiresAuditLogs) {
       return user.permissions.canViewAuditLogs;
+    }
+    if (requiresReports) {
+      return user.permissions.canViewReports;
     }
 
     return true;

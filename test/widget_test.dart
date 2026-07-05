@@ -46,6 +46,7 @@ void main() {
 
     expect(find.text('الإعدادات'), findsWidgets);
     expect(find.text('سجل التدقيق'), findsWidgets);
+    expect(find.text('التقارير'), findsWidgets);
   });
 
   testWidgets('employee cannot see owner-only navigation items',
@@ -66,6 +67,7 @@ void main() {
 
     expect(find.text('الإعدادات'), findsNothing);
     expect(find.text('سجل التدقيق'), findsNothing);
+    expect(find.text('التقارير'), findsNothing);
     expect(find.text('الموظف'), findsOneWidget);
   });
 }
