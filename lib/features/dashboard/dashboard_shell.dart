@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
@@ -30,6 +31,7 @@ class _DashboardShellState extends State<DashboardShell> {
     _ShellDestination(
         'المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
     _ShellDestination('الأصناف', Icons.inventory_2_rounded, ProductsScreen()),
+    _ShellDestination('المخزون', Icons.warehouse_rounded, InventoryScreen()),
     _ShellDestination('العملاء', Icons.groups_2_rounded, CustomersScreen()),
     _ShellDestination(
         'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),

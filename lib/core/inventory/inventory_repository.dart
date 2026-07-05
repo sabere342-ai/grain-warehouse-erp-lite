@@ -1,0 +1,168 @@
+import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+
+abstract class InventoryRepository {
+  Future<StockMovement> createMovement(StockMovementDraft draft);
+
+  Future<List<StockMovement>> listMovementsByProduct(String productId);
+
+  Future<List<StockMovement>> listAllMovements();
+
+  Future<int> currentStockKg(String productId);
+
+  Future<bool> hasOpeningBalance(String productId);
+
+  Future<Map<String, int>> allProductBalancesKg({bool activeProductsOnly = false});
+}
+
+class LocalInventoryRepository implements InventoryRepository {
+  LocalInventoryRepository({required ProductRepository productRepository})
+      : _productRepository = productRepository;
+
+  final ProductRepository _productRepository;
+  final List<StockMovement> _movements = [];
+  int _generatedIdCounter = 0;
+
+  @override
+  Future<StockMovement> createMovement(StockMovementDraft draft) async {
+    final product = await _validateDraftAndLoadProduct(draft);
+    if (draft.movementType == StockMovementType.openingBalance &&
+        await hasOpeningBalance(product.id)) {
+      throw StateError('Opening balance already exists for this product.');
+    }
+
+    final currentStock = await currentStockKg(product.id);
+    if (!draft.movementType.increasesStock && draft.quantityKg > currentStock) {
+      throw StateError('Stock cannot go below zero.');
+    }
+
+    final now = DateTime.now();
+    final movement = StockMovement(
+      id: _generateMovementId(now),
+      productId: product.id,
+      movementType: draft.movementType,
+      quantityKg: draft.quantityKg,
+      createdByUserId: draft.createdByUserId.trim(),
+      note: _normalizedOptionalText(draft.note),
+      createdAt: now,
+    );
+    if (!movement.hasValidId) {
+      throw StateError('Movement id is required.');
+    }
+
+    _movements.add(movement);
+    return movement;
+  }
+
+  @override
+  Future<List<StockMovement>> listMovementsByProduct(String productId) async {
+    return List<StockMovement>.unmodifiable(
+      _movements.where((movement) => movement.productId == productId),
+    );
+  }
+
+  @override
+  Future<List<StockMovement>> listAllMovements() async {
+    return List<StockMovement>.unmodifiable(_movements);
+  }
+
+  @override
+  Future<int> currentStockKg(String productId) async {
+    final product = await _findProductById(productId);
+    if (product == null) {
+      throw StateError('Product was not found.');
+    }
+
+    final movements = await listMovementsByProduct(productId);
+    return movements.fold<int>(
+      0,
+      (total, movement) => total + movement.signedQuantityKg,
+    );
+  }
+
+  @override
+  Future<bool> hasOpeningBalance(String productId) async {
+    final product = await _findProductById(productId);
+    if (product == null) {
+      throw StateError('Product was not found.');
+    }
+
+    return _movements.any(
+      (movement) =>
+          movement.productId == productId &&
+          movement.movementType == StockMovementType.openingBalance &&
+          !movement.isVoided,
+    );
+  }
+
+  @override
+  Future<Map<String, int>> allProductBalancesKg({
+    bool activeProductsOnly = false,
+  }) async {
+    final products = await _productRepository.listProducts(
+      includeInactive: !activeProductsOnly,
+    );
+    final balances = <String, int>{};
+    for (final product in products) {
+      balances[product.id] = await currentStockKg(product.id);
+    }
+
+    return Map<String, int>.unmodifiable(balances);
+  }
+
+  Future<Product> _validateDraftAndLoadProduct(StockMovementDraft draft) async {
+    if (draft.productId.trim().isEmpty) {
+      throw ArgumentError.value(draft.productId, 'productId', 'Product id is required.');
+    }
+    if (draft.createdByUserId.trim().isEmpty) {
+      throw ArgumentError.value(
+        draft.createdByUserId,
+        'createdByUserId',
+        'Created by user id is required.',
+      );
+    }
+    if (draft.quantityKg <= 0) {
+      throw ArgumentError.value(
+        draft.quantityKg,
+        'quantityKg',
+        'Quantity must be positive.',
+      );
+    }
+
+    final product = await _findProductById(draft.productId);
+    if (product == null) {
+      throw StateError('Product was not found.');
+    }
+    if (!product.isActive) {
+      throw StateError('Inactive product cannot accept stock movements.');
+    }
+
+    return product;
+  }
+
+  Future<Product?> _findProductById(String productId) async {
+    final products = await _productRepository.listProducts(includeInactive: true);
+    for (final product in products) {
+      if (product.id == productId) {
+        return product;
+      }
+    }
+
+    return null;
+  }
+
+  String _generateMovementId(DateTime now) {
+    _generatedIdCounter++;
+    return 'stk-${now.microsecondsSinceEpoch}-$_generatedIdCounter';
+  }
+
+  String? _normalizedOptionalText(String? value) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+
+    return normalized;
+  }
+}
