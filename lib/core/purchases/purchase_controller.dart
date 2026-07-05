@@ -26,7 +26,8 @@ class PurchaseController extends ChangeNotifier {
   String? _errorMessage;
   bool _isLoading = false;
 
-  List<PurchaseIntake> get intakes => List<PurchaseIntake>.unmodifiable(_intakes);
+  List<PurchaseIntake> get intakes =>
+      List<PurchaseIntake>.unmodifiable(_intakes);
   List<Supplier> get suppliers => List<Supplier>.unmodifiable(_suppliers);
   List<Product> get products => List<Product>.unmodifiable(_products);
   String? get errorMessage => _errorMessage;
@@ -68,6 +69,30 @@ class PurchaseController extends ChangeNotifier {
     }
   }
 
+  Future<bool> cancelPurchaseIntake({
+    required AppUser user,
+    required String purchaseIntakeId,
+    required String cancellationReason,
+  }) async {
+    if (!_canCancelPostedDocument(user)) {
+      return false;
+    }
+
+    try {
+      await _purchaseRepository.cancelPurchaseIntake(
+        purchaseIntakeId: purchaseIntakeId,
+        cancelledByUserId: user.id,
+        cancellationReason: cancellationReason,
+      );
+      await load(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return false;
+    }
+  }
+
   String supplierName(String supplierId) {
     for (final supplier in _suppliers) {
       if (supplier.id == supplierId) {
@@ -99,6 +124,21 @@ class PurchaseController extends ChangeNotifier {
     }
 
     _errorMessage = 'لا يملك هذا المستخدم صلاحية تسجيل استلام شراء.';
+    notifyListeners();
+    return false;
+  }
+
+  bool _canCancelPostedDocument(AppUser user) {
+    if (!user.canProceed) {
+      _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
+      notifyListeners();
+      return false;
+    }
+    if (user.permissions.canCancelInvoice) {
+      return true;
+    }
+
+    _errorMessage = 'لا يملك هذا المستخدم صلاحية إلغاء المستندات المرحلة.';
     notifyListeners();
     return false;
   }

@@ -52,6 +52,84 @@ void main() {
       expect(await fixture.inventory.currentStockKg(fixture.product.id), 700);
     });
 
+    test('cancelling sale reverses stock decrease and preserves original',
+        () async {
+      final fixture = await _fixture();
+
+      final sale = await fixture.sales.createSale(_saleDraft(fixture));
+      final cancelled = await fixture.sales.cancelSale(
+        saleId: sale.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'خطأ في الإدخال',
+      );
+      final movements = await fixture.inventory.listAllMovements();
+
+      expect(cancelled.isCancelled, isTrue);
+      expect(cancelled.cancellation!.cancelledByUserId, _owner.id);
+      expect(cancelled.cancellation!.originalDocumentId, sale.id);
+      expect(cancelled.cancellation!.reversalMovementIds, hasLength(1));
+      expect(movements, hasLength(3));
+      expect(movements[1].id, sale.stockMovementId);
+      expect(movements[1].movementType, StockMovementType.sale);
+      expect(movements.last.movementType, StockMovementType.saleCancellation);
+      expect(movements.last.reversedMovementId, sale.stockMovementId);
+      expect(movements.last.originalDocumentId, sale.id);
+      expect(await fixture.inventory.currentStockKg(fixture.product.id), 1000);
+    });
+
+    test('double sale cancellation is idempotent', () async {
+      final fixture = await _fixture();
+      final sale = await fixture.sales.createSale(_saleDraft(fixture));
+
+      final first = await fixture.sales.cancelSale(
+        saleId: sale.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'خطأ في الإدخال',
+      );
+      final second = await fixture.sales.cancelSale(
+        saleId: sale.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'محاولة ثانية',
+      );
+
+      expect(second.cancellation!.reversalMovementIds,
+          first.cancellation!.reversalMovementIds);
+      expect(await fixture.inventory.listAllMovements(), hasLength(3));
+    });
+
+    test('controller allows owner and rejects employee sale cancellation',
+        () async {
+      final ownerFixture = await _fixture();
+      final employeeFixture = await _fixture();
+      final ownerSale = await ownerFixture.sales.createSale(
+        _saleDraft(ownerFixture),
+      );
+      final employeeSale = await employeeFixture.sales.createSale(
+        _saleDraft(employeeFixture),
+      );
+
+      expect(
+        await ownerFixture.controller.cancelSale(
+          user: _owner,
+          saleId: ownerSale.id,
+          cancellationReason: 'خطأ في الإدخال',
+        ),
+        isTrue,
+      );
+      expect(
+        await employeeFixture.controller.cancelSale(
+          user: _employee,
+          saleId: employeeSale.id,
+          cancellationReason: 'خطأ في الإدخال',
+        ),
+        isFalse,
+      );
+      expect(
+          await ownerFixture.inventory.currentStockKg(ownerFixture.product.id),
+          1000);
+      expect(await employeeFixture.inventory.listAllMovements(), hasLength(2));
+    });
+
     test('sale rejects zero and negative quantity', () async {
       final fixture = await _fixture();
 
@@ -233,6 +311,21 @@ void main() {
       expect(find.text('سعر البيع قرش/كجم'), findsOneWidget);
       expect(find.text('الإجمالي: -'), findsOneWidget);
       expect(find.text('حفظ البيع'), findsOneWidget);
+    });
+
+    testWidgets('owner sees sale cancellation action', (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+      await fixture.sales.createSale(_saleDraft(fixture));
+      await fixture.controller.load(_owner);
+
+      await tester.pumpWidget(
+        _salesHarness(auth: auth, controller: fixture.controller),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('إلغاء المستند'), findsOneWidget);
     });
   });
 }

@@ -68,6 +68,30 @@ class SaleController extends ChangeNotifier {
     }
   }
 
+  Future<bool> cancelSale({
+    required AppUser user,
+    required String saleId,
+    required String cancellationReason,
+  }) async {
+    if (!_canCancelPostedDocument(user)) {
+      return false;
+    }
+
+    try {
+      await _saleRepository.cancelSale(
+        saleId: saleId,
+        cancelledByUserId: user.id,
+        cancellationReason: cancellationReason,
+      );
+      await load(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return false;
+    }
+  }
+
   String productName(String productId) {
     for (final product in _products) {
       if (product.id == productId) {
@@ -89,6 +113,21 @@ class SaleController extends ChangeNotifier {
     }
 
     _errorMessage = 'لا يملك هذا المستخدم صلاحية تسجيل البيع.';
+    notifyListeners();
+    return false;
+  }
+
+  bool _canCancelPostedDocument(AppUser user) {
+    if (!user.canProceed) {
+      _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
+      notifyListeners();
+      return false;
+    }
+    if (user.permissions.canCancelInvoice) {
+      return true;
+    }
+
+    _errorMessage = 'لا يملك هذا المستخدم صلاحية إلغاء المستندات المرحلة.';
     notifyListeners();
     return false;
   }

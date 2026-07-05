@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -140,6 +141,44 @@ void main() {
       expect(report.recentMovements.single.reference, 'Sale sal-1');
     });
 
+    test('cancelled purchases and sales are excluded from totals', () async {
+      final repository = _reportRepository(
+        purchases: [
+          _purchase('active-purchase',
+              quantityKg: 1000, total: 700000, createdAt: _midday),
+          _purchase(
+            'cancelled-purchase',
+            quantityKg: 500,
+            total: 350000,
+            createdAt: _midday,
+            cancellation: _cancellation('cancelled-purchase'),
+          ),
+        ],
+        sales: [
+          _sale('active-sale',
+              quantityKg: 250, total: 200000, createdAt: _midday),
+          _sale(
+            'cancelled-sale',
+            quantityKg: 100,
+            total: 80000,
+            createdAt: _midday,
+            cancellation: _cancellation('cancelled-sale'),
+          ),
+        ],
+      );
+
+      final report = await repository.dailyActivityReport(
+        selectedDate: _reportDay,
+      );
+
+      expect(report.totalPurchasedKg, 1000);
+      expect(report.totalPurchaseAmountQirsh, 700000);
+      expect(report.purchaseCount, 1);
+      expect(report.totalSoldKg, 250);
+      expect(report.totalSalesAmountQirsh, 200000);
+      expect(report.saleCount, 1);
+    });
+
     test('report does not calculate profit', () async {
       final reportSource =
           await _readSource('lib/core/reports/daily_activity_report.dart');
@@ -185,7 +224,8 @@ void main() {
       final controller = ReportController(
         repository: _reportRepository(
           purchases: [
-            _purchase('p1', quantityKg: 1000, total: 700000, createdAt: _midday),
+            _purchase('p1',
+                quantityKg: 1000, total: 700000, createdAt: _midday),
           ],
           sales: [
             _sale('s1', quantityKg: 250, total: 200000, createdAt: _midday),
@@ -258,6 +298,7 @@ PurchaseIntake _purchase(
   required int quantityKg,
   required int total,
   required DateTime createdAt,
+  CancellationMetadata? cancellation,
 }) {
   return PurchaseIntake(
     id: id,
@@ -269,6 +310,8 @@ PurchaseIntake _purchase(
     totalAmountPiasters: total,
     createdByUserId: _owner.id,
     createdAt: createdAt,
+    stockMovementId: 'movement-$id',
+    cancellation: cancellation,
   );
 }
 
@@ -277,6 +320,7 @@ SaleRecord _sale(
   required int quantityKg,
   required int total,
   required DateTime createdAt,
+  CancellationMetadata? cancellation,
 }) {
   return SaleRecord(
     id: id,
@@ -287,6 +331,17 @@ SaleRecord _sale(
     createdByUserId: _owner.id,
     createdAt: createdAt,
     stockMovementId: 'movement-$id',
+    cancellation: cancellation,
+  );
+}
+
+CancellationMetadata _cancellation(String documentId) {
+  return CancellationMetadata(
+    cancelledAt: _evening,
+    cancelledByUserId: _owner.id,
+    cancellationReason: 'خطأ في الإدخال',
+    originalDocumentId: documentId,
+    reversalMovementIds: ['reversal-$documentId'],
   );
 }
 
@@ -351,6 +406,15 @@ class _FakePurchaseRepository implements PurchaseRepository {
   }
 
   @override
+  Future<PurchaseIntake> cancelPurchaseIntake({
+    required String purchaseIntakeId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
   Future<List<PurchaseIntake>> listPurchaseIntakes() async {
     return List<PurchaseIntake>.unmodifiable(purchases);
   }
@@ -363,6 +427,15 @@ class _FakeSaleRepository implements SaleRepository {
 
   @override
   Future<SaleRecord> createSale(SaleDraft draft) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
+  Future<SaleRecord> cancelSale({
+    required String saleId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) {
     throw UnsupportedError('Reports test fake is read-only.');
   }
 

@@ -303,12 +303,163 @@ void main() {
       expect(await fixture.inventory.currentStockKg(fixture.product.id), 750);
     });
 
+    test('cancelling purchase reverses stock increase and preserves original',
+        () async {
+      final fixture = await _fixture();
+
+      final intake = await fixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(fixture, quantityKg: 750),
+      );
+      final cancelled = await fixture.purchaseRepository.cancelPurchaseIntake(
+        purchaseIntakeId: intake.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'خطأ في الإدخال',
+      );
+      final movements = await fixture.inventory.listAllMovements();
+
+      expect(cancelled.isCancelled, isTrue);
+      expect(cancelled.cancellation!.cancelledByUserId, _owner.id);
+      expect(cancelled.cancellation!.originalDocumentId, intake.id);
+      expect(cancelled.cancellation!.reversalMovementIds, hasLength(1));
+      expect(movements, hasLength(2));
+      expect(movements.first.id, intake.stockMovementId);
+      expect(movements.first.movementType, StockMovementType.purchaseIntake);
+      expect(
+          movements.last.movementType, StockMovementType.purchaseCancellation);
+      expect(movements.last.reversedMovementId, intake.stockMovementId);
+      expect(movements.last.originalDocumentId, intake.id);
+      expect(await fixture.inventory.currentStockKg(fixture.product.id), 0);
+    });
+
+    test('purchase cancellation is rejected when stock was consumed', () async {
+      final fixture = await _fixture();
+      final intake = await fixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(fixture, quantityKg: 100),
+      );
+      await fixture.inventory.createMovement(
+        StockMovementDraft(
+          productId: fixture.product.id,
+          movementType: StockMovementType.sale,
+          quantityKg: 80,
+          createdByUserId: _owner.id,
+          note: 'Sale after purchase',
+        ),
+      );
+
+      expect(
+        () => fixture.purchaseRepository.cancelPurchaseIntake(
+          purchaseIntakeId: intake.id,
+          cancelledByUserId: _owner.id,
+          cancellationReason: 'Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø¥Ø¯Ø®Ø§Ù„',
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('stock negative'),
+          ),
+        ),
+      );
+
+      final movements = await fixture.inventory.listAllMovements();
+      final listed = await fixture.purchaseRepository.listPurchaseIntakes();
+      expect(movements, hasLength(2));
+      expect(
+        movements.where(
+          (movement) =>
+              movement.movementType == StockMovementType.purchaseCancellation,
+        ),
+        isEmpty,
+      );
+      expect(listed.single.isCancelled, isFalse);
+      expect(listed.single.stockMovementId, intake.stockMovementId);
+      expect(await fixture.inventory.currentStockKg(fixture.product.id), 20);
+    });
+
+    test('purchase cancellation succeeds when stock is still available',
+        () async {
+      final fixture = await _fixture();
+      final intake = await fixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(fixture, quantityKg: 100),
+      );
+
+      final cancelled = await fixture.purchaseRepository.cancelPurchaseIntake(
+        purchaseIntakeId: intake.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø¥Ø¯Ø®Ø§Ù„',
+      );
+
+      expect(cancelled.isCancelled, isTrue);
+      expect(await fixture.inventory.listAllMovements(), hasLength(2));
+      expect(await fixture.inventory.currentStockKg(fixture.product.id), 0);
+    });
+
+    test('double purchase cancellation is idempotent', () async {
+      final fixture = await _fixture();
+      final intake = await fixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(fixture, quantityKg: 400),
+      );
+
+      final first = await fixture.purchaseRepository.cancelPurchaseIntake(
+        purchaseIntakeId: intake.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'خطأ في الإدخال',
+      );
+      final second = await fixture.purchaseRepository.cancelPurchaseIntake(
+        purchaseIntakeId: intake.id,
+        cancelledByUserId: _owner.id,
+        cancellationReason: 'محاولة ثانية',
+      );
+
+      expect(second.cancellation!.reversalMovementIds,
+          first.cancellation!.reversalMovementIds);
+      expect(await fixture.inventory.listAllMovements(), hasLength(2));
+    });
+
+    test('controller allows owner and rejects employee purchase cancellation',
+        () async {
+      final ownerFixture = await _fixture();
+      final employeeFixture = await _fixture();
+      final ownerIntake =
+          await ownerFixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(ownerFixture, quantityKg: 300),
+      );
+      final employeeIntake =
+          await employeeFixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(employeeFixture, quantityKg: 300),
+      );
+
+      expect(
+        await ownerFixture.purchaseController.cancelPurchaseIntake(
+          user: _owner,
+          purchaseIntakeId: ownerIntake.id,
+          cancellationReason: 'خطأ في الإدخال',
+        ),
+        isTrue,
+      );
+      expect(
+        await employeeFixture.purchaseController.cancelPurchaseIntake(
+          user: _employee,
+          purchaseIntakeId: employeeIntake.id,
+          cancellationReason: 'خطأ في الإدخال',
+        ),
+        isFalse,
+      );
+      expect(
+        await ownerFixture.inventory.currentStockKg(ownerFixture.product.id),
+        0,
+      );
+      expect(await employeeFixture.inventory.listAllMovements(), hasLength(1));
+    });
+
     test('product balance field is still not introduced', () {
-      final productSource = File('lib/core/catalog/product.dart').readAsStringSync();
+      final productSource =
+          File('lib/core/catalog/product.dart').readAsStringSync();
 
       expect(
         productSource,
-        isNot(matches(RegExp(r'\b(currentStock|stockKg|balanceKg|quantityKg)\b'))),
+        isNot(matches(
+            RegExp(r'\b(currentStock|stockKg|balanceKg|quantityKg)\b'))),
       );
     });
 
@@ -435,8 +586,7 @@ void main() {
       expect(find.text('إضافة استلام شراء'), findsNothing);
     });
 
-    testWidgets('purchase UI labels price as piasters per kg',
-        (tester) async {
+    testWidgets('purchase UI labels price as piasters per kg', (tester) async {
       final auth =
           await _signedInController(phone: '01000000000', password: 'owner123');
       final fixture = await _fixture();
@@ -449,6 +599,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('سعر الكيلو قرش/كجم'), findsOneWidget);
+    });
+
+    testWidgets('owner sees purchase cancellation action', (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+      await fixture.purchaseRepository.createPurchaseIntake(
+        _purchaseDraft(fixture),
+      );
+      await fixture.purchaseController.load(_owner);
+
+      await tester.pumpWidget(
+        _purchaseHarness(auth: auth, controller: fixture.purchaseController),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('إلغاء المستند'), findsOneWidget);
     });
   });
 }

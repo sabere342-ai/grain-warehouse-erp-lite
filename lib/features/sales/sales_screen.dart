@@ -56,6 +56,7 @@ class _SalesScreenState extends State<SalesScreen> {
     }
 
     final canCreate = user.permissions.canCreateSale;
+    final canCancel = user.permissions.canCancelInvoice;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -111,6 +112,10 @@ class _SalesScreenState extends State<SalesScreen> {
                   child: _SaleCard(
                     sale: sale,
                     productName: _controller.productName(sale.productId),
+                    canCancel: canCancel,
+                    onCancel: sale.isCancelled
+                        ? null
+                        : () => _confirmCancelSale(context, user, sale),
                   ),
                 ),
               ),
@@ -141,16 +146,70 @@ class _SalesScreenState extends State<SalesScreen> {
       notes: result.notes,
     );
   }
+
+  Future<void> _confirmCancelSale(
+    BuildContext context,
+    user,
+    SaleRecord sale,
+  ) async {
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد إلغاء البيع'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'تحذير: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو حركة المخزون الأصلية.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('رجوع'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(reasonController.text),
+            child: const Text('تأكيد الإلغاء'),
+          ),
+        ],
+      ),
+    );
+
+    if (reason == null || reason.trim().isEmpty) {
+      return;
+    }
+
+    await _controller.cancelSale(
+      user: user,
+      saleId: sale.id,
+      cancellationReason: reason,
+    );
+  }
 }
 
 class _SaleCard extends StatelessWidget {
   const _SaleCard({
     required this.sale,
     required this.productName,
+    required this.canCancel,
+    this.onCancel,
   });
 
   final SaleRecord sale;
   final String productName;
+  final bool canCancel;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +219,16 @@ class _SaleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(productName, style: textTheme.titleLarge),
+          Row(
+            children: [
+              Expanded(child: Text(productName, style: textTheme.titleLarge)),
+              if (sale.isCancelled)
+                Chip(
+                  label: const Text('ملغي'),
+                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 12,
@@ -168,13 +236,29 @@ class _SaleCard extends StatelessWidget {
             children: [
               Text('الكمية: ${sale.quantityKg} كجم'),
               Text('السعر: ${sale.salePriceQirshPerKg} قرش/كجم'),
-              Text('الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}'),
+              Text(
+                  'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}'),
               Text('الوقت: ${_formatDateTime(sale.createdAt)}'),
             ],
           ),
           if (sale.notes != null) ...[
             const SizedBox(height: 8),
             Text(sale.notes!),
+          ],
+          if (sale.cancellation != null) ...[
+            const SizedBox(height: 8),
+            Text('سبب الإلغاء: ${sale.cancellation!.cancellationReason}'),
+          ],
+          if (canCancel && !sale.isCancelled) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                onPressed: onCancel,
+                icon: const Icon(Icons.cancel_outlined),
+                label: const Text('إلغاء المستند'),
+              ),
+            ),
           ],
         ],
       ),
@@ -185,8 +269,7 @@ class _SaleCard extends StatelessWidget {
     final local = value.toLocal();
     final date =
         '${local.year}-${_twoDigits(local.month)}-${_twoDigits(local.day)}';
-    final time =
-        '${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
+    final time = '${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
 
     return '$date $time';
   }

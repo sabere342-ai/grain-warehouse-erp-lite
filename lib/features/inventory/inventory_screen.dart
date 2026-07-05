@@ -165,6 +165,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
         return;
       case StockMovementType.sale:
         return;
+      case StockMovementType.purchaseCancellation:
+        return;
+      case StockMovementType.saleCancellation:
+        return;
     }
   }
 }
@@ -367,8 +371,6 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
       ],
     );
   }
-
-
 
   List<StockMovementType> _availableMovementTypes() {
     final hasOpening = widget.hasOpeningBalance(_productId);

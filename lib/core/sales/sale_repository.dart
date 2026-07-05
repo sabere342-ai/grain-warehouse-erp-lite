@@ -1,11 +1,18 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
 abstract class SaleRepository {
   Future<SaleRecord> createSale(SaleDraft draft);
+
+  Future<SaleRecord> cancelSale({
+    required String saleId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  });
 
   Future<List<SaleRecord>> listSales();
 }
@@ -48,6 +55,7 @@ class LocalSaleRepository implements SaleRepository {
         quantityKg: draft.quantityKg,
         createdByUserId: draft.createdByUserId.trim(),
         note: 'Sale $saleId',
+        originalDocumentId: saleId,
       ),
     );
 
@@ -76,6 +84,62 @@ class LocalSaleRepository implements SaleRepository {
   }
 
   @override
+  Future<SaleRecord> cancelSale({
+    required String saleId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) async {
+    final saleIndex = _sales.indexWhere((sale) => sale.id == saleId);
+    if (saleIndex < 0) {
+      throw StateError('Sale was not found.');
+    }
+
+    final sale = _sales[saleIndex];
+    if (sale.isCancelled) {
+      return sale;
+    }
+    final userId = cancelledByUserId.trim();
+    if (userId.isEmpty) {
+      throw ArgumentError.value(
+        cancelledByUserId,
+        'cancelledByUserId',
+        'Cancelled by user id is required.',
+      );
+    }
+    final reason = _normalizedOptionalText(cancellationReason);
+    if (reason == null) {
+      throw ArgumentError.value(
+        cancellationReason,
+        'cancellationReason',
+        'Cancellation reason is required.',
+      );
+    }
+
+    final reversal = await _inventoryRepository.createMovement(
+      StockMovementDraft(
+        productId: sale.productId,
+        movementType: StockMovementType.saleCancellation,
+        quantityKg: sale.quantityKg,
+        createdByUserId: userId,
+        note: 'Cancel sale ${sale.id}: $reason',
+        reversedMovementId: sale.stockMovementId,
+        originalDocumentId: sale.id,
+      ),
+    );
+    final cancelled = sale.copyWith(
+      cancellation: CancellationMetadata(
+        cancelledAt: DateTime.now(),
+        cancelledByUserId: userId,
+        cancellationReason: reason,
+        originalDocumentId: sale.id,
+        reversalMovementIds: [reversal.id],
+      ),
+    );
+    _sales[saleIndex] = cancelled;
+    return cancelled;
+  }
+
+  @override
   Future<List<SaleRecord>> listSales() async {
     return List<SaleRecord>.unmodifiable(_sales);
   }
@@ -89,7 +153,8 @@ class LocalSaleRepository implements SaleRepository {
       );
     }
 
-    final products = await _productRepository.listProducts(includeInactive: true);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
     for (final product in products) {
       if (product.id == productId) {
         if (!product.isActive) {

@@ -1,5 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -8,6 +9,12 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 
 abstract class PurchaseRepository {
   Future<PurchaseIntake> createPurchaseIntake(PurchaseIntakeDraft draft);
+
+  Future<PurchaseIntake> cancelPurchaseIntake({
+    required String purchaseIntakeId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  });
 
   Future<List<PurchaseIntake>> listPurchaseIntakes();
 }
@@ -46,6 +53,7 @@ class LocalPurchaseRepository implements PurchaseRepository {
       totalAmountPiasters: draft.totalAmountPiasters,
       createdByUserId: draft.createdByUserId.trim(),
       createdAt: now,
+      stockMovementId: 'pending',
       notes: _normalizedOptionalText(draft.notes),
     );
 
@@ -53,18 +61,90 @@ class LocalPurchaseRepository implements PurchaseRepository {
       throw StateError('Purchase intake id is required.');
     }
 
-    await _inventoryRepository.createMovement(
+    final movement = await _inventoryRepository.createMovement(
       StockMovementDraft(
         productId: intake.productId,
         movementType: StockMovementType.purchaseIntake,
         quantityKg: intake.quantityKg,
         createdByUserId: intake.createdByUserId,
         note: 'Purchase intake ${intake.id}',
+        originalDocumentId: intake.id,
       ),
     );
 
-    _intakes.add(intake);
-    return intake;
+    final postedIntake = intake.copyWith(stockMovementId: movement.id);
+    _intakes.add(postedIntake);
+    return postedIntake;
+  }
+
+  @override
+  Future<PurchaseIntake> cancelPurchaseIntake({
+    required String purchaseIntakeId,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) async {
+    final intakeIndex =
+        _intakes.indexWhere((intake) => intake.id == purchaseIntakeId);
+    if (intakeIndex < 0) {
+      throw StateError('Purchase intake was not found.');
+    }
+
+    final intake = _intakes[intakeIndex];
+    if (intake.isCancelled) {
+      return intake;
+    }
+    final userId = cancelledByUserId.trim();
+    if (userId.isEmpty) {
+      throw ArgumentError.value(
+        cancelledByUserId,
+        'cancelledByUserId',
+        'Cancelled by user id is required.',
+      );
+    }
+    final reason = _normalizedOptionalText(cancellationReason);
+    if (reason == null) {
+      throw ArgumentError.value(
+        cancellationReason,
+        'cancellationReason',
+        'Cancellation reason is required.',
+      );
+    }
+    await _validatePurchaseCancellationStock(intake);
+
+    final reversal = await _inventoryRepository.createMovement(
+      StockMovementDraft(
+        productId: intake.productId,
+        movementType: StockMovementType.purchaseCancellation,
+        quantityKg: intake.quantityKg,
+        createdByUserId: userId,
+        note: 'Cancel purchase intake ${intake.id}: $reason',
+        reversedMovementId: intake.stockMovementId,
+        originalDocumentId: intake.id,
+      ),
+    );
+    final cancelled = intake.copyWith(
+      cancellation: CancellationMetadata(
+        cancelledAt: DateTime.now(),
+        cancelledByUserId: userId,
+        cancellationReason: reason,
+        originalDocumentId: intake.id,
+        reversalMovementIds: [reversal.id],
+      ),
+    );
+    _intakes[intakeIndex] = cancelled;
+    return cancelled;
+  }
+
+  Future<void> _validatePurchaseCancellationStock(PurchaseIntake intake) async {
+    final currentStock = await _inventoryRepository.currentStockKg(
+      intake.productId,
+    );
+    if (currentStock < intake.quantityKg) {
+      throw StateError(
+        'Purchase cancellation would make stock negative for product '
+        '${intake.productId}.',
+      );
+    }
   }
 
   @override
@@ -105,7 +185,8 @@ class LocalPurchaseRepository implements PurchaseRepository {
       );
     }
 
-    final products = await _productRepository.listProducts(includeInactive: true);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
     for (final product in products) {
       if (product.id == productId) {
         if (!product.isActive) {

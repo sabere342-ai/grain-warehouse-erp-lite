@@ -36,16 +36,19 @@ class LocalReportRepository implements ReportRepository {
       selectedDate.day,
     );
     final end = start.add(const Duration(days: 1));
-    final products = await _productRepository.listProducts(includeInactive: true);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
     final productNames = {
       for (final product in products) product.id: product.name,
     };
 
     final purchases = (await _purchaseRepository.listPurchaseIntakes())
-        .where((purchase) => _isInRange(purchase.createdAt, start, end))
+        .where((purchase) =>
+            !purchase.isCancelled && _isInRange(purchase.createdAt, start, end))
         .toList(growable: false);
     final sales = (await _saleRepository.listSales())
-        .where((sale) => _isInRange(sale.createdAt, start, end))
+        .where((sale) =>
+            !sale.isCancelled && _isInRange(sale.createdAt, start, end))
         .toList(growable: false);
     final movements = (await _inventoryRepository.listAllMovements())
         .where((movement) => _isInRange(movement.createdAt, start, end))

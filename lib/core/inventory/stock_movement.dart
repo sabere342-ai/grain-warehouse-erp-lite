@@ -3,7 +3,9 @@ enum StockMovementType {
   manualIncrease,
   manualDecrease,
   purchaseIntake,
-  sale;
+  sale,
+  purchaseCancellation,
+  saleCancellation;
 
   String get labelAr {
     switch (this) {
@@ -17,6 +19,10 @@ enum StockMovementType {
         return 'استلام شراء';
       case StockMovementType.sale:
         return 'بيع';
+      case StockMovementType.purchaseCancellation:
+        return 'إلغاء استلام شراء';
+      case StockMovementType.saleCancellation:
+        return 'إلغاء بيع';
     }
   }
 
@@ -25,9 +31,11 @@ enum StockMovementType {
       case StockMovementType.openingBalance:
       case StockMovementType.manualIncrease:
       case StockMovementType.purchaseIntake:
+      case StockMovementType.saleCancellation:
         return true;
       case StockMovementType.manualDecrease:
       case StockMovementType.sale:
+      case StockMovementType.purchaseCancellation:
         return false;
     }
   }
@@ -44,6 +52,7 @@ class StockMovement {
     this.note,
     this.isVoided = false,
     this.reversedMovementId,
+    this.originalDocumentId,
   });
 
   final String id;
@@ -55,6 +64,7 @@ class StockMovement {
   final String? note;
   final bool isVoided;
   final String? reversedMovementId;
+  final String? originalDocumentId;
 
   bool get hasValidId => id.trim().isNotEmpty;
 
@@ -74,6 +84,8 @@ class StockMovementDraft {
     required this.quantityKg,
     required this.createdByUserId,
     this.note,
+    this.reversedMovementId,
+    this.originalDocumentId,
   });
 
   final String productId;
@@ -81,4 +93,6 @@ class StockMovementDraft {
   final int quantityKg;
   final String createdByUserId;
   final String? note;
+  final String? reversedMovementId;
+  final String? originalDocumentId;
 }

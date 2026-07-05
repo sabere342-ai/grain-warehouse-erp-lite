@@ -59,6 +59,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     }
 
     final canCreate = user.permissions.canCreatePurchaseIntake;
+    final canCancel = user.permissions.canCancelInvoice;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -121,6 +122,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                     intake: intake,
                     supplierName: _controller.supplierName(intake.supplierId),
                     productName: _controller.productName(intake.productId),
+                    canCancel: canCancel,
+                    onCancel: intake.isCancelled
+                        ? null
+                        : () => _confirmCancelPurchase(context, user, intake),
                   ),
                 ),
               ),
@@ -153,6 +158,56 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
 
     await _controller.createPurchaseIntake(user: user, draft: draft);
   }
+
+  Future<void> _confirmCancelPurchase(
+    BuildContext context,
+    user,
+    PurchaseIntake intake,
+  ) async {
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد إلغاء استلام الشراء'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'تحذير: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا المستند. لن يتم حذف المستند الأصلي أو حركة المخزون الأصلية.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('رجوع'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(reasonController.text),
+            child: const Text('تأكيد الإلغاء'),
+          ),
+        ],
+      ),
+    );
+
+    if (reason == null || reason.trim().isEmpty) {
+      return;
+    }
+
+    await _controller.cancelPurchaseIntake(
+      user: user,
+      purchaseIntakeId: intake.id,
+      cancellationReason: reason,
+    );
+  }
 }
 
 class _PurchaseIntakeCard extends StatelessWidget {
@@ -160,11 +215,15 @@ class _PurchaseIntakeCard extends StatelessWidget {
     required this.intake,
     required this.supplierName,
     required this.productName,
+    required this.canCancel,
+    this.onCancel,
   });
 
   final PurchaseIntake intake;
   final String supplierName;
   final String productName;
+  final bool canCancel;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +233,16 @@ class _PurchaseIntakeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(productName, style: textTheme.titleLarge),
+          Row(
+            children: [
+              Expanded(child: Text(productName, style: textTheme.titleLarge)),
+              if (intake.isCancelled)
+                Chip(
+                  label: const Text('ملغي'),
+                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 12,
@@ -194,6 +262,21 @@ class _PurchaseIntakeCard extends StatelessWidget {
           if (intake.notes != null) ...[
             const SizedBox(height: 8),
             Text(intake.notes!),
+          ],
+          if (intake.cancellation != null) ...[
+            const SizedBox(height: 8),
+            Text('سبب الإلغاء: ${intake.cancellation!.cancellationReason}'),
+          ],
+          if (canCancel && !intake.isCancelled) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                onPressed: onCancel,
+                icon: const Icon(Icons.cancel_outlined),
+                label: const Text('إلغاء المستند'),
+              ),
+            ),
           ],
         ],
       ),

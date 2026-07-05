@@ -13,7 +13,8 @@ abstract class InventoryRepository {
 
   Future<bool> hasOpeningBalance(String productId);
 
-  Future<Map<String, int>> allProductBalancesKg({bool activeProductsOnly = false});
+  Future<Map<String, int>> allProductBalancesKg(
+      {bool activeProductsOnly = false});
 }
 
 class LocalInventoryRepository implements InventoryRepository {
@@ -46,6 +47,8 @@ class LocalInventoryRepository implements InventoryRepository {
       createdByUserId: draft.createdByUserId.trim(),
       note: _normalizedOptionalText(draft.note),
       createdAt: now,
+      reversedMovementId: _normalizedOptionalText(draft.reversedMovementId),
+      originalDocumentId: _normalizedOptionalText(draft.originalDocumentId),
     );
     if (!movement.hasValidId) {
       throw StateError('Movement id is required.');
@@ -113,7 +116,8 @@ class LocalInventoryRepository implements InventoryRepository {
 
   Future<Product> _validateDraftAndLoadProduct(StockMovementDraft draft) async {
     if (draft.productId.trim().isEmpty) {
-      throw ArgumentError.value(draft.productId, 'productId', 'Product id is required.');
+      throw ArgumentError.value(
+          draft.productId, 'productId', 'Product id is required.');
     }
     if (draft.createdByUserId.trim().isEmpty) {
       throw ArgumentError.value(
@@ -142,7 +146,8 @@ class LocalInventoryRepository implements InventoryRepository {
   }
 
   Future<Product?> _findProductById(String productId) async {
-    final products = await _productRepository.listProducts(includeInactive: true);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
     for (final product in products) {
       if (product.id == productId) {
         return product;

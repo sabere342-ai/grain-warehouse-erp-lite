@@ -1,3 +1,5 @@
+import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+
 class SaleRecord {
   const SaleRecord({
     required this.id,
@@ -10,6 +12,7 @@ class SaleRecord {
     required this.stockMovementId,
     this.createdByUserName,
     this.notes,
+    this.cancellation,
   });
 
   final String id;
@@ -22,8 +25,28 @@ class SaleRecord {
   final DateTime createdAt;
   final String stockMovementId;
   final String? notes;
+  final CancellationMetadata? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
+  bool get isCancelled => cancellation != null;
+
+  SaleRecord copyWith({
+    CancellationMetadata? cancellation,
+  }) {
+    return SaleRecord(
+      id: id,
+      productId: productId,
+      quantityKg: quantityKg,
+      salePriceQirshPerKg: salePriceQirshPerKg,
+      totalQirsh: totalQirsh,
+      createdByUserId: createdByUserId,
+      createdByUserName: createdByUserName,
+      createdAt: createdAt,
+      stockMovementId: stockMovementId,
+      notes: notes,
+      cancellation: cancellation ?? this.cancellation,
+    );
+  }
 }
 
 class SaleDraft {
