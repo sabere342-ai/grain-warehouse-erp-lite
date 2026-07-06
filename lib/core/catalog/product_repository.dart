@@ -43,6 +43,7 @@ class LocalProductRepository implements ProductRepository {
       isActive: true,
       defaultSalePricePiastersPerKg: draft.defaultSalePricePiastersPerKg,
       minimumSalePricePiastersPerKg: draft.minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg: draft.referenceCostPricePiastersPerKg,
       notes: _normalizedOptionalText(draft.notes),
       createdAt: now,
       updatedAt: now,
@@ -72,6 +73,7 @@ class LocalProductRepository implements ProductRepository {
       isActive: current.isActive,
       defaultSalePricePiastersPerKg: draft.defaultSalePricePiastersPerKg,
       minimumSalePricePiastersPerKg: draft.minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg: draft.referenceCostPricePiastersPerKg,
       notes: _normalizedOptionalText(draft.notes),
       createdAt: current.createdAt,
       updatedAt: DateTime.now(),
@@ -142,6 +144,15 @@ class LocalProductRepository implements ProductRepository {
         'Minimum sale price cannot exceed default sale price.',
       );
     }
+
+    final referenceCost = draft.referenceCostPricePiastersPerKg;
+    if (referenceCost != null && referenceCost <= 0) {
+      throw ArgumentError.value(
+        referenceCost,
+        'referenceCostPricePiastersPerKg',
+        'Reference cost price must be positive.',
+      );
+    }
   }
 
   void _ensureUniqueName(String name, {String? exceptProductId}) {
@@ -191,6 +202,27 @@ class LocalProductRepository implements ProductRepository {
       if (code != null && !codes.add(_normalizedKey(code))) {
         throw StateError('Duplicate product code.');
       }
+      _validateRestoredPriceFields(product);
+    }
+  }
+
+  void _validateRestoredPriceFields(Product product) {
+    final defaultPrice = product.defaultSalePricePiastersPerKg;
+    final minimumPrice = product.minimumSalePricePiastersPerKg;
+    final referenceCost = product.referenceCostPricePiastersPerKg;
+    if (defaultPrice != null && defaultPrice <= 0) {
+      throw StateError('Invalid default sale price.');
+    }
+    if (minimumPrice != null && minimumPrice <= 0) {
+      throw StateError('Invalid minimum sale price.');
+    }
+    if (defaultPrice != null &&
+        minimumPrice != null &&
+        minimumPrice > defaultPrice) {
+      throw StateError('Invalid minimum sale price.');
+    }
+    if (referenceCost != null && referenceCost <= 0) {
+      throw StateError('Invalid reference cost price.');
     }
   }
 

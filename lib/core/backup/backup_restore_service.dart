@@ -163,6 +163,8 @@ class BackupRestoreService {
           _optionalInt(map, 'defaultSalePricePiastersPerKg'),
       minimumSalePricePiastersPerKg:
           _optionalInt(map, 'minimumSalePricePiastersPerKg'),
+      referenceCostPricePiastersPerKg:
+          _optionalInt(map, 'referenceCostPricePiastersPerKg'),
       notes: _optionalString(map, 'notes'),
       createdAt: _date(map, 'createdAt'),
       updatedAt: _date(map, 'updatedAt'),

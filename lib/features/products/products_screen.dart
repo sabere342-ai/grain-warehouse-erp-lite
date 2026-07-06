@@ -200,6 +200,10 @@ class _ProductCard extends StatelessWidget {
                 'الحد الأدنى',
                 _formatOptionalPrice(product.minimumSalePricePiastersPerKg),
               ),
+              _InfoText(
+                'سعر التكلفة',
+                _formatOptionalPrice(product.referenceCostPricePiastersPerKg),
+              ),
             ],
           ),
           if (product.notes != null) ...[
@@ -282,6 +286,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   late final TextEditingController _codeController;
   late final TextEditingController _defaultPriceController;
   late final TextEditingController _minimumPriceController;
+  late final TextEditingController _referenceCostPriceController;
   late final TextEditingController _notesController;
   GrainUnit _unit = GrainUnit.kilogram;
   String? _errorMessage;
@@ -298,6 +303,9 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     _minimumPriceController = TextEditingController(
       text: _priceText(product?.minimumSalePricePiastersPerKg),
     );
+    _referenceCostPriceController = TextEditingController(
+      text: _priceText(product?.referenceCostPricePiastersPerKg),
+    );
     _notesController = TextEditingController(text: product?.notes ?? '');
     _unit = product?.unit ?? GrainUnit.kilogram;
   }
@@ -308,6 +316,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     _codeController.dispose();
     _defaultPriceController.dispose();
     _minimumPriceController.dispose();
+    _referenceCostPriceController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -357,9 +366,10 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _defaultPriceController,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'السعر الافتراضي قرش/كجم اختياري',
+                labelText: 'السعر الافتراضي بالجنيه / كجم اختياري',
                 helperText: 'اتركه فارغا إذا لم يوجد سعر ثابت.',
               ),
               textDirection: TextDirection.ltr,
@@ -367,10 +377,22 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _minimumPriceController,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'الحد الأدنى قرش/كجم اختياري',
-                helperText: 'تنبيه للمالك عند البيع بسعر أقل.',
+                labelText: 'الحد الأدنى للبيع بالجنيه / كجم اختياري',
+                helperText: 'يمنع حفظ البيع بسعر أقل من هذا الحد.',
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _referenceCostPriceController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'سعر التكلفة بالجنيه / كجم اختياري',
+                helperText: 'تكلفة مرجعية للصنف وليست محرك تكلفة.',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -405,19 +427,19 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   }
 
   void _submit() {
-    final defaultPrice =
-        _parseOptionalPositiveInt(_defaultPriceController.text);
-    final minimumPrice =
-        _parseOptionalPositiveInt(_minimumPriceController.text);
+    final defaultPrice = _parseOptionalEgpPrice(_defaultPriceController.text);
+    final minimumPrice = _parseOptionalEgpPrice(_minimumPriceController.text);
+    final referenceCost =
+        _parseOptionalEgpPrice(_referenceCostPriceController.text);
 
     if (_nameController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'اكتب اسم صنف الحبوب أولا.');
       return;
     }
-    if (defaultPrice == -1 || minimumPrice == -1) {
+    if (defaultPrice == -1 || minimumPrice == -1 || referenceCost == -1) {
       setState(
         () => _errorMessage =
-            'اكتب السعر بالأرقام فقط، ويجب أن يكون أكبر من صفر.',
+            'اكتب السعر بالجنيه بالأرقام فقط، ويجب أن يكون أكبر من صفر.',
       );
       return;
     }
@@ -438,26 +460,28 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         unit: _unit,
         defaultSalePricePiastersPerKg: defaultPrice,
         minimumSalePricePiastersPerKg: minimumPrice,
+        referenceCostPricePiastersPerKg: referenceCost,
         notes: _notesController.text,
       ),
     );
   }
 
-  int? _parseOptionalPositiveInt(String value) {
+  int? _parseOptionalEgpPrice(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
       return null;
     }
 
-    final parsed = int.tryParse(trimmed);
-    if (parsed == null || parsed <= 0) {
+    try {
+      return MoneyUtils.parseEgpToPiasters(trimmed, allowZero: false);
+    } on FormatException {
+      return -1;
+    } on ArgumentError {
       return -1;
     }
-
-    return parsed;
   }
 
   String _priceText(int? price) {
-    return price == null ? '' : price.toString();
+    return price == null ? '' : MoneyUtils.formatPiastersAsEgpNumber(price);
   }
 }

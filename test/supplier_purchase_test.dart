@@ -598,7 +598,7 @@ void main() {
       await tester.tap(find.text('تسجيل استلام حبوب'));
       await tester.pumpAndSettle();
 
-      expect(find.text('سعر الكيلو قرش/كجم'), findsOneWidget);
+      expect(find.text('سعر الشراء بالجنيه / كجم'), findsOneWidget);
     });
 
     testWidgets('owner sees purchase cancellation action', (tester) async {

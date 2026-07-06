@@ -133,6 +133,9 @@ class SaleController extends ChangeNotifier {
   }
 
   String _messageForError(Object error) {
+    if (error is MinimumSalePriceViolation) {
+      return 'سعر البيع أقل من الحد الأدنى المحدد للصنف.';
+    }
     if (error is ArgumentError) {
       return 'تحقق من بيانات البيع.';
     }

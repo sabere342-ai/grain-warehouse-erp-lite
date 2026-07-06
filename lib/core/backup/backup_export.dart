@@ -116,6 +116,8 @@ class BackupExportService {
       'isActive': product.isActive,
       'defaultSalePricePiastersPerKg': product.defaultSalePricePiastersPerKg,
       'minimumSalePricePiastersPerKg': product.minimumSalePricePiastersPerKg,
+      'referenceCostPricePiastersPerKg':
+          product.referenceCostPricePiastersPerKg,
       'notes': product.notes,
       'createdAt': product.createdAt.toUtc().toIso8601String(),
       'updatedAt': product.updatedAt.toUtc().toIso8601String(),

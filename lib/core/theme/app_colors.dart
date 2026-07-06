@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const seed = Color(0xFF6F5B2E);
-  static const background = Color(0xFFF6F1E7);
-  static const surface = Color(0xFFFFFCF5);
-  static const surfaceAlt = Color(0xFFEFE6D3);
-  static const text = Color(0xFF211B13);
-  static const mutedText = Color(0xFF746B5D);
-  static const wheat = Color(0xFFD5A74E);
-  static const olive = Color(0xFF5A6B3F);
-  static const border = Color(0xFFE1D5BF);
+  static const seed = Color(0xFF4F5A2F);
+  static const background = Color(0xFFF3EFE5);
+  static const surface = Color(0xFFFFFCF4);
+  static const surfaceAlt = Color(0xFFE7DDC8);
+  static const text = Color(0xFF1F2118);
+  static const mutedText = Color(0xFF64604F);
+  static const wheat = Color(0xFFC28A2C);
+  static const olive = Color(0xFF3F5F3A);
+  static const border = Color(0xFFD5C4A7);
 }

@@ -185,7 +185,9 @@ class _ReportBody extends StatelessWidget {
             ),
             _MetricLine(
               'إجمالي قيمة المشتريات',
-              '${report.totalPurchaseAmountQirsh} قرش (${MoneyUtils.formatPiastersAsEgp(report.totalPurchaseAmountQirsh)})',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalPurchaseAmountQirsh,
+              ),
             ),
             _MetricLine('عدد عمليات الشراء', '${report.purchaseCount}'),
           ],
@@ -197,7 +199,9 @@ class _ReportBody extends StatelessWidget {
             _MetricLine('إجمالي الكمية المباعة', '${report.totalSoldKg} كجم'),
             _MetricLine(
               'إجمالي قيمة المبيعات',
-              '${report.totalSalesAmountQirsh} قرش (${MoneyUtils.formatPiastersAsEgp(report.totalSalesAmountQirsh)})',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalSalesAmountQirsh,
+              ),
             ),
             _MetricLine('عدد عمليات البيع', '${report.saleCount}'),
           ],

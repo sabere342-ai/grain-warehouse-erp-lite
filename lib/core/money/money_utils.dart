@@ -21,12 +21,18 @@ class MoneyUtils {
   }
 
   static String formatPiastersAsEgp(int piasters) {
+    final value = formatPiastersAsEgpNumber(piasters);
+
+    return '$value ج.م';
+  }
+
+  static String formatPiastersAsEgpNumber(int piasters) {
     final value = NumberValidation.formatScaledInteger(
       piasters,
       scale: piastersPerEgp,
       fractionDigits: 2,
     );
 
-    return '$value ج.م';
+    return value;
   }
 }

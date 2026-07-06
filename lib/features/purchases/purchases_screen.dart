@@ -270,7 +270,7 @@ class _PurchaseIntakeCard extends StatelessWidget {
               Text('المورد: $supplierName'),
               Text('الكمية: ${_formatQuantity(intake.quantityKg)}'),
               Text(
-                'السعر: ${intake.unitPricePiastersPerKg} قرش/كجم',
+                'السعر: ${MoneyUtils.formatPiastersAsEgp(intake.unitPricePiastersPerKg)} / كجم',
                 textDirection: TextDirection.rtl,
               ),
               Text(
@@ -427,10 +427,11 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _unitPriceController,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'سعر الكيلو قرش/كجم',
-                helperText: 'سعر شراء كيلو الحبوب بالقرش.',
+                labelText: 'سعر الشراء بالجنيه / كجم',
+                helperText: 'اكتب سعر شراء الكيلو بالجنيه.',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -469,14 +470,14 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
 
   void _submit() {
     final quantity = int.tryParse(_quantityController.text.trim());
-    final unitPrice = int.tryParse(_unitPriceController.text.trim());
+    final unitPrice = _tryParsePrice(_unitPriceController.text);
     if (quantity == null || quantity <= 0) {
       setState(() =>
           _errorMessage = 'اكتب كمية الاستلام، ويجب أن تكون أكبر من صفر.');
       return;
     }
     if (unitPrice == null || unitPrice <= 0) {
-      setState(() => _errorMessage = 'اكتب سعر كيلو صحيح بالقرش.');
+      setState(() => _errorMessage = 'اكتب سعر الشراء بالجنيه بشكل صحيح.');
       return;
     }
 
@@ -495,5 +496,15 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
         notes: _notesController.text,
       ),
     );
+  }
+
+  int? _tryParsePrice(String value) {
+    try {
+      return MoneyUtils.parseEgpToPiasters(value, allowZero: false);
+    } on FormatException {
+      return null;
+    } on ArgumentError {
+      return null;
+    }
   }
 }

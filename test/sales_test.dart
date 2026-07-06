@@ -308,7 +308,7 @@ void main() {
 
       expect(find.text('الصنف'), findsOneWidget);
       expect(find.text('الكمية بالكجم'), findsOneWidget);
-      expect(find.text('سعر البيع قرش/كجم'), findsOneWidget);
+      expect(find.text('سعر البيع بالجنيه / كجم'), findsOneWidget);
       expect(find.text('الإجمالي: -'), findsOneWidget);
       expect(find.text('حفظ البيع'), findsOneWidget);
     });

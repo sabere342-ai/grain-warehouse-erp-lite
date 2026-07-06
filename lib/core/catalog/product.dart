@@ -11,6 +11,7 @@ class Product {
     this.code,
     this.defaultSalePricePiastersPerKg,
     this.minimumSalePricePiastersPerKg,
+    this.referenceCostPricePiastersPerKg,
     this.notes,
   });
 
@@ -21,6 +22,7 @@ class Product {
   final bool isActive;
   final int? defaultSalePricePiastersPerKg;
   final int? minimumSalePricePiastersPerKg;
+  final int? referenceCostPricePiastersPerKg;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -35,6 +37,7 @@ class Product {
     bool? isActive,
     int? defaultSalePricePiastersPerKg,
     int? minimumSalePricePiastersPerKg,
+    int? referenceCostPricePiastersPerKg,
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -49,6 +52,8 @@ class Product {
           defaultSalePricePiastersPerKg ?? this.defaultSalePricePiastersPerKg,
       minimumSalePricePiastersPerKg:
           minimumSalePricePiastersPerKg ?? this.minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg ??
+          this.referenceCostPricePiastersPerKg,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -63,6 +68,7 @@ class ProductDraft {
     this.code,
     this.defaultSalePricePiastersPerKg,
     this.minimumSalePricePiastersPerKg,
+    this.referenceCostPricePiastersPerKg,
     this.notes,
   });
 
@@ -71,5 +77,6 @@ class ProductDraft {
   final GrainUnit unit;
   final int? defaultSalePricePiastersPerKg;
   final int? minimumSalePricePiastersPerKg;
+  final int? referenceCostPricePiastersPerKg;
   final String? notes;
 }

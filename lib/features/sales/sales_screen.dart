@@ -256,7 +256,9 @@ class _SaleCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               Text('الكمية: ${sale.quantityKg} كجم'),
-              Text('السعر: ${sale.salePriceQirshPerKg} قرش/كجم'),
+              Text(
+                'السعر: ${MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg)} / كجم',
+              ),
               Text(
                   'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}'),
               Text('الوقت: ${_formatDateTime(sale.createdAt)}'),
@@ -327,7 +329,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   @override
   Widget build(BuildContext context) {
     final quantity = int.tryParse(_quantityController.text.trim());
-    final price = int.tryParse(_priceController.text.trim());
+    final price = _tryParsePrice(_priceController.text);
     final total = quantity != null && quantity > 0 && price != null && price > 0
         ? quantity * price
         : null;
@@ -368,10 +370,11 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _priceController,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'سعر البيع قرش/كجم',
-                helperText: 'السعر للكيلو الواحد بالقرش.',
+                labelText: 'سعر البيع بالجنيه / كجم',
+                helperText: 'اكتب سعر الكيلو بالجنيه ويمكن استخدام القروش.',
               ),
               onChanged: (_) => setState(() {}),
               textDirection: TextDirection.ltr,
@@ -421,14 +424,14 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
 
   void _submit() {
     final quantity = int.tryParse(_quantityController.text.trim());
-    final price = int.tryParse(_priceController.text.trim());
+    final price = _tryParsePrice(_priceController.text);
     if (quantity == null || quantity <= 0) {
       setState(() =>
           _errorMessage = 'اكتب كمية البيع بالكيلو، ويجب أن تكون أكبر من صفر.');
       return;
     }
     if (price == null || price <= 0) {
-      setState(() => _errorMessage = 'اكتب سعر بيع صحيح بالقرش لكل كيلو.');
+      setState(() => _errorMessage = 'اكتب سعر البيع بالجنيه بشكل صحيح.');
       return;
     }
 
@@ -440,6 +443,16 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         notes: _notesController.text,
       ),
     );
+  }
+
+  int? _tryParsePrice(String value) {
+    try {
+      return MoneyUtils.parseEgpToPiasters(value, allowZero: false);
+    } on FormatException {
+      return null;
+    } on ArgumentError {
+      return null;
+    }
   }
 }
 

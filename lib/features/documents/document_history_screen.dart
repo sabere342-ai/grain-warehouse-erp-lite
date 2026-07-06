@@ -330,7 +330,9 @@ class _DocumentHistoryCard extends StatelessWidget {
             children: [
               Text('الكمية: ${entry.quantityKg} كجم'),
               if (entry.unitPricePiastersPerKg != null)
-                Text('السعر: ${entry.unitPricePiastersPerKg} قرش/كجم'),
+                Text(
+                  'السعر: ${MoneyUtils.formatPiastersAsEgp(entry.unitPricePiastersPerKg!)} / كجم',
+                ),
               if (entry.totalPiasters != null)
                 Text(
                   'الإجمالي: '

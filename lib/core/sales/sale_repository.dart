@@ -5,6 +5,18 @@ import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dar
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
+class MinimumSalePriceViolation implements Exception {
+  const MinimumSalePriceViolation({
+    required this.productId,
+    required this.minimumSalePricePiastersPerKg,
+    required this.actualSalePricePiastersPerKg,
+  });
+
+  final String productId;
+  final int minimumSalePricePiastersPerKg;
+  final int actualSalePricePiastersPerKg;
+}
+
 abstract class SaleRepository {
   Future<SaleRecord> createSale(SaleDraft draft);
 
@@ -35,6 +47,7 @@ class LocalSaleRepository implements SaleRepository {
   Future<SaleRecord> createSale(SaleDraft draft) async {
     final product = await _validateProduct(draft.productId);
     _validateDraft(draft);
+    _validateMinimumSalePrice(product: product, draft: draft);
 
     final now = DateTime.now();
     final saleId = _generateSaleId(now);
@@ -201,6 +214,23 @@ class LocalSaleRepository implements SaleRepository {
         draft.salePriceQirshPerKg,
         'salePriceQirshPerKg',
         'Sale price must be positive.',
+      );
+    }
+  }
+
+  void _validateMinimumSalePrice({
+    required Product product,
+    required SaleDraft draft,
+  }) {
+    final minimumPrice = product.minimumSalePricePiastersPerKg;
+    if (minimumPrice == null) {
+      return;
+    }
+    if (draft.salePriceQirshPerKg < minimumPrice) {
+      throw MinimumSalePriceViolation(
+        productId: product.id,
+        minimumSalePricePiastersPerKg: minimumPrice,
+        actualSalePricePiastersPerKg: draft.salePriceQirshPerKg,
       );
     }
   }
