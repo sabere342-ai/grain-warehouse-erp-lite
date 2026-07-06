@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupRestorePreviewScreen extends StatefulWidget {
-  const BackupRestorePreviewScreen({super.key, this.service});
+  const BackupRestorePreviewScreen(
+      {super.key, this.service, this.restoreService});
 
   final BackupRestorePreviewService? service;
+  final BackupRestoreService? restoreService;
 
   @override
   State<BackupRestorePreviewScreen> createState() =>
@@ -18,9 +22,13 @@ class _BackupRestorePreviewScreenState
     extends State<BackupRestorePreviewScreen> {
   final TextEditingController _controller = TextEditingController();
   BackupRestorePreviewResult? _result;
+  BackupRestoreResult? _restoreResult;
+  bool _isRestoring = false;
 
   BackupRestorePreviewService get _service =>
       widget.service ?? const BackupRestorePreviewService();
+  BackupRestoreService get _restoreService =>
+      widget.restoreService ?? AppRepositories.backupRestoreService;
 
   @override
   void dispose() {
@@ -97,6 +105,14 @@ class _BackupRestorePreviewScreenState
           const SizedBox(height: 16),
           _PreviewResultCard(result: _result!),
         ],
+        if (_result?.isValid == true) ...[
+          const SizedBox(height: 16),
+          _RestoreToEmptyCard(
+            isRestoring: _isRestoring,
+            restoreResult: _restoreResult,
+            onRestore: _confirmAndRestore,
+          ),
+        ],
       ],
     );
   }
@@ -104,12 +120,131 @@ class _BackupRestorePreviewScreenState
   void _previewBackup() {
     setState(() {
       _result = _service.preview(_controller.text);
+      _restoreResult = null;
     });
   }
 
   void _clearText() {
     _controller.clear();
-    setState(() => _result = null);
+    setState(() {
+      _result = null;
+      _restoreResult = null;
+    });
+  }
+
+  Future<void> _confirmAndRestore() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد استرجاع النسخة'),
+        content: const Text(
+          'سيتم استرجاع بيانات النسخة الاحتياطية إلى النظام الحالي بشرط أن يكون فارغا. لن يتم تنفيذ العملية إذا وُجدت أي بيانات حالية.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('تأكيد الاسترجاع'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() => _isRestoring = true);
+    final user = AuthScope.of(context).state.user;
+    final result = await _restoreService.restoreToEmpty(
+      user: user,
+      jsonText: _controller.text,
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _restoreResult = result;
+      _isRestoring = false;
+    });
+  }
+}
+
+class _RestoreToEmptyCard extends StatelessWidget {
+  const _RestoreToEmptyCard({
+    required this.isRestoring,
+    required this.restoreResult,
+    required this.onRestore,
+  });
+
+  final bool isRestoring;
+  final BackupRestoreResult? restoreResult;
+  final VoidCallback onRestore;
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'استرجاع النسخة إلى نظام فارغ',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'الاسترجاع الفعلي متاح فقط إذا كان النظام الحالي فارغا تماما.',
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'لن يتم استبدال أو دمج أو مسح أي بيانات موجودة.',
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: isRestoring ? null : onRestore,
+            icon: isRestoring
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.restore_rounded),
+            label: const Text('استرجاع إلى نظام فارغ'),
+          ),
+          if (restoreResult != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              restoreResult!.message,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            if (restoreResult!.success && restoreResult!.counts != null) ...[
+              const SizedBox(height: 8),
+              _InfoRow(
+                  'تم استرجاع الأصناف', '${restoreResult!.counts!.products}'),
+              _InfoRow(
+                'تم استرجاع حركات المخزون',
+                '${restoreResult!.counts!.inventoryMovements}',
+              ),
+              _InfoRow(
+                  'تم استرجاع الموردين', '${restoreResult!.counts!.suppliers}'),
+              _InfoRow('تم استرجاع المشتريات',
+                  '${restoreResult!.counts!.purchases}'),
+              _InfoRow(
+                  'تم استرجاع المبيعات', '${restoreResult!.counts!.sales}'),
+              _InfoRow(
+                'تم استرجاع سجل المستندات',
+                '${restoreResult!.counts!.documentHistory}',
+              ),
+              for (final warning in restoreResult!.warnings) ...[
+                const SizedBox(height: 6),
+                Text(warning),
+              ],
+            ],
+          ],
+        ],
+      ),
+    );
   }
 }
 

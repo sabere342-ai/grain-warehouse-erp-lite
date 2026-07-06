@@ -114,6 +114,14 @@ class LocalInventoryRepository implements InventoryRepository {
     return Map<String, int>.unmodifiable(balances);
   }
 
+  Future<void> restoreMovementsIntoEmpty(List<StockMovement> movements) async {
+    if (_movements.isNotEmpty) {
+      throw StateError('Inventory repository is not empty.');
+    }
+    _validateUniqueRestoredMovements(movements);
+    _movements.addAll(movements);
+  }
+
   Future<Product> _validateDraftAndLoadProduct(StockMovementDraft draft) async {
     if (draft.productId.trim().isEmpty) {
       throw ArgumentError.value(
@@ -143,6 +151,23 @@ class LocalInventoryRepository implements InventoryRepository {
     }
 
     return product;
+  }
+
+  void _validateUniqueRestoredMovements(List<StockMovement> movements) {
+    final ids = <String>{};
+    for (final movement in movements) {
+      if (!movement.hasValidId) {
+        throw StateError('Movement id is required.');
+      }
+      if (!ids.add(movement.id)) {
+        throw StateError('Duplicate movement id.');
+      }
+      if (movement.productId.trim().isEmpty ||
+          movement.createdByUserId.trim().isEmpty ||
+          movement.quantityKg <= 0) {
+        throw StateError('Invalid movement data.');
+      }
+    }
   }
 
   Future<Product?> _findProductById(String productId) async {

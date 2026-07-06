@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -47,6 +48,15 @@ class AppRepositories {
   );
 
   static BackupExportService get backupExportService => BackupExportService(
+        productRepository: productRepository,
+        inventoryRepository: inventoryRepository,
+        supplierRepository: supplierRepository,
+        purchaseRepository: purchaseRepository,
+        saleRepository: saleRepository,
+        documentHistoryRepository: documentHistoryRepository,
+      );
+
+  static BackupRestoreService get backupRestoreService => BackupRestoreService(
         productRepository: productRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,

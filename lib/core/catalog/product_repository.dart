@@ -96,6 +96,14 @@ class LocalProductRepository implements ProductRepository {
     return updated;
   }
 
+  Future<void> restoreProductsIntoEmpty(List<Product> products) async {
+    if (_products.isNotEmpty) {
+      throw StateError('Products repository is not empty.');
+    }
+    _validateUniqueRestoredProducts(products);
+    _products.addAll(products);
+  }
+
   void _validateDraft(ProductDraft draft) {
     if (draft.name.trim().isEmpty) {
       throw ArgumentError.value(
@@ -157,6 +165,27 @@ class LocalProductRepository implements ProductRepository {
     );
     if (duplicate) {
       throw StateError('Duplicate product code.');
+    }
+  }
+
+  void _validateUniqueRestoredProducts(List<Product> products) {
+    final ids = <String>{};
+    final names = <String>{};
+    final codes = <String>{};
+    for (final product in products) {
+      if (!product.hasValidId) {
+        throw StateError('Product id is required.');
+      }
+      if (!ids.add(product.id)) {
+        throw StateError('Duplicate product id.');
+      }
+      if (!names.add(_normalizedKey(product.name))) {
+        throw StateError('Duplicate product name.');
+      }
+      final code = product.code;
+      if (code != null && !codes.add(_normalizedKey(code))) {
+        throw StateError('Duplicate product code.');
+      }
     }
   }
 

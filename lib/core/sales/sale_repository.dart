@@ -144,6 +144,14 @@ class LocalSaleRepository implements SaleRepository {
     return List<SaleRecord>.unmodifiable(_sales);
   }
 
+  Future<void> restoreSalesIntoEmpty(List<SaleRecord> sales) async {
+    if (_sales.isNotEmpty) {
+      throw StateError('Sales repository is not empty.');
+    }
+    _validateUniqueRestoredSales(sales);
+    _sales.addAll(sales);
+  }
+
   Future<Product> _validateProduct(String productId) async {
     if (productId.trim().isEmpty) {
       throw ArgumentError.value(
@@ -189,6 +197,23 @@ class LocalSaleRepository implements SaleRepository {
         'salePriceQirshPerKg',
         'Sale price must be positive.',
       );
+    }
+  }
+
+  void _validateUniqueRestoredSales(List<SaleRecord> sales) {
+    final ids = <String>{};
+    for (final sale in sales) {
+      if (!sale.hasValidId || !ids.add(sale.id)) {
+        throw StateError('Invalid sale id.');
+      }
+      if (sale.productId.trim().isEmpty ||
+          sale.quantityKg <= 0 ||
+          sale.salePriceQirshPerKg <= 0 ||
+          sale.totalQirsh <= 0 ||
+          sale.createdByUserId.trim().isEmpty ||
+          sale.stockMovementId.trim().isEmpty) {
+        throw StateError('Invalid sale data.');
+      }
     }
   }
 

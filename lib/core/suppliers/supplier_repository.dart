@@ -96,6 +96,14 @@ class LocalSupplierRepository implements SupplierRepository {
     return updated;
   }
 
+  Future<void> restoreSuppliersIntoEmpty(List<Supplier> suppliers) async {
+    if (_suppliers.isNotEmpty) {
+      throw StateError('Suppliers repository is not empty.');
+    }
+    _validateUniqueRestoredSuppliers(suppliers);
+    _suppliers.addAll(suppliers);
+  }
+
   void _validateDraft(SupplierDraft draft) {
     if (draft.name.trim().isEmpty) {
       throw ArgumentError.value(
@@ -135,8 +143,30 @@ class LocalSupplierRepository implements SupplierRepository {
     }
   }
 
+  void _validateUniqueRestoredSuppliers(List<Supplier> suppliers) {
+    final ids = <String>{};
+    final names = <String>{};
+    final phones = <String>{};
+    for (final supplier in suppliers) {
+      if (!supplier.hasValidId) {
+        throw StateError('Supplier id is required.');
+      }
+      if (!ids.add(supplier.id)) {
+        throw StateError('Duplicate supplier id.');
+      }
+      if (!names.add(_normalizedKey(supplier.name))) {
+        throw StateError('Duplicate supplier name.');
+      }
+      final phone = supplier.phone;
+      if (phone != null && !phones.add(_normalizedKey(phone))) {
+        throw StateError('Duplicate supplier phone.');
+      }
+    }
+  }
+
   int _indexById(String supplierId) {
-    final index = _suppliers.indexWhere((supplier) => supplier.id == supplierId);
+    final index =
+        _suppliers.indexWhere((supplier) => supplier.id == supplierId);
     if (index == -1) {
       throw StateError('Supplier was not found.');
     }

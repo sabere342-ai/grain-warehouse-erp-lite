@@ -152,6 +152,16 @@ class LocalPurchaseRepository implements PurchaseRepository {
     return List<PurchaseIntake>.unmodifiable(_intakes);
   }
 
+  Future<void> restorePurchaseIntakesIntoEmpty(
+    List<PurchaseIntake> intakes,
+  ) async {
+    if (_intakes.isNotEmpty) {
+      throw StateError('Purchase repository is not empty.');
+    }
+    _validateUniqueRestoredIntakes(intakes);
+    _intakes.addAll(intakes);
+  }
+
   Future<Supplier> _validateSupplier(String supplierId) async {
     if (supplierId.trim().isEmpty) {
       throw ArgumentError.value(
@@ -221,6 +231,24 @@ class LocalPurchaseRepository implements PurchaseRepository {
         'unitPricePiastersPerKg',
         'Unit price must be positive.',
       );
+    }
+  }
+
+  void _validateUniqueRestoredIntakes(List<PurchaseIntake> intakes) {
+    final ids = <String>{};
+    for (final intake in intakes) {
+      if (!intake.hasValidId || !ids.add(intake.id)) {
+        throw StateError('Invalid purchase intake id.');
+      }
+      if (intake.supplierId.trim().isEmpty ||
+          intake.productId.trim().isEmpty ||
+          intake.quantityKg <= 0 ||
+          intake.unitPricePiastersPerKg <= 0 ||
+          intake.totalAmountPiasters <= 0 ||
+          intake.createdByUserId.trim().isEmpty ||
+          intake.stockMovementId.trim().isEmpty) {
+        throw StateError('Invalid purchase intake data.');
+      }
     }
   }
 
