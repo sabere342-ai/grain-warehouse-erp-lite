@@ -176,6 +176,12 @@ class _ReportBody extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
+        _SummaryGrid(report: report),
+        if (report.hasIncompleteCostData) ...[
+          const SizedBox(height: 12),
+          _CostWarningCard(report: report),
+        ],
+        const SizedBox(height: 12),
         _Section(
           title: 'المشتريات',
           children: [
@@ -203,6 +209,10 @@ class _ReportBody extends StatelessWidget {
                 report.totalSalesAmountQirsh,
               ),
             ),
+            _MetricLine(
+              'تكلفة المبيعات التقديرية',
+              _formatOptionalMoney(report.estimatedSalesCostQirsh),
+            ),
             _MetricLine('عدد عمليات البيع', '${report.saleCount}'),
           ],
         ),
@@ -210,6 +220,10 @@ class _ReportBody extends StatelessWidget {
         _Section(
           title: 'المخزون الحالي',
           children: [
+            _MetricLine(
+              'قيمة المخزون التقديرية',
+              _formatOptionalMoney(report.estimatedStockValueQirsh),
+            ),
             if (report.stockBalances.isEmpty)
               const Text('لا توجد أصناف.')
             else
@@ -248,6 +262,208 @@ class _ReportBody extends StatelessWidget {
 
   String _twoDigits(int value) {
     return value.toString().padLeft(2, '0');
+  }
+
+  String _formatOptionalMoney(int? value) {
+    if (value == null) {
+      return 'غير مكتمل';
+    }
+
+    return MoneyUtils.formatPiastersAsEgp(value);
+  }
+}
+
+class _SummaryGrid extends StatelessWidget {
+  const _SummaryGrid({required this.report});
+
+  final DailyActivityReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 980
+            ? 3
+            : width >= 640
+                ? 2
+                : 1;
+        final itemWidth = (width - ((columns - 1) * 12)) / columns;
+
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي المبيعات',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalSalesAmountQirsh,
+              ),
+              caption: 'قيمة مؤكدة',
+              icon: Icons.point_of_sale_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي المشتريات',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalPurchaseAmountQirsh,
+              ),
+              caption: 'قيمة مؤكدة',
+              icon: Icons.local_shipping_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'المصروفات',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalExpenseAmountQirsh,
+              ),
+              caption: 'لا يوجد سجل مصروفات حاليا',
+              icon: Icons.receipt_long_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'صافي الحركة',
+              value: MoneyUtils.formatPiastersAsEgp(report.netMovementQirsh),
+              caption: 'مبيعات ناقص مشتريات',
+              icon: Icons.swap_vert_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'الربح التقديري',
+              value: _formatOptionalMoney(report.estimatedGrossProfitQirsh),
+              caption: report.hasCompleteSalesCost
+                  ? 'مبيعات ناقص تكلفة مرجعية'
+                  : 'غير مكتمل',
+              icon: Icons.trending_up_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'قيمة المخزون التقديرية',
+              value: _formatOptionalMoney(report.estimatedStockValueQirsh),
+              caption: report.hasCompleteStockValuation
+                  ? 'بسعر التكلفة المرجعية'
+                  : 'غير مكتملة',
+              icon: Icons.inventory_2_rounded,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatOptionalMoney(int? value) {
+    if (value == null) {
+      return 'غير مكتمل';
+    }
+
+    return MoneyUtils.formatPiastersAsEgp(value);
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.width,
+    required this.title,
+    required this.value,
+    required this.caption,
+    required this.icon,
+  });
+
+  final double width;
+  final String title;
+  final String value;
+  final String caption;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return SizedBox(
+      width: width,
+      child: PremiumCard(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: AppColors.olive),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  Text(
+                    value,
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    caption,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.mutedText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CostWarningCard extends StatelessWidget {
+  const _CostWarningCard({required this.report});
+
+  final DailyActivityReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final missing = {
+      ...report.missingSalesCostProductNames,
+      ...report.missingStockCostProductNames,
+    }.toList();
+
+    return PremiumCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'تنبيه نقص التكلفة المرجعية',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'تقدير الربح غير مكتمل لأن بعض الأصناف لا تحتوي على تكلفة مرجعية.',
+                ),
+                if (missing.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text('الأصناف: ${missing.join('، ')}'),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -202,7 +202,7 @@ class _ProductCard extends StatelessWidget {
               ),
               _InfoText(
                 'سعر التكلفة',
-                _formatOptionalPrice(product.referenceCostPricePiastersPerKg),
+                _formatReferenceCost(product.referenceCostPricePiastersPerKg),
               ),
             ],
           ),
@@ -240,6 +240,14 @@ class _ProductCard extends StatelessWidget {
   String _formatOptionalPrice(int? price) {
     if (price == null) {
       return 'غير محدد';
+    }
+
+    return '${MoneyUtils.formatPiastersAsEgp(price)} / كجم';
+  }
+
+  String _formatReferenceCost(int? price) {
+    if (price == null) {
+      return 'بدون تكلفة مرجعية';
     }
 
     return '${MoneyUtils.formatPiastersAsEgp(price)} / كجم';

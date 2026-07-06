@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
@@ -179,16 +177,26 @@ void main() {
       expect(report.saleCount, 1);
     });
 
-    test('report does not calculate profit', () async {
-      final reportSource =
-          await _readSource('lib/core/reports/daily_activity_report.dart');
-      final repositorySource =
-          await _readSource('lib/core/reports/report_repository.dart');
+    test('report calculates estimated profit when reference cost is complete',
+        () async {
+      final repository = _reportRepository(
+        products: [_productWithCost],
+        sales: [
+          _sale('s1', quantityKg: 250, total: 200000, createdAt: _midday),
+        ],
+        balances: {_product.id: 750},
+      );
 
-      expect(reportSource, isNot(contains('profit')));
-      expect(repositorySource, isNot(contains('profit')));
-      expect(repositorySource, isNot(contains('averageCost')));
-      expect(repositorySource, isNot(contains('valuation')));
+      final report = await repository.dailyActivityReport(
+        selectedDate: _reportDay,
+      );
+
+      expect(report.totalSalesAmountQirsh, 200000);
+      expect(report.estimatedSalesCostQirsh, 175000);
+      expect(report.estimatedGrossProfitQirsh, 25000);
+      expect(report.estimatedStockValueQirsh, 525000);
+      expect(report.hasCompleteSalesCost, isTrue);
+      expect(report.hasCompleteStockValuation, isTrue);
     });
 
     test('authorized user can view reports', () async {
@@ -280,6 +288,7 @@ void main() {
 }
 
 LocalReportRepository _reportRepository({
+  List<Product>? products,
   List<PurchaseIntake> purchases = const [],
   List<SaleRecord> sales = const [],
   List<StockMovement> movements = const [],
@@ -292,7 +301,7 @@ LocalReportRepository _reportRepository({
       movements: movements,
       balances: balances,
     ),
-    productRepository: _FakeProductRepository([_product]),
+    productRepository: _FakeProductRepository(products ?? [_product]),
   );
 }
 
@@ -392,10 +401,6 @@ Future<AuthController> _signedInController({
   await controller.initialize();
   await controller.signIn(phone: phone, password: password);
   return controller;
-}
-
-Future<String> _readSource(String path) async {
-  return File(path).readAsString();
 }
 
 class _FakePurchaseRepository implements PurchaseRepository {
@@ -540,6 +545,16 @@ final _product = Product(
   name: 'قمح',
   unit: GrainUnit.kilogram,
   isActive: true,
+  createdAt: _now,
+  updatedAt: _now,
+);
+
+final _productWithCost = Product(
+  id: 'product-id',
+  name: 'قمح',
+  unit: GrainUnit.kilogram,
+  isActive: true,
+  referenceCostPricePiastersPerKg: 700,
   createdAt: _now,
   updatedAt: _now,
 );

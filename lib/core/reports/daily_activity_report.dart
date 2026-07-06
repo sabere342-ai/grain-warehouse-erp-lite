@@ -8,6 +8,14 @@ class DailyActivityReport {
     required this.totalSoldKg,
     required this.totalPurchaseAmountQirsh,
     required this.totalSalesAmountQirsh,
+    required this.totalExpenseAmountQirsh,
+    required this.estimatedSalesCostQirsh,
+    required this.estimatedGrossProfitQirsh,
+    required this.estimatedStockValueQirsh,
+    required this.hasCompleteSalesCost,
+    required this.hasCompleteStockValuation,
+    required this.missingSalesCostProductNames,
+    required this.missingStockCostProductNames,
     required this.purchaseCount,
     required this.saleCount,
     required this.stockMovementCount,
@@ -21,11 +29,29 @@ class DailyActivityReport {
   final int totalSoldKg;
   final int totalPurchaseAmountQirsh;
   final int totalSalesAmountQirsh;
+  final int totalExpenseAmountQirsh;
+  final int? estimatedSalesCostQirsh;
+  final int? estimatedGrossProfitQirsh;
+  final int? estimatedStockValueQirsh;
+  final bool hasCompleteSalesCost;
+  final bool hasCompleteStockValuation;
+  final List<String> missingSalesCostProductNames;
+  final List<String> missingStockCostProductNames;
   final int purchaseCount;
   final int saleCount;
   final int stockMovementCount;
   final List<ProductStockBalance> stockBalances;
   final List<ReportStockMovement> recentMovements;
+
+  int get netMovementQirsh {
+    return totalSalesAmountQirsh -
+        totalPurchaseAmountQirsh -
+        totalExpenseAmountQirsh;
+  }
+
+  bool get hasIncompleteCostData {
+    return !hasCompleteSalesCost || !hasCompleteStockValuation;
+  }
 }
 
 class ProductStockBalance {

@@ -1,6 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/reports/business_summary_calculator.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
@@ -55,6 +56,12 @@ class LocalReportRepository implements ReportRepository {
         .toList(growable: false);
 
     final balances = await _inventoryRepository.allProductBalancesKg();
+    final summary = BusinessSummaryCalculator.calculate(
+      products: products,
+      purchases: purchases,
+      sales: sales,
+      stockBalancesKg: balances,
+    );
     final stockBalances = [
       for (final product in products)
         ProductStockBalance(
@@ -97,6 +104,14 @@ class LocalReportRepository implements ReportRepository {
         0,
         (total, sale) => total + sale.totalQirsh,
       ),
+      totalExpenseAmountQirsh: summary.totalExpenseAmountQirsh,
+      estimatedSalesCostQirsh: summary.estimatedSalesCostQirsh,
+      estimatedGrossProfitQirsh: summary.estimatedGrossProfitQirsh,
+      estimatedStockValueQirsh: summary.estimatedStockValueQirsh,
+      hasCompleteSalesCost: summary.hasCompleteSalesCost,
+      hasCompleteStockValuation: summary.hasCompleteStockValuation,
+      missingSalesCostProductNames: summary.missingSalesCostProductNames,
+      missingStockCostProductNames: summary.missingStockCostProductNames,
       purchaseCount: purchases.length,
       saleCount: sales.length,
       stockMovementCount: movements.length,
