@@ -95,3 +95,16 @@ git status --short
 - Do not change business logic without a dedicated fix phase.
 - Require backup before any troubleshooting.
 - Keep generated build/delivery files ignored.
+
+## Phase 28 customer trial continuation
+- Current tag after this phase: `phase-28-customer-trial-continuation`.
+- Purpose: continue observation and decide whether first delivery confirmation is possible.
+- New docs:
+  - `docs/PHASE-28-CUSTOMER-TRIAL-CONTINUATION-REPORT.md`
+  - `docs/CUSTOMER-TRIAL-OBSERVATION-SUMMARY-AR.md`
+  - `docs/FIRST-CUSTOMER-DELIVERY-CONFIRMATION-CHECKLIST-AR.md`
+- Do not start feature work without real trial evidence.
+- Do not fix unverified issues.
+- Do not mix feature requests with bugs.
+- Require backup before troubleshooting.
+- Keep build/delivery generated outputs ignored.
