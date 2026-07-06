@@ -152,6 +152,11 @@ class LocalSaleRepository implements SaleRepository {
     _sales.addAll(sales);
   }
 
+  Future<void> clearForOwnerDataWipe() async {
+    _sales.clear();
+    _generatedIdCounter = 0;
+  }
+
   Future<Product> _validateProduct(String productId) async {
     if (productId.trim().isEmpty) {
       throw ArgumentError.value(

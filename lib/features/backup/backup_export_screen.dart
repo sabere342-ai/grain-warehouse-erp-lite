@@ -4,15 +4,23 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
-  const BackupExportScreen({super.key, this.service, this.fileWriter});
+  const BackupExportScreen({
+    super.key,
+    this.service,
+    this.fileWriter,
+    this.wipeService,
+  });
 
   final BackupExportService? service;
   final BackupFileWriter? fileWriter;
+  final BusinessDataWipeService? wipeService;
 
   @override
   State<BackupExportScreen> createState() => _BackupExportScreenState();
@@ -90,6 +98,10 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
             isSaving: _isSaving,
           ),
         ],
+        if (user?.permissions.canWipeBusinessData == true) ...[
+          const SizedBox(height: 16),
+          _DangerActionsCard(onOpenDataWipe: _openDataWipe),
+        ],
       ],
     );
   }
@@ -98,6 +110,14 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const BackupRestorePreviewScreen(),
+      ),
+    );
+  }
+
+  void _openDataWipe() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DataWipeScreen(service: widget.wipeService),
       ),
     );
   }
@@ -236,6 +256,43 @@ class _SafetyCopyCard extends StatelessWidget {
           SizedBox(height: 8),
           Text(
             'لا تشارك النسخة لأنها تحتوي على بيانات المخزون والمشتريات والمبيعات.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DangerActionsCard extends StatelessWidget {
+  const _DangerActionsCard({required this.onOpenDataWipe});
+
+  final VoidCallback onOpenDataWipe;
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '\u0625\u062c\u0631\u0627\u0621\u0627\u062a \u062e\u0637\u064a\u0631\u0629 \u0644\u0644\u0645\u0627\u0644\u0643 \u0641\u0642\u0637',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+          ),
+          const SizedBox(height: 8),
+          const Text('\u0625\u062c\u0631\u0627\u0621 \u062e\u0637\u064a\u0631'),
+          const SizedBox(height: 8),
+          const Text(
+            '\u0627\u0633\u062a\u062e\u062f\u0645 \u0647\u0630\u0627 \u0627\u0644\u0625\u062c\u0631\u0627\u0621 \u0641\u0642\u0637 \u0639\u0646\u062f \u0627\u0644\u062d\u0627\u062c\u0629 \u0644\u0628\u062f\u0621 \u0627\u0644\u0646\u0638\u0627\u0645 \u0645\u0646 \u062c\u062f\u064a\u062f \u0623\u0648 \u062d\u0630\u0641 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u062c\u0631\u0628\u0629. \u0633\u064a\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0646\u0633\u062e\u0629 \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0623\u0648\u0644\u0627 \u0642\u0628\u0644 \u0623\u064a \u0645\u0633\u062d.',
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onOpenDataWipe,
+            icon: const Icon(Icons.delete_forever_rounded),
+            label: const Text(
+              '\u0645\u0633\u062d \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0634\u063a\u064a\u0644',
+            ),
           ),
         ],
       ),

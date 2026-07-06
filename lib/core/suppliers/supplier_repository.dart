@@ -104,6 +104,11 @@ class LocalSupplierRepository implements SupplierRepository {
     _suppliers.addAll(suppliers);
   }
 
+  Future<void> clearForOwnerDataWipe() async {
+    _suppliers.clear();
+    _generatedIdCounter = 0;
+  }
+
   void _validateDraft(SupplierDraft draft) {
     if (draft.name.trim().isEmpty) {
       throw ArgumentError.value(

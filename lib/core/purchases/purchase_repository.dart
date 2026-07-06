@@ -162,6 +162,11 @@ class LocalPurchaseRepository implements PurchaseRepository {
     _intakes.addAll(intakes);
   }
 
+  Future<void> clearForOwnerDataWipe() async {
+    _intakes.clear();
+    _generatedIdCounter = 0;
+  }
+
   Future<Supplier> _validateSupplier(String supplierId) async {
     if (supplierId.trim().isEmpty) {
       throw ArgumentError.value(

@@ -104,6 +104,11 @@ class LocalProductRepository implements ProductRepository {
     _products.addAll(products);
   }
 
+  Future<void> clearForOwnerDataWipe() async {
+    _products.clear();
+    _generatedIdCounter = 0;
+  }
+
   void _validateDraft(ProductDraft draft) {
     if (draft.name.trim().isEmpty) {
       throw ArgumentError.value(

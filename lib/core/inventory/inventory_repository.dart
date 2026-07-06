@@ -122,6 +122,11 @@ class LocalInventoryRepository implements InventoryRepository {
     _movements.addAll(movements);
   }
 
+  Future<void> clearForOwnerDataWipe() async {
+    _movements.clear();
+    _generatedIdCounter = 0;
+  }
+
   Future<Product> _validateDraftAndLoadProduct(StockMovementDraft draft) async {
     if (draft.productId.trim().isEmpty) {
       throw ArgumentError.value(
