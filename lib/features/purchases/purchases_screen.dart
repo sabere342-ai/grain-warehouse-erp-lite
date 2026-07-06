@@ -80,7 +80,9 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       Text('استلامات الشراء', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'تسجيل كميات شراء الحبوب وزيادة المخزون بالحركات فقط.',
+                        canCreate
+                            ? 'استلام الحبوب من الموردين وزيادة المخزون بحركة مرحلة. الإلغاء للمالك فقط.'
+                            : 'عرض استلامات الشراء فقط. تسجيل الاستلام وإلغاء المستندات للمالك.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -100,7 +102,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         ? () => _showPurchaseForm(context, user: user)
                         : null,
                     icon: const Icon(Icons.add_business_rounded),
-                    label: const Text('إضافة استلام شراء'),
+                    label: const Text('تسجيل استلام حبوب'),
                   ),
               ],
             ),
@@ -119,7 +121,9 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
               const Center(child: CircularProgressIndicator())
             else if (_controller.intakes.isEmpty)
               const PremiumCard(
-                child: Text('لا توجد استلامات شراء مسجلة بعد.'),
+                child: Text(
+                  'لا توجد استلامات شراء مسجلة بعد. ستظهر هنا مستندات استلام الحبوب من الموردين.',
+                ),
               )
             else
               ..._controller.intakes.reversed.map(
@@ -189,7 +193,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'تحذير: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا المستند. لن يتم حذف المستند الأصلي أو حركة المخزون الأصلية.',
+              'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا الاستلام. لن يتم حذف المستند الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
             ),
             const SizedBox(height: 12),
             TextField(
@@ -289,7 +293,7 @@ class _PurchaseIntakeCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onCancel,
                 icon: const Icon(Icons.cancel_outlined),
-                label: const Text('إلغاء المستند'),
+                label: const Text('إلغاء مستند الاستلام'),
               ),
             ),
           ],
@@ -343,7 +347,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('إضافة استلام شراء'),
+      title: const Text('تسجيل استلام حبوب'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -388,7 +392,10 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
                   child: TextField(
                     controller: _quantityController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'الكمية'),
+                    decoration: const InputDecoration(
+                      labelText: 'الكمية',
+                      helperText: 'اكتب الكمية حسب الوحدة المختارة.',
+                    ),
                     textDirection: TextDirection.ltr,
                   ),
                 ),
@@ -423,13 +430,17 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'سعر الكيلو قرش/كجم',
+                helperText: 'سعر شراء كيلو الحبوب بالقرش.',
               ),
               textDirection: TextDirection.ltr,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+              decoration: const InputDecoration(
+                labelText: 'ملاحظات اختيارية',
+                helperText: 'مثال: رقم النقلة أو اسم السائق.',
+              ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),
@@ -450,7 +461,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('حفظ'),
+          child: const Text('حفظ الاستلام'),
         ),
       ],
     );
@@ -460,11 +471,12 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
     final quantity = int.tryParse(_quantityController.text.trim());
     final unitPrice = int.tryParse(_unitPriceController.text.trim());
     if (quantity == null || quantity <= 0) {
-      setState(() => _errorMessage = 'ادخل كمية صحيحة موجبة.');
+      setState(() =>
+          _errorMessage = 'اكتب كمية الاستلام، ويجب أن تكون أكبر من صفر.');
       return;
     }
     if (unitPrice == null || unitPrice <= 0) {
-      setState(() => _errorMessage = 'ادخل سعر كيلو صحيح موجب.');
+      setState(() => _errorMessage = 'اكتب سعر كيلو صحيح بالقرش.');
       return;
     }
 

@@ -72,7 +72,9 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
             Text('سجل المستندات', style: textTheme.headlineMedium),
             const SizedBox(height: 6),
             Text(
-              'بحث ومراجعة مستندات الشراء والبيع المرحلة وحالة الإلغاء.',
+              _controller.canViewOwnerAudit
+                  ? 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء وتفاصيل التدقيق.'
+                  : 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء. تفاصيل التدقيق للمالك فقط.',
               style: textTheme.bodyMedium?.copyWith(
                 color: AppColors.mutedText,
               ),
@@ -97,7 +99,9 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
               const Center(child: CircularProgressIndicator())
             else if (_controller.entries.isEmpty)
               const PremiumCard(
-                child: Text('لا توجد مستندات مطابقة للفلاتر الحالية.'),
+                child: Text(
+                  'لا توجد نتائج في سجل المستندات. غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
+                ),
               )
             else
               ..._controller.entries.map(

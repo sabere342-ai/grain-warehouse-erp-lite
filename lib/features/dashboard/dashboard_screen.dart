@@ -11,7 +11,12 @@ class DashboardScreen extends StatelessWidget {
 
     return ListView(
       children: [
-        Text('لوحة المتابعة', style: textTheme.headlineMedium),
+        Text('لوحة متابعة المخزن', style: textTheme.headlineMedium),
+        const SizedBox(height: 6),
+        Text(
+          'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+        ),
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -37,7 +42,7 @@ class DashboardScreen extends StatelessWidget {
         const SizedBox(height: 16),
         const PremiumCard(
           child: Text(
-            'مرحلة تأسيس الواجهة فقط: لا توجد مبيعات أو مشتريات أو قيود مالية أو حركات مخزون منفذة بعد.',
+            'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
           ),
         ),
       ],

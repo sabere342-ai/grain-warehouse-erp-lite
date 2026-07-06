@@ -64,10 +64,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('التقارير', style: textTheme.headlineMedium),
+                      Text('تقارير حركة المخزن',
+                          style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'تقرير النشاط اليومي',
+                        'ملخص يومي للمشتريات والمبيعات وحركات مخزون الحبوب.',
                         style: textTheme.titleMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -113,7 +114,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
             if (_controller.isLoading)
               const Center(child: CircularProgressIndicator())
             else if (report == null)
-              const PremiumCard(child: Text('لا يوجد تقرير متاح.'))
+              const PremiumCard(
+                child: Text('اختر تاريخا لعرض تقرير حركة المخزن.'),
+              )
             else
               _ReportBody(report: report),
           ],
@@ -158,9 +161,21 @@ class _ReportBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasNoActivity = report.purchaseCount == 0 &&
+        report.saleCount == 0 &&
+        report.stockMovementCount == 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (hasNoActivity) ...[
+          const PremiumCard(
+            child: Text(
+              'لا توجد حركة في التاريخ المحدد. لا توجد مشتريات أو مبيعات أو حركات مخزون لهذا اليوم.',
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         _Section(
           title: 'المشتريات',
           children: [

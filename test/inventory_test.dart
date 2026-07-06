@@ -362,11 +362,13 @@ void main() {
     });
 
     test('product model has no direct stock or balance field', () {
-      final productSource = File('lib/core/catalog/product.dart').readAsStringSync();
+      final productSource =
+          File('lib/core/catalog/product.dart').readAsStringSync();
 
       expect(
         productSource,
-        isNot(matches(RegExp(r'\b(currentStock|stockKg|balanceKg|quantityKg)\b'))),
+        isNot(matches(
+            RegExp(r'\b(currentStock|stockKg|balanceKg|quantityKg)\b'))),
       );
     });
 
@@ -413,7 +415,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة حركة'), findsOneWidget);
+      expect(find.text('إضافة حركة مخزون'), findsOneWidget);
     });
 
     testWidgets('inventory UI hides adjustment actions for employee',
@@ -429,8 +431,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة حركة'), findsNothing);
-      expect(find.text('الأرصدة محسوبة من حركات المخزون فقط.'), findsOneWidget);
+      expect(find.text('إضافة حركة مخزون'), findsNothing);
+      expect(
+        find.text('الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('inventory UI hides opening balance after one exists',
@@ -448,16 +453,18 @@ void main() {
         _inventoryHarness(auth: auth, controller: fixture.controller),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إضافة حركة'));
+      await tester.tap(find.text('إضافة حركة مخزون'));
       await tester.pumpAndSettle();
 
       expect(find.text(StockMovementType.openingBalance.labelAr), findsNothing);
-      expect(find.text(StockMovementType.manualIncrease.labelAr), findsOneWidget);
+      expect(
+          find.text(StockMovementType.manualIncrease.labelAr), findsOneWidget);
       await tester.tap(find.text(StockMovementType.manualIncrease.labelAr));
       await tester.pumpAndSettle();
 
       expect(find.text(StockMovementType.openingBalance.labelAr), findsNothing);
-      expect(find.text(StockMovementType.manualDecrease.labelAr), findsOneWidget);
+      expect(
+          find.text(StockMovementType.manualDecrease.labelAr), findsOneWidget);
     });
   });
 }

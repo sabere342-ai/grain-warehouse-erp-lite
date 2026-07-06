@@ -68,8 +68,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       const SizedBox(height: 6),
                       Text(
                         canManage
-                            ? 'إدارة أصناف الحبوب وأسعارها الافتراضية.'
-                            : 'عرض الأصناف النشطة فقط.',
+                            ? 'إدارة أصناف الحبوب وأسعار البيع الإرشادية للكيلو.'
+                            : 'عرض الأصناف النشطة فقط. إضافة وتعديل الأصناف للمالك فقط.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -81,7 +81,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   FilledButton.icon(
                     onPressed: () => _showProductForm(context, user: user),
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('إضافة صنف'),
+                    label: const Text('إضافة صنف حبوب'),
                   ),
               ],
             ),
@@ -100,7 +100,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
               const Center(child: CircularProgressIndicator())
             else if (_controller.products.isEmpty)
               const PremiumCard(
-                child: Text('لا توجد أصناف مسجلة بعد.'),
+                child: Text(
+                  'لا توجد أصناف حبوب مسجلة بعد. أضف صنفا مثل قمح أو ذرة قبل تسجيل المخزون.',
+                ),
               )
             else
               ..._controller.products.map(
@@ -313,14 +315,17 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.product == null ? 'إضافة صنف' : 'تعديل صنف'),
+      title: Text(widget.product == null ? 'إضافة صنف حبوب' : 'تعديل صنف حبوب'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'اسم الصنف'),
+              decoration: const InputDecoration(
+                labelText: 'اسم الصنف',
+                helperText: 'مثال: قمح محلي أو ذرة صفراء',
+              ),
               textDirection: TextDirection.rtl,
             ),
             const SizedBox(height: 12),
@@ -355,6 +360,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'السعر الافتراضي قرش/كجم اختياري',
+                helperText: 'اتركه فارغا إذا لم يوجد سعر ثابت.',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -364,6 +370,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'الحد الأدنى قرش/كجم اختياري',
+                helperText: 'تنبيه للمالك عند البيع بسعر أقل.',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -404,17 +411,23 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         _parseOptionalPositiveInt(_minimumPriceController.text);
 
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'ادخل اسم الصنف.');
+      setState(() => _errorMessage = 'اكتب اسم صنف الحبوب أولا.');
       return;
     }
     if (defaultPrice == -1 || minimumPrice == -1) {
-      setState(() => _errorMessage = 'الأسعار يجب أن تكون أرقاما صحيحة موجبة.');
+      setState(
+        () => _errorMessage =
+            'اكتب السعر بالأرقام فقط، ويجب أن يكون أكبر من صفر.',
+      );
       return;
     }
     if (defaultPrice != null &&
         minimumPrice != null &&
         minimumPrice > defaultPrice) {
-      setState(() => _errorMessage = 'الحد الأدنى لا يزيد عن السعر الافتراضي.');
+      setState(
+        () => _errorMessage =
+            'الحد الأدنى للبيع لا يمكن أن يزيد عن السعر الافتراضي.',
+      );
       return;
     }
 

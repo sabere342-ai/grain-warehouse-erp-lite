@@ -242,8 +242,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('التقارير'), findsOneWidget);
-      expect(find.text('تقرير النشاط اليومي'), findsOneWidget);
+      expect(find.text('تقارير حركة المخزن'), findsOneWidget);
+      expect(
+        find.text('ملخص يومي للمشتريات والمبيعات وحركات مخزون الحبوب.'),
+        findsOneWidget,
+      );
       expect(find.text('اختيار التاريخ'), findsOneWidget);
       expect(find.text('عرض التقرير'), findsOneWidget);
       expect(find.text('المشتريات'), findsOneWidget);

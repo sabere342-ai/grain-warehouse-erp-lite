@@ -276,7 +276,7 @@ void main() {
         _salesHarness(auth: ownerAuth, controller: ownerFixture.controller),
       );
       await tester.pumpAndSettle();
-      expect(find.text('تسجيل بيع'), findsOneWidget);
+      expect(find.text('تسجيل بيع حبوب'), findsOneWidget);
 
       final employeeAuth = await _signedInController(
         phone: '01100000000',
@@ -291,7 +291,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('تسجيل بيع'), findsOneWidget);
+      expect(find.text('تسجيل بيع حبوب'), findsOneWidget);
     });
 
     testWidgets('sales form shows required Arabic labels', (tester) async {
@@ -303,7 +303,7 @@ void main() {
         _salesHarness(auth: auth, controller: fixture.controller),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تسجيل بيع'));
+      await tester.tap(find.text('تسجيل بيع حبوب'));
       await tester.pumpAndSettle();
 
       expect(find.text('الصنف'), findsOneWidget);
@@ -325,7 +325,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إلغاء المستند'), findsOneWidget);
+      expect(find.text('إلغاء مستند البيع'), findsOneWidget);
     });
   });
 }

@@ -567,7 +567,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة استلام شراء'), findsOneWidget);
+      expect(find.text('تسجيل استلام حبوب'), findsOneWidget);
     });
 
     testWidgets('purchase intake create action hidden for employee',
@@ -583,7 +583,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة استلام شراء'), findsNothing);
+      expect(find.text('تسجيل استلام حبوب'), findsNothing);
     });
 
     testWidgets('purchase UI labels price as piasters per kg', (tester) async {
@@ -595,7 +595,7 @@ void main() {
         _purchaseHarness(auth: auth, controller: fixture.purchaseController),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إضافة استلام شراء'));
+      await tester.tap(find.text('تسجيل استلام حبوب'));
       await tester.pumpAndSettle();
 
       expect(find.text('سعر الكيلو قرش/كجم'), findsOneWidget);
@@ -615,7 +615,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('إلغاء المستند'), findsOneWidget);
+      expect(find.text('إلغاء مستند الاستلام'), findsOneWidget);
     });
   });
 }

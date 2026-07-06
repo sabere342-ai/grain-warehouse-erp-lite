@@ -73,7 +73,9 @@ class _SalesScreenState extends State<SalesScreen> {
                       Text('المبيعات', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'تسجيل بيع كميات الحبوب وخفض المخزون بالحركات فقط.',
+                        canCancel
+                            ? 'تسجيل بيع الحبوب وخفض المخزون بحركة مرحلة. الإلغاء للمالك فقط وينشئ حركة عكسية.'
+                            : 'تسجيل بيع الحبوب فقط. إلغاء المستندات ومراجعة التدقيق للمالك.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -93,7 +95,7 @@ class _SalesScreenState extends State<SalesScreen> {
                         ? null
                         : () => _showSaleForm(context, user: user),
                     icon: const Icon(Icons.point_of_sale_rounded),
-                    label: const Text('تسجيل بيع'),
+                    label: const Text('تسجيل بيع حبوب'),
                   ),
               ],
             ),
@@ -111,7 +113,11 @@ class _SalesScreenState extends State<SalesScreen> {
             if (_controller.isLoading)
               const Center(child: CircularProgressIndicator())
             else if (_controller.sales.isEmpty)
-              const PremiumCard(child: Text('لا توجد مبيعات مسجلة بعد.'))
+              const PremiumCard(
+                child: Text(
+                  'لا توجد مبيعات حبوب مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
+                ),
+              )
             else
               ..._controller.sales.reversed.map(
                 (sale) => Padding(
@@ -177,7 +183,7 @@ class _SalesScreenState extends State<SalesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'تحذير: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو حركة المخزون الأصلية.',
+              'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
             ),
             const SizedBox(height: 12),
             TextField(
@@ -271,7 +277,7 @@ class _SaleCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onCancel,
                 icon: const Icon(Icons.cancel_outlined),
-                label: const Text('إلغاء المستند'),
+                label: const Text('إلغاء مستند البيع'),
               ),
             ),
           ],
@@ -327,7 +333,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         : null;
 
     return AlertDialog(
-      title: const Text('تسجيل بيع'),
+      title: const Text('تسجيل بيع حبوب'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -352,7 +358,10 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             TextField(
               controller: _quantityController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'الكمية بالكجم'),
+              decoration: const InputDecoration(
+                labelText: 'الكمية بالكجم',
+                helperText: 'اكتب كمية الحبوب الخارجة من المخزن.',
+              ),
               onChanged: (_) => setState(() {}),
               textDirection: TextDirection.ltr,
             ),
@@ -362,6 +371,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'سعر البيع قرش/كجم',
+                helperText: 'السعر للكيلو الواحد بالقرش.',
               ),
               onChanged: (_) => setState(() {}),
               textDirection: TextDirection.ltr,
@@ -379,7 +389,10 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+              decoration: const InputDecoration(
+                labelText: 'ملاحظات اختيارية',
+                helperText: 'مثال: اسم المشتري أو رقم السيارة.',
+              ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),
@@ -410,11 +423,12 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
     final quantity = int.tryParse(_quantityController.text.trim());
     final price = int.tryParse(_priceController.text.trim());
     if (quantity == null || quantity <= 0) {
-      setState(() => _errorMessage = 'ادخل كمية صحيحة موجبة بالكجم.');
+      setState(() =>
+          _errorMessage = 'اكتب كمية البيع بالكيلو، ويجب أن تكون أكبر من صفر.');
       return;
     }
     if (price == null || price <= 0) {
-      setState(() => _errorMessage = 'ادخل سعر بيع صحيح موجب قرش/كجم.');
+      setState(() => _errorMessage = 'اكتب سعر بيع صحيح بالقرش لكل كيلو.');
       return;
     }
 

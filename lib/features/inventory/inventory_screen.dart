@@ -71,7 +71,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       Text('المخزون', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'الأرصدة محسوبة من حركات المخزون فقط.',
+                        canAdjust
+                            ? 'الأرصدة محسوبة من حركات المخزون فقط. أي تعديل يدوي يحتاج سبب واضح.'
+                            : 'الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -85,7 +87,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ? null
                         : () => _showMovementForm(context, user: user),
                     icon: const Icon(Icons.add_chart_rounded),
-                    label: const Text('إضافة حركة'),
+                    label: const Text('إضافة حركة مخزون'),
                   ),
               ],
             ),
@@ -104,7 +106,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
               const Center(child: CircularProgressIndicator())
             else if (_controller.products.isEmpty)
               const PremiumCard(
-                child: Text('لا توجد أصناف نشطة لعرض المخزون.'),
+                child: Text(
+                  'لا توجد أصناف نشطة لعرض المخزون. أضف أو فعّل صنف حبوب أولا.',
+                ),
               )
             else
               ..._controller.products.map(
@@ -136,6 +140,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
 
     if (draft == null) {
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+
+    final confirmed = await _confirmStockMovement(context, draft);
+    if (!confirmed) {
       return;
     }
 
@@ -170,6 +182,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
       case StockMovementType.saleCancellation:
         return;
     }
+  }
+
+  Future<bool> _confirmStockMovement(
+    BuildContext context,
+    _MovementFormResult draft,
+  ) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('تأكيد حركة المخزون'),
+            content: Text(
+              'تنبيه: سيتم تسجيل ${draft.movementType.labelAr} بكمية '
+              '${draft.quantityKg} كجم. هذه الحركة تؤثر على رصيد المخزون '
+              'ولا يتم تعديلها بعد الحفظ.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('رجوع'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('تأكيد الحركة'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }
 
@@ -207,7 +247,9 @@ class _InventoryProductCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           if (movements.isEmpty)
-            const Text('لا توجد حركات لهذا الصنف بعد.')
+            const Text(
+              'لا توجد حركات مخزون لهذا الصنف بعد. ستظهر هنا أرصدة الافتتاح والشراء والبيع والإلغاء.',
+            )
           else
             ...movements.reversed.take(4).map(
                   (movement) => Padding(
@@ -292,7 +334,10 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<StockMovementType>(
               value: _movementType,
-              decoration: const InputDecoration(labelText: 'نوع الحركة'),
+              decoration: const InputDecoration(
+                labelText: 'نوع الحركة',
+                helperText: 'اخترها بدقة لأنها تؤثر على الرصيد.',
+              ),
               items: [
                 for (final type in _availableMovementTypes())
                   DropdownMenuItem(
@@ -313,7 +358,10 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
                   child: TextField(
                     controller: _quantityController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'الكمية'),
+                    decoration: const InputDecoration(
+                      labelText: 'الكمية',
+                      helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+                    ),
                     textDirection: TextDirection.ltr,
                   ),
                 ),
@@ -345,7 +393,10 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _noteController,
-              decoration: const InputDecoration(labelText: 'سبب أو ملاحظة'),
+              decoration: const InputDecoration(
+                labelText: 'سبب أو ملاحظة',
+                helperText: 'مطلوب عمليا لتسهيل مراجعة المالك.',
+              ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),
@@ -366,7 +417,7 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('حفظ'),
+          child: const Text('مراجعة الحركة'),
         ),
       ],
     );
@@ -384,7 +435,7 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
   void _submit() {
     final quantity = int.tryParse(_quantityController.text.trim());
     if (quantity == null || quantity <= 0) {
-      setState(() => _errorMessage = 'ادخل كمية صحيحة موجبة.');
+      setState(() => _errorMessage = 'اكتب كمية صحيحة أكبر من صفر.');
       return;
     }
 

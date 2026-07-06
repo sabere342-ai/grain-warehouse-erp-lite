@@ -191,7 +191,7 @@ void main() {
       await tester.pumpWidget(_productHarness(auth: auth, products: products));
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة صنف'), findsOneWidget);
+      expect(find.text('إضافة صنف حبوب'), findsOneWidget);
     });
 
     testWidgets('employee does not see product management actions',
@@ -203,8 +203,11 @@ void main() {
       await tester.pumpWidget(_productHarness(auth: auth, products: products));
       await tester.pumpAndSettle();
 
-      expect(find.text('إضافة صنف'), findsNothing);
-      expect(find.text('عرض الأصناف النشطة فقط.'), findsOneWidget);
+      expect(find.text('إضافة صنف حبوب'), findsNothing);
+      expect(
+        find.text('عرض الأصناف النشطة فقط. إضافة وتعديل الأصناف للمالك فقط.'),
+        findsOneWidget,
+      );
     });
   });
 }

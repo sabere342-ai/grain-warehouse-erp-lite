@@ -25,7 +25,7 @@ void main() {
     await tester.tap(find.text('إنشاء حساب المالك'));
     await tester.pumpAndSettle();
 
-    expect(find.text('لوحة المتابعة'), findsOneWidget);
+    expect(find.text('لوحة متابعة المخزن'), findsOneWidget);
     expect(find.text('المالك'), findsOneWidget);
   });
 
