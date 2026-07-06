@@ -108,3 +108,16 @@ git status --short
 - Do not mix feature requests with bugs.
 - Require backup before troubleshooting.
 - Keep build/delivery generated outputs ignored.
+
+## Phase 29 first delivery pending freeze
+- Current freeze tag after this phase: `phase-29-first-delivery-pending-freeze`.
+- Purpose: freeze development until real customer evidence exists.
+- New docs:
+  - `docs/PHASE-29-FIRST-DELIVERY-PENDING-FREEZE-REPORT.md`
+  - `docs/FIRST-DELIVERY-PENDING-FREEZE-NOTE-AR.md`
+  - `docs/NEXT-PHASE-DECISION-GATE.md`
+- Do not start Phase 30 without real evidence.
+- Do not add features during freeze.
+- Do not modify business logic without a dedicated evidence-based phase.
+- Keep `build/` and `delivery/` ignored.
+- Use `docs/PILOT-ISSUE-LOG.md` for actual customer issues only.
