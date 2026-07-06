@@ -3,13 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
-  const BackupExportScreen({super.key, this.service});
+  const BackupExportScreen({super.key, this.service, this.fileWriter});
 
   final BackupExportService? service;
+  final BackupFileWriter? fileWriter;
 
   @override
   State<BackupExportScreen> createState() => _BackupExportScreenState();
@@ -17,11 +19,15 @@ class BackupExportScreen extends StatefulWidget {
 
 class _BackupExportScreenState extends State<BackupExportScreen> {
   BackupExportResult? _result;
+  BackupFileSaveResult? _saveResult;
   bool _isExporting = false;
+  bool _isSaving = false;
   String? _errorMessage;
 
   BackupExportService get _service =>
       widget.service ?? AppRepositories.backupExportService;
+  BackupFileWriter get _fileWriter =>
+      widget.fileWriter ?? const LocalBackupFileWriter();
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +77,10 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
           const SizedBox(height: 16),
           _BackupResultCard(
             result: _result!,
+            saveResult: _saveResult,
             onCopy: _copyBackup,
+            onSave: _saveBackup,
+            isSaving: _isSaving,
           ),
         ],
       ],
@@ -82,6 +91,7 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
     setState(() {
       _isExporting = true;
       _errorMessage = null;
+      _saveResult = null;
     });
 
     try {
@@ -95,7 +105,8 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
         return;
       }
       setState(() {
-        _errorMessage = 'تعذر إنشاء النسخة الاحتياطية. حاول مرة أخرى.';
+        _errorMessage =
+            'تعذر إنشاء نسخة احتياطية آمنة. حاول مرة أخرى أو تواصل مع الدعم.';
       });
     } finally {
       if (mounted) {
@@ -107,6 +118,9 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
   Future<void> _copyBackup() async {
     final result = _result;
     if (result == null) {
+      return;
+    }
+    if (!_validateResultForUser(result)) {
       return;
     }
 
@@ -121,6 +135,65 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
       ),
     );
   }
+
+  Future<void> _saveBackup() async {
+    final result = _result;
+    if (result == null || _isSaving) {
+      return;
+    }
+    if (!_validateResultForUser(result)) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final saveResult = await _fileWriter.save(
+        fileName: result.fileName,
+        jsonText: result.jsonText,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _saveResult = saveResult);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم حفظ النسخة الاحتياطية بنجاح.'),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage =
+            'تعذر حفظ النسخة في ملف. يمكنك نسخ البيانات وحفظها يدويا.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  bool _validateResultForUser(BackupExportResult result) {
+    try {
+      BackupExportValidator.validateJsonText(result.jsonText);
+      if (!BackupFileName.isSafeWindowsFileName(result.fileName)) {
+        throw const BackupExportValidationException();
+      }
+      return true;
+    } catch (_) {
+      setState(() {
+        _errorMessage =
+            'تعذر إنشاء نسخة احتياطية آمنة. حاول مرة أخرى أو تواصل مع الدعم.';
+      });
+      return false;
+    }
+  }
 }
 
 class _SafetyCopyCard extends StatelessWidget {
@@ -132,7 +205,7 @@ class _SafetyCopyCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('هذه المرحلة: التصدير فقط.'),
+          Text('هذه النسخة للتصدير والحفظ فقط.'),
           SizedBox(height: 8),
           Text(
             'النسخة الاحتياطية تحفظ بيانات النظام الحالية في نص آمن يمكن حفظه خارج النظام.',
@@ -143,11 +216,11 @@ class _SafetyCopyCard extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            'احتفظ بالنسخة في مكان آمن مثل فلاشة أو مساحة تخزين موثوقة.',
+            'احتفظ بالنسخة في فلاشة أو مكان آمن خارج الجهاز إن أمكن.',
           ),
           SizedBox(height: 8),
           Text(
-            'لا تشارك النسخة لأنها قد تحتوي على بيانات البيع والشراء والمخزون.',
+            'لا تشارك النسخة لأنها تحتوي على بيانات المخزون والمشتريات والمبيعات.',
           ),
         ],
       ),
@@ -158,11 +231,17 @@ class _SafetyCopyCard extends StatelessWidget {
 class _BackupResultCard extends StatelessWidget {
   const _BackupResultCard({
     required this.result,
+    required this.saveResult,
     required this.onCopy,
+    required this.onSave,
+    required this.isSaving,
   });
 
   final BackupExportResult result;
+  final BackupFileSaveResult? saveResult;
   final VoidCallback onCopy;
+  final VoidCallback onSave;
+  final bool isSaving;
 
   @override
   Widget build(BuildContext context) {
@@ -180,16 +259,47 @@ class _BackupResultCard extends StatelessWidget {
           _InfoRow('تاريخ التصدير', result.generatedAt.toLocal().toString()),
           _InfoRow('عدد الأصناف', '${counts.products}'),
           _InfoRow('عدد حركات المخزون', '${counts.inventoryMovements}'),
+          _InfoRow('عدد الموردين', '${counts.suppliers}'),
           _InfoRow('عدد المشتريات', '${counts.purchases}'),
           _InfoRow('عدد المبيعات', '${counts.sales}'),
           _InfoRow('عدد سجلات المستندات', '${counts.documentHistory}'),
           _InfoRow('إصدار النسخة', '${result.backupVersion}'),
           _InfoRow('فحص النسخ البسيط', result.checksum),
+          _InfoRow('اسم الملف', result.fileName),
+          if (saveResult != null) ...[
+            const SizedBox(height: 8),
+            const Text('تم حفظ النسخة الاحتياطية بنجاح.'),
+            const SizedBox(height: 6),
+            _InfoRow('مكان الحفظ', saveResult!.folderPath),
+            _InfoRow('مسار الملف', saveResult!.filePath),
+            const SizedBox(height: 6),
+            const Text(
+              'احتفظ بهذا الملف في مكان آمن خارج الجهاز إن أمكن.',
+            ),
+            const SizedBox(height: 6),
+            const Text('الاسترجاع غير متاح في هذه المرحلة.'),
+          ],
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onCopy,
-            icon: const Icon(Icons.copy_rounded),
-            label: const Text('نسخ بيانات النسخة'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onCopy,
+                icon: const Icon(Icons.copy_rounded),
+                label: const Text('نسخ بيانات النسخة'),
+              ),
+              FilledButton.icon(
+                onPressed: isSaving ? null : onSave,
+                icon: isSaving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_alt_rounded),
+                label: const Text('حفظ النسخة في ملف'),
+              ),
+            ],
           ),
         ],
       ),

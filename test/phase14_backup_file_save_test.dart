@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
@@ -20,143 +21,158 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
-import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 
 void main() {
-  group('Phase 13 backup export', () {
-    testWidgets('dashboard backup entry appears for owner only',
-        (tester) async {
-      await tester.pumpWidget(_dashboardHarness(user: _owner));
-      await tester.pumpAndSettle();
-
-      expect(find.text('النسخ الاحتياطي'), findsOneWidget);
-      expect(find.text('تصدير نسخة احتياطية'), findsOneWidget);
-
-      await tester.pumpWidget(_dashboardHarness(user: _employee));
-      await tester.pumpAndSettle();
-
-      expect(find.text('النسخ الاحتياطي'), findsNothing);
-      expect(find.text('تصدير نسخة احتياطية'), findsNothing);
-    });
-
-    testWidgets('backup screen contains safety warnings and copy UI',
+  group('Phase 14 backup file save and hardening', () {
+    testWidgets('backup screen exposes copy and file save actions',
         (tester) async {
       final fixture = await _fixture();
+      final writer = _FakeBackupFileWriter();
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
-          child: BackupExportScreen(service: fixture.service),
+          child: BackupExportScreen(
+            service: fixture.service,
+            fileWriter: writer,
+          ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsOneWidget);
-      expect(find.textContaining('للتصدير والحفظ فقط'), findsOneWidget);
       expect(find.textContaining('الاسترجاع غير متاح'), findsOneWidget);
-      expect(find.textContaining('لا تشارك النسخة'), findsOneWidget);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
       await tester.pumpAndSettle();
 
-      expect(find.text('تم إنشاء النسخة الاحتياطية بنجاح.'), findsOneWidget);
       expect(find.text('نسخ بيانات النسخة'), findsOneWidget);
-      expect(find.text('عدد الأصناف'), findsOneWidget);
-      expect(find.text('عدد حركات المخزون'), findsOneWidget);
-      expect(find.text('عدد المشتريات'), findsOneWidget);
-      expect(find.text('عدد المبيعات'), findsOneWidget);
-      expect(find.text('عدد سجلات المستندات'), findsOneWidget);
-      expect(find.text('إصدار النسخة'), findsOneWidget);
+      expect(find.text('حفظ النسخة في ملف'), findsOneWidget);
     });
 
-    testWidgets('backup screen blocks non-owner users', (tester) async {
-      final fixture = await _fixture();
-
-      await tester.pumpWidget(
-        _screenHarness(
-          user: _employee,
-          child: BackupExportScreen(service: fixture.service),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('النسخ الاحتياطي متاح للمالك فقط.'), findsOneWidget);
-      expect(find.text('إنشاء نسخة احتياطية'), findsNothing);
-    });
-
-    test('snapshot JSON contains metadata counts data and checksum', () async {
+    test('export snapshot remains compatible with phase 13 shape', () async {
       final fixture = await _fixture();
 
       final result = await fixture.service.createBackup();
       final decoded = jsonDecode(result.jsonText) as Map<String, Object?>;
       final metadata = decoded['metadata'] as Map<String, Object?>;
-      final counts = decoded['counts'] as Map<String, Object?>;
-      final data = decoded['data'] as Map<String, Object?>;
 
-      expect(metadata['app'], 'grain-warehouse-erp-lite');
-      expect(metadata['backupVersion'], 1);
-      expect(metadata['generatedAt'], '2026-01-02T03:04:05.000Z');
+      expect(decoded, containsPair('metadata', isA<Map<String, Object?>>()));
+      expect(decoded, containsPair('counts', isA<Map<String, Object?>>()));
+      expect(decoded, containsPair('data', isA<Map<String, Object?>>()));
       expect(metadata['restoreSupported'], isFalse);
-      expect(metadata['warning'], contains('الاسترجاع غير متاح'));
-      expect(decoded['checksum'], isA<String>());
-      expect(decoded['checksumNote'], contains('ليس ميزة تشفير'));
-
-      expect(counts['products'], 1);
-      expect(counts['inventoryMovements'], 2);
-      expect(counts['suppliers'], 1);
-      expect(counts['purchases'], 1);
-      expect(counts['sales'], 1);
-      expect(counts['documentHistory'], 2);
-
-      expect(
-          data.keys,
-          containsAll([
-            'products',
-            'inventoryMovements',
-            'suppliers',
-            'purchases',
-            'sales',
-            'documentHistory',
-          ]));
-      expect(data['products'], isA<List<Object?>>());
-      expect(data['inventoryMovements'], isA<List<Object?>>());
-      expect(data['suppliers'], isA<List<Object?>>());
-      expect(data['purchases'], isA<List<Object?>>());
-      expect(data['sales'], isA<List<Object?>>());
-      expect(data['documentHistory'], isA<List<Object?>>());
+      expect(metadata['backupVersion'], 1);
+      expect(metadata['fileName'], result.fileName);
     });
 
-    test('snapshot omits password token and session fields', () async {
+    test('filename helper produces a safe json filename', () {
+      final fileName = BackupFileName.forGeneratedAt(
+        DateTime(2026, 7, 6, 15, 42, 30),
+      );
+
+      expect(fileName, startsWith('grain-warehouse-backup-'));
+      expect(fileName, endsWith('.json'));
+      expect(fileName, 'grain-warehouse-backup-20260706-154230.json');
+      expect(BackupFileName.isSafeWindowsFileName(fileName), isTrue);
+      expect(RegExp(r'[<>:"/\\|?*\s]').hasMatch(fileName), isFalse);
+    });
+
+    test('export validation rejects sensitive keys', () {
+      for (final key in [
+        'password',
+        'passwordHash',
+        'token',
+        'session',
+        'secret',
+      ]) {
+        final jsonText = jsonEncode({
+          'metadata': {
+            'restoreSupported': false,
+          },
+          'counts': <String, int>{},
+          'data': {
+            'products': [
+              {key: 'hidden'},
+            ],
+          },
+        });
+
+        expect(
+          () => BackupExportValidator.validateJsonText(jsonText),
+          throwsA(isA<BackupExportValidationException>()),
+          reason: 'Expected $key to be rejected',
+        );
+      }
+    });
+
+    testWidgets('file save writes backup through injected writer',
+        (tester) async {
+      await _setTallViewport(tester);
       final fixture = await _fixture();
+      final writer = _FakeBackupFileWriter();
 
-      final result = await fixture.service.createBackup();
-      final lowerJson = result.jsonText.toLowerCase();
+      await tester.pumpWidget(
+        _screenHarness(
+          user: _owner,
+          child: BackupExportScreen(
+            service: fixture.service,
+            fileWriter: writer,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-      expect(lowerJson, isNot(contains('password')));
-      expect(lowerJson, isNot(contains('passwordhash')));
-      expect(lowerJson, isNot(contains('token')));
-      expect(lowerJson, isNot(contains('session')));
+      await tester.tap(find.text('إنشاء نسخة احتياطية'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('حفظ النسخة في ملف'),
+        300,
+        scrollable: find.byType(Scrollable),
+      );
+      await tester.tap(find.text('حفظ النسخة في ملف'));
+      await tester.pumpAndSettle();
+
+      expect(writer.savedFileName, startsWith('grain-warehouse-backup-'));
+      expect(writer.savedFileName, endsWith('.json'));
+      expect(jsonDecode(writer.savedJsonText!), isA<Map<String, Object?>>());
+      expect(find.text('تم حفظ النسخة الاحتياطية بنجاح.'), findsWidgets);
+      expect(find.text('اسم الملف'), findsOneWidget);
+      expect(find.text('مكان الحفظ'), findsOneWidget);
     });
 
-    test('export does not mutate stock sales purchases or history', () async {
+    test('export and save do not mutate business repositories', () async {
       final fixture = await _fixture();
       final beforeProducts = await fixture.products.listProducts();
       final beforeMovements = await fixture.inventory.listAllMovements();
       final beforePurchases = await fixture.purchases.listPurchaseIntakes();
       final beforeSales = await fixture.sales.listSales();
-      final beforeHistory = await fixture.history.listHistory();
-      final beforeHistoryIds = beforeHistory.map((entry) => entry.id).toList();
+      final beforeHistoryIds = (await fixture.history.listHistory())
+          .map((entry) => entry.id)
+          .toList();
+      final writer = _FakeBackupFileWriter();
 
-      await fixture.service.createBackup();
+      final result = await fixture.service.createBackup();
+      await writer.save(fileName: result.fileName, jsonText: result.jsonText);
 
       expect(await fixture.products.listProducts(), beforeProducts);
       expect(await fixture.inventory.listAllMovements(), beforeMovements);
       expect(await fixture.purchases.listPurchaseIntakes(), beforePurchases);
       expect(await fixture.sales.listSales(), beforeSales);
-      final afterHistory = await fixture.history.listHistory();
-      expect(afterHistory.map((entry) => entry.id), beforeHistoryIds);
+      expect(
+        (await fixture.history.listHistory()).map((entry) => entry.id),
+        beforeHistoryIds,
+      );
     });
+  });
+}
+
+Future<void> _setTallViewport(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(900, 1200);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
   });
 }
 
@@ -194,7 +210,6 @@ Future<_BackupFixture> _fixture() async {
       entryUnit: GrainUnit.kilogram,
       unitPricePiastersPerKg: 650,
       createdByUserId: _owner.id,
-      notes: 'استلام شراء',
     ),
   );
   await sales.createSale(
@@ -203,8 +218,6 @@ Future<_BackupFixture> _fixture() async {
       quantityKg: 250,
       salePriceQirshPerKg: 800,
       createdByUserId: _owner.id,
-      createdByUserName: _owner.name,
-      notes: 'بيع اختبار',
     ),
   );
 
@@ -215,7 +228,7 @@ Future<_BackupFixture> _fixture() async {
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
-    now: () => DateTime.utc(2026, 1, 2, 3, 4, 5),
+    now: () => DateTime(2026, 7, 6, 15, 42, 30),
   );
 
   return _BackupFixture(
@@ -225,15 +238,6 @@ Future<_BackupFixture> _fixture() async {
     sales: sales,
     history: history,
     service: service,
-  );
-}
-
-Widget _dashboardHarness({required AppUser user}) {
-  return _screenHarness(
-    user: user,
-    child: DashboardScreen(
-      loadGuidance: () async => DashboardGuidanceState.empty(),
-    ),
   );
 }
 
@@ -259,6 +263,25 @@ AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
   controller.initialize();
   return controller;
+}
+
+class _FakeBackupFileWriter implements BackupFileWriter {
+  String? savedFileName;
+  String? savedJsonText;
+
+  @override
+  Future<BackupFileSaveResult> save({
+    required String fileName,
+    required String jsonText,
+  }) async {
+    savedFileName = fileName;
+    savedJsonText = jsonText;
+    return BackupFileSaveResult(
+      fileName: fileName,
+      filePath: 'C:\\fake-backups\\$fileName',
+      folderPath: 'C:\\fake-backups',
+    );
+  }
 }
 
 class _BackupFixture {
@@ -322,16 +345,6 @@ final _owner = AppUser(
   name: 'مالك',
   phone: '01000000000',
   role: UserRole.owner,
-  isActive: true,
-  createdAt: _now,
-  updatedAt: _now,
-);
-
-final _employee = AppUser(
-  id: 'employee-test',
-  name: 'موظف',
-  phone: '01100000000',
-  role: UserRole.employee,
   isActive: true,
   createdAt: _now,
   updatedAt: _now,

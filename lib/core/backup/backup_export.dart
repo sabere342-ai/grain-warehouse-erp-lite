@@ -61,12 +61,14 @@ class BackupExportService {
       sales: sales.length,
       documentHistory: documentHistory.length,
     );
+    final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
     final snapshotWithoutChecksum = <String, Object?>{
       'metadata': {
         'app': 'grain-warehouse-erp-lite',
         'backupVersion': backupVersion,
         'generatedAt': generatedAt.toUtc().toIso8601String(),
+        'fileName': fileName,
         'restoreSupported': false,
         'warning':
             'هذه نسخة تصدير فقط. الاسترجاع غير متاح في هذه المرحلة لتجنب مسح البيانات بالخطأ.',
@@ -93,6 +95,7 @@ class BackupExportService {
       'checksumNote': 'فحص بسيط لاكتشاف تلف النسخ، وليس ميزة تشفير أو حماية.',
     };
     final jsonText = const JsonEncoder.withIndent('  ').convert(snapshot);
+    BackupExportValidator.validateJsonText(jsonText);
 
     return BackupExportResult(
       jsonText: jsonText,
@@ -100,6 +103,7 @@ class BackupExportService {
       generatedAt: generatedAt,
       backupVersion: backupVersion,
       checksum: checksum,
+      fileName: fileName,
     );
   }
 
@@ -241,6 +245,7 @@ class BackupExportResult {
     required this.generatedAt,
     required this.backupVersion,
     required this.checksum,
+    required this.fileName,
   });
 
   final String jsonText;
@@ -248,6 +253,7 @@ class BackupExportResult {
   final DateTime generatedAt;
   final int backupVersion;
   final String checksum;
+  final String fileName;
 }
 
 class BackupExportCounts {
@@ -277,4 +283,92 @@ class BackupExportCounts {
       'documentHistory': documentHistory,
     };
   }
+}
+
+class BackupFileName {
+  const BackupFileName._();
+
+  static String forGeneratedAt(DateTime generatedAt) {
+    final local = generatedAt.toLocal();
+    return 'grain-warehouse-backup-'
+        '${_four(local.year)}${_two(local.month)}${_two(local.day)}-'
+        '${_two(local.hour)}${_two(local.minute)}${_two(local.second)}.json';
+  }
+
+  static bool isSafeWindowsFileName(String fileName) {
+    if (fileName.trim() != fileName || fileName.contains(' ')) {
+      return false;
+    }
+    if (fileName.isEmpty || fileName.endsWith('.') || fileName.endsWith(' ')) {
+      return false;
+    }
+
+    return !RegExp(r'[<>:"/\\|?*]').hasMatch(fileName);
+  }
+
+  static String _four(int value) {
+    return value.toString().padLeft(4, '0');
+  }
+
+  static String _two(int value) {
+    return value.toString().padLeft(2, '0');
+  }
+}
+
+class BackupExportValidator {
+  const BackupExportValidator._();
+
+  static const _sensitiveKeys = {
+    'password',
+    'passwordhash',
+    'token',
+    'session',
+    'secret',
+  };
+
+  static void validateJsonText(String jsonText) {
+    final decoded = jsonDecode(jsonText);
+    if (decoded is! Map<String, Object?>) {
+      throw const BackupExportValidationException();
+    }
+
+    final metadata = decoded['metadata'];
+    final counts = decoded['counts'];
+    final data = decoded['data'];
+    if (metadata is! Map<String, Object?> ||
+        counts is! Map<String, Object?> ||
+        data is! Map<String, Object?>) {
+      throw const BackupExportValidationException();
+    }
+    if (metadata['restoreSupported'] != false) {
+      throw const BackupExportValidationException();
+    }
+    if (_containsSensitiveKey(decoded)) {
+      throw const BackupExportValidationException();
+    }
+  }
+
+  static bool _containsSensitiveKey(Object? value) {
+    if (value is Map) {
+      for (final entry in value.entries) {
+        final key = entry.key.toString().toLowerCase();
+        if (_sensitiveKeys.contains(key)) {
+          return true;
+        }
+        if (_containsSensitiveKey(entry.value)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (value is Iterable) {
+      return value.any(_containsSensitiveKey);
+    }
+
+    return false;
+  }
+}
+
+class BackupExportValidationException implements Exception {
+  const BackupExportValidationException();
 }
