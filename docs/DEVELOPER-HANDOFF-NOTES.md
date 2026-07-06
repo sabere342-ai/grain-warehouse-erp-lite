@@ -69,3 +69,17 @@ git status --short
 - Separate bugs from feature requests.
 - Require backup before any restore or troubleshooting.
 - Do not promise cloud/mobile/multi-branch in this pilot version.
+
+## Phase 26 first customer trial start
+- Current stable trial-start tag after this phase: `phase-26-first-customer-trial-start`.
+- Purpose: start and track the real first customer trial.
+- New docs:
+  - `docs/PHASE-26-FIRST-CUSTOMER-TRIAL-START-CHECKLIST-AR.md`
+  - `docs/CUSTOMER-TRIAL-DAILY-LOG-AR.md`
+  - `docs/PILOT-ISSUE-LOG.md`
+  - `docs/PHASE-26-FIRST-CUSTOMER-TRIAL-START-REPORT.md`
+- Do not fix anything during observation unless it blocks the trial.
+- Record issues first.
+- Separate bugs from feature requests.
+- Require backup before troubleshooting.
+- Do not promise cloud/mobile/multi-branch.
