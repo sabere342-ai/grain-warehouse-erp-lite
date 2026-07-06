@@ -1,4 +1,4 @@
-﻿# Flutter/Dart
+# Flutter/Dart
 .dart_tool/
 build/
 .flutter-plugins
@@ -14,3 +14,6 @@ Thumbs.db
 
 # Generated release packages
 release/
+delivery/
+tmp/
+*.log
