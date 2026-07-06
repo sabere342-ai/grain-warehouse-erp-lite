@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.loadGuidance});
+
+  final Future<DashboardGuidanceState> Function()? loadGuidance;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +20,14 @@ class DashboardScreen extends StatelessWidget {
         Text(
           'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
           style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+        ),
+        const SizedBox(height: 16),
+        FutureBuilder<DashboardGuidanceState>(
+          future: (loadGuidance ?? DashboardGuidanceState.load)(),
+          builder: (context, snapshot) {
+            final guidance = snapshot.data ?? DashboardGuidanceState.empty();
+            return _GettingStartedCard(guidance: guidance);
+          },
         ),
         const SizedBox(height: 16),
         LayoutBuilder(
@@ -46,6 +58,101 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class DashboardGuidanceState {
+  const DashboardGuidanceState({
+    required this.productCount,
+    required this.stockMovementCount,
+    required this.saleCount,
+  });
+
+  final int productCount;
+  final int stockMovementCount;
+  final int saleCount;
+
+  factory DashboardGuidanceState.empty() {
+    return const DashboardGuidanceState(
+      productCount: 0,
+      stockMovementCount: 0,
+      saleCount: 0,
+    );
+  }
+
+  static Future<DashboardGuidanceState> load() async {
+    final products = await AppRepositories.productRepository.listProducts(
+      includeInactive: true,
+    );
+    final movements =
+        await AppRepositories.inventoryRepository.listAllMovements();
+    final sales = await AppRepositories.saleRepository.listSales();
+
+    return DashboardGuidanceState(
+      productCount: products.length,
+      stockMovementCount: movements.length,
+      saleCount: sales.length,
+    );
+  }
+
+  String get title => 'خطوات العمل اليومية';
+
+  String get message {
+    if (productCount == 0) {
+      return 'ابدأ بإضافة أول صنف في المخزن.';
+    }
+    if (stockMovementCount == 0) {
+      return 'بعد إضافة الأصناف، سجّل رصيد افتتاحي أو وارد حبوب عند الحاجة.';
+    }
+    if (saleCount == 0) {
+      return 'بعد وجود رصيد، يمكنك تسجيل المبيعات عند خروج الحبوب.';
+    }
+
+    return 'راجع التقرير اليومي وسجل المستندات قبل نهاية اليوم.';
+  }
+}
+
+class _GettingStartedCard extends StatelessWidget {
+  const _GettingStartedCard({required this.guidance});
+
+  final DashboardGuidanceState guidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumCard(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.help_outline_rounded, color: AppColors.olive),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  guidance.title,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 6),
+                Text(guidance.message),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () => _openHelp(context),
+                  icon: const Icon(Icons.menu_book_rounded),
+                  label: const Text('دليل الاستخدام'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openHelp(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const HelpGuideScreen()),
     );
   }
 }
