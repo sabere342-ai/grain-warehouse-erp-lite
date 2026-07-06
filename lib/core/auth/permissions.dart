@@ -15,6 +15,7 @@ class Permissions {
     required this.canViewReports,
     required this.canViewAuditLogs,
     required this.canAccessSettings,
+    required this.canExportBackups,
     required this.canApproveBelowMinimumPrice,
   });
 
@@ -31,6 +32,7 @@ class Permissions {
   final bool canViewReports;
   final bool canViewAuditLogs;
   final bool canAccessSettings;
+  final bool canExportBackups;
   final bool canApproveBelowMinimumPrice;
 
   static const owner = Permissions(
@@ -47,6 +49,7 @@ class Permissions {
     canViewReports: true,
     canViewAuditLogs: true,
     canAccessSettings: true,
+    canExportBackups: true,
     canApproveBelowMinimumPrice: true,
   );
 
@@ -64,6 +67,7 @@ class Permissions {
     canViewReports: false,
     canViewAuditLogs: false,
     canAccessSettings: false,
+    canExportBackups: false,
     canApproveBelowMinimumPrice: false,
   );
 
@@ -90,6 +94,7 @@ class Permissions {
         canViewReports &&
         canViewAuditLogs &&
         canAccessSettings &&
+        canExportBackups &&
         canApproveBelowMinimumPrice;
   }
 }

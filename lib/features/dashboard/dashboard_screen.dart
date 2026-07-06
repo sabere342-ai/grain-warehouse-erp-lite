@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -12,6 +14,9 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final ownerCanExport =
+        AuthScope.maybeOf(context)?.state.user?.permissions.canExportBackups ??
+            false;
 
     return ListView(
       children: [
@@ -22,6 +27,10 @@ class DashboardScreen extends StatelessWidget {
           style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
         ),
         const SizedBox(height: 16),
+        if (ownerCanExport) ...[
+          const _BackupExportCard(),
+          const SizedBox(height: 16),
+        ],
         FutureBuilder<DashboardGuidanceState>(
           future: (loadGuidance ?? DashboardGuidanceState.load)(),
           builder: (context, snapshot) {
@@ -58,6 +67,50 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _BackupExportCard extends StatelessWidget {
+  const _BackupExportCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumCard(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.backup_rounded, color: AppColors.olive),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'النسخ الاحتياطي',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'احفظ نسخة من البيانات قبل أي تعديل كبير. التصدير فقط والاسترجاع غير متاح الآن.',
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () => _openBackup(context),
+                  icon: const Icon(Icons.backup_rounded),
+                  label: const Text('تصدير نسخة احتياطية'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openBackup(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const BackupExportScreen()),
     );
   }
 }
