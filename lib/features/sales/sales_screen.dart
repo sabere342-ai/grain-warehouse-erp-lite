@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SalesScreen extends StatefulWidget {
@@ -80,6 +81,12 @@ class _SalesScreenState extends State<SalesScreen> {
                     ],
                   ),
                 ),
+                OutlinedButton.icon(
+                  onPressed: () => _openHistory(context),
+                  icon: const Icon(Icons.manage_search_rounded),
+                  label: const Text('سجل المستندات'),
+                ),
+                const SizedBox(width: 8),
                 if (canCreate)
                   FilledButton.icon(
                     onPressed: _controller.products.isEmpty
@@ -122,6 +129,14 @@ class _SalesScreenState extends State<SalesScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _openHistory(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const DocumentHistoryScreen(),
+      ),
     );
   }
 

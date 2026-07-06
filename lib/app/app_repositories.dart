@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
@@ -34,5 +35,13 @@ class AppRepositories {
     saleRepository: saleRepository,
     inventoryRepository: inventoryRepository,
     productRepository: productRepository,
+  );
+
+  static final LocalDocumentHistoryRepository documentHistoryRepository =
+      LocalDocumentHistoryRepository(
+    purchaseRepository: purchaseRepository,
+    saleRepository: saleRepository,
+    productRepository: productRepository,
+    inventoryRepository: inventoryRepository,
   );
 }
