@@ -83,3 +83,15 @@ git status --short
 - Separate bugs from feature requests.
 - Require backup before troubleshooting.
 - Do not promise cloud/mobile/multi-branch.
+
+## Phase 27 first customer trial observation
+- Current tag after this phase: `phase-27-first-customer-trial-observation`.
+- Purpose: classify real trial feedback before starting fixes.
+- New docs:
+  - `docs/PHASE-27-FIRST-CUSTOMER-TRIAL-OBSERVATION-REPORT.md`
+  - `docs/PHASE-27-ISSUE-TRIAGE-DECISION.md`
+- Do not fix unverified issues.
+- Do not mix feature requests with bugs.
+- Do not change business logic without a dedicated fix phase.
+- Require backup before any troubleshooting.
+- Keep generated build/delivery files ignored.

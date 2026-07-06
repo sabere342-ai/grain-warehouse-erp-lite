@@ -2,6 +2,8 @@
 
 This file is for real first customer trial observations only.
 
+No real customer issues have been recorded yet. Keep this file for actual trial observations only.
+
 Do not mix feature requests with blocking bugs. Record feature requests separately by setting `Type` to `Feature Request` and `Decision` to `Convert to Future Phase`.
 
 | ID | Date | Reported By | Area | Severity | Type | Description | Repro Steps | Expected | Actual | Evidence | Decision | Status | Linked Commit |
