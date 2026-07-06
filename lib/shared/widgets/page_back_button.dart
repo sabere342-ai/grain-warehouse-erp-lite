@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+
+class PageBackButton extends StatelessWidget {
+  const PageBackButton({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
+    final callback = onPressed ?? (canPop ? () => Navigator.of(context).pop() : null);
+    if (callback == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: OutlinedButton.icon(
+        onPressed: callback,
+        icon: const Icon(Icons.arrow_forward_rounded),
+        label: const Text('رجوع'),
+      ),
+    );
+  }
+}

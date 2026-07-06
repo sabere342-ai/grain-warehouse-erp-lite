@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
-import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
-import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
-import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
@@ -14,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/suppliers/suppliers_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/layout/responsive_layout.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
@@ -32,22 +30,13 @@ class _DashboardShellState extends State<DashboardShell> {
         'المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
     _ShellDestination('الأصناف', Icons.inventory_2_rounded, ProductsScreen()),
     _ShellDestination('المخزون', Icons.warehouse_rounded, InventoryScreen()),
-    _ShellDestination('العملاء', Icons.groups_2_rounded, CustomersScreen()),
     _ShellDestination(
         'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
-    _ShellDestination(
-        'المصروفات', Icons.receipt_long_rounded, ExpensesScreen()),
     _ShellDestination(
       'التقارير',
       Icons.bar_chart_rounded,
       ReportsScreen(),
       requiresReports: true,
-    ),
-    _ShellDestination(
-      'سجل التدقيق',
-      Icons.fact_check_rounded,
-      AuditLogsScreen(),
-      requiresAuditLogs: true,
     ),
     _ShellDestination(
       'الإعدادات',
@@ -99,7 +88,7 @@ class _DashboardShellState extends State<DashboardShell> {
               selectedIndex: selectedIndex,
               onDestinationSelected: _setSelectedIndex,
               labelType: NavigationRailLabelType.all,
-              minWidth: 96,
+              minWidth: 104,
               destinations: [
                 for (final destination in visibleDestinations)
                   NavigationRailDestination(
@@ -114,7 +103,15 @@ class _DashboardShellState extends State<DashboardShell> {
                 horizontal: ResponsiveLayout.horizontalPadding(context),
                 vertical: 18,
               ),
-              child: selected.screen,
+              child: Column(
+                children: [
+                  if (selectedIndex != 0) ...[
+                    PageBackButton(onPressed: () => _setSelectedIndex(0)),
+                    const SizedBox(height: 12),
+                  ],
+                  Expanded(child: selected.screen),
+                ],
+              ),
             ),
           ),
         ],
@@ -147,7 +144,6 @@ class _ShellDestination {
     this.icon,
     this.screen, {
     this.requiresSettings = false,
-    this.requiresAuditLogs = false,
     this.requiresReports = false,
   });
 
@@ -155,15 +151,11 @@ class _ShellDestination {
   final IconData icon;
   final Widget screen;
   final bool requiresSettings;
-  final bool requiresAuditLogs;
   final bool requiresReports;
 
   bool isVisibleFor(AppUser user) {
     if (requiresSettings) {
       return user.permissions.canAccessSettings;
-    }
-    if (requiresAuditLogs) {
-      return user.permissions.canViewAuditLogs;
     }
     if (requiresReports) {
       return user.permissions.canViewReports;

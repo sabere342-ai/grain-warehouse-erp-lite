@@ -244,6 +244,7 @@ Future<_Fixture> _fixture({
   final saleController = SaleController(
     saleRepository: sales,
     productRepository: products,
+    inventoryRepository: inventory,
   );
   final purchaseController = PurchaseController(
     purchaseRepository: purchases,

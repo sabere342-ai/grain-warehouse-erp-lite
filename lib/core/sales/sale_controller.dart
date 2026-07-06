@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
@@ -9,21 +10,28 @@ class SaleController extends ChangeNotifier {
   SaleController({
     required SaleRepository saleRepository,
     required ProductRepository productRepository,
+    required InventoryRepository inventoryRepository,
   })  : _saleRepository = saleRepository,
-        _productRepository = productRepository;
+        _productRepository = productRepository,
+        _inventoryRepository = inventoryRepository;
 
   final SaleRepository _saleRepository;
   final ProductRepository _productRepository;
+  final InventoryRepository _inventoryRepository;
 
   List<SaleRecord> _sales = const [];
   List<Product> _products = const [];
+  Map<String, int> _stockByProductId = const {};
   String? _errorMessage;
   bool _isLoading = false;
 
   List<SaleRecord> get sales => List<SaleRecord>.unmodifiable(_sales);
   List<Product> get products => List<Product>.unmodifiable(_products);
+  Map<String, int> get stockByProductId => Map<String, int>.unmodifiable(_stockByProductId);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
+
+  int stockForProduct(String productId) => _stockByProductId[productId] ?? 0;
 
   Future<void> load(AppUser user) async {
     _isLoading = true;
@@ -32,6 +40,9 @@ class SaleController extends ChangeNotifier {
 
     _sales = await _saleRepository.listSales();
     _products = await _productRepository.listProducts(includeInactive: false);
+    _stockByProductId = await _inventoryRepository.allProductBalancesKg(
+      activeProductsOnly: true,
+    );
 
     _isLoading = false;
     notifyListeners();

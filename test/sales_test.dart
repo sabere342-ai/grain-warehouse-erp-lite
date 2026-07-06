@@ -294,6 +294,21 @@ void main() {
       expect(find.text('تسجيل بيع حبوب'), findsOneWidget);
     });
 
+
+    testWidgets('sales screen shows selectable product cards', (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+
+      await tester.pumpWidget(
+        _salesHarness(auth: auth, controller: fixture.controller),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('اختر صنف البيع'), findsOneWidget);
+      expect(find.text('المخزون الحالي: 1000 كجم'), findsOneWidget);
+      expect(find.text('بيع هذا الصنف'), findsOneWidget);
+    });
     testWidgets('sales form shows required Arabic labels', (tester) async {
       final auth =
           await _signedInController(phone: '01000000000', password: 'owner123');
@@ -372,6 +387,7 @@ Future<_SalesFixture> _fixture() async {
   final controller = SaleController(
     saleRepository: sales,
     productRepository: products,
+    inventoryRepository: inventory,
   );
   await controller.load(_owner);
 

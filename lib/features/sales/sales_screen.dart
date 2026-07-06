@@ -30,6 +30,7 @@ class _SalesScreenState extends State<SalesScreen> {
         SaleController(
           saleRepository: AppRepositories.saleRepository,
           productRepository: AppRepositories.productRepository,
+          inventoryRepository: AppRepositories.inventoryRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -112,26 +113,40 @@ class _SalesScreenState extends State<SalesScreen> {
             const SizedBox(height: 16),
             if (_controller.isLoading)
               const Center(child: CircularProgressIndicator())
-            else if (_controller.sales.isEmpty)
-              const PremiumCard(
-                child: Text(
-                  'لا توجد مبيعات حبوب مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
-                ),
-              )
-            else
-              ..._controller.sales.reversed.map(
-                (sale) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _SaleCard(
-                    sale: sale,
-                    productName: _controller.productName(sale.productId),
-                    canCancel: canCancel,
-                    onCancel: sale.isCancelled
-                        ? null
-                        : () => _confirmCancelSale(context, user, sale),
+            else ...[
+              if (canCreate) ...[
+                _ProductSaleCards(
+                  products: _controller.products,
+                  stockByProductId: _controller.stockByProductId,
+                  onSelect: (product) => _showSaleForm(
+                    context,
+                    user: user,
+                    initialProductId: product.id,
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+              ],
+              if (_controller.sales.isEmpty)
+                const PremiumCard(
+                  child: Text(
+                    'لا توجد مبيعات حبوب مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
+                  ),
+                )
+              else
+                ..._controller.sales.reversed.map(
+                  (sale) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _SaleCard(
+                      sale: sale,
+                      productName: _controller.productName(sale.productId),
+                      canCancel: canCancel,
+                      onCancel: sale.isCancelled
+                          ? null
+                          : () => _confirmCancelSale(context, user, sale),
+                    ),
+                  ),
+                ),
+            ],
           ],
         );
       },
@@ -149,10 +164,14 @@ class _SalesScreenState extends State<SalesScreen> {
   Future<void> _showSaleForm(
     BuildContext context, {
     required user,
+    String? initialProductId,
   }) async {
     final result = await showDialog<_SaleFormResult>(
       context: context,
-      builder: (context) => _SaleFormDialog(products: _controller.products),
+      builder: (context) => _SaleFormDialog(
+        products: _controller.products,
+        initialProductId: initialProductId,
+      ),
     );
 
     if (result == null) {
@@ -215,6 +234,131 @@ class _SalesScreenState extends State<SalesScreen> {
       user: user,
       saleId: sale.id,
       cancellationReason: reason,
+    );
+  }
+}
+
+class _ProductSaleCards extends StatelessWidget {
+  const _ProductSaleCards({
+    required this.products,
+    required this.stockByProductId,
+    required this.onSelect,
+  });
+
+  final List<Product> products;
+  final Map<String, int> stockByProductId;
+  final ValueChanged<Product> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    if (products.isEmpty) {
+      return const PremiumCard(
+        child: Text('أضف صنفا وكمية مخزون قبل تسجيل البيع.'),
+      );
+    }
+
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('اختر صنف البيع', style: textTheme.titleLarge),
+          const SizedBox(height: 6),
+          Text(
+            'اضغط على بطاقة الصنف لفتح نموذج البيع بنفس قواعد السعر والمخزون الحالية.',
+            style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final cardWidth = width >= 920
+                  ? (width - 24) / 3
+                  : width >= 620
+                      ? (width - 12) / 2
+                      : width;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final product in products)
+                    SizedBox(
+                      width: cardWidth.toDouble(),
+                      child: _ProductSaleCard(
+                        product: product,
+                        stockKg: stockByProductId[product.id] ?? 0,
+                        onSelect: () => onSelect(product),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductSaleCard extends StatelessWidget {
+  const _ProductSaleCard({
+    required this.product,
+    required this.stockKg,
+    required this.onSelect,
+  });
+
+  final Product product;
+  final int stockKg;
+  final VoidCallback onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final defaultPrice = product.defaultSalePricePiastersPerKg;
+    final minimumPrice = product.minimumSalePricePiastersPerKg;
+
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onSelect,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text(product.name, style: textTheme.titleLarge)),
+                  const Icon(Icons.touch_app_rounded),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text('المخزون الحالي: $stockKg كجم'),
+              const SizedBox(height: 6),
+              Text(
+                defaultPrice == null
+                    ? 'سعر البيع الافتراضي: غير محدد'
+                    : 'سعر البيع الافتراضي: ${MoneyUtils.formatPiastersAsEgp(defaultPrice)} / كجم',
+              ),
+              const SizedBox(height: 6),
+              Text(
+                minimumPrice == null
+                    ? 'الحد الأدنى للبيع: غير محدد'
+                    : 'الحد الأدنى للبيع: ${MoneyUtils.formatPiastersAsEgp(minimumPrice)} / كجم',
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FilledButton.icon(
+                  onPressed: onSelect,
+                  icon: const Icon(Icons.point_of_sale_rounded),
+                  label: const Text('بيع هذا الصنف'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -303,20 +447,30 @@ class _SaleCard extends StatelessWidget {
 }
 
 class _SaleFormDialog extends StatefulWidget {
-  const _SaleFormDialog({required this.products});
+  const _SaleFormDialog({required this.products, this.initialProductId});
 
   final List<Product> products;
+  final String? initialProductId;
 
   @override
   State<_SaleFormDialog> createState() => _SaleFormDialogState();
 }
 
 class _SaleFormDialogState extends State<_SaleFormDialog> {
-  late String _productId = widget.products.first.id;
+  late String _productId = _initialProductId();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
   final _notesController = TextEditingController();
   String? _errorMessage;
+
+  String _initialProductId() {
+    final preferred = widget.initialProductId;
+    if (preferred != null &&
+        widget.products.any((product) => product.id == preferred)) {
+      return preferred;
+    }
+    return widget.products.first.id;
+  }
 
   @override
   void dispose() {

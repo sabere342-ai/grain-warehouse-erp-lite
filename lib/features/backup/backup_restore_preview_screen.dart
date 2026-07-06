@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupRestorePreviewScreen extends StatefulWidget {
@@ -49,6 +50,8 @@ class _BackupRestorePreviewScreenState
 
     return ListView(
       children: [
+        const PageBackButton(),
+        const SizedBox(height: 12),
         Text('فحص نسخة احتياطية', style: textTheme.headlineMedium),
         const SizedBox(height: 6),
         Text(

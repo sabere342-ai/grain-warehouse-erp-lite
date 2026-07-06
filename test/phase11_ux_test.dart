@@ -102,7 +102,10 @@ void main() {
             auth: auth, child: SalesScreen(controller: fixture.controller)),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إلغاء مستند البيع'));
+      final cancelButton = find.text('إلغاء مستند البيع');
+      await tester.drag(find.byType(ListView), const Offset(0, -360));
+      await tester.pumpAndSettle();
+      await tester.tap(cancelButton);
       await tester.pumpAndSettle();
 
       expect(
@@ -185,6 +188,7 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
   final controller = SaleController(
     saleRepository: sales,
     productRepository: products,
+    inventoryRepository: inventory,
   );
   final owner = (await LocalAuthRepository.demo().signIn(
     phone: '01000000000',

@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
@@ -54,6 +55,8 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
 
     return ListView(
       children: [
+        const PageBackButton(),
+        const SizedBox(height: 12),
         Text('النسخ الاحتياطي', style: textTheme.headlineMedium),
         const SizedBox(height: 6),
         Text(

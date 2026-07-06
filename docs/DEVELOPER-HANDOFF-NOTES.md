@@ -121,3 +121,18 @@ git status --short
 - Do not modify business logic without a dedicated evidence-based phase.
 - Keep `build/` and `delivery/` ignored.
 - Use `docs/PILOT-ISSUE-LOG.md` for actual customer issues only.
+## Phase 30 strict visible pages UI readiness
+- Current tag after this phase: `phase-30-strict-visible-pages-ui-readiness`.
+- Purpose: customer-visible pages must be ready or hidden.
+- Real feedback addressed:
+  - no incomplete visible pages
+  - back/navigation clarity
+  - sales product cards
+  - stronger colors
+  - simple theme control
+  - future accounting/online roadmap
+- Do not expose unfinished pages.
+- Do not add cashbox/credit/bank/wallets without dedicated phases.
+- Do not migrate to Supabase without an architecture phase.
+- Do not weaken pricing, stock, sales, backup, or restore tests.
+- Continue collecting real feedback.

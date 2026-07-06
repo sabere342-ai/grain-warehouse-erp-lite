@@ -29,7 +29,7 @@ void main() {
     expect(find.text('المالك'), findsOneWidget);
   });
 
-  testWidgets('owner can see owner-only navigation items', (tester) async {
+  testWidgets('owner sees only pilot-ready owner navigation items', (tester) async {
     await _setDesktopSize(tester);
     final controller = await _signedInDemoController(
       phone: '01000000000',
@@ -45,8 +45,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الإعدادات'), findsWidgets);
-    expect(find.text('سجل التدقيق'), findsWidgets);
     expect(find.text('التقارير'), findsWidgets);
+    expect(find.text('سجل التدقيق'), findsNothing);
+    expect(find.text('العملاء'), findsNothing);
+    expect(find.text('المصروفات'), findsNothing);
   });
 
   testWidgets('employee cannot see owner-only navigation items',

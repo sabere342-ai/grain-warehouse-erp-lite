@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DataWipeScreen extends StatefulWidget {
@@ -55,6 +56,8 @@ class _DataWipeScreenState extends State<DataWipeScreen> {
 
     return ListView(
       children: [
+        const PageBackButton(),
+        const SizedBox(height: 12),
         Text(
           '\u0625\u0639\u0627\u062f\u0629 \u062a\u0647\u064a\u0626\u0629 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u062e\u0632\u0646',
           style: textTheme.headlineMedium,

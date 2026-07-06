@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/documents/document_history_control
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DocumentHistoryScreen extends StatefulWidget {
@@ -69,6 +70,8 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
       builder: (context, _) {
         return ListView(
           children: [
+            const PageBackButton(),
+            const SizedBox(height: 12),
             Text('سجل المستندات', style: textTheme.headlineMedium),
             const SizedBox(height: 6),
             Text(
