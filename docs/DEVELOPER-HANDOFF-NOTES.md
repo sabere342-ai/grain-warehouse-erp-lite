@@ -35,3 +35,11 @@ git status --short
 - Reference cost is optional.
 - Estimated profit and stock valuation are incomplete when reference cost is missing.
 - Restore remains limited to an empty system under the current safe design.
+
+## Phase 23 pilot acceptance smoke
+- Current pilot acceptance phase: Phase 23 pilot acceptance smoke validation.
+- Stable tag after this phase: `phase-23-pilot-acceptance-smoke`.
+- Rebuild Windows release with: `flutter.bat build windows --release`.
+- Recreate the pilot delivery package with: `powershell -NoProfile -ExecutionPolicy Bypass -File tool\create_pilot_delivery_package.ps1`.
+- Keep `build/`, `delivery/`, `tmp/`, logs, and generated release artifacts out of Git.
+- During the pilot, do not change pricing rules, minimum sale enforcement, restore safety, local storage behavior, Firebase configuration, or backend/cloud behavior unless a new reviewed phase explicitly asks for it.
