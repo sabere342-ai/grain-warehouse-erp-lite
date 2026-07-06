@@ -26,6 +26,10 @@ New-Item -ItemType Directory -Force -Path $docsOutput | Out-Null
 Copy-Item -Path (Join-Path $releaseDir "*") -Destination $releaseOutput -Recurse -Force
 $docs = @(
   "docs\OWNER-QUICK-START-AR.md",
+  "docs\PILOT-RELEASE-NOTES-AR.md",
+  "docs\PILOT-FEEDBACK-FORM-AR.md",
+  "docs\PHASE-24-PILOT-FIELD-TRIAL-RUNBOOK-AR.md",
+  "docs\CUSTOMER-INSTALLATION-BACKUP-NOTE-AR.md",
   "docs\RELEASE-NOTES-AR.md",
   "docs\PHASE-22-PILOT-DELIVERY-CHECKLIST.md"
 )

@@ -55,3 +55,17 @@ git status --short
 - Classify issues first.
 - Separate bugs from feature requests.
 - Do not modify backup/restore without a dedicated phase.
+
+## Phase 25 first customer delivery lock
+- Current stable customer delivery tag after this phase: `phase-25-first-customer-delivery-lock`.
+- Purpose: lock the first customer delivery process so the delivered folder is understandable, safe, traceable, and recoverable.
+- New checklist/report/manifest files:
+  - `docs/PHASE-25-FIRST-CUSTOMER-DELIVERY-CHECKLIST-AR.md`
+  - `docs/CUSTOMER-INSTALLATION-BACKUP-NOTE-AR.md`
+  - `docs/FIRST-CUSTOMER-DELIVERY-MANIFEST.md`
+  - `docs/PHASE-25-FIRST-CUSTOMER-DELIVERY-LOCK-REPORT.md`
+- Do not change business logic during customer trial.
+- Use the issue log to classify feedback.
+- Separate bugs from feature requests.
+- Require backup before any restore or troubleshooting.
+- Do not promise cloud/mobile/multi-branch in this pilot version.
