@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
@@ -64,6 +65,12 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
               : const Icon(Icons.backup_rounded),
           label: const Text('إنشاء نسخة احتياطية'),
         ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _openRestorePreview,
+          icon: const Icon(Icons.fact_check_rounded),
+          label: const Text('فحص نسخة احتياطية'),
+        ),
         if (_errorMessage != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -84,6 +91,14 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
           ),
         ],
       ],
+    );
+  }
+
+  void _openRestorePreview() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const BackupRestorePreviewScreen(),
+      ),
     );
   }
 

@@ -1,0 +1,200 @@
+import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+
+class BackupRestorePreviewScreen extends StatefulWidget {
+  const BackupRestorePreviewScreen({super.key, this.service});
+
+  final BackupRestorePreviewService? service;
+
+  @override
+  State<BackupRestorePreviewScreen> createState() =>
+      _BackupRestorePreviewScreenState();
+}
+
+class _BackupRestorePreviewScreenState
+    extends State<BackupRestorePreviewScreen> {
+  final TextEditingController _controller = TextEditingController();
+  BackupRestorePreviewResult? _result;
+
+  BackupRestorePreviewService get _service =>
+      widget.service ?? const BackupRestorePreviewService();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = AuthScope.of(context).state.user;
+    if (user?.permissions.canExportBackups != true) {
+      return const PremiumCard(
+        child: Text('هذه الأداة متاحة للمالك فقط.'),
+      );
+    }
+
+    final textTheme = Theme.of(context).textTheme;
+
+    return ListView(
+      children: [
+        Text('فحص نسخة احتياطية', style: textTheme.headlineMedium),
+        const SizedBox(height: 6),
+        Text(
+          'يمكنك فحص نسخة احتياطية ومعرفة محتواها قبل أن ندعم الاسترجاع الفعلي في مرحلة لاحقة.',
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+        ),
+        const SizedBox(height: 16),
+        const PremiumCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('هذه الشاشة للفحص والمعاينة فقط.'),
+              SizedBox(height: 8),
+              Text(
+                'لن يتم استرجاع أو تعديل أو حذف أي بيانات من النظام الحالي.',
+              ),
+              SizedBox(height: 8),
+              Text(
+                'تأكد أنك تستخدم نسخة صادرة من هذا النظام ولا تشارك النسخة مع أي شخص غير موثوق.',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _controller,
+          minLines: 8,
+          maxLines: 14,
+          textDirection: TextDirection.ltr,
+          decoration: const InputDecoration(
+            labelText: 'الصق بيانات النسخة الاحتياطية هنا',
+            alignLabelWithHint: true,
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton.icon(
+              onPressed: _previewBackup,
+              icon: const Icon(Icons.fact_check_rounded),
+              label: const Text('فحص النسخة'),
+            ),
+            OutlinedButton.icon(
+              onPressed: _clearText,
+              icon: const Icon(Icons.clear_rounded),
+              label: const Text('مسح النص'),
+            ),
+          ],
+        ),
+        if (_result != null) ...[
+          const SizedBox(height: 16),
+          _PreviewResultCard(result: _result!),
+        ],
+      ],
+    );
+  }
+
+  void _previewBackup() {
+    setState(() {
+      _result = _service.preview(_controller.text);
+    });
+  }
+
+  void _clearText() {
+    _controller.clear();
+    setState(() => _result = null);
+  }
+}
+
+class _PreviewResultCard extends StatelessWidget {
+  const _PreviewResultCard({required this.result});
+
+  final BackupRestorePreviewResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!result.isValid) {
+      return PremiumCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'تعذر فحص النسخة الاحتياطية.',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(result.message),
+          ],
+        ),
+      );
+    }
+
+    final summary = result.summary!;
+    final counts = summary.counts;
+
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            result.message,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          _InfoRow(
+              'تاريخ إنشاء النسخة', summary.generatedAt.toLocal().toString()),
+          _InfoRow('إصدار النسخة', '${summary.backupVersion}'),
+          if (summary.fileName != null)
+            _InfoRow('اسم الملف', summary.fileName!),
+          if (summary.checksum != null)
+            _InfoRow('فحص النسخ البسيط', summary.checksum!),
+          _InfoRow('الأصناف', '${counts.products}'),
+          _InfoRow('حركات المخزون', '${counts.inventoryMovements}'),
+          _InfoRow('الموردين', '${counts.suppliers}'),
+          _InfoRow('المشتريات', '${counts.purchases}'),
+          _InfoRow('المبيعات', '${counts.sales}'),
+          _InfoRow('سجل المستندات', '${counts.documentHistory}'),
+          const SizedBox(height: 12),
+          for (final warning in result.warnings) ...[
+            Text(warning),
+            const SizedBox(height: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textDirection: TextDirection.ltr,
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
