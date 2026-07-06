@@ -43,3 +43,15 @@ git status --short
 - Recreate the pilot delivery package with: `powershell -NoProfile -ExecutionPolicy Bypass -File tool\create_pilot_delivery_package.ps1`.
 - Keep `build/`, `delivery/`, `tmp/`, logs, and generated release artifacts out of Git.
 - During the pilot, do not change pricing rules, minimum sale enforcement, restore safety, local storage behavior, Firebase configuration, or backend/cloud behavior unless a new reviewed phase explicitly asks for it.
+
+## Phase 24 pilot field trial feedback loop
+- Current stable pilot tag: `phase-23-pilot-acceptance-smoke`.
+- Current field trial docs:
+  - `docs/PHASE-24-PILOT-FIELD-TRIAL-RUNBOOK-AR.md`
+  - `docs/PILOT-FEEDBACK-FORM-AR.md`
+  - `docs/PILOT-ISSUE-LOG-TEMPLATE.md`
+  - `docs/PILOT-RELEASE-NOTES-AR.md`
+- Do not change business logic during pilot feedback collection.
+- Classify issues first.
+- Separate bugs from feature requests.
+- Do not modify backup/restore without a dedicated phase.
