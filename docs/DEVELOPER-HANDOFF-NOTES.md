@@ -1,8 +1,8 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 32 pilot delivery hardening and owner acceptance QA.
-- Previous stable tag before this phase: `phase-31-strict-no-hidden-pages-functional-recovery`.
+- Latest phase: Phase 33 pilot smoke run and handoff finalization.
+- Previous stable tag before this phase: `phase-32-pilot-delivery-hardening`.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 
@@ -157,3 +157,16 @@ git status --short
 - No cloud, SaaS, Supabase, Firebase migration, mobile app, multi-client architecture, cashbox, bank, wallet, tax, or full accounting module is part of this phase.
 - Restore remains safe restore-to-empty only.
 - Continue treating customer balances, credit sales, collections, payables, and expense accounting as future scoped work, not implied functionality.
+## Phase 33 pilot smoke run and handoff finalization
+- Current tag after this phase: `phase-33-pilot-smoke-run-handoff-finalization`.
+- Purpose: prove the generated local Windows delivery package is safe and ready for current-client pilot testing.
+- New/updated files:
+  - `tool/check_pilot_delivery_package.ps1`
+  - `tool/create_pilot_delivery_package.ps1`
+  - `docs/PHASE-33-PILOT-SMOKE-RUN-HANDOFF.md`
+- The package script now adds client-safe `README-AR.txt` to every generated delivery folder.
+- Run the safety check after packaging: `powershell -NoProfile -ExecutionPolicy Bypass -File tool\check_pilot_delivery_package.ps1 -PackagePath <delivery-folder>`.
+- The client receives the generated delivery package only.
+- Do not send the repository root, `.git/`, `lib/`, `test/`, platform source folders, `.dart_tool/`, IDE folders, pubspec files, analysis config, scripts, logs, internal developer docs, or source archives.
+- Keep `build/` and `delivery/` ignored and uncommitted.
+- No new business feature scope was added in this phase.

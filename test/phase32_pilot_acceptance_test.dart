@@ -107,7 +107,10 @@ void main() {
         salePriceQirshPerKg: 850,
       );
       expect(invalidSale, isFalse);
-      expect(salesController.errorMessage, contains('Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰'));
+      expect(
+          salesController.errorMessage,
+          contains(
+              '\u0627\u0644\u062d\u062f \u0627\u0644\u0623\u062f\u0646\u0649'));
       expect(await source.inventory.currentStockKg(product.id),
           stockBeforeInvalidSale);
       expect(await source.sales.listSales(), hasLength(1));
@@ -116,7 +119,8 @@ void main() {
         const CustomerDraft(
           name: 'Ø¹Ù…ÙŠÙ„ ØªØ¬Ø±ÙŠØ¨ÙŠ ÙˆØ§Ø¶Ø­',
           phone: '01033334444',
-          notes: 'Ù„Ø§ ÙŠØªÙ… Ø¹Ø±Ø¶ Ø±ØµÙŠØ¯ Ù„Ù„Ø¹Ù…ÙŠÙ„ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø±Ø­Ù„Ø©',
+          notes:
+              'Ù„Ø§ ÙŠØªÙ… Ø¹Ø±Ø¶ Ø±ØµÙŠØ¯ Ù„Ù„Ø¹Ù…ÙŠÙ„ ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø±Ø­Ù„Ø©',
         ),
       );
       expect(customer.isActive, isTrue);
@@ -256,7 +260,8 @@ void main() {
       expect(preview.summary!.counts.customers, 0);
       expect(preview.summary!.counts.expenses, 0);
       expect(preview.summary!.counts.auditLogs, 0);
-      expect(preview.warnings.join(' '), isNot(contains('ØºÙŠØ± Ù…ØªØ§Ø­')));
+      expect(preview.warnings.join(' '),
+          isNot(contains('\u063a\u064a\u0631 \u0645\u062a\u0627\u062d')));
 
       final target = _fixture();
       final restore = await target.restoreService.restoreToEmpty(
