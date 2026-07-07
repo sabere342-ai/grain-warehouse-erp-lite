@@ -1,11 +1,16 @@
 import 'dart:convert';
 
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -17,13 +22,16 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 class BackupRestoreService {
-  const BackupRestoreService({
+  BackupRestoreService({
     required LocalProductRepository productRepository,
     required LocalInventoryRepository inventoryRepository,
     required LocalSupplierRepository supplierRepository,
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    LocalCustomerRepository? customerRepository,
+    LocalExpenseRepository? expenseRepository,
+    LocalAuditLogRepository? auditLogRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _productRepository = productRepository,
@@ -32,6 +40,9 @@ class BackupRestoreService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _customerRepository = customerRepository ?? LocalCustomerRepository(),
+        _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _previewService = previewService;
 
   final LocalProductRepository _productRepository;
@@ -40,6 +51,9 @@ class BackupRestoreService {
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final LocalCustomerRepository _customerRepository;
+  final LocalExpenseRepository _expenseRepository;
+  final LocalAuditLogRepository _auditLogRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BackupRestoreResult> restoreToEmpty({
@@ -84,6 +98,9 @@ class BackupRestoreService {
         restored.purchases,
       );
       await _saleRepository.restoreSalesIntoEmpty(restored.sales);
+      await _customerRepository.restoreCustomersIntoEmpty(restored.customers);
+      await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
+      await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
 
       return BackupRestoreResult.success(
         counts: preview.summary!.counts,
@@ -112,13 +129,19 @@ class BackupRestoreService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final history = await _documentHistoryRepository.listHistory();
+    final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final expenses = await _expenseRepository.listExpenses();
+    final auditLogs = await _auditLogRepository.listLogs();
 
     if (products.isNotEmpty ||
         movements.isNotEmpty ||
         suppliers.isNotEmpty ||
         purchases.isNotEmpty ||
         sales.isNotEmpty ||
-        history.isNotEmpty) {
+        history.isNotEmpty ||
+        customers.isNotEmpty ||
+        expenses.isNotEmpty ||
+        auditLogs.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
     }
 
@@ -132,6 +155,9 @@ class BackupRestoreService {
         _list(data, 'inventoryMovements').map(_parseMovement).toList();
     final purchases = _list(data, 'purchases').map(_parsePurchase).toList();
     final sales = _list(data, 'sales').map(_parseSale).toList();
+    final customers = _optionalList(data, 'customers').map(_parseCustomer).toList();
+    final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
+    final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
 
     return _RestoredBackupData(
       products: products,
@@ -139,12 +165,26 @@ class BackupRestoreService {
       movements: movements,
       purchases: purchases,
       sales: sales,
+      customers: customers,
+      expenses: expenses,
+      auditLogs: auditLogs,
       documentHistoryCount: _list(data, 'documentHistory').length,
     );
   }
 
   List<Object?> _list(Map<String, Object?> data, String key) {
     final value = data[key];
+    if (value is! List<Object?>) {
+      throw StateError('Invalid backup list: $key');
+    }
+    return value;
+  }
+
+  List<Object?> _optionalList(Map<String, Object?> data, String key) {
+    final value = data[key];
+    if (value == null) {
+      return const [];
+    }
     if (value is! List<Object?>) {
       throw StateError('Invalid backup list: $key');
     }
@@ -237,6 +277,41 @@ class BackupRestoreService {
     );
   }
 
+  Customer _parseCustomer(Object? value) {
+    final map = _map(value);
+    return Customer(
+      id: _string(map, 'id'),
+      name: _string(map, 'name'),
+      phone: _optionalString(map, 'phone'),
+      notes: _optionalString(map, 'notes'),
+      isActive: _bool(map, 'isActive'),
+      createdAt: _date(map, 'createdAt'),
+      updatedAt: _date(map, 'updatedAt'),
+    );
+  }
+
+  ExpenseRecord _parseExpense(Object? value) {
+    final map = _map(value);
+    return ExpenseRecord(
+      id: _string(map, 'id'),
+      date: _date(map, 'date'),
+      category: _string(map, 'category'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      notes: _optionalString(map, 'notes'),
+      createdAt: _date(map, 'createdAt'),
+    );
+  }
+
+  AuditLogEntry _parseAuditLog(Object? value) {
+    final map = _map(value);
+    return AuditLogEntry(
+      id: _string(map, 'id'),
+      timestamp: _date(map, 'timestamp'),
+      actionType: _string(map, 'actionType'),
+      descriptionAr: _string(map, 'descriptionAr'),
+      referenceId: _optionalString(map, 'referenceId'),
+    );
+  }
   CancellationMetadata? _parseCancellation(Object? value) {
     if (value == null) {
       return null;
@@ -436,6 +511,9 @@ class _RestoredBackupData {
     required this.movements,
     required this.purchases,
     required this.sales,
+    required this.customers,
+    required this.expenses,
+    required this.auditLogs,
     required this.documentHistoryCount,
   });
 
@@ -444,5 +522,8 @@ class _RestoredBackupData {
   final List<StockMovement> movements;
   final List<PurchaseIntake> purchases;
   final List<SaleRecord> sales;
+  final List<Customer> customers;
+  final List<ExpenseRecord> expenses;
+  final List<AuditLogEntry> auditLogs;
   final int documentHistoryCount;
 }

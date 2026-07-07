@@ -1,16 +1,19 @@
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 class BusinessDataWipeService {
-  const BusinessDataWipeService({
+  BusinessDataWipeService({
     required BackupExportService backupExportService,
     required BackupFileWriter backupFileWriter,
     required LocalProductRepository productRepository,
@@ -19,6 +22,9 @@ class BusinessDataWipeService {
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    LocalCustomerRepository? customerRepository,
+    LocalExpenseRepository? expenseRepository,
+    LocalAuditLogRepository? auditLogRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _backupExportService = backupExportService,
@@ -29,6 +35,9 @@ class BusinessDataWipeService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _customerRepository = customerRepository ?? LocalCustomerRepository(),
+        _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _previewService = previewService;
 
   static const confirmationPhrase =
@@ -42,6 +51,9 @@ class BusinessDataWipeService {
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final LocalCustomerRepository _customerRepository;
+  final LocalExpenseRepository _expenseRepository;
+  final LocalAuditLogRepository _auditLogRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BusinessDataWipeResult> wipeBusinessData({
@@ -82,6 +94,9 @@ class BusinessDataWipeService {
 
       // This is a destructive operational reset after a completed backup.
       // It intentionally does not create cancellation documents or reversals.
+      await _auditLogRepository.clearForOwnerDataWipe();
+      await _expenseRepository.clearForOwnerDataWipe();
+      await _customerRepository.clearForOwnerDataWipe();
       await _saleRepository.clearForOwnerDataWipe();
       await _purchaseRepository.clearForOwnerDataWipe();
       await _inventoryRepository.clearForOwnerDataWipe();
@@ -116,6 +131,9 @@ class BusinessDataWipeService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final history = await _documentHistoryRepository.listHistory();
+    final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final expenses = await _expenseRepository.listExpenses();
+    final auditLogs = await _auditLogRepository.listLogs();
 
     return BusinessDataWipeCounts(
       products: products.length,
@@ -124,6 +142,9 @@ class BusinessDataWipeService {
       purchases: purchases.length,
       sales: sales.length,
       documentHistory: history.length,
+      customers: customers.length,
+      expenses: expenses.length,
+      auditLogs: auditLogs.length,
     );
   }
 }
@@ -184,6 +205,9 @@ class BusinessDataWipeCounts {
     required this.purchases,
     required this.sales,
     required this.documentHistory,
+    required this.customers,
+    required this.expenses,
+    required this.auditLogs,
   });
 
   final int products;
@@ -192,4 +216,7 @@ class BusinessDataWipeCounts {
   final int purchases;
   final int sales;
   final int documentHistory;
+  final int customers;
+  final int expenses;
+  final int auditLogs;
 }

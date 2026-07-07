@@ -15,6 +15,11 @@ class BackupRestorePreviewService {
     'sales',
     'documentHistory',
   ];
+  static const _optionalCountKeys = [
+    'customers',
+    'expenses',
+    'auditLogs',
+  ];
   static const _sensitiveKeys = {
     'password',
     'passwordhash',
@@ -90,6 +95,23 @@ class BackupRestorePreviewService {
       for (final key in _requiredCountKeys) {
         final value = counts[key];
         final records = data[key];
+        if (value is! int || value < 0) {
+          return _failure('عدد السجلات غير صالح.', 'invalid-count-$key');
+        }
+        if (records is! List<Object?>) {
+          return _failure('محتوى بيانات النسخة غير صالح.', 'invalid-data-$key');
+        }
+        if (records.length != value) {
+          return _failure(
+            'عدد السجلات لا يطابق محتوى البيانات.',
+            'count-mismatch-$key',
+          );
+        }
+        parsedCounts[key] = value;
+      }
+      for (final key in _optionalCountKeys) {
+        final value = counts[key] ?? 0;
+        final records = data[key] ?? const <Object?>[];
         if (value is! int || value < 0) {
           return _failure('عدد السجلات غير صالح.', 'invalid-count-$key');
         }
@@ -227,6 +249,9 @@ class BackupRestorePreviewCounts {
     required this.purchases,
     required this.sales,
     required this.documentHistory,
+    required this.customers,
+    required this.expenses,
+    required this.auditLogs,
   });
 
   factory BackupRestorePreviewCounts.fromMap(Map<String, int> counts) {
@@ -237,6 +262,9 @@ class BackupRestorePreviewCounts {
       purchases: counts['purchases']!,
       sales: counts['sales']!,
       documentHistory: counts['documentHistory']!,
+      customers: counts['customers'] ?? 0,
+      expenses: counts['expenses'] ?? 0,
+      auditLogs: counts['auditLogs'] ?? 0,
     );
   }
 
@@ -246,4 +274,7 @@ class BackupRestorePreviewCounts {
   final int purchases;
   final int sales;
   final int documentHistory;
+  final int customers;
+  final int expenses;
+  final int auditLogs;
 }

@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
@@ -26,12 +29,23 @@ class _DashboardShellState extends State<DashboardShell> {
   static const _destinations = [
     _ShellDestination('الرئيسية', Icons.dashboard_rounded, DashboardScreen()),
     _ShellDestination('المبيعات', Icons.point_of_sale_rounded, SalesScreen()),
-    _ShellDestination(
-        'المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
+    _ShellDestination('المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
     _ShellDestination('الأصناف', Icons.inventory_2_rounded, ProductsScreen()),
     _ShellDestination('المخزون', Icons.warehouse_rounded, InventoryScreen()),
+    _ShellDestination('الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
+    _ShellDestination('العملاء', Icons.groups_2_rounded, CustomersScreen()),
     _ShellDestination(
-        'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
+      'المصروفات',
+      Icons.receipt_long_rounded,
+      ExpensesScreen(),
+      requiresExpenses: true,
+    ),
+    _ShellDestination(
+      'سجل التدقيق',
+      Icons.fact_check_rounded,
+      AuditLogsScreen(),
+      requiresAuditLogs: true,
+    ),
     _ShellDestination(
       'التقارير',
       Icons.bar_chart_rounded,
@@ -145,6 +159,8 @@ class _ShellDestination {
     this.screen, {
     this.requiresSettings = false,
     this.requiresReports = false,
+    this.requiresExpenses = false,
+    this.requiresAuditLogs = false,
   });
 
   final String label;
@@ -152,6 +168,8 @@ class _ShellDestination {
   final Widget screen;
   final bool requiresSettings;
   final bool requiresReports;
+  final bool requiresExpenses;
+  final bool requiresAuditLogs;
 
   bool isVisibleFor(AppUser user) {
     if (requiresSettings) {
@@ -159,6 +177,12 @@ class _ShellDestination {
     }
     if (requiresReports) {
       return user.permissions.canViewReports;
+    }
+    if (requiresExpenses) {
+      return user.permissions.canCreateExpense;
+    }
+    if (requiresAuditLogs) {
+      return user.permissions.canViewAuditLogs;
     }
 
     return true;

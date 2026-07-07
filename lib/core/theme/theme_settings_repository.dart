@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 
 abstract class ThemeSettingsRepository {
@@ -9,9 +10,12 @@ abstract class ThemeSettingsRepository {
 }
 
 class LocalThemeSettingsRepository implements ThemeSettingsRepository {
-  LocalThemeSettingsRepository({String? filePath}) : _filePath = filePath;
+  LocalThemeSettingsRepository({String? filePath, AuditLogRepository? auditLogRepository})
+      : _filePath = filePath,
+        _auditLogRepository = auditLogRepository;
 
   final String? _filePath;
+  final AuditLogRepository? _auditLogRepository;
 
   @override
   Future<AppThemePreset> loadThemePreset() async {
@@ -32,6 +36,12 @@ class LocalThemeSettingsRepository implements ThemeSettingsRepository {
     final file = File(_resolvedFilePath());
     await file.parent.create(recursive: true);
     await file.writeAsString(preset.id);
+    await _auditLogRepository?.record(
+      AuditLogDraft(
+        actionType: 'settings.theme.changed',
+        descriptionAr: 'تم تغيير مظهر التطبيق إلى ${preset.labelAr}.',
+      ),
+    );
   }
 
   String _resolvedFilePath() {

@@ -1,6 +1,11 @@
 import 'dart:convert';
 
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
@@ -14,13 +19,16 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 class BackupExportService {
-  const BackupExportService({
+  BackupExportService({
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
     required SupplierRepository supplierRepository,
     required PurchaseRepository purchaseRepository,
     required SaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    CustomerRepository? customerRepository,
+    ExpenseRepository? expenseRepository,
+    AuditLogRepository? auditLogRepository,
     DateTime Function()? now,
   })  : _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
@@ -28,6 +36,9 @@ class BackupExportService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _customerRepository = customerRepository ?? LocalCustomerRepository(),
+        _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _now = now;
 
   static const int backupVersion = 1;
@@ -38,6 +49,9 @@ class BackupExportService {
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final CustomerRepository _customerRepository;
+  final ExpenseRepository _expenseRepository;
+  final AuditLogRepository _auditLogRepository;
   final DateTime Function()? _now;
 
   Future<BackupExportResult> createBackup() async {
@@ -52,6 +66,9 @@ class BackupExportService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final documentHistory = await _documentHistoryRepository.listHistory();
+    final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final expenses = await _expenseRepository.listExpenses();
+    final auditLogs = await _auditLogRepository.listLogs();
 
     final counts = BackupExportCounts(
       products: products.length,
@@ -60,6 +77,9 @@ class BackupExportService {
       purchases: purchases.length,
       sales: sales.length,
       documentHistory: documentHistory.length,
+      customers: customers.length,
+      expenses: expenses.length,
+      auditLogs: auditLogs.length,
     );
     final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
@@ -83,6 +103,9 @@ class BackupExportService {
         'sales': sales.map(_saleToJson).toList(growable: false),
         'documentHistory':
             documentHistory.map(_documentHistoryToJson).toList(growable: false),
+        'customers': customers.map(_customerToJson).toList(growable: false),
+        'expenses': expenses.map(_expenseToJson).toList(growable: false),
+        'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
       },
     };
 
@@ -211,6 +234,38 @@ class BackupExportService {
     };
   }
 
+  Map<String, Object?> _customerToJson(Customer customer) {
+    return {
+      'id': customer.id,
+      'name': customer.name,
+      'phone': customer.phone,
+      'notes': customer.notes,
+      'isActive': customer.isActive,
+      'createdAt': customer.createdAt.toUtc().toIso8601String(),
+      'updatedAt': customer.updatedAt.toUtc().toIso8601String(),
+    };
+  }
+
+  Map<String, Object?> _expenseToJson(ExpenseRecord expense) {
+    return {
+      'id': expense.id,
+      'date': expense.date.toUtc().toIso8601String(),
+      'category': expense.category,
+      'amountQirsh': expense.amountQirsh,
+      'notes': expense.notes,
+      'createdAt': expense.createdAt.toUtc().toIso8601String(),
+    };
+  }
+
+  Map<String, Object?> _auditLogToJson(AuditLogEntry entry) {
+    return {
+      'id': entry.id,
+      'timestamp': entry.timestamp.toUtc().toIso8601String(),
+      'actionType': entry.actionType,
+      'descriptionAr': entry.descriptionAr,
+      'referenceId': entry.referenceId,
+    };
+  }
   Map<String, Object?>? _cancellationToJson(CancellationMetadata? metadata) {
     if (metadata == null) {
       return null;
@@ -266,6 +321,9 @@ class BackupExportCounts {
     required this.purchases,
     required this.sales,
     required this.documentHistory,
+    required this.customers,
+    required this.expenses,
+    required this.auditLogs,
   });
 
   final int products;
@@ -274,6 +332,9 @@ class BackupExportCounts {
   final int purchases;
   final int sales;
   final int documentHistory;
+  final int customers;
+  final int expenses;
+  final int auditLogs;
 
   Map<String, int> toJson() {
     return {
@@ -283,6 +344,9 @@ class BackupExportCounts {
       'purchases': purchases,
       'sales': sales,
       'documentHistory': documentHistory,
+      'customers': customers,
+      'expenses': expenses,
+      'auditLogs': auditLogs,
     };
   }
 }

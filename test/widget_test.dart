@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/app/grain_warehouse_app.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -29,7 +29,7 @@ void main() {
     expect(find.text('المالك'), findsOneWidget);
   });
 
-  testWidgets('owner sees only pilot-ready owner navigation items', (tester) async {
+  testWidgets('owner sees all functional owner navigation items', (tester) async {
     await _setDesktopSize(tester);
     final controller = await _signedInDemoController(
       phone: '01000000000',
@@ -46,9 +46,9 @@ void main() {
 
     expect(find.text('الإعدادات'), findsWidgets);
     expect(find.text('التقارير'), findsWidgets);
-    expect(find.text('سجل التدقيق'), findsNothing);
-    expect(find.text('العملاء'), findsNothing);
-    expect(find.text('المصروفات'), findsNothing);
+    expect(find.text('سجل التدقيق'), findsWidgets);
+    expect(find.text('العملاء'), findsWidgets);
+    expect(find.text('المصروفات'), findsWidgets);
   });
 
   testWidgets('employee cannot see owner-only navigation items',
@@ -70,6 +70,8 @@ void main() {
     expect(find.text('الإعدادات'), findsNothing);
     expect(find.text('سجل التدقيق'), findsNothing);
     expect(find.text('التقارير'), findsNothing);
+    expect(find.text('العملاء'), findsWidgets);
+    expect(find.text('المصروفات'), findsWidgets);
     expect(find.text('الموظف'), findsOneWidget);
   });
 }

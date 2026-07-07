@@ -55,7 +55,7 @@ class _BackupRestorePreviewScreenState
         Text('فحص نسخة احتياطية', style: textTheme.headlineMedium),
         const SizedBox(height: 6),
         Text(
-          'يمكنك فحص نسخة احتياطية ومعرفة محتواها قبل أن ندعم الاسترجاع الفعلي في مرحلة لاحقة.',
+          'يمكنك فحص نسخة احتياطية ومعرفة محتواها ثم الاسترجاع إلى نظام فارغ عند صلاحية النسخة.',
           style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
         ),
         const SizedBox(height: 16),

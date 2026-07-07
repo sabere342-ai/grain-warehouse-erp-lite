@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/business_summary_calculator.dart';
@@ -12,20 +13,23 @@ abstract class ReportRepository {
 }
 
 class LocalReportRepository implements ReportRepository {
-  const LocalReportRepository({
+  LocalReportRepository({
     required PurchaseRepository purchaseRepository,
     required SaleRepository saleRepository,
     required InventoryRepository inventoryRepository,
     required ProductRepository productRepository,
+    ExpenseRepository? expenseRepository,
   })  : _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
-        _productRepository = productRepository;
+        _productRepository = productRepository,
+        _expenseRepository = expenseRepository ?? LocalExpenseRepository();
 
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
   final ProductRepository _productRepository;
+  final ExpenseRepository _expenseRepository;
 
   @override
   Future<DailyActivityReport> dailyActivityReport({
@@ -56,6 +60,10 @@ class LocalReportRepository implements ReportRepository {
         .toList(growable: false);
 
     final balances = await _inventoryRepository.allProductBalancesKg();
+    final totalExpensesQirsh = await _expenseRepository.totalExpensesQirsh(
+      start: start,
+      end: end,
+    );
     final summary = BusinessSummaryCalculator.calculate(
       products: products,
       purchases: purchases,
@@ -104,7 +112,7 @@ class LocalReportRepository implements ReportRepository {
         0,
         (total, sale) => total + sale.totalQirsh,
       ),
-      totalExpenseAmountQirsh: summary.totalExpenseAmountQirsh,
+      totalExpenseAmountQirsh: totalExpensesQirsh,
       estimatedSalesCostQirsh: summary.estimatedSalesCostQirsh,
       estimatedGrossProfitQirsh: summary.estimatedGrossProfitQirsh,
       estimatedStockValueQirsh: summary.estimatedStockValueQirsh,
