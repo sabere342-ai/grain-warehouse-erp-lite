@@ -44,16 +44,29 @@ Phase 35 adds focused controller/source/widget coverage for:
 - report separation of credit sales, collections, and receivables;
 - absence of manual balance UI controls.
 
-## Verification
+## Phase 35A — Full test suite cleanup
+Phase 35 fixed the analyzer and test issues in the Phase 35 code itself, but one pre-existing Phase 11 test (`phase11_ux_test.dart:111`) was still failing because the cancellation dialog text in the sales screen did not match the Arabic string the test expected. Phase 35A fixed that mismatch, bringing the full suite to green.
+
+### Phase 35A verification
 - `flutter analyze --no-pub` — No issues found
-- `flutter test test\phase35_customer_credit_ui_pilot_qa_test.dart` — 8/8 passed
-- `flutter test test\phase34_customer_credit_collections_test.dart` — 4/4 passed
-- `flutter test test\phase21c_profit_stock_valuation_reports_test.dart` — 5/5 passed
-- `flutter test test\reports_test.dart` — 12/12 passed
-- `flutter test` — 260/261 passed (1 pre-existing Phase 11 Arabic UX test unrelated to Phase 35)
+- `flutter test test\phase11_ux_test.dart` — 6/6 passed
+- `flutter test` — 262/262 passed (full suite green)
 - `flutter build windows --release` — Build successful, exe generated
-- Delivery package created at `delivery\grain_warehouse_erp_lite_pilot_20260708-010044`
+- Delivery package with corrected Arabic encoding created at `delivery\grain_warehouse_erp_lite_pilot_20260708-020333`
 - Delivery safety check — PASS
+- Windows smoke launch — PASS
+
+### Phase 35A files changed
+- `lib/features/sales/sales_screen.dart` — cancellation dialog text updated to match test expectation
+- `tool/create_pilot_delivery_package.ps1` — fixed corrupted Arabic UTF-8 in README template
+- `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md` — fixed corrupted Arabic, added credit/collection checklist items
+
+## Final delivery
+- Commit: `e4699ec` tagged as `phase-35a-full-test-suite-cleanup`
+- Delivery folder: `delivery\grain_warehouse_erp_lite_pilot_20260708-020333`
+- Full test suite: **262/262 passed**
+- Windows release build: **successful**
+- Owner checklist: ready for handoff
 
 ## Remaining limitations
 - No opening balances or prepayments are supported.

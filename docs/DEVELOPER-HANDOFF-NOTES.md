@@ -1,10 +1,12 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 35 customer credit UI pilot QA.
-- Previous stable tag before this phase: `phase-34-customer-credit-collections`.
+- Latest phase: Phase 35A full test suite cleanup.
+- Previous stable tag before this phase: `phase-35-customer-credit-ui-pilot-qa`.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
+- Full test suite: 262/262 passed.
+- Delivery package ready for pilot handoff.
 
 ## Verification commands
 ```powershell
@@ -187,3 +189,11 @@ git status --short
 - Collections must use `CustomerAccountRepository.createCollection` and reject amounts over the current balance.
 - Reports must keep collections separate from sales and profit.
 - Owner-facing backup wording should explain that customer balances are calculated from credit-sale and collection movements, not stored as a manual balance number.
+
+## Phase 35A full test suite cleanup
+- Current tag after this phase: `phase-35a-full-test-suite-cleanup`.
+- Purpose: fix the pre-existing Phase 11 test failure and corrupted Arabic UTF-8 in delivery scripts and docs to achieve a fully green test suite before pilot handoff.
+- Fix: updated sales screen cancellation dialog text to match the more complete Arabic warning the test expects.
+- Delivery package re-created with corrected Arabic README.
+- Full test suite: 262/262 green on commit.
+- Do not skip the pre-flight test run before any future release.
