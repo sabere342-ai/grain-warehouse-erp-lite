@@ -34,7 +34,8 @@ $docs = @(
   "docs\PHASE-24-PILOT-FIELD-TRIAL-RUNBOOK-AR.md",
   "docs\CUSTOMER-INSTALLATION-BACKUP-NOTE-AR.md",
   "docs\RELEASE-NOTES-AR.md",
-  "docs\PHASE-22-PILOT-DELIVERY-CHECKLIST.md"
+  "docs\PHASE-22-PILOT-DELIVERY-CHECKLIST.md",
+  "docs\PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force

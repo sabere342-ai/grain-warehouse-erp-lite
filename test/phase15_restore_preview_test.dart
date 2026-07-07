@@ -196,7 +196,7 @@ void main() {
       expect(find.text('المشتريات'), findsOneWidget);
       expect(find.text('المبيعات'), findsOneWidget);
       expect(find.text('سجل المستندات'), findsOneWidget);
-      expect(find.textContaining('الاسترجاع الفعلي غير متاح'), findsOneWidget);
+      expect(find.textContaining('يمكن الاسترجاع إلى نظام فارغ فقط'), findsOneWidget);
     });
 
     testWidgets('invalid JSON shows friendly error', (tester) async {

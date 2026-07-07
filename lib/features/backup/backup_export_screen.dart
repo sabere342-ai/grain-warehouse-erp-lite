@@ -243,14 +243,14 @@ class _SafetyCopyCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('هذه النسخة للتصدير والحفظ فقط.'),
+          Text('هذه النسخة للحفظ والاسترجاع الآمن إلى نظام فارغ.'),
           SizedBox(height: 8),
           Text(
             'النسخة الاحتياطية تحفظ بيانات النظام الحالية في نص آمن يمكن حفظه خارج النظام.',
           ),
           SizedBox(height: 8),
           Text(
-            'الاسترجاع غير متاح الآن لتجنب مسح البيانات بالخطأ.',
+            'الاسترجاع متاح فقط إلى نظام فارغ بعد فحص النسخة.',
           ),
           SizedBox(height: 8),
           Text(
@@ -352,7 +352,7 @@ class _BackupResultCard extends StatelessWidget {
               'احتفظ بهذا الملف في مكان آمن خارج الجهاز إن أمكن.',
             ),
             const SizedBox(height: 6),
-            const Text('الاسترجاع غير متاح في هذه المرحلة.'),
+            const Text('الاسترجاع متاح فقط إلى نظام فارغ بعد فحص النسخة.'),
           ],
           const SizedBox(height: 12),
           Wrap(

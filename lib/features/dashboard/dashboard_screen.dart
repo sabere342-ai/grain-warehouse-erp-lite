@@ -92,7 +92,7 @@ class _BackupExportCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'احفظ نسخة من البيانات قبل أي تعديل كبير. التصدير فقط والاسترجاع غير متاح الآن.',
+                  'احفظ نسخة من البيانات قبل أي تعديل كبير. يمكن فحص النسخة واسترجاعها إلى نظام فارغ فقط.',
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton.icon(

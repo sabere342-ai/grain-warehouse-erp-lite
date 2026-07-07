@@ -53,8 +53,8 @@ void main() {
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsOneWidget);
-      expect(find.textContaining('للتصدير والحفظ فقط'), findsOneWidget);
-      expect(find.textContaining('الاسترجاع غير متاح'), findsOneWidget);
+      expect(find.textContaining('للحفظ والاسترجاع الآمن'), findsOneWidget);
+      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'), findsOneWidget);
       expect(find.textContaining('لا تشارك النسخة'), findsOneWidget);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
@@ -98,7 +98,7 @@ void main() {
       expect(metadata['backupVersion'], 1);
       expect(metadata['generatedAt'], '2026-01-02T03:04:05.000Z');
       expect(metadata['restoreSupported'], isFalse);
-      expect(metadata['warning'], contains('الاسترجاع غير متاح'));
+      expect(metadata['warning'], contains('يمكن استرجاعها فقط إلى نظام فارغ'));
       expect(decoded['checksum'], isA<String>());
       expect(decoded['checksumNote'], contains('ليس ميزة تشفير'));
 

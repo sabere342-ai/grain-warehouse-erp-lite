@@ -1,8 +1,8 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 22 pilot delivery package readiness.
-- Previous stable tag before this phase: `phase-21d-final-business-qa-release`.
+- Latest phase: Phase 32 pilot delivery hardening and owner acceptance QA.
+- Previous stable tag before this phase: `phase-31-strict-no-hidden-pages-functional-recovery`.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 
@@ -30,7 +30,7 @@ git status --short
 
 ## Core business rules
 - Money is stored internally as integer piasters/qirsh.
-- Normal UI displays جنيه/`ج.م`, not raw qirsh.
+- Normal UI displays Ø¬Ù†ÙŠÙ‡/`Ø¬.Ù…`, not raw qirsh.
 - Minimum sale price is enforced before stock or sale mutation.
 - Reference cost is optional.
 - Estimated profit and stock valuation are incomplete when reference cost is missing.
@@ -136,3 +136,24 @@ git status --short
 - Do not migrate to Supabase without an architecture phase.
 - Do not weaken pricing, stock, sales, backup, or restore tests.
 - Continue collecting real feedback.
+## Phase 31 strict no-hidden-pages functional recovery
+- Current tag after this phase: `phase-31-strict-no-hidden-pages-functional-recovery`.
+- Purpose: restore visible owner pages as real functional pages instead of hidden or placeholder-only screens.
+- Customers are basic contact records only; do not show balances, credit, collections, or aging.
+- Expenses are basic local records and report totals only; they do not mutate inventory and do not create payable accounting.
+- Audit logs are read-only local history for supported actions.
+- Backup and restore include customers, expenses, and audit logs while keeping old backups compatible.
+- Do not remove visible pages to pass QA. Fix the page or keep the limitation explicit and honest.
+
+## Phase 32 pilot delivery hardening
+- Current tag after this phase: `phase-32-pilot-delivery-hardening`.
+- Purpose: harden the local Windows pilot for owner acceptance after Phase 31 recovery.
+- New docs:
+  - `docs/PHASE-32-PILOT-DELIVERY-HARDENING.md`
+  - `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md`
+- Use `tool\create_pilot_delivery_package.ps1` after a Windows release build to create the customer delivery folder.
+- Send only the generated delivery package and selected owner-facing docs.
+- Do not send the repository root, `.git/`, `lib/`, `test/`, `tool/`, source archives, full `docs/`, build intermediates, dev logs, or local temp folders.
+- No cloud, SaaS, Supabase, Firebase migration, mobile app, multi-client architecture, cashbox, bank, wallet, tax, or full accounting module is part of this phase.
+- Restore remains safe restore-to-empty only.
+- Continue treating customer balances, credit sales, collections, payables, and expense accounting as future scoped work, not implied functionality.

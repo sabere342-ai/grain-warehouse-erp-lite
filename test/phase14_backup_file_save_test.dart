@@ -42,7 +42,7 @@ void main() {
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsOneWidget);
-      expect(find.textContaining('الاسترجاع غير متاح'), findsOneWidget);
+      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'), findsOneWidget);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
       await tester.pumpAndSettle();

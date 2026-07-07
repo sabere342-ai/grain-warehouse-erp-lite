@@ -91,7 +91,7 @@ class BackupExportService {
         'fileName': fileName,
         'restoreSupported': false,
         'warning':
-            'هذه نسخة تصدير فقط. الاسترجاع غير متاح في هذه المرحلة لتجنب مسح البيانات بالخطأ.',
+            'هذه نسخة احتياطية للتصدير والحفظ. يمكن استرجاعها فقط إلى نظام فارغ بعد فحصها.',
       },
       'counts': counts.toJson(),
       'data': {
