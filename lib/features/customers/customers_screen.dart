@@ -1,9 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -25,7 +27,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
     super.initState();
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
-        CustomerController(repository: AppRepositories.customerRepository);
+        CustomerController(
+          repository: AppRepositories.customerRepository,
+          accountRepository: AppRepositories.customerAccountRepository,
+        );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
@@ -68,7 +73,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       Text('العملاء', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'بيانات العملاء الأساسية فقط بدون أرصدة غير مؤكدة.',
+                        'أرصدة العملاء محسوبة من البيع الآجل والتحصيل فقط، ولا يوجد تعديل يدوي للرصيد.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -105,6 +110,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _CustomerCard(
                     customer: customer,
+                    balanceQirsh: _controller.balanceForCustomer(customer.id),
                     canManage: canManage,
                     onEdit: () => _showCustomerForm(
                       context,
@@ -115,6 +121,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       user: user,
                       customerId: customer.id,
                       isActive: !customer.isActive,
+                    ),
+                    onStatement: () => _showStatement(context, customer),
+                    onCollection: () => _showCollectionForm(
+                      context,
+                      user: user,
+                      customer: customer,
+                      balanceQirsh: _controller.balanceForCustomer(customer.id),
                     ),
                   ),
                 ),
@@ -147,24 +160,70 @@ class _CustomersScreenState extends State<CustomersScreen> {
       );
     }
   }
+
+  Future<void> _showCollectionForm(
+    BuildContext context, {
+    required AppUser user,
+    required Customer customer,
+    required int balanceQirsh,
+  }) async {
+    final result = await showDialog<_CollectionFormResult>(
+      context: context,
+      builder: (context) => _CollectionFormDialog(
+        customer: customer,
+        balanceQirsh: balanceQirsh,
+      ),
+    );
+    if (result == null) {
+      return;
+    }
+    await _controller.recordCollection(
+      user: user,
+      customerId: customer.id,
+      date: result.date,
+      amountQirsh: result.amountQirsh,
+      notes: result.notes,
+    );
+  }
+
+  Future<void> _showStatement(BuildContext context, Customer customer) async {
+    final navigator = Navigator.of(context);
+    final statement = await _controller.statementForCustomer(customer.id);
+    if (!mounted) return;
+    await navigator.push(
+      MaterialPageRoute(
+        builder: (context) => _CustomerStatementScreen(
+          customer: customer,
+          statement: statement,
+        ),
+      ),
+    );
+  }
 }
 
 class _CustomerCard extends StatelessWidget {
   const _CustomerCard({
     required this.customer,
+    required this.balanceQirsh,
     required this.canManage,
     required this.onEdit,
     required this.onToggleActive,
+    required this.onStatement,
+    required this.onCollection,
   });
 
   final Customer customer;
+  final int balanceQirsh;
   final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
+  final VoidCallback onStatement;
+  final VoidCallback onCollection;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final hasBalance = balanceQirsh > 0;
     return PremiumCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,15 +236,40 @@ class _CustomerCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (customer.phone != null) Text('الهاتف: ${customer.phone}'),
+          const SizedBox(height: 8),
+          Text(
+            hasBalance
+                ? 'الرصيد المستحق: ${MoneyUtils.formatPiastersAsEgp(balanceQirsh)}'
+                : 'لا يوجد رصيد مستحق على العميل.',
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: hasBalance ? AppColors.olive : AppColors.mutedText,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+              'الرصيد ناتج من حركات البيع الآجل والتحصيل، ولا يتم تعديله يدويا.'),
           if (customer.notes != null) ...[
             const SizedBox(height: 8),
             Text(customer.notes!),
           ],
-          if (canManage) ...[
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: [
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onStatement,
+                icon: const Icon(Icons.receipt_long_rounded),
+                label: const Text('كشف الحساب'),
+              ),
+              if (canManage && hasBalance)
+                FilledButton.icon(
+                  onPressed: onCollection,
+                  icon: const Icon(Icons.payments_rounded),
+                  label: const Text('تسجيل تحصيل'),
+                ),
+              if (canManage) ...[
                 OutlinedButton.icon(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit_rounded),
@@ -199,12 +283,254 @@ class _CustomerCard extends StatelessWidget {
                   label: Text(customer.isActive ? 'إيقاف' : 'تفعيل'),
                 ),
               ],
-            ),
-          ],
+            ],
+          ),
         ],
       ),
     );
   }
+}
+
+class _CollectionFormDialog extends StatefulWidget {
+  const _CollectionFormDialog({
+    required this.customer,
+    required this.balanceQirsh,
+  });
+
+  final Customer customer;
+  final int balanceQirsh;
+
+  @override
+  State<_CollectionFormDialog> createState() => _CollectionFormDialogState();
+}
+
+class _CollectionFormDialogState extends State<_CollectionFormDialog> {
+  final _amountController = TextEditingController();
+  final _notesController = TextEditingController();
+  DateTime _date = DateTime.now();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('تسجيل تحصيل - ${widget.customer.name}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+                'الرصيد المستحق: ${MoneyUtils.formatPiastersAsEgp(widget.balanceQirsh)}'),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _pickDate,
+              icon: const Icon(Icons.calendar_month_rounded),
+              label: Text('تاريخ التحصيل: ${_formatDate(_date)}'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amountController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'مبلغ التحصيل بالجنيه',
+                helperText: 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق.',
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('حفظ التحصيل'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickDate() async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      locale: const Locale('ar'),
+    );
+    if (selected != null) {
+      setState(() => _date = selected);
+    }
+  }
+
+  void _submit() {
+    int amount;
+    try {
+      amount = MoneyUtils.parseEgpToPiasters(
+        _amountController.text,
+        allowZero: false,
+      );
+    } on Object {
+      setState(() => _errorMessage = 'اكتب مبلغ التحصيل بشكل صحيح.');
+      return;
+    }
+    if (amount > widget.balanceQirsh) {
+      setState(
+          () => _errorMessage = 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق.');
+      return;
+    }
+    Navigator.of(context).pop(
+      _CollectionFormResult(
+        date: _date,
+        amountQirsh: amount,
+        notes: _notesController.text,
+      ),
+    );
+  }
+
+  String _formatDate(DateTime value) {
+    return '${value.year}-${_twoDigits(value.month)}-${_twoDigits(value.day)}';
+  }
+
+  String _twoDigits(int value) => value.toString().padLeft(2, '0');
+}
+
+class _CollectionFormResult {
+  const _CollectionFormResult({
+    required this.date,
+    required this.amountQirsh,
+    this.notes,
+  });
+
+  final DateTime date;
+  final int amountQirsh;
+  final String? notes;
+}
+
+class _CustomerStatementScreen extends StatelessWidget {
+  const _CustomerStatementScreen({
+    required this.customer,
+    required this.statement,
+  });
+
+  final Customer customer;
+  final CustomerStatement statement;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('كشف الحساب - ${customer.name}')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          PremiumCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(customer.name,
+                    style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(
+                  'الرصيد النهائي: ${MoneyUtils.formatPiastersAsEgp(statement.finalBalanceQirsh)}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                    'كشف الحساب يعرض كل الحركات التي صنعت الرصيد. لا يوجد رصيد افتتاحي يدوي.'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (statement.lines.isEmpty)
+            const PremiumCard(child: Text('لا توجد حركات على هذا العميل بعد.'))
+          else
+            for (final line in statement.lines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _StatementLineCard(line: line),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatementLineCard extends StatelessWidget {
+  const _StatementLineCard({required this.line});
+
+  final CustomerStatementLine line;
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = line.entry;
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  entry.descriptionAr,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              Chip(label: Text(entry.type.labelAr)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              Text('التاريخ: ${_formatDate(entry.date)}'),
+              Text('المستند: ${entry.sourceDocumentId}'),
+              Text(
+                  'مدين: ${MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)}'),
+              Text(
+                  'دائن / تحصيل: ${MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh)}'),
+              Text(
+                  'الرصيد: ${MoneyUtils.formatPiastersAsEgp(line.runningBalanceQirsh)}'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime value) {
+    final local = value.toLocal();
+    return '${local.year}-${_twoDigits(local.month)}-${_twoDigits(local.day)}';
+  }
+
+  String _twoDigits(int value) => value.toString().padLeft(2, '0');
 }
 
 class _CustomerFormDialog extends StatefulWidget {

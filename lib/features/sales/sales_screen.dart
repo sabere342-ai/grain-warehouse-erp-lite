@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -31,6 +32,8 @@ class _SalesScreenState extends State<SalesScreen> {
           saleRepository: AppRepositories.saleRepository,
           productRepository: AppRepositories.productRepository,
           inventoryRepository: AppRepositories.inventoryRepository,
+          customerRepository: AppRepositories.customerRepository,
+          customerAccountRepository: AppRepositories.customerAccountRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -74,9 +77,7 @@ class _SalesScreenState extends State<SalesScreen> {
                       Text('المبيعات', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        canCancel
-                            ? 'تسجيل بيع الحبوب وخفض المخزون بحركة مرحلة. الإلغاء للمالك فقط وينشئ حركة عكسية.'
-                            : 'تسجيل بيع الحبوب فقط. إلغاء المستندات ومراجعة التدقيق للمالك.',
+                        'سجل بيع نقدي أو بيع آجل على عميل بنفس قواعد السعر والمخزون.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -139,6 +140,7 @@ class _SalesScreenState extends State<SalesScreen> {
                     child: _SaleCard(
                       sale: sale,
                       productName: _controller.productName(sale.productId),
+                      customerName: _controller.customerName(sale.customerId),
                       canCancel: canCancel,
                       onCancel: sale.isCancelled
                           ? null
@@ -170,6 +172,7 @@ class _SalesScreenState extends State<SalesScreen> {
       context: context,
       builder: (context) => _SaleFormDialog(
         products: _controller.products,
+        customers: _controller.customers,
         initialProductId: initialProductId,
       ),
     );
@@ -184,6 +187,8 @@ class _SalesScreenState extends State<SalesScreen> {
       quantityKg: result.quantityKg,
       salePriceQirshPerKg: result.salePriceQirshPerKg,
       notes: result.notes,
+      paymentMode: result.paymentMode,
+      customerId: result.customerId,
     );
   }
 
@@ -202,7 +207,7 @@ class _SalesScreenState extends State<SalesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
+              'سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي.',
             ),
             const SizedBox(height: 12),
             TextField(
@@ -328,7 +333,8 @@ class _ProductSaleCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(product.name, style: textTheme.titleLarge)),
+                  Expanded(
+                      child: Text(product.name, style: textTheme.titleLarge)),
                   const Icon(Icons.touch_app_rounded),
                 ],
               ),
@@ -367,12 +373,14 @@ class _SaleCard extends StatelessWidget {
   const _SaleCard({
     required this.sale,
     required this.productName,
+    required this.customerName,
     required this.canCancel,
     this.onCancel,
   });
 
   final SaleRecord sale;
   final String productName;
+  final String customerName;
   final bool canCancel;
   final VoidCallback? onCancel;
 
@@ -387,11 +395,14 @@ class _SaleCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(productName, style: textTheme.titleLarge)),
-              if (sale.isCancelled)
+              Chip(label: Text(sale.paymentMode.labelAr)),
+              if (sale.isCancelled) ...[
+                const SizedBox(width: 8),
                 Chip(
                   label: const Text('ملغي'),
                   backgroundColor: Theme.of(context).colorScheme.errorContainer,
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 8),
@@ -404,8 +415,10 @@ class _SaleCard extends StatelessWidget {
                 'السعر: ${MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg)} / كجم',
               ),
               Text(
-                  'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}'),
+                'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}',
+              ),
               Text('الوقت: ${_formatDateTime(sale.createdAt)}'),
+              if (sale.isCreditSale) Text('العميل: $customerName'),
             ],
           ),
           if (sale.notes != null) ...[
@@ -447,9 +460,14 @@ class _SaleCard extends StatelessWidget {
 }
 
 class _SaleFormDialog extends StatefulWidget {
-  const _SaleFormDialog({required this.products, this.initialProductId});
+  const _SaleFormDialog({
+    required this.products,
+    required this.customers,
+    this.initialProductId,
+  });
 
   final List<Product> products;
+  final List<Customer> customers;
   final String? initialProductId;
 
   @override
@@ -458,6 +476,8 @@ class _SaleFormDialog extends StatefulWidget {
 
 class _SaleFormDialogState extends State<_SaleFormDialog> {
   late String _productId = _initialProductId();
+  SalePaymentMode _paymentMode = SalePaymentMode.cash;
+  String? _customerId;
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
   final _notesController = TextEditingController();
@@ -487,6 +507,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
     final total = quantity != null && quantity > 0 && price != null && price > 0
         ? quantity * price
         : null;
+    final isCredit = _paymentMode == SalePaymentMode.credit;
 
     return AlertDialog(
       title: const Text('تسجيل بيع حبوب'),
@@ -544,11 +565,70 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               ),
             ),
             const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                'طريقة الدفع',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<SalePaymentMode>(
+              segments: const [
+                ButtonSegment(
+                  value: SalePaymentMode.cash,
+                  label: Text('نقدي'),
+                  icon: Icon(Icons.payments_rounded),
+                ),
+                ButtonSegment(
+                  value: SalePaymentMode.credit,
+                  label: Text('آجل على عميل'),
+                  icon: Icon(Icons.person_pin_circle_rounded),
+                ),
+              ],
+              selected: {_paymentMode},
+              onSelectionChanged: (selection) {
+                setState(() {
+                  _paymentMode = selection.first;
+                  if (_paymentMode == SalePaymentMode.cash) {
+                    _customerId = null;
+                  }
+                });
+              },
+            ),
+            if (isCredit) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _customerId,
+                decoration: const InputDecoration(labelText: 'اختر العميل'),
+                items: [
+                  for (final customer in widget.customers)
+                    DropdownMenuItem(
+                      value: customer.id,
+                      child: Text(customer.name),
+                    ),
+                ],
+                onChanged: (value) => setState(() => _customerId = value),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  total == null
+                      ? 'سيتم إضافة مبلغ الفاتورة على رصيد العميل بعد إدخال الكمية والسعر.'
+                      : 'سيتم إضافة مبلغ الفاتورة على رصيد العميل: ${MoneyUtils.formatPiastersAsEgp(total)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.mutedText,
+                      ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
             TextField(
               controller: _notesController,
               decoration: const InputDecoration(
                 labelText: 'ملاحظات اختيارية',
-                helperText: 'مثال: اسم المشتري أو رقم السيارة.',
+                helperText: 'مثال: اسم السائق أو رقم السيارة.',
               ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
@@ -588,12 +668,19 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       setState(() => _errorMessage = 'اكتب سعر البيع بالجنيه بشكل صحيح.');
       return;
     }
+    if (_paymentMode == SalePaymentMode.credit &&
+        (_customerId == null || _customerId!.trim().isEmpty)) {
+      setState(() => _errorMessage = 'البيع الآجل يحتاج اختيار عميل نشط.');
+      return;
+    }
 
     Navigator.of(context).pop(
       _SaleFormResult(
         productId: _productId,
         quantityKg: quantity,
         salePriceQirshPerKg: price,
+        paymentMode: _paymentMode,
+        customerId: _customerId,
         notes: _notesController.text,
       ),
     );
@@ -615,11 +702,15 @@ class _SaleFormResult {
     required this.productId,
     required this.quantityKg,
     required this.salePriceQirshPerKg,
+    required this.paymentMode,
+    this.customerId,
     this.notes,
   });
 
   final String productId;
   final int quantityKg;
   final int salePriceQirshPerKg;
+  final SalePaymentMode paymentMode;
+  final String? customerId;
   final String? notes;
 }

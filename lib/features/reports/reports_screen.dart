@@ -218,6 +218,33 @@ class _ReportBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _Section(
+          title: 'حسابات العملاء',
+          children: [
+            _MetricLine(
+              'إجمالي البيع الآجل',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalCreditSalesAmountQirsh,
+              ),
+            ),
+            _MetricLine(
+              'إجمالي التحصيلات من العملاء',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalCollectionsAmountQirsh,
+              ),
+            ),
+            _MetricLine(
+              'إجمالي أرصدة العملاء المستحقة',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalOutstandingReceivablesQirsh,
+              ),
+            ),
+            const Text(
+              'التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.',
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _Section(
           title: 'المخزون الحالي',
           children: [
             _MetricLine(
@@ -320,6 +347,33 @@ class _SummaryGrid extends StatelessWidget {
               ),
               caption: 'لا يوجد سجل مصروفات حاليا',
               icon: Icons.receipt_long_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي البيع الآجل',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalCreditSalesAmountQirsh,
+              ),
+              caption: 'ضمن المبيعات مع إثبات مديونية العميل',
+              icon: Icons.person_add_alt_1_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي التحصيلات من العملاء',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalCollectionsAmountQirsh,
+              ),
+              caption: 'تحصيل مديونية وليس مبيعات جديدة',
+              icon: Icons.payments_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي أرصدة العملاء المستحقة',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalOutstandingReceivablesQirsh,
+              ),
+              caption: 'مبالغ قائمة على العملاء حتى الآن',
+              icon: Icons.account_balance_wallet_rounded,
             ),
             _SummaryCard(
               width: itemWidth,

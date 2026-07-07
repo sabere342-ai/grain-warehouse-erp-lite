@@ -267,6 +267,16 @@ void main() {
       expect(find.text('إجمالي قيمة المبيعات'), findsOneWidget);
       expect(find.text('عدد عمليات الشراء'), findsOneWidget);
       expect(find.text('عدد عمليات البيع'), findsOneWidget);
+      expect(find.text('حسابات العملاء'), findsOneWidget);
+      expect(find.text('إجمالي البيع الآجل'), findsWidgets);
+      expect(find.text('إجمالي التحصيلات من العملاء'), findsWidgets);
+      expect(find.text('إجمالي أرصدة العملاء المستحقة'), findsWidgets);
+      expect(
+        find.text(
+          'التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('employee cannot view report content', (tester) async {

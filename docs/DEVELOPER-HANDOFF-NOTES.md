@@ -1,8 +1,8 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 33 pilot smoke run and handoff finalization.
-- Previous stable tag before this phase: `phase-32-pilot-delivery-hardening`.
+- Latest phase: Phase 35 customer credit UI pilot QA.
+- Previous stable tag before this phase: `phase-34-customer-credit-collections`.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 
@@ -170,3 +170,20 @@ git status --short
 - Do not send the repository root, `.git/`, `lib/`, `test/`, platform source folders, `.dart_tool/`, IDE folders, pubspec files, analysis config, scripts, logs, internal developer docs, or source archives.
 - Keep `build/` and `delivery/` ignored and uncommitted.
 - No new business feature scope was added in this phase.
+
+
+## Phase 34 customer credit and collections
+- Current tag after this phase: `phase-34-customer-credit-collections`.
+- Purpose: add the local customer account ledger model for credit-sale debits, collection credits, derived balances, reports, backup/restore, and wipe integration.
+- Customer balances are derived from ledger entries only. Do not add manual balance editing, opening balances, or prepayments without a dedicated accounting phase.
+- Collections must not mutate inventory and must not count as new sales revenue or profit.
+
+## Phase 35 customer credit UI pilot QA
+- Current tag after this phase: `phase-35-customer-credit-ui-pilot-qa`.
+- Purpose: expose Phase 34 credit sales, collections, statements, and receivable reporting in real owner-visible UI.
+- New doc: `docs/PHASE-35-CUSTOMER-CREDIT-UI-PILOT-QA.md`.
+- Sales credit mode must use `SaleController.createSale` and keep stock and minimum-price validations intact.
+- Customers page balances must come from `CustomerAccountRepository`; no manual balance field is allowed.
+- Collections must use `CustomerAccountRepository.createCollection` and reject amounts over the current balance.
+- Reports must keep collections separate from sales and profit.
+- Owner-facing backup wording should explain that customer balances are calculated from credit-sale and collection movements, not stored as a manual balance number.

@@ -1,20 +1,34 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 
 class CustomerController extends ChangeNotifier {
-  CustomerController({required CustomerRepository repository})
-      : _repository = repository;
+  CustomerController({
+    required CustomerRepository repository,
+    CustomerAccountRepository? accountRepository,
+  })  : _repository = repository,
+        _accountRepository = accountRepository;
 
   final CustomerRepository _repository;
+  final CustomerAccountRepository? _accountRepository;
   List<Customer> _customers = const [];
+  Map<String, int> _balancesByCustomerId = const {};
   String? _errorMessage;
   bool _isLoading = false;
 
   List<Customer> get customers => List<Customer>.unmodifiable(_customers);
+  Map<String, int> get balancesByCustomerId =>
+      Map<String, int>.unmodifiable(_balancesByCustomerId);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
+
+  int balanceForCustomer(String customerId) {
+    return _balancesByCustomerId[customerId] ?? 0;
+  }
 
   Future<void> loadCustomers(AppUser user) async {
     _isLoading = true;
@@ -23,8 +37,58 @@ class CustomerController extends ChangeNotifier {
     _customers = await _repository.listCustomers(
       includeInactive: user.permissions.canAccessSettings,
     );
+    _balancesByCustomerId =
+        await _accountRepository?.balancesByCustomerId() ?? const {};
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<CustomerStatement> statementForCustomer(String customerId) async {
+    final repository = _accountRepository;
+    if (repository == null) {
+      return CustomerStatement(
+        customerId: customerId,
+        lines: const [],
+        finalBalanceQirsh: 0,
+      );
+    }
+    return repository.statementForCustomer(customerId);
+  }
+
+  Future<bool> recordCollection({
+    required AppUser user,
+    required String customerId,
+    required DateTime date,
+    required int amountQirsh,
+    String? notes,
+  }) async {
+    if (!_canManage(user)) {
+      return false;
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      _errorMessage = 'تعذر تسجيل التحصيل لأن سجل العملاء غير متاح.';
+      notifyListeners();
+      return false;
+    }
+    try {
+      await repository.createCollection(
+        CustomerCollectionDraft(
+          customerId: customerId,
+          date: date,
+          amountQirsh: amountQirsh,
+          createdByUserId: user.id,
+          createdByUserName: user.name,
+          notes: notes,
+        ),
+      );
+      await loadCustomers(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _collectionMessageForError(error);
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> createCustomer({
@@ -109,5 +173,15 @@ class CustomerController extends ChangeNotifier {
       return 'لا يمكن حفظ العميل بهذه البيانات.';
     }
     return 'تعذر حفظ بيانات العميل.';
+  }
+
+  String _collectionMessageForError(Object error) {
+    if (error is ArgumentError) {
+      return 'اكتب مبلغ التحصيل بشكل صحيح ويجب أن يكون أكبر من صفر.';
+    }
+    if (error is StateError) {
+      return 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق على العميل.';
+    }
+    return 'تعذر تسجيل التحصيل.';
   }
 }
