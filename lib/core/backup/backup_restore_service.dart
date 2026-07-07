@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
@@ -30,6 +33,7 @@ class BackupRestoreService {
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     LocalCustomerRepository? customerRepository,
+    LocalCustomerAccountRepository? customerAccountRepository,
     LocalExpenseRepository? expenseRepository,
     LocalAuditLogRepository? auditLogRepository,
     BackupRestorePreviewService previewService =
@@ -41,6 +45,7 @@ class BackupRestoreService {
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
+        _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _previewService = previewService;
@@ -52,6 +57,7 @@ class BackupRestoreService {
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final LocalCustomerRepository _customerRepository;
+  final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalExpenseRepository _expenseRepository;
   final LocalAuditLogRepository _auditLogRepository;
   final BackupRestorePreviewService _previewService;
@@ -99,6 +105,10 @@ class BackupRestoreService {
       );
       await _saleRepository.restoreSalesIntoEmpty(restored.sales);
       await _customerRepository.restoreCustomersIntoEmpty(restored.customers);
+      await _customerAccountRepository.restoreCustomerAccountsIntoEmpty(
+        entries: restored.customerAccountEntries,
+        collections: restored.customerCollections,
+      );
       await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
       await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
 
@@ -130,6 +140,8 @@ class BackupRestoreService {
     final sales = await _saleRepository.listSales();
     final history = await _documentHistoryRepository.listHistory();
     final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final customerAccountEntries = await _customerAccountRepository.listEntries();
+    final customerCollections = await _customerAccountRepository.listCollections();
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
 
@@ -140,6 +152,8 @@ class BackupRestoreService {
         sales.isNotEmpty ||
         history.isNotEmpty ||
         customers.isNotEmpty ||
+        customerAccountEntries.isNotEmpty ||
+        customerCollections.isNotEmpty ||
         expenses.isNotEmpty ||
         auditLogs.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
@@ -156,6 +170,8 @@ class BackupRestoreService {
     final purchases = _list(data, 'purchases').map(_parsePurchase).toList();
     final sales = _list(data, 'sales').map(_parseSale).toList();
     final customers = _optionalList(data, 'customers').map(_parseCustomer).toList();
+    final customerAccountEntries = _optionalList(data, 'customerAccountEntries').map(_parseCustomerAccountEntry).toList();
+    final customerCollections = _optionalList(data, 'customerCollections').map(_parseCustomerCollection).toList();
     final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
 
@@ -166,6 +182,8 @@ class BackupRestoreService {
       purchases: purchases,
       sales: sales,
       customers: customers,
+      customerAccountEntries: customerAccountEntries,
+      customerCollections: customerCollections,
       expenses: expenses,
       auditLogs: auditLogs,
       documentHistoryCount: _list(data, 'documentHistory').length,
@@ -272,8 +290,43 @@ class BackupRestoreService {
       createdByUserName: _optionalString(map, 'createdByUserName'),
       createdAt: _date(map, 'createdAt'),
       stockMovementId: _string(map, 'stockMovementId'),
+      paymentMode: SalePaymentMode.values.byName(
+        _optionalString(map, 'paymentMode') ?? SalePaymentMode.cash.name,
+      ),
+      customerId: _optionalString(map, 'customerId'),
       notes: _optionalString(map, 'notes'),
       cancellation: _parseCancellation(map['cancellation']),
+    );
+  }
+
+  CustomerAccountEntry _parseCustomerAccountEntry(Object? value) {
+    final map = _map(value);
+    return CustomerAccountEntry(
+      id: _string(map, 'id'),
+      customerId: _string(map, 'customerId'),
+      date: _date(map, 'date'),
+      type: CustomerAccountEntryType.values.byName(_string(map, 'type')),
+      debitAmountQirsh: _int(map, 'debitAmountQirsh'),
+      creditAmountQirsh: _int(map, 'creditAmountQirsh'),
+      sourceDocumentType: _string(map, 'sourceDocumentType'),
+      sourceDocumentId: _string(map, 'sourceDocumentId'),
+      descriptionAr: _string(map, 'descriptionAr'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+    );
+  }
+
+  CustomerCollectionRecord _parseCustomerCollection(Object? value) {
+    final map = _map(value);
+    return CustomerCollectionRecord(
+      id: _string(map, 'id'),
+      customerId: _string(map, 'customerId'),
+      date: _date(map, 'date'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      createdByUserName: _optionalString(map, 'createdByUserName'),
+      notes: _optionalString(map, 'notes'),
     );
   }
 
@@ -512,6 +565,8 @@ class _RestoredBackupData {
     required this.purchases,
     required this.sales,
     required this.customers,
+    required this.customerAccountEntries,
+    required this.customerCollections,
     required this.expenses,
     required this.auditLogs,
     required this.documentHistoryCount,
@@ -523,6 +578,8 @@ class _RestoredBackupData {
   final List<PurchaseIntake> purchases;
   final List<SaleRecord> sales;
   final List<Customer> customers;
+  final List<CustomerAccountEntry> customerAccountEntries;
+  final List<CustomerCollectionRecord> customerCollections;
   final List<ExpenseRecord> expenses;
   final List<AuditLogEntry> auditLogs;
   final int documentHistoryCount;

@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
@@ -27,6 +30,7 @@ class BackupExportService {
     required SaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     CustomerRepository? customerRepository,
+    CustomerAccountRepository? customerAccountRepository,
     ExpenseRepository? expenseRepository,
     AuditLogRepository? auditLogRepository,
     DateTime Function()? now,
@@ -37,6 +41,7 @@ class BackupExportService {
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
+        _customerAccountRepository = customerAccountRepository,
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _now = now;
@@ -50,6 +55,7 @@ class BackupExportService {
   final SaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final CustomerRepository _customerRepository;
+  final CustomerAccountRepository? _customerAccountRepository;
   final ExpenseRepository _expenseRepository;
   final AuditLogRepository _auditLogRepository;
   final DateTime Function()? _now;
@@ -67,6 +73,8 @@ class BackupExportService {
     final sales = await _saleRepository.listSales();
     final documentHistory = await _documentHistoryRepository.listHistory();
     final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final customerAccountEntries = await _customerAccountRepository?.listEntries() ?? const <CustomerAccountEntry>[];
+    final customerCollections = await _customerAccountRepository?.listCollections() ?? const <CustomerCollectionRecord>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
 
@@ -78,6 +86,8 @@ class BackupExportService {
       sales: sales.length,
       documentHistory: documentHistory.length,
       customers: customers.length,
+      customerLedgerEntries: customerAccountEntries.length,
+      customerCollections: customerCollections.length,
       expenses: expenses.length,
       auditLogs: auditLogs.length,
     );
@@ -104,6 +114,8 @@ class BackupExportService {
         'documentHistory':
             documentHistory.map(_documentHistoryToJson).toList(growable: false),
         'customers': customers.map(_customerToJson).toList(growable: false),
+        'customerAccountEntries': customerAccountEntries.map(_customerAccountEntryToJson).toList(growable: false),
+        'customerCollections': customerCollections.map(_customerCollectionToJson).toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
       },
@@ -205,6 +217,8 @@ class BackupExportService {
       'createdByUserName': sale.createdByUserName,
       'createdAt': sale.createdAt.toUtc().toIso8601String(),
       'stockMovementId': sale.stockMovementId,
+      'paymentMode': sale.paymentMode.name,
+      'customerId': sale.customerId,
       'notes': sale.notes,
       'isCancelled': sale.isCancelled,
       'cancellation': _cancellationToJson(sale.cancellation),
@@ -231,6 +245,35 @@ class BackupExportService {
       'originalMovementId': entry.originalMovement?.id,
       'reversalMovementIds':
           entry.reversalMovements.map((movement) => movement.id).toList(),
+    };
+  }
+
+  Map<String, Object?> _customerAccountEntryToJson(CustomerAccountEntry entry) {
+    return {
+      'id': entry.id,
+      'customerId': entry.customerId,
+      'date': entry.date.toUtc().toIso8601String(),
+      'type': entry.type.name,
+      'debitAmountQirsh': entry.debitAmountQirsh,
+      'creditAmountQirsh': entry.creditAmountQirsh,
+      'sourceDocumentType': entry.sourceDocumentType,
+      'sourceDocumentId': entry.sourceDocumentId,
+      'descriptionAr': entry.descriptionAr,
+      'createdAt': entry.createdAt.toUtc().toIso8601String(),
+      'createdByUserId': entry.createdByUserId,
+    };
+  }
+
+  Map<String, Object?> _customerCollectionToJson(CustomerCollectionRecord collection) {
+    return {
+      'id': collection.id,
+      'customerId': collection.customerId,
+      'date': collection.date.toUtc().toIso8601String(),
+      'amountQirsh': collection.amountQirsh,
+      'createdAt': collection.createdAt.toUtc().toIso8601String(),
+      'createdByUserId': collection.createdByUserId,
+      'createdByUserName': collection.createdByUserName,
+      'notes': collection.notes,
     };
   }
 
@@ -322,6 +365,8 @@ class BackupExportCounts {
     required this.sales,
     required this.documentHistory,
     required this.customers,
+    required this.customerLedgerEntries,
+    required this.customerCollections,
     required this.expenses,
     required this.auditLogs,
   });
@@ -333,6 +378,8 @@ class BackupExportCounts {
   final int sales;
   final int documentHistory;
   final int customers;
+  final int customerLedgerEntries;
+  final int customerCollections;
   final int expenses;
   final int auditLogs;
 
@@ -345,6 +392,8 @@ class BackupExportCounts {
       'sales': sales,
       'documentHistory': documentHistory,
       'customers': customers,
+      'customerLedgerEntries': customerLedgerEntries,
+      'customerCollections': customerCollections,
       'expenses': expenses,
       'auditLogs': auditLogs,
     };

@@ -1,4 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
@@ -19,17 +21,20 @@ class LocalReportRepository implements ReportRepository {
     required InventoryRepository inventoryRepository,
     required ProductRepository productRepository,
     ExpenseRepository? expenseRepository,
+    CustomerAccountRepository? customerAccountRepository,
   })  : _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
         _productRepository = productRepository,
-        _expenseRepository = expenseRepository ?? LocalExpenseRepository();
+        _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
+        _customerAccountRepository = customerAccountRepository;
 
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
   final ProductRepository _productRepository;
   final ExpenseRepository _expenseRepository;
+  final CustomerAccountRepository? _customerAccountRepository;
 
   @override
   Future<DailyActivityReport> dailyActivityReport({
@@ -64,6 +69,12 @@ class LocalReportRepository implements ReportRepository {
       start: start,
       end: end,
     );
+    final creditSales = sales.where((sale) => sale.isCreditSale).toList(growable: false);
+    final customerCollections = (await _customerAccountRepository?.listCollections() ?? const <CustomerCollectionRecord>[])
+        .where((collection) => _isInRange(collection.date, start, end))
+        .toList(growable: false);
+    final receivablesByCustomer = await _customerAccountRepository?.balancesByCustomerId() ?? const <String, int>{};
+    final totalOutstandingReceivablesQirsh = receivablesByCustomer.values.where((value) => value > 0).fold<int>(0, (total, value) => total + value);
     final summary = BusinessSummaryCalculator.calculate(
       products: products,
       purchases: purchases,
@@ -113,6 +124,9 @@ class LocalReportRepository implements ReportRepository {
         (total, sale) => total + sale.totalQirsh,
       ),
       totalExpenseAmountQirsh: totalExpensesQirsh,
+      totalCreditSalesAmountQirsh: creditSales.fold<int>(0, (total, sale) => total + sale.totalQirsh),
+      totalCollectionsAmountQirsh: customerCollections.fold<int>(0, (total, collection) => total + collection.amountQirsh),
+      totalOutstandingReceivablesQirsh: totalOutstandingReceivablesQirsh,
       estimatedSalesCostQirsh: summary.estimatedSalesCostQirsh,
       estimatedGrossProfitQirsh: summary.estimatedGrossProfitQirsh,
       estimatedStockValueQirsh: summary.estimatedStockValueQirsh,

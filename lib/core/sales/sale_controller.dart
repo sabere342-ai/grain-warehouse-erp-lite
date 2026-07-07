@@ -1,7 +1,10 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -11,23 +14,32 @@ class SaleController extends ChangeNotifier {
     required SaleRepository saleRepository,
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
+    CustomerRepository? customerRepository,
+    CustomerAccountRepository? customerAccountRepository,
   })  : _saleRepository = saleRepository,
         _productRepository = productRepository,
-        _inventoryRepository = inventoryRepository;
+        _inventoryRepository = inventoryRepository,
+        _customerRepository = customerRepository,
+        _customerAccountRepository = customerAccountRepository;
 
   final SaleRepository _saleRepository;
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
+  final CustomerRepository? _customerRepository;
+  final CustomerAccountRepository? _customerAccountRepository;
 
   List<SaleRecord> _sales = const [];
   List<Product> _products = const [];
+  List<Customer> _customers = const [];
   Map<String, int> _stockByProductId = const {};
   String? _errorMessage;
   bool _isLoading = false;
 
   List<SaleRecord> get sales => List<SaleRecord>.unmodifiable(_sales);
   List<Product> get products => List<Product>.unmodifiable(_products);
-  Map<String, int> get stockByProductId => Map<String, int>.unmodifiable(_stockByProductId);
+  List<Customer> get customers => List<Customer>.unmodifiable(_customers);
+  Map<String, int> get stockByProductId =>
+      Map<String, int>.unmodifiable(_stockByProductId);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 
@@ -43,6 +55,10 @@ class SaleController extends ChangeNotifier {
     _stockByProductId = await _inventoryRepository.allProductBalancesKg(
       activeProductsOnly: true,
     );
+    _customers = await _customerRepository?.listCustomers(
+          includeInactive: false,
+        ) ??
+        const [];
 
     _isLoading = false;
     notifyListeners();
@@ -54,22 +70,40 @@ class SaleController extends ChangeNotifier {
     required int quantityKg,
     required int salePriceQirshPerKg,
     String? notes,
+    SalePaymentMode paymentMode = SalePaymentMode.cash,
+    String? customerId,
   }) async {
     if (!_canCreateSale(user)) {
       return false;
     }
 
     try {
-      await _saleRepository.createSale(
+      if (paymentMode == SalePaymentMode.credit) {
+        if (_customerRepository == null || _customerAccountRepository == null) {
+          throw StateError('Customer account repository is required.');
+        }
+        final selectedCustomer = await _findActiveCustomer(customerId);
+        customerId = selectedCustomer.id;
+      }
+
+      final sale = await _saleRepository.createSale(
         SaleDraft(
           productId: productId,
           quantityKg: quantityKg,
           salePriceQirshPerKg: salePriceQirshPerKg,
           createdByUserId: user.id,
+          paymentMode: paymentMode,
+          customerId: customerId,
           createdByUserName: user.name,
           notes: notes,
         ),
       );
+      if (paymentMode == SalePaymentMode.credit) {
+        await _customerAccountRepository!.createCreditSaleEntry(
+          sale: sale,
+          customerId: customerId!,
+        );
+      }
       await load(user);
       return true;
     } catch (error) {
@@ -103,6 +137,25 @@ class SaleController extends ChangeNotifier {
     }
   }
 
+  Future<Customer> _findActiveCustomer(String? customerId) async {
+    final id = customerId?.trim();
+    if (id == null || id.isEmpty) {
+      throw ArgumentError.value(customerId, 'customerId', 'Customer is required.');
+    }
+    final customers = await _customerRepository!.listCustomers(
+      includeInactive: true,
+    );
+    for (final customer in customers) {
+      if (customer.id == id) {
+        if (!customer.isActive) {
+          throw StateError('Inactive customer cannot be used for credit sale.');
+        }
+        return customer;
+      }
+    }
+    throw StateError('Customer was not found.');
+  }
+
   String productName(String productId) {
     for (final product in _products) {
       if (product.id == productId) {
@@ -110,12 +163,24 @@ class SaleController extends ChangeNotifier {
       }
     }
 
-    return 'صنف غير معروف';
+    return '\u0635\u0646\u0641 \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641';
+  }
+
+  String customerName(String? customerId) {
+    if (customerId == null) {
+      return '';
+    }
+    for (final customer in _customers) {
+      if (customer.id == customerId) {
+        return customer.name;
+      }
+    }
+    return '\u0639\u0645\u064a\u0644 \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641';
   }
 
   bool _canCreateSale(AppUser user) {
     if (!user.canProceed) {
-      _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
+      _errorMessage = '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
       notifyListeners();
       return false;
     }
@@ -123,14 +188,14 @@ class SaleController extends ChangeNotifier {
       return true;
     }
 
-    _errorMessage = 'لا يملك هذا المستخدم صلاحية تسجيل البيع.';
+    _errorMessage = '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.';
     notifyListeners();
     return false;
   }
 
   bool _canCancelPostedDocument(AppUser user) {
     if (!user.canProceed) {
-      _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
+      _errorMessage = '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
       notifyListeners();
       return false;
     }
@@ -138,22 +203,22 @@ class SaleController extends ChangeNotifier {
       return true;
     }
 
-    _errorMessage = 'لا يملك هذا المستخدم صلاحية إلغاء المستندات المرحلة.';
+    _errorMessage = '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0627\u0644\u0645\u0631\u062d\u0644\u0629.';
     notifyListeners();
     return false;
   }
 
   String _messageForError(Object error) {
     if (error is MinimumSalePriceViolation) {
-      return 'سعر البيع أقل من الحد الأدنى المحدد للصنف.';
+      return '\u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0623\u0642\u0644 \u0645\u0646 \u0627\u0644\u062d\u062f \u0627\u0644\u0623\u062f\u0646\u0649 \u0627\u0644\u0645\u062d\u062f\u062f \u0644\u0644\u0635\u0646\u0641.';
     }
     if (error is ArgumentError) {
-      return 'تحقق من بيانات البيع.';
+      return '\u062a\u062d\u0642\u0642 \u0645\u0646 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0628\u064a\u0639\u060c \u0648\u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0622\u062c\u0644 \u064a\u062d\u062a\u0627\u062c \u0639\u0645\u064a\u0644\u0627 \u0646\u0634\u0637\u0627.';
     }
     if (error is StateError) {
-      return 'لا يمكن تسجيل البيع لهذه الكمية أو الصنف.';
+      return '\u0644\u0627 \u064a\u0645\u0643\u0646 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639 \u0644\u0647\u0630\u0647 \u0627\u0644\u0643\u0645\u064a\u0629 \u0623\u0648 \u0627\u0644\u0635\u0646\u0641 \u0623\u0648 \u0627\u0644\u0639\u0645\u064a\u0644.';
     }
 
-    return 'تعذر حفظ البيع.';
+    return '\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0627\u0644\u0628\u064a\u0639.';
   }
 }

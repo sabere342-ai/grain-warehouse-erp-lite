@@ -9,6 +9,9 @@ class DailyActivityReport {
     required this.totalPurchaseAmountQirsh,
     required this.totalSalesAmountQirsh,
     required this.totalExpenseAmountQirsh,
+    required this.totalCreditSalesAmountQirsh,
+    required this.totalCollectionsAmountQirsh,
+    required this.totalOutstandingReceivablesQirsh,
     required this.estimatedSalesCostQirsh,
     required this.estimatedGrossProfitQirsh,
     required this.estimatedStockValueQirsh,
@@ -30,6 +33,9 @@ class DailyActivityReport {
   final int totalPurchaseAmountQirsh;
   final int totalSalesAmountQirsh;
   final int totalExpenseAmountQirsh;
+  final int totalCreditSalesAmountQirsh;
+  final int totalCollectionsAmountQirsh;
+  final int totalOutstandingReceivablesQirsh;
   final int? estimatedSalesCostQirsh;
   final int? estimatedGrossProfitQirsh;
   final int? estimatedStockValueQirsh;

@@ -17,6 +17,8 @@ class BackupRestorePreviewService {
   ];
   static const _optionalCountKeys = [
     'customers',
+    'customerLedgerEntries',
+    'customerCollections',
     'expenses',
     'auditLogs',
   ];
@@ -250,6 +252,8 @@ class BackupRestorePreviewCounts {
     required this.sales,
     required this.documentHistory,
     required this.customers,
+    required this.customerLedgerEntries,
+    required this.customerCollections,
     required this.expenses,
     required this.auditLogs,
   });
@@ -263,6 +267,8 @@ class BackupRestorePreviewCounts {
       sales: counts['sales']!,
       documentHistory: counts['documentHistory']!,
       customers: counts['customers'] ?? 0,
+      customerLedgerEntries: counts['customerLedgerEntries'] ?? 0,
+      customerCollections: counts['customerCollections'] ?? 0,
       expenses: counts['expenses'] ?? 0,
       auditLogs: counts['auditLogs'] ?? 0,
     );
@@ -275,6 +281,8 @@ class BackupRestorePreviewCounts {
   final int sales;
   final int documentHistory;
   final int customers;
+  final int customerLedgerEntries;
+  final int customerCollections;
   final int expenses;
   final int auditLogs;
 }

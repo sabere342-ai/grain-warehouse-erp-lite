@@ -82,6 +82,8 @@ class LocalSaleRepository implements SaleRepository {
       createdByUserName: _normalizedOptionalText(draft.createdByUserName),
       createdAt: now,
       stockMovementId: movement.id,
+      paymentMode: draft.paymentMode,
+      customerId: _normalizedOptionalText(draft.customerId),
       notes: _normalizedOptionalText(draft.notes),
     );
 
@@ -216,6 +218,14 @@ class LocalSaleRepository implements SaleRepository {
         'Sale price must be positive.',
       );
     }
+    if (draft.paymentMode == SalePaymentMode.credit &&
+        _normalizedOptionalText(draft.customerId) == null) {
+      throw ArgumentError.value(
+        draft.customerId,
+        'customerId',
+        'Credit sale requires customer id.',
+      );
+    }
   }
 
   void _validateMinimumSalePrice({
@@ -246,7 +256,9 @@ class LocalSaleRepository implements SaleRepository {
           sale.salePriceQirshPerKg <= 0 ||
           sale.totalQirsh <= 0 ||
           sale.createdByUserId.trim().isEmpty ||
-          sale.stockMovementId.trim().isEmpty) {
+          sale.stockMovementId.trim().isEmpty ||
+          (sale.paymentMode == SalePaymentMode.credit &&
+              _normalizedOptionalText(sale.customerId) == null)) {
         throw StateError('Invalid sale data.');
       }
     }
