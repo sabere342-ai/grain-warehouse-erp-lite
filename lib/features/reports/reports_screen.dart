@@ -245,6 +245,27 @@ class _ReportBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _Section(
+          title: 'حسابات الموردين',
+          children: [
+            _MetricLine(
+              'إجمالي مدفوعات الموردين',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalSupplierPaymentsQirsh,
+              ),
+            ),
+            _MetricLine(
+              'إجمالي أرصدة الموردين المستحقة',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalOutstandingSupplierPayablesQirsh,
+              ),
+            ),
+            const Text(
+              'المدفوعات للموردين تقلل الرصيد المستحق فقط ولا تُحسب كمصروفات.',
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _Section(
           title: 'المخزون الحالي',
           children: [
             _MetricLine(
@@ -373,6 +394,24 @@ class _SummaryGrid extends StatelessWidget {
                 report.totalOutstandingReceivablesQirsh,
               ),
               caption: 'مبالغ قائمة على العملاء حتى الآن',
+              icon: Icons.account_balance_wallet_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'إجمالي مدفوعات الموردين',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalSupplierPaymentsQirsh,
+              ),
+              caption: 'مدفوعات مسجلة للموردين',
+              icon: Icons.payments_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'أرصدة الموردين المستحقة',
+              value: MoneyUtils.formatPiastersAsEgp(
+                report.totalOutstandingSupplierPayablesQirsh,
+              ),
+              caption: 'مبالغ مستحقة للموردين',
               icon: Icons.account_balance_wallet_rounded,
             ),
             _SummaryCard(

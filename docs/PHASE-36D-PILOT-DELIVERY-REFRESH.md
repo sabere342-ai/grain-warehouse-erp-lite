@@ -1,5 +1,9 @@
 # Phase 36D — Pilot Delivery Refresh After Supplier Accounts
 
+> **Superseded by Phase 36E.** The Phase 36E delivery package includes the
+> supplier payment UI completion (buttons, dialogs, balance display, reports).
+> Use the Phase 36E delivery package instead.
+
 ## Purpose
 
 Phase 36D is a delivery refresh only. It does not add new accounting features.

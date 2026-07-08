@@ -1,11 +1,11 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 35A full test suite cleanup.
-- Previous stable tag before this phase: `phase-35-customer-credit-ui-pilot-qa`.
+- Latest phase: Phase 36E supplier payment UI completion.
+- Previous stable tag before this phase: `phase-36d-pilot-delivery-refresh`.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
-- Full test suite: 262/262 passed.
+- Full test suite: 294/294 passed.
 - Delivery package ready for pilot handoff.
 
 ## Verification commands
@@ -211,6 +211,13 @@ git status --short
 - Purpose: refresh the pilot delivery package based on Phase 36. Supersedes Phase 35 delivery. No new features.
 - Update docs, acceptance checklist, delivery README, and re-run quality gates.
 - See `docs/PHASE-36D-PILOT-DELIVERY-REFRESH.md`.
+
+## Phase 36E — Supplier payment UI completion
+- Current tag after this phase: `phase-36e-supplier-payment-ui-completion`.
+- Purpose: complete supplier payment UI — balance on supplier cards, payment button and dialog, statement payment button, purchase list balance, report supplier payments section.
+- Adds `SupplierPaymentDialog` (reusable), `totalSupplierPaymentsQirsh`/`totalOutstandingSupplierPayablesQirsh` to `DailyActivityReport`.
+- Full test suite: 294/294 green (12 new tests).
+- See `docs/PHASE-36E-SUPPLIER-PAYMENT-UI-COMPLETION.md`.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.

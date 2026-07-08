@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierStatementScreen extends StatefulWidget {
@@ -70,6 +73,34 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     );
   }
 
+  Future<void> _recordPayment() async {
+    final user = AuthScope.of(context).state.user;
+    if (user == null) return;
+    final balance = _statement?.finalBalanceQirsh ?? 0;
+    if (balance <= 0) return;
+
+    final draft = await showDialog<SupplierPaymentDraft>(
+      context: context,
+      builder: (context) => SupplierPaymentDialog(
+        supplier: widget.supplier,
+        balanceQirsh: balance,
+        userId: user.id,
+      ),
+    );
+
+    if (draft == null) return;
+
+    try {
+      await _repository.createPayment(draft);
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطأ في تسجيل الدفع: $e')),
+      );
+    }
+  }
+
   Widget _buildContent(TextTheme textTheme) {
     final statement = _statement!;
 
@@ -82,9 +113,21 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'الرصيد الحالي',
-                  style: textTheme.titleMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'الرصيد الحالي',
+                        style: textTheme.titleMedium,
+                      ),
+                    ),
+                    if (statement.finalBalanceQirsh > 0)
+                      FilledButton.icon(
+                        onPressed: _recordPayment,
+                        icon: const Icon(Icons.payments_rounded),
+                        label: const Text('تسجيل دفعة'),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

@@ -24,6 +24,8 @@ class DailyActivityReport {
     required this.stockMovementCount,
     required this.stockBalances,
     required this.recentMovements,
+    required this.totalSupplierPaymentsQirsh,
+    required this.totalOutstandingSupplierPayablesQirsh,
   });
 
   final DateTime start;
@@ -36,6 +38,8 @@ class DailyActivityReport {
   final int totalCreditSalesAmountQirsh;
   final int totalCollectionsAmountQirsh;
   final int totalOutstandingReceivablesQirsh;
+  final int totalSupplierPaymentsQirsh;
+  final int totalOutstandingSupplierPayablesQirsh;
   final int? estimatedSalesCostQirsh;
   final int? estimatedGrossProfitQirsh;
   final int? estimatedStockValueQirsh;

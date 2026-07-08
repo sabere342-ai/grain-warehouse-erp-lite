@@ -7,6 +7,8 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/reports/business_summary_calculator.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 
 abstract class ReportRepository {
   Future<DailyActivityReport> dailyActivityReport({
@@ -22,12 +24,14 @@ class LocalReportRepository implements ReportRepository {
     required ProductRepository productRepository,
     ExpenseRepository? expenseRepository,
     CustomerAccountRepository? customerAccountRepository,
+    SupplierAccountRepository? supplierAccountRepository,
   })  : _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
         _productRepository = productRepository,
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
-        _customerAccountRepository = customerAccountRepository;
+        _customerAccountRepository = customerAccountRepository,
+        _supplierAccountRepository = supplierAccountRepository;
 
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
@@ -35,6 +39,7 @@ class LocalReportRepository implements ReportRepository {
   final ProductRepository _productRepository;
   final ExpenseRepository _expenseRepository;
   final CustomerAccountRepository? _customerAccountRepository;
+  final SupplierAccountRepository? _supplierAccountRepository;
 
   @override
   Future<DailyActivityReport> dailyActivityReport({
@@ -75,6 +80,11 @@ class LocalReportRepository implements ReportRepository {
         .toList(growable: false);
     final receivablesByCustomer = await _customerAccountRepository?.balancesByCustomerId() ?? const <String, int>{};
     final totalOutstandingReceivablesQirsh = receivablesByCustomer.values.where((value) => value > 0).fold<int>(0, (total, value) => total + value);
+    final allSupplierEntries = await _supplierAccountRepository?.listEntries() ?? const <SupplierAccountEntry>[];
+    final paymentEntries = allSupplierEntries.where((e) => e.type == SupplierAccountEntryType.payment && _isInRange(e.date, start, end)).toList(growable: false);
+    final totalSupplierPaymentsQirsh = paymentEntries.fold<int>(0, (t, e) => t + e.creditAmountQirsh);
+    final payablesBySupplier = await _supplierAccountRepository?.balancesBySupplierId() ?? const <String, int>{};
+    final totalOutstandingSupplierPayablesQirsh = payablesBySupplier.values.where((value) => value > 0).fold<int>(0, (total, value) => total + value);
     final summary = BusinessSummaryCalculator.calculate(
       products: products,
       purchases: purchases,
@@ -127,6 +137,8 @@ class LocalReportRepository implements ReportRepository {
       totalCreditSalesAmountQirsh: creditSales.fold<int>(0, (total, sale) => total + sale.totalQirsh),
       totalCollectionsAmountQirsh: customerCollections.fold<int>(0, (total, collection) => total + collection.amountQirsh),
       totalOutstandingReceivablesQirsh: totalOutstandingReceivablesQirsh,
+      totalSupplierPaymentsQirsh: totalSupplierPaymentsQirsh,
+      totalOutstandingSupplierPayablesQirsh: totalOutstandingSupplierPayablesQirsh,
       estimatedSalesCostQirsh: summary.estimatedSalesCostQirsh,
       estimatedGrossProfitQirsh: summary.estimatedGrossProfitQirsh,
       estimatedStockValueQirsh: summary.estimatedStockValueQirsh,

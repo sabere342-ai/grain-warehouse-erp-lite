@@ -16,6 +16,9 @@ import 'package:grain_warehouse_erp_lite/core/reports/report_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
 
@@ -199,6 +202,51 @@ void main() {
       expect(report.hasCompleteStockValuation, isTrue);
     });
 
+    test('supplier payments appear in report totals', () async {
+      final paymentEntry = _paymentEntry(
+        creditAmountQirsh: 50000,
+        createdAt: _midday,
+      );
+      final repository = _reportRepository(
+        supplierEntries: [paymentEntry],
+      );
+
+      final report = await repository.dailyActivityReport(
+        selectedDate: _reportDay,
+      );
+
+      expect(report.totalSupplierPaymentsQirsh, 50000);
+    });
+
+    test('outstanding supplier payables are computed', () async {
+      final purchaseEntry = SupplierAccountEntry(
+        id: 'sle-purchase-1',
+        supplierId: 'supplier-id',
+        date: _before,
+        type: SupplierAccountEntryType.purchase,
+        debitAmountQirsh: 200000,
+        creditAmountQirsh: 0,
+        sourceDocumentType: 'purchase',
+        sourceDocumentId: 'pin-outstanding',
+        descriptionAr: 'مشتريات',
+        createdAt: _before,
+        createdByUserId: _owner.id,
+      );
+      final paymentEntry = _paymentEntry(
+        creditAmountQirsh: 50000,
+        createdAt: _midday,
+      );
+      final repository = _reportRepository(
+        supplierEntries: [purchaseEntry, paymentEntry],
+      );
+
+      final report = await repository.dailyActivityReport(
+        selectedDate: _reportDay,
+      );
+
+      expect(report.totalOutstandingSupplierPayablesQirsh, 150000);
+    });
+
     test('authorized user can view reports', () async {
       final controller = ReportController(repository: _reportRepository());
 
@@ -277,6 +325,9 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(find.text('حسابات الموردين'), findsOneWidget);
+      expect(find.text('إجمالي مدفوعات الموردين'), findsWidgets);
+      expect(find.text('إجمالي أرصدة الموردين المستحقة'), findsWidgets);
     });
 
     testWidgets('employee cannot view report content', (tester) async {
@@ -303,6 +354,8 @@ LocalReportRepository _reportRepository({
   List<SaleRecord> sales = const [],
   List<StockMovement> movements = const [],
   Map<String, int> balances = const {},
+  List<SupplierAccountEntry> supplierEntries = const [],
+  List<SupplierPaymentRecord> supplierPayments = const [],
 }) {
   return LocalReportRepository(
     purchaseRepository: _FakePurchaseRepository(purchases),
@@ -312,6 +365,10 @@ LocalReportRepository _reportRepository({
       balances: balances,
     ),
     productRepository: _FakeProductRepository(products ?? [_product]),
+    supplierAccountRepository: _FakeSupplierAccountRepository(
+      entries: supplierEntries,
+      payments: supplierPayments,
+    ),
   );
 }
 
@@ -364,6 +421,25 @@ CancellationMetadata _cancellation(String documentId) {
     cancellationReason: 'خطأ في الإدخال',
     originalDocumentId: documentId,
     reversalMovementIds: ['reversal-$documentId'],
+  );
+}
+
+SupplierAccountEntry _paymentEntry({
+  required int creditAmountQirsh,
+  required DateTime createdAt,
+}) {
+  return SupplierAccountEntry(
+    id: 'sle-${creditAmountQirsh}-${createdAt.microsecondsSinceEpoch}',
+    supplierId: 'supplier-id',
+    date: createdAt,
+    type: SupplierAccountEntryType.payment,
+    debitAmountQirsh: 0,
+    creditAmountQirsh: creditAmountQirsh,
+    sourceDocumentType: 'supplierPayment',
+    sourceDocumentId: 'spy-test',
+    descriptionAr: 'مدفوع للمورد',
+    createdAt: createdAt,
+    createdByUserId: _owner.id,
   );
 }
 
@@ -504,6 +580,63 @@ class _FakeInventoryRepository implements InventoryRepository {
     return List<StockMovement>.unmodifiable(
       movements.where((movement) => movement.productId == productId),
     );
+  }
+}
+
+class _FakeSupplierAccountRepository implements SupplierAccountRepository {
+  const _FakeSupplierAccountRepository({
+    required this.entries,
+    required this.payments,
+  });
+
+  final List<SupplierAccountEntry> entries;
+  final List<SupplierPaymentRecord> payments;
+
+  @override
+  Future<List<SupplierAccountEntry>> listEntries() async =>
+      List<SupplierAccountEntry>.unmodifiable(entries);
+
+  @override
+  Future<List<SupplierPaymentRecord>> listPayments() async =>
+      List<SupplierPaymentRecord>.unmodifiable(payments);
+
+  @override
+  Future<int> balanceForSupplier(String supplierId) async => 0;
+
+  @override
+  Future<Map<String, int>> balancesBySupplierId() async {
+    final result = <String, int>{};
+    for (final entry in entries) {
+      result[entry.supplierId] =
+          (result[entry.supplierId] ?? 0) + entry.signedBalanceImpactQirsh;
+    }
+    return result;
+  }
+
+  @override
+  Future<SupplierStatement> statementForSupplier(String supplierId) async {
+    throw UnsupportedError('Reports test fake.');
+  }
+
+  @override
+  Future<SupplierAccountEntry> createPurchaseEntry({
+    required PurchaseIntake purchase,
+  }) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
+  Future<SupplierPaymentRecord> createPayment(SupplierPaymentDraft draft) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
+  Future<SupplierAccountEntry> reversePurchaseEntry({
+    required PurchaseIntake cancelledPurchase,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) {
+    throw UnsupportedError('Reports test fake is read-only.');
   }
 }
 

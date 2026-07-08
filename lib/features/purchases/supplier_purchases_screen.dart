@@ -3,6 +3,8 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierPurchasesScreen extends StatefulWidget {
@@ -22,6 +24,10 @@ class SupplierPurchasesScreen extends StatefulWidget {
 
 class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
   late final PurchaseController _controller;
+  final SupplierAccountRepository _accountRepo =
+      AppRepositories.supplierAccountRepository;
+  int _balanceQirsh = 0;
+  bool _balanceLoading = true;
 
   @override
   void initState() {
@@ -35,8 +41,23 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
         _controller.load(user);
+        _loadBalance();
       }
     });
+  }
+
+  Future<void> _loadBalance() async {
+    try {
+      final balance = await _accountRepo.balanceForSupplier(widget.supplierId);
+      if (!mounted) return;
+      setState(() {
+        _balanceQirsh = balance;
+        _balanceLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _balanceLoading = false);
+    }
   }
 
   @override
@@ -75,7 +96,35 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
 
           return ListView(
             padding: const EdgeInsets.all(16),
-            children: supplierIntakes.reversed.map((intake) {
+            children: [
+              if (!_balanceLoading) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: PremiumCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Text(
+                            'الرصيد المستحق: ',
+                            style: textTheme.titleMedium,
+                          ),
+                          Text(
+                            MoneyUtils.formatPiastersAsEgp(_balanceQirsh),
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: _balanceQirsh > 0
+                                  ? AppColors.text
+                                  : AppColors.mutedText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              ...supplierIntakes.reversed.map((intake) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: PremiumCard(
@@ -128,7 +177,8 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
                 ),
               );
             }).toList(),
-          );
+          ],
+        );
         },
       ),
     );

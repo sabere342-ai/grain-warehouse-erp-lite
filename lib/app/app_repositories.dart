@@ -68,6 +68,7 @@ class AppRepositories {
     productRepository: productRepository,
     expenseRepository: expenseRepository,
     customerAccountRepository: customerAccountRepository,
+    supplierAccountRepository: supplierAccountRepository,
   );
 
   static final LocalDocumentHistoryRepository documentHistoryRepository =

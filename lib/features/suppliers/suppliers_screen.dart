@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/supplier_purchases_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_statement_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -19,7 +23,9 @@ class SuppliersScreen extends StatefulWidget {
 
 class _SuppliersScreenState extends State<SuppliersScreen> {
   late final SupplierController _controller;
+  late final SupplierAccountRepository _accountRepo;
   late final bool _ownsController;
+  Map<String, int> _balances = const {};
 
   @override
   void initState() {
@@ -27,12 +33,26 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
         SupplierController(repository: AppRepositories.supplierRepository);
+    _accountRepo = AppRepositories.supplierAccountRepository;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
         _controller.loadSuppliers(user);
+        _loadBalances();
       }
     });
+  }
+
+  Future<void> _loadBalances() async {
+    try {
+      final balances = await _accountRepo.balancesBySupplierId();
+      if (!mounted) return;
+      setState(() {
+        _balances = balances;
+      });
+    } catch (_) {
+      if (!mounted) return;
+    }
   }
 
   @override
@@ -41,6 +61,36 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       _controller.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _recordPayment(
+    BuildContext context, {
+    required user,
+    required Supplier supplier,
+  }) async {
+    final balance = _balances[supplier.id] ?? 0;
+    if (balance <= 0) return;
+
+    final draft = await showDialog<SupplierPaymentDraft>(
+      context: context,
+      builder: (context) => SupplierPaymentDialog(
+        supplier: supplier,
+        balanceQirsh: balance,
+        userId: user.id,
+      ),
+    );
+
+    if (draft == null) return;
+
+    try {
+      await _accountRepo.createPayment(draft);
+      await _loadBalances();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطأ في تسجيل الدفع: $e')),
+      );
+    }
   }
 
   @override
@@ -108,6 +158,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   child: _SupplierCard(
                     supplier: supplier,
                     canManage: canManage,
+                    balanceQirsh: _balances[supplier.id] ?? 0,
                     onEdit: () => _showSupplierForm(
                       context,
                       user: user,
@@ -118,6 +169,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       supplierId: supplier.id,
                       isActive: !supplier.isActive,
                     ),
+                    onPayment: () => _recordPayment(context, user: user, supplier: supplier),
                   ),
                 ),
               ),
@@ -157,14 +209,18 @@ class _SupplierCard extends StatelessWidget {
   const _SupplierCard({
     required this.supplier,
     required this.canManage,
+    required this.balanceQirsh,
     required this.onEdit,
     required this.onToggleActive,
+    this.onPayment,
   });
 
   final Supplier supplier;
   final bool canManage;
+  final int balanceQirsh;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
+  final VoidCallback? onPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +246,22 @@ class _SupplierCard extends StatelessWidget {
                 Text('العنوان: ${supplier.address}'),
             ],
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text(
+                balanceQirsh > 0
+                    ? 'له علينا: ${MoneyUtils.formatPiastersAsEgp(balanceQirsh)}'
+                    : 'لا يوجد رصيد مستحق',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: balanceQirsh > 0
+                          ? AppColors.text
+                          : AppColors.mutedText,
+                    ),
+              ),
+            ],
+          ),
           if (supplier.notes != null) ...[
             const SizedBox(height: 8),
             Text(supplier.notes!),
@@ -213,6 +285,12 @@ class _SupplierCard extends StatelessWidget {
                   ),
                   label: Text(supplier.isActive ? 'إيقاف' : 'تفعيل'),
                 ),
+                if (balanceQirsh > 0)
+                  OutlinedButton.icon(
+                    onPressed: onPayment,
+                    icon: const Icon(Icons.payments_rounded),
+                    label: const Text('تسجيل دفعة'),
+                  ),
               ],
             ),
           ],
