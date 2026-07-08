@@ -112,12 +112,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'مبيعات اليوم',
                         MoneyUtils.formatPiastersAsEgp(data.todaySalesQirsh),
                         Icons.point_of_sale_rounded,
+                        subtitle: data.todayCashSalesQirsh > 0 || data.todayCreditSalesQirsh > 0
+                            ? 'نقدي ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • آجل ${MoneyUtils.formatPiastersAsEgp(data.todayCreditSalesQirsh)}'
+                            : null,
                       ),
                       _MetricCard(
-                        'رصيد النقدية',
-                        MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
+                        'نقد داخل اليوم',
+                        MoneyUtils.formatPiastersAsEgp(data.todayCashInQirsh),
                         Icons.payments_rounded,
-                        subtitle: 'محسوب من النقد الداخل ناقص المصروفات ومدفوعات الموردين.',
+                        subtitle: data.todayCashSalesQirsh > 0 || data.todayCollectionsQirsh > 0
+                            ? 'مبيعات نقدية ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • تحصيلات ${MoneyUtils.formatPiastersAsEgp(data.todayCollectionsQirsh)}'
+                            : null,
+                      ),
+                      _MetricCard(
+                        'المستحق على العملاء',
+                        MoneyUtils.formatPiastersAsEgp(data.customerReceivablesQirsh),
+                        Icons.account_balance_wallet_rounded,
+                        subtitle: 'إجمالي المبالغ المستحقة لنا على العملاء.',
+                      ),
+                      _MetricCard(
+                        'المستحق للموردين',
+                        MoneyUtils.formatPiastersAsEgp(data.supplierPayablesQirsh),
+                        Icons.account_balance_wallet_rounded,
+                        subtitle: 'إجمالي المبالغ المستحقة للموردين.',
+                      ),
+                      _MetricCard(
+                        'رصيد النقدية التراكمي',
+                        MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
+                        Icons.savings_rounded,
+                        subtitle: 'إجمالي النقد الداخل (مبيعات نقدية + تحصيلات) منذ بداية النظام ناقص المصروفات ومدفوعات الموردين.',
                       ),
                       _MetricCard(
                         'مخزون القمح',

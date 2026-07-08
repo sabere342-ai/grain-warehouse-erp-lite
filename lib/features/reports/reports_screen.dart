@@ -262,6 +262,49 @@ class _ReportBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _Section(
+          title: 'حركة النقد اليوم',
+          children: [
+            _MetricLine(
+              'نقد داخل اليوم',
+              MoneyUtils.formatPiastersAsEgp(report.cashInQirsh),
+            ),
+            _MetricLine(
+              'مبيعات نقدية',
+              MoneyUtils.formatPiastersAsEgp(report.cashSalesAmountQirsh),
+            ),
+            _MetricLine(
+              'تحصيلات من العملاء',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalCollectionsAmountQirsh,
+              ),
+            ),
+            const SizedBox(height: 4),
+            _MetricLine(
+              'نقد خارج اليوم',
+              MoneyUtils.formatPiastersAsEgp(report.cashOutQirsh),
+            ),
+            _MetricLine(
+              'مدفوعات الموردين',
+              MoneyUtils.formatPiastersAsEgp(
+                report.totalSupplierPaymentsQirsh,
+              ),
+            ),
+            _MetricLine(
+              'مصروفات',
+              MoneyUtils.formatPiastersAsEgp(report.totalExpenseAmountQirsh),
+            ),
+            const SizedBox(height: 4),
+            _MetricLine(
+              'صافي حركة النقد اليوم',
+              MoneyUtils.formatPiastersAsEgp(report.netCashQirsh),
+            ),
+            const Text(
+              'نقد داخل (نقدي + تحصيلات) ناقص نقد خارج (مدفوعات موردين + مصروفات). هذا هو صافي النقد الفعلي الذي دخل أو خرج اليوم.',
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _Section(
           title: 'المخزون الحالي',
           children: [
             _MetricLine(
@@ -414,8 +457,29 @@ class _SummaryGrid extends StatelessWidget {
               width: itemWidth,
               title: 'صافي حركة المستندات',
               value: MoneyUtils.formatPiastersAsEgp(report.netMovementQirsh),
-              caption: 'إجمالي المبيعات ناقص إجمالي المشتريات، وليس رصيد النقدية.',
+              caption: 'مبيعات ناقص مشتريات ومصروفات، وليس رصيد النقدية.',
               icon: Icons.swap_vert_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'نقد داخل اليوم',
+              value: MoneyUtils.formatPiastersAsEgp(report.cashInQirsh),
+              caption: 'مبيعات نقدية + تحصيلات',
+              icon: Icons.payments_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'نقد خارج اليوم',
+              value: MoneyUtils.formatPiastersAsEgp(report.cashOutQirsh),
+              caption: 'مدفوعات موردين + مصروفات',
+              icon: Icons.money_off_rounded,
+            ),
+            _SummaryCard(
+              width: itemWidth,
+              title: 'صافي حركة النقد',
+              value: MoneyUtils.formatPiastersAsEgp(report.netCashQirsh),
+              caption: 'نقد داخل ناقص نقد خارج',
+              icon: Icons.account_balance_rounded,
             ),
             _SummaryCard(
               width: itemWidth,

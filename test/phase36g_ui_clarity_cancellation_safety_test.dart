@@ -250,7 +250,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining('محسوب من النقد الداخل'),
+          find.textContaining('منذ بداية النظام'),
           findsOneWidget,
         );
       });

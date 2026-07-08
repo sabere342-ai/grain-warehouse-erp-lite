@@ -59,6 +59,15 @@ class DailyActivityReport {
         totalExpenseAmountQirsh;
   }
 
+  int get cashSalesAmountQirsh =>
+      totalSalesAmountQirsh - totalCreditSalesAmountQirsh;
+
+  int get cashInQirsh => cashSalesAmountQirsh + totalCollectionsAmountQirsh;
+
+  int get cashOutQirsh => totalSupplierPaymentsQirsh + totalExpenseAmountQirsh;
+
+  int get netCashQirsh => cashInQirsh - cashOutQirsh;
+
   bool get hasIncompleteCostData {
     return !hasCompleteSalesCost || !hasCompleteStockValuation;
   }

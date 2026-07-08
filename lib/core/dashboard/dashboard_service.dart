@@ -11,7 +11,12 @@ class DashboardData {
     required this.todaySalesQirsh,
     required this.todayCashSalesQirsh,
     required this.todayCreditSalesQirsh,
+    required this.todayCollectionsQirsh,
+    required this.todaySupplierPaymentsQirsh,
+    required this.todayExpensesQirsh,
     required this.cashBalanceQirsh,
+    required this.customerReceivablesQirsh,
+    required this.supplierPayablesQirsh,
     required this.totalStockKg,
     required this.wheatStockKg,
     required this.stockAlertCount,
@@ -21,7 +26,17 @@ class DashboardData {
   final int todaySalesQirsh;
   final int todayCashSalesQirsh;
   final int todayCreditSalesQirsh;
+  final int todayCollectionsQirsh;
+  final int todaySupplierPaymentsQirsh;
+  final int todayExpensesQirsh;
+
+  int get todayCashInQirsh => todayCashSalesQirsh + todayCollectionsQirsh;
+  int get todayCashOutQirsh => todaySupplierPaymentsQirsh + todayExpensesQirsh;
+  int get todayNetCashQirsh => todayCashInQirsh - todayCashOutQirsh;
+
   final int cashBalanceQirsh;
+  final int customerReceivablesQirsh;
+  final int supplierPayablesQirsh;
   final int totalStockKg;
   final int wheatStockKg;
   final int stockAlertCount;
@@ -31,7 +46,12 @@ class DashboardData {
         todaySalesQirsh: 0,
         todayCashSalesQirsh: 0,
         todayCreditSalesQirsh: 0,
+        todayCollectionsQirsh: 0,
+        todaySupplierPaymentsQirsh: 0,
+        todayExpensesQirsh: 0,
         cashBalanceQirsh: 0,
+        customerReceivablesQirsh: 0,
+        supplierPayablesQirsh: 0,
         totalStockKg: 0,
         wheatStockKg: 0,
         stockAlertCount: 0,
@@ -81,6 +101,19 @@ class DashboardService {
         .where((s) => s.isCreditSale)
         .fold<int>(0, (t, s) => t + s.totalQirsh);
 
+    final todayCollections = (await _customerAccountRepository.listCollections())
+        .where((c) => !c.date.isBefore(todayStart) && c.date.isBefore(todayEnd))
+        .fold<int>(0, (t, c) => t + c.amountQirsh);
+
+    final todayExpenses = (await _expenseRepository.listExpenses())
+        .where((e) => !e.date.isBefore(todayStart) && e.date.isBefore(todayEnd))
+        .fold<int>(0, (t, e) => t + e.amountQirsh);
+
+    final allSupplierPayments = await _supplierAccountRepository?.listPayments() ?? [];
+    final todaySupplierPayments = allSupplierPayments
+        .where((p) => !p.date.isBefore(todayStart) && p.date.isBefore(todayEnd))
+        .fold<int>(0, (t, p) => t + p.amountQirsh);
+
     final totalCashSalesQirsh = allSales
         .where((s) => !s.isCancelled && s.paymentMode == SalePaymentMode.cash)
         .fold<int>(0, (t, s) => t + s.totalQirsh);
@@ -91,11 +124,22 @@ class DashboardService {
     final allExpenses = await _expenseRepository.listExpenses();
     final totalExpensesQirsh = allExpenses.fold<int>(0, (t, e) => t + e.amountQirsh);
 
-    final allSupplierPayments = await _supplierAccountRepository?.listPayments() ?? const [];
     final totalSupplierPaymentsQirsh = allSupplierPayments.fold<int>(0, (t, p) => t + p.amountQirsh);
 
     final cashBalanceQirsh = totalCashSalesQirsh + totalCollections -
         totalExpensesQirsh - totalSupplierPaymentsQirsh;
+
+    final receivablesByCustomer =
+        await _customerAccountRepository.balancesByCustomerId();
+    final customerReceivablesQirsh = receivablesByCustomer.values
+        .where((v) => v > 0)
+        .fold<int>(0, (t, v) => t + v);
+
+    final payablesBySupplier =
+        await _supplierAccountRepository?.balancesBySupplierId() ?? const <String, int>{};
+    final supplierPayablesQirsh = payablesBySupplier.values
+        .where((v) => v > 0)
+        .fold<int>(0, (t, v) => t + v);
 
     final balances = await _inventoryRepository.allProductBalancesKg();
     final totalStockKg = balances.values.fold<int>(0, (t, v) => t + v);
@@ -120,7 +164,12 @@ class DashboardService {
       todaySalesQirsh: todaySalesQirsh,
       todayCashSalesQirsh: todayCashSalesQirsh,
       todayCreditSalesQirsh: todayCreditSalesQirsh,
+      todayCollectionsQirsh: todayCollections,
+      todaySupplierPaymentsQirsh: todaySupplierPayments,
+      todayExpensesQirsh: todayExpenses,
       cashBalanceQirsh: cashBalanceQirsh,
+      customerReceivablesQirsh: customerReceivablesQirsh,
+      supplierPayablesQirsh: supplierPayablesQirsh,
       totalStockKg: totalStockKg,
       wheatStockKg: wheatStockKg,
       stockAlertCount: stockAlertCount,
