@@ -563,7 +563,7 @@ class _StatementLineCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               Text('التاريخ: ${_formatDate(entry.date)}'),
-              Text('المستند: ${entry.sourceDocumentId}'),
+              Text('رقم المرجع: ${entry.sourceDocumentId}'),
               if (entry.type == CustomerAccountEntryType.openingBalance) ...[
                 Text(
                     'الرصيد الافتتاحي: ${MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)}'),
@@ -656,7 +656,7 @@ class _CustomerOpeningBalanceDialogState
   void _submit() {
     final amount = int.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
-      setState(() => _errorMessage = 'ادخل مبلغ صحيح أكبر من صفر.');
+      setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
       return;
     }
     if (amount % 100 != 0) {
@@ -755,7 +755,7 @@ class _CustomerFormDialogState extends State<_CustomerFormDialog> {
 
   void _submit() {
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'ادخل اسم العميل.');
+      setState(() => _errorMessage = 'أدخل اسم العميل.');
       return;
     }
     Navigator.of(context).pop(

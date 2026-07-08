@@ -116,8 +116,7 @@ class _AuditLogCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text('الوقت: ${_formatDateTime(entry.timestamp)}'),
-          Text('نوع الإجراء: ${entry.actionType}'),
-          if (entry.referenceId != null) Text('المرجع: ${entry.referenceId}'),
+          if (entry.referenceId != null) Text('رقم المستند: ${entry.referenceId}'),
         ],
       ),
     );

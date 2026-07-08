@@ -260,7 +260,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
 
   void _submit() {
     if (_categoryController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'ادخل اسم المصروف.');
+      setState(() => _errorMessage = 'أدخل اسم المصروف.');
       return;
     }
     try {
@@ -278,7 +278,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         ),
       );
     } on FormatException {
-      setState(() => _errorMessage = 'ادخل مبلغا صحيحا أكبر من صفر.');
+      setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
     }
   }
 

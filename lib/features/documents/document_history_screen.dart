@@ -343,7 +343,7 @@ class _DocumentHistoryCard extends StatelessWidget {
                 ),
               Text('التاريخ: ${_formatDateTime(entry.createdAt)}'),
               Text(
-                  'أنشأه: ${entry.createdByUserName ?? entry.createdByUserId}'),
+                  'أنشأه: ${entry.createdByUserName ?? 'غير معروف'}'),
             ],
           ),
           if (entry.notes != null) ...[
@@ -414,11 +414,10 @@ class _AuditDetails extends StatelessWidget {
         children: [
           Text('سبب الإلغاء: ${cancellation.cancellationReason}'),
           Text('وقت الإلغاء: ${_formatDateTime(cancellation.cancelledAt)}'),
-          Text('ألغاه: ${cancellation.cancelledByUserId}'),
-          Text('معرف المستند الأصلي: ${cancellation.originalDocumentId}'),
-          Text(
-            'حركات العكس: ${cancellation.reversalMovementIds.join(', ')}',
-          ),
+          if (cancellation.reversalMovementIds.length == 1)
+            Text('تم إنشاء حركة مخزون عكسية.')
+          else
+            Text('تم إنشاء ${cancellation.reversalMovementIds.length} حركات مخزون عكسية.'),
         ],
       ),
     );

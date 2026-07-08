@@ -74,7 +74,7 @@ class LocalPurchaseRepository implements PurchaseRepository {
         movementType: StockMovementType.purchaseIntake,
         quantityKg: intake.quantityKg,
         createdByUserId: intake.createdByUserId,
-        note: 'Purchase intake ${intake.id}',
+        note: 'استلام شراء ${intake.id}',
         originalDocumentId: intake.id,
       ),
     );
@@ -126,7 +126,7 @@ class LocalPurchaseRepository implements PurchaseRepository {
         movementType: StockMovementType.purchaseCancellation,
         quantityKg: intake.quantityKg,
         createdByUserId: userId,
-        note: 'Cancel purchase intake ${intake.id}: $reason',
+        note: 'إلغاء استلام شراء ${intake.id}: $reason',
         reversedMovementId: intake.stockMovementId,
         originalDocumentId: intake.id,
       ),

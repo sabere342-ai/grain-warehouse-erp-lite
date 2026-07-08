@@ -494,7 +494,7 @@ class _SupplierFormDialogState extends State<_SupplierFormDialog> {
 
   void _submit() {
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'ادخل اسم المورد.');
+      setState(() => _errorMessage = 'أدخل اسم المورد.');
       return;
     }
 
@@ -575,7 +575,7 @@ class _SupplierOpeningBalanceDialogState
   void _submit() {
     final amount = int.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
-      setState(() => _errorMessage = 'ادخل مبلغ صحيح أكبر من صفر.');
+      setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
       return;
     }
     if (amount % 100 != 0) {

@@ -67,7 +67,7 @@ class LocalSaleRepository implements SaleRepository {
         movementType: StockMovementType.sale,
         quantityKg: draft.quantityKg,
         createdByUserId: draft.createdByUserId.trim(),
-        note: 'Sale $saleId',
+        note: 'بيع $saleId',
         originalDocumentId: saleId,
       ),
     );
@@ -136,7 +136,7 @@ class LocalSaleRepository implements SaleRepository {
         movementType: StockMovementType.saleCancellation,
         quantityKg: sale.quantityKg,
         createdByUserId: userId,
-        note: 'Cancel sale ${sale.id}: $reason',
+        note: 'إلغاء بيع ${sale.id}: $reason',
         reversedMovementId: sale.stockMovementId,
         originalDocumentId: sale.id,
       ),

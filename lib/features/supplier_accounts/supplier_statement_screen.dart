@@ -47,10 +47,10 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
         _statement = statement;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = 'تعذر تحميل كشف الحساب.';
         _isLoading = false;
       });
     }
@@ -68,7 +68,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text('خطأ: $_error'))
+              ? Center(child: Text(_error!))
               : _buildContent(textTheme),
     );
   }
@@ -93,10 +93,10 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     try {
       await _repository.createPayment(draft);
       await _load();
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطأ في تسجيل الدفع: $e')),
+        const SnackBar(content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
       );
     }
   }

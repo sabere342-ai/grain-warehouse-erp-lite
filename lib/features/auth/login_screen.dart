@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 18),
                       Text(
-                        'Grain Warehouse ERP Lite',
+                        'نظام إدارة مخازن الحبوب',
                         textAlign: TextAlign.center,
                         style: textTheme.headlineMedium,
                       ),

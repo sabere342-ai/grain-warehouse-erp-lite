@@ -72,7 +72,7 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
           animation: _themeController,
           builder: (context, _) {
             return MaterialApp(
-              title: 'Grain Warehouse ERP Lite',
+              title: 'نظام إدارة مخازن الحبوب',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.fromPreset(_themeController.preset),
               locale: const Locale('ar'),
