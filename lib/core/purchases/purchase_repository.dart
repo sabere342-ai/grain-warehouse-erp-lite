@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.da
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
@@ -24,13 +25,16 @@ class LocalPurchaseRepository implements PurchaseRepository {
     required SupplierRepository supplierRepository,
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
+    SupplierAccountRepository? supplierAccountRepository,
   })  : _supplierRepository = supplierRepository,
         _productRepository = productRepository,
-        _inventoryRepository = inventoryRepository;
+        _inventoryRepository = inventoryRepository,
+        _supplierAccountRepository = supplierAccountRepository;
 
   final SupplierRepository _supplierRepository;
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
+  final SupplierAccountRepository? _supplierAccountRepository;
   final List<PurchaseIntake> _intakes = [];
   int _generatedIdCounter = 0;
 
@@ -46,6 +50,9 @@ class LocalPurchaseRepository implements PurchaseRepository {
     final intake = PurchaseIntake(
       id: _generatePurchaseIntakeId(now),
       supplierId: supplier.id,
+      supplierName: _normalizedOptionalText(draft.supplierName ?? supplier.name),
+      supplierPhone: _normalizedOptionalText(draft.supplierPhone ?? supplier.phone),
+      supplierAddress: _normalizedOptionalText(draft.supplierAddress ?? supplier.address),
       productId: product.id,
       quantityKg: draft.quantityKg,
       entryUnit: draft.entryUnit,
@@ -74,6 +81,8 @@ class LocalPurchaseRepository implements PurchaseRepository {
 
     final postedIntake = intake.copyWith(stockMovementId: movement.id);
     _intakes.add(postedIntake);
+    await _supplierAccountRepository
+        ?.createPurchaseEntry(purchase: postedIntake);
     return postedIntake;
   }
 
@@ -132,6 +141,11 @@ class LocalPurchaseRepository implements PurchaseRepository {
       ),
     );
     _intakes[intakeIndex] = cancelled;
+    await _supplierAccountRepository?.reversePurchaseEntry(
+      cancelledPurchase: cancelled,
+      cancelledByUserId: userId,
+      cancellationReason: reason,
+    );
     return cancelled;
   }
 

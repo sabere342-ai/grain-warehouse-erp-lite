@@ -126,12 +126,12 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                 ),
               )
             else
-              ..._controller.intakes.reversed.map(
+                ..._controller.intakes.reversed.map(
                 (intake) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _PurchaseIntakeCard(
                     intake: intake,
-                    supplierName: _controller.supplierName(intake.supplierId),
+                    supplierName: _controller.displaySupplierName(intake),
                     productName: _controller.productName(intake.productId),
                     canCancel: canCancel,
                     onCancel: intake.isCancelled
@@ -485,9 +485,16 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
         ? GrainUnitConverter.tonsToKilograms(quantity)
         : quantity;
 
+    final selectedSupplier = widget.suppliers.firstWhere(
+      (s) => s.id == _supplierId,
+    );
+
     Navigator.of(context).pop(
       PurchaseIntakeDraft(
         supplierId: _supplierId,
+        supplierName: selectedSupplier.name,
+        supplierPhone: selectedSupplier.phone,
+        supplierAddress: selectedSupplier.address,
         productId: _productId,
         quantityKg: quantityKg,
         entryUnit: _inputUnit,

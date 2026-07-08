@@ -4,6 +4,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/purchases/supplier_purchases_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_statement_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SuppliersScreen extends StatefulWidget {
@@ -214,6 +216,43 @@ class _SupplierCard extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => SupplierPurchasesScreen(
+                          supplierId: supplier.id,
+                          supplierName: supplier.name,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.receipt_long_rounded),
+                  label: const Text('المشتريات'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => SupplierStatementScreen(
+                          supplier: supplier,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.account_balance_rounded),
+                  label: const Text('كشف حساب'),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

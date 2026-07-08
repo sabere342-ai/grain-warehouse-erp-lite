@@ -18,6 +18,9 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
@@ -31,6 +34,7 @@ class BackupExportService {
     required DocumentHistoryRepository documentHistoryRepository,
     CustomerRepository? customerRepository,
     CustomerAccountRepository? customerAccountRepository,
+    SupplierAccountRepository? supplierAccountRepository,
     ExpenseRepository? expenseRepository,
     AuditLogRepository? auditLogRepository,
     DateTime Function()? now,
@@ -42,6 +46,7 @@ class BackupExportService {
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository,
+        _supplierAccountRepository = supplierAccountRepository,
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _now = now;
@@ -56,6 +61,7 @@ class BackupExportService {
   final DocumentHistoryRepository _documentHistoryRepository;
   final CustomerRepository _customerRepository;
   final CustomerAccountRepository? _customerAccountRepository;
+  final SupplierAccountRepository? _supplierAccountRepository;
   final ExpenseRepository _expenseRepository;
   final AuditLogRepository _auditLogRepository;
   final DateTime Function()? _now;
@@ -75,6 +81,8 @@ class BackupExportService {
     final customers = await _customerRepository.listCustomers(includeInactive: true);
     final customerAccountEntries = await _customerAccountRepository?.listEntries() ?? const <CustomerAccountEntry>[];
     final customerCollections = await _customerAccountRepository?.listCollections() ?? const <CustomerCollectionRecord>[];
+    final supplierAccountEntries = await _supplierAccountRepository?.listEntries() ?? const <SupplierAccountEntry>[];
+    final supplierPayments = await _supplierAccountRepository?.listPayments() ?? const <SupplierPaymentRecord>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
 
@@ -88,6 +96,8 @@ class BackupExportService {
       customers: customers.length,
       customerLedgerEntries: customerAccountEntries.length,
       customerCollections: customerCollections.length,
+      supplierLedgerEntries: supplierAccountEntries.length,
+      supplierPayments: supplierPayments.length,
       expenses: expenses.length,
       auditLogs: auditLogs.length,
     );
@@ -116,6 +126,8 @@ class BackupExportService {
         'customers': customers.map(_customerToJson).toList(growable: false),
         'customerAccountEntries': customerAccountEntries.map(_customerAccountEntryToJson).toList(growable: false),
         'customerCollections': customerCollections.map(_customerCollectionToJson).toList(growable: false),
+        'supplierAccountEntries': supplierAccountEntries.map(_supplierAccountEntryToJson).toList(growable: false),
+        'supplierPayments': supplierPayments.map(_supplierPaymentToJson).toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
       },
@@ -192,6 +204,9 @@ class BackupExportService {
     return {
       'id': purchase.id,
       'supplierId': purchase.supplierId,
+      'supplierName': purchase.supplierName,
+      'supplierPhone': purchase.supplierPhone,
+      'supplierAddress': purchase.supplierAddress,
       'productId': purchase.productId,
       'quantityKg': purchase.quantityKg,
       'entryUnit': purchase.entryUnit.name,
@@ -274,6 +289,35 @@ class BackupExportService {
       'createdByUserId': collection.createdByUserId,
       'createdByUserName': collection.createdByUserName,
       'notes': collection.notes,
+    };
+  }
+
+  Map<String, Object?> _supplierAccountEntryToJson(SupplierAccountEntry entry) {
+    return {
+      'id': entry.id,
+      'supplierId': entry.supplierId,
+      'date': entry.date.toUtc().toIso8601String(),
+      'type': entry.type.name,
+      'debitAmountQirsh': entry.debitAmountQirsh,
+      'creditAmountQirsh': entry.creditAmountQirsh,
+      'sourceDocumentType': entry.sourceDocumentType,
+      'sourceDocumentId': entry.sourceDocumentId,
+      'descriptionAr': entry.descriptionAr,
+      'createdAt': entry.createdAt.toUtc().toIso8601String(),
+      'createdByUserId': entry.createdByUserId,
+    };
+  }
+
+  Map<String, Object?> _supplierPaymentToJson(SupplierPaymentRecord payment) {
+    return {
+      'id': payment.id,
+      'supplierId': payment.supplierId,
+      'date': payment.date.toUtc().toIso8601String(),
+      'amountQirsh': payment.amountQirsh,
+      'createdAt': payment.createdAt.toUtc().toIso8601String(),
+      'createdByUserId': payment.createdByUserId,
+      'createdByUserName': payment.createdByUserName,
+      'notes': payment.notes,
     };
   }
 
@@ -367,6 +411,8 @@ class BackupExportCounts {
     required this.customers,
     required this.customerLedgerEntries,
     required this.customerCollections,
+    this.supplierLedgerEntries = 0,
+    this.supplierPayments = 0,
     required this.expenses,
     required this.auditLogs,
   });
@@ -380,6 +426,8 @@ class BackupExportCounts {
   final int customers;
   final int customerLedgerEntries;
   final int customerCollections;
+  final int supplierLedgerEntries;
+  final int supplierPayments;
   final int expenses;
   final int auditLogs;
 
@@ -394,6 +442,8 @@ class BackupExportCounts {
       'customers': customers,
       'customerLedgerEntries': customerLedgerEntries,
       'customerCollections': customerCollections,
+      'supplierLedgerEntries': supplierLedgerEntries,
+      'supplierPayments': supplierPayments,
       'expenses': expenses,
       'auditLogs': auditLogs,
     };

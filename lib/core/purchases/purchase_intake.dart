@@ -13,12 +13,18 @@ class PurchaseIntake {
     required this.createdByUserId,
     required this.createdAt,
     required this.stockMovementId,
+    this.supplierName,
+    this.supplierPhone,
+    this.supplierAddress,
     this.notes,
     this.cancellation,
   });
 
   final String id;
   final String supplierId;
+  final String? supplierName;
+  final String? supplierPhone;
+  final String? supplierAddress;
   final String productId;
   final int quantityKg;
   final GrainUnit entryUnit;
@@ -48,6 +54,9 @@ class PurchaseIntake {
       createdByUserId: createdByUserId,
       createdAt: createdAt,
       stockMovementId: stockMovementId ?? this.stockMovementId,
+      supplierName: supplierName,
+      supplierPhone: supplierPhone,
+      supplierAddress: supplierAddress,
       notes: notes,
       cancellation: cancellation ?? this.cancellation,
     );
@@ -62,10 +71,16 @@ class PurchaseIntakeDraft {
     required this.entryUnit,
     required this.unitPricePiastersPerKg,
     required this.createdByUserId,
+    this.supplierName,
+    this.supplierPhone,
+    this.supplierAddress,
     this.notes,
   });
 
   final String supplierId;
+  final String? supplierName;
+  final String? supplierPhone;
+  final String? supplierAddress;
   final String productId;
   final int quantityKg;
   final GrainUnit entryUnit;

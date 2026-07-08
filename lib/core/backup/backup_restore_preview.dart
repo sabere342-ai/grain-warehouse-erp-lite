@@ -19,6 +19,8 @@ class BackupRestorePreviewService {
     'customers',
     'customerLedgerEntries',
     'customerCollections',
+    'supplierLedgerEntries',
+    'supplierPayments',
     'expenses',
     'auditLogs',
   ];
@@ -254,6 +256,8 @@ class BackupRestorePreviewCounts {
     required this.customers,
     required this.customerLedgerEntries,
     required this.customerCollections,
+    this.supplierLedgerEntries = 0,
+    this.supplierPayments = 0,
     required this.expenses,
     required this.auditLogs,
   });
@@ -269,6 +273,8 @@ class BackupRestorePreviewCounts {
       customers: counts['customers'] ?? 0,
       customerLedgerEntries: counts['customerLedgerEntries'] ?? 0,
       customerCollections: counts['customerCollections'] ?? 0,
+      supplierLedgerEntries: counts['supplierLedgerEntries'] ?? 0,
+      supplierPayments: counts['supplierPayments'] ?? 0,
       expenses: counts['expenses'] ?? 0,
       auditLogs: counts['auditLogs'] ?? 0,
     );
@@ -283,6 +289,8 @@ class BackupRestorePreviewCounts {
   final int customers;
   final int customerLedgerEntries;
   final int customerCollections;
+  final int supplierLedgerEntries;
+  final int supplierPayments;
   final int expenses;
   final int auditLogs;
 }

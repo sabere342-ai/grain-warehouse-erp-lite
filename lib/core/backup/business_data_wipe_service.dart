@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 class BusinessDataWipeService {
@@ -25,6 +26,7 @@ class BusinessDataWipeService {
     required DocumentHistoryRepository documentHistoryRepository,
     LocalCustomerRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
+    LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
     LocalAuditLogRepository? auditLogRepository,
     BackupRestorePreviewService previewService =
@@ -39,6 +41,7 @@ class BusinessDataWipeService {
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
+        _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _previewService = previewService;
@@ -56,6 +59,7 @@ class BusinessDataWipeService {
   final DocumentHistoryRepository _documentHistoryRepository;
   final LocalCustomerRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
+  final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
   final LocalAuditLogRepository _auditLogRepository;
   final BackupRestorePreviewService _previewService;
@@ -104,6 +108,7 @@ class BusinessDataWipeService {
       await _customerAccountRepository.clearForOwnerDataWipe();
       await _saleRepository.clearForOwnerDataWipe();
       await _purchaseRepository.clearForOwnerDataWipe();
+      await _supplierAccountRepository.clearForOwnerDataWipe();
       await _inventoryRepository.clearForOwnerDataWipe();
       await _supplierRepository.clearForOwnerDataWipe();
       await _productRepository.clearForOwnerDataWipe();

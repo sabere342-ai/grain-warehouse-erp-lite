@@ -1,15 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
+import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key, this.loadGuidance});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({
+    super.key,
+    this.loadGuidance,
+    this.controller,
+  });
 
   final Future<DashboardGuidanceState> Function()? loadGuidance;
+  final DashboardController? controller;
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final DashboardController _controller;
+  late final bool _ownsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsController = widget.controller == null;
+    _controller = widget.controller ??
+        DashboardController(
+          service: DashboardService(
+            saleRepository: AppRepositories.saleRepository,
+            inventoryRepository: AppRepositories.inventoryRepository,
+            productRepository: AppRepositories.productRepository,
+            expenseRepository: AppRepositories.expenseRepository,
+            customerAccountRepository:
+                AppRepositories.customerAccountRepository,
+            supplierAccountRepository:
+                AppRepositories.supplierAccountRepository,
+          ),
+        );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.load();
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,55 +64,91 @@ class DashboardScreen extends StatelessWidget {
         AuthScope.maybeOf(context)?.state.user?.permissions.canExportBackups ??
             false;
 
-    return ListView(
-      children: [
-        Text('لوحة متابعة المخزن', style: textTheme.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
-        ),
-        const SizedBox(height: 16),
-        if (ownerCanExport) ...[
-          const _BackupExportCard(),
-          const SizedBox(height: 16),
-        ],
-        FutureBuilder<DashboardGuidanceState>(
-          future: (loadGuidance ?? DashboardGuidanceState.load)(),
-          builder: (context, snapshot) {
-            final guidance = snapshot.data ?? DashboardGuidanceState.empty();
-            return _GettingStartedCard(guidance: guidance);
-          },
-        ),
-        const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 900 ? 4 : 2;
-            return GridView.count(
-              crossAxisCount: columns,
-              childAspectRatio: constraints.maxWidth >= 900 ? 1.35 : 1.15,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              children: const [
-                _MetricCard('رصيد النقدية', '0.00 ج.م', Icons.payments_rounded),
-                _MetricCard(
-                    'مبيعات اليوم', '0.00 ج.م', Icons.point_of_sale_rounded),
-                _MetricCard('مخزون القمح', '0 كجم', Icons.grain_rounded),
-                _MetricCard(
-                    'تنبيهات المخزون', '0', Icons.warning_amber_rounded),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        const PremiumCard(
-          child: Text(
-            'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
-          ),
-        ),
-      ],
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final data = _controller.data;
+
+        return ListView(
+          children: [
+            Text('لوحة متابعة المخزن', style: textTheme.headlineMedium),
+            const SizedBox(height: 6),
+            Text(
+              'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
+              style: textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.mutedText),
+            ),
+            const SizedBox(height: 16),
+            if (ownerCanExport) ...[
+              const _BackupExportCard(),
+              const SizedBox(height: 16),
+            ],
+            FutureBuilder<DashboardGuidanceState>(
+              future:
+                  (widget.loadGuidance ?? DashboardGuidanceState.load)(),
+              builder: (context, snapshot) {
+                final guidance =
+                    snapshot.data ?? DashboardGuidanceState.empty();
+                return _GettingStartedCard(guidance: guidance);
+              },
+            ),
+            const SizedBox(height: 16),
+            if (_controller.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else ...[
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = constraints.maxWidth >= 900 ? 4 : 2;
+                  return GridView.count(
+                    crossAxisCount: columns,
+                    childAspectRatio:
+                        constraints.maxWidth >= 900 ? 1.35 : 1.15,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    children: [
+                      _MetricCard(
+                        'مبيعات اليوم',
+                        MoneyUtils.formatPiastersAsEgp(data.todaySalesQirsh),
+                        Icons.point_of_sale_rounded,
+                      ),
+                      _MetricCard(
+                        'رصيد النقدية',
+                        MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
+                        Icons.payments_rounded,
+                      ),
+                      _MetricCard(
+                        'مخزون القمح',
+                        data.wheatStockKg > 0
+                            ? '${data.wheatStockKg} كجم'
+                            : '${data.totalStockKg} كجم',
+                        Icons.grain_rounded,
+                        subtitle: data.wheatStockKg > 0
+                            ? 'إجمالي المخزون: ${data.totalStockKg} كجم'
+                            : data.totalStockKg > 0
+                                ? 'إجمالي المخزون'
+                                : null,
+                      ),
+                      _MetricCard(
+                        'تنبيهات المخزون',
+                        '${data.stockAlertCount}',
+                        Icons.warning_amber_rounded,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+            const SizedBox(height: 16),
+            const PremiumCard(
+              child: Text(
+                'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -211,11 +293,12 @@ class _GettingStartedCard extends StatelessWidget {
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard(this.label, this.value, this.icon);
+  const _MetricCard(this.label, this.value, this.icon, {this.subtitle});
 
   final String label;
   final String value;
   final IconData icon;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -250,6 +333,15 @@ class _MetricCard extends StatelessWidget {
               ),
             ),
           ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              style: textTheme.bodySmall?.copyWith(
+                color: AppColors.mutedText,
+              ),
+            ),
+          ],
         ],
       ),
     );

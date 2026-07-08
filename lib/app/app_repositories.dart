@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dar
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 class AppRepositories {
@@ -41,11 +42,18 @@ class AppRepositories {
   static final LocalSupplierRepository supplierRepository =
       LocalSupplierRepository();
 
+  static final LocalSupplierAccountRepository supplierAccountRepository =
+      LocalSupplierAccountRepository(
+    supplierRepository: supplierRepository,
+    auditLogRepository: auditLogRepository,
+  );
+
   static final LocalPurchaseRepository purchaseRepository =
       LocalPurchaseRepository(
     supplierRepository: supplierRepository,
     productRepository: productRepository,
     inventoryRepository: inventoryRepository,
+    supplierAccountRepository: supplierAccountRepository,
   );
 
   static final LocalSaleRepository saleRepository = LocalSaleRepository(
@@ -79,6 +87,7 @@ class AppRepositories {
         documentHistoryRepository: documentHistoryRepository,
         customerRepository: customerRepository,
         customerAccountRepository: customerAccountRepository,
+        supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
       );
@@ -92,6 +101,7 @@ class AppRepositories {
         documentHistoryRepository: documentHistoryRepository,
         customerRepository: customerRepository,
         customerAccountRepository: customerAccountRepository,
+        supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
       );
@@ -108,6 +118,7 @@ class AppRepositories {
         documentHistoryRepository: documentHistoryRepository,
         customerRepository: customerRepository,
         customerAccountRepository: customerAccountRepository,
+        supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
       );

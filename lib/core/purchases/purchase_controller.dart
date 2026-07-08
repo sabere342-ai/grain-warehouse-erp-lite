@@ -103,6 +103,20 @@ class PurchaseController extends ChangeNotifier {
     return 'مورد غير معروف';
   }
 
+  String displaySupplierName(PurchaseIntake intake) {
+    if (intake.supplierName != null && intake.supplierName!.isNotEmpty) {
+      return intake.supplierName!;
+    }
+    return supplierName(intake.supplierId);
+  }
+
+  String displaySupplierPhone(PurchaseIntake intake) {
+    if (intake.supplierPhone != null && intake.supplierPhone!.isNotEmpty) {
+      return intake.supplierPhone!;
+    }
+    return '';
+  }
+
   String productName(String productId) {
     for (final product in _products) {
       if (product.id == productId) {

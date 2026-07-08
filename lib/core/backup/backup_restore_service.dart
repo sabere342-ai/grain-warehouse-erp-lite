@@ -21,6 +21,9 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
@@ -34,6 +37,7 @@ class BackupRestoreService {
     required DocumentHistoryRepository documentHistoryRepository,
     LocalCustomerRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
+    LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
     LocalAuditLogRepository? auditLogRepository,
     BackupRestorePreviewService previewService =
@@ -46,6 +50,7 @@ class BackupRestoreService {
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
+        _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _previewService = previewService;
@@ -58,6 +63,7 @@ class BackupRestoreService {
   final DocumentHistoryRepository _documentHistoryRepository;
   final LocalCustomerRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
+  final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
   final LocalAuditLogRepository _auditLogRepository;
   final BackupRestorePreviewService _previewService;
@@ -109,6 +115,10 @@ class BackupRestoreService {
         entries: restored.customerAccountEntries,
         collections: restored.customerCollections,
       );
+      await _supplierAccountRepository.restoreSupplierAccountsIntoEmpty(
+        entries: restored.supplierAccountEntries,
+        payments: restored.supplierPayments,
+      );
       await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
       await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
 
@@ -142,6 +152,8 @@ class BackupRestoreService {
     final customers = await _customerRepository.listCustomers(includeInactive: true);
     final customerAccountEntries = await _customerAccountRepository.listEntries();
     final customerCollections = await _customerAccountRepository.listCollections();
+    final supplierAccountEntries = await _supplierAccountRepository.listEntries();
+    final supplierPayments = await _supplierAccountRepository.listPayments();
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
 
@@ -154,6 +166,8 @@ class BackupRestoreService {
         customers.isNotEmpty ||
         customerAccountEntries.isNotEmpty ||
         customerCollections.isNotEmpty ||
+        supplierAccountEntries.isNotEmpty ||
+        supplierPayments.isNotEmpty ||
         expenses.isNotEmpty ||
         auditLogs.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
@@ -172,6 +186,8 @@ class BackupRestoreService {
     final customers = _optionalList(data, 'customers').map(_parseCustomer).toList();
     final customerAccountEntries = _optionalList(data, 'customerAccountEntries').map(_parseCustomerAccountEntry).toList();
     final customerCollections = _optionalList(data, 'customerCollections').map(_parseCustomerCollection).toList();
+    final supplierAccountEntries = _optionalList(data, 'supplierAccountEntries').map(_parseSupplierAccountEntry).toList();
+    final supplierPayments = _optionalList(data, 'supplierPayments').map(_parseSupplierPayment).toList();
     final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
 
@@ -184,6 +200,8 @@ class BackupRestoreService {
       customers: customers,
       customerAccountEntries: customerAccountEntries,
       customerCollections: customerCollections,
+      supplierAccountEntries: supplierAccountEntries,
+      supplierPayments: supplierPayments,
       expenses: expenses,
       auditLogs: auditLogs,
       documentHistoryCount: _list(data, 'documentHistory').length,
@@ -265,6 +283,9 @@ class BackupRestoreService {
     return PurchaseIntake(
       id: _string(map, 'id'),
       supplierId: _string(map, 'supplierId'),
+      supplierName: _optionalString(map, 'supplierName'),
+      supplierPhone: _optionalString(map, 'supplierPhone'),
+      supplierAddress: _optionalString(map, 'supplierAddress'),
       productId: _string(map, 'productId'),
       quantityKg: _int(map, 'quantityKg'),
       entryUnit: GrainUnit.values.byName(_string(map, 'entryUnit')),
@@ -340,6 +361,37 @@ class BackupRestoreService {
       isActive: _bool(map, 'isActive'),
       createdAt: _date(map, 'createdAt'),
       updatedAt: _date(map, 'updatedAt'),
+    );
+  }
+
+  SupplierAccountEntry _parseSupplierAccountEntry(Object? value) {
+    final map = _map(value);
+    return SupplierAccountEntry(
+      id: _string(map, 'id'),
+      supplierId: _string(map, 'supplierId'),
+      date: _date(map, 'date'),
+      type: SupplierAccountEntryType.values.byName(_string(map, 'type')),
+      debitAmountQirsh: _int(map, 'debitAmountQirsh'),
+      creditAmountQirsh: _int(map, 'creditAmountQirsh'),
+      sourceDocumentType: _string(map, 'sourceDocumentType'),
+      sourceDocumentId: _string(map, 'sourceDocumentId'),
+      descriptionAr: _string(map, 'descriptionAr'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+    );
+  }
+
+  SupplierPaymentRecord _parseSupplierPayment(Object? value) {
+    final map = _map(value);
+    return SupplierPaymentRecord(
+      id: _string(map, 'id'),
+      supplierId: _string(map, 'supplierId'),
+      date: _date(map, 'date'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      createdByUserName: _optionalString(map, 'createdByUserName'),
+      notes: _optionalString(map, 'notes'),
     );
   }
 
@@ -567,6 +619,8 @@ class _RestoredBackupData {
     required this.customers,
     required this.customerAccountEntries,
     required this.customerCollections,
+    required this.supplierAccountEntries,
+    required this.supplierPayments,
     required this.expenses,
     required this.auditLogs,
     required this.documentHistoryCount,
@@ -580,6 +634,8 @@ class _RestoredBackupData {
   final List<Customer> customers;
   final List<CustomerAccountEntry> customerAccountEntries;
   final List<CustomerCollectionRecord> customerCollections;
+  final List<SupplierAccountEntry> supplierAccountEntries;
+  final List<SupplierPaymentRecord> supplierPayments;
   final List<ExpenseRecord> expenses;
   final List<AuditLogEntry> auditLogs;
   final int documentHistoryCount;
