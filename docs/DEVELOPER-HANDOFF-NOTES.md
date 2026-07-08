@@ -197,3 +197,35 @@ git status --short
 - Delivery package re-created with corrected Arabic README.
 - Full test suite: 262/262 green on commit.
 - Do not skip the pre-flight test run before any future release.
+
+## Phase 36 — Dashboard live data, supplier purchase link, supplier accounts
+- Current tag after this phase: `phase-36-supplier-accounts-dashboard-live-data`.
+- Purpose: fix two pilot blockers found from screen recording — dashboard showed fake data and suppliers had no functional account connection.
+- Phase 36A: `DashboardService` / `DashboardController` — dashboard reads live data from all repositories (sales, inventory, products, expenses, customer accounts, supplier accounts).
+- Phase 36B: `PurchaseIntake` / `PurchaseIntakeDraft` extended with `supplierName`, `supplierPhone`, `supplierAddress` snapshot fields. Backup/restore includes optional snapshot fields.
+- Phase 36C: `SupplierAccountEntry`, `SupplierPaymentRecord`, `SupplierAccountRepository` — full supplier accounts ledger with purchase posting, payment validation, statement generation, cancellation safety, cash balance integration, backup/restore/wipe.
+- Full test suite: 282/282 green on commit.
+
+## Phase 36D — Pilot delivery refresh after supplier accounts
+- Current tag after this phase: `phase-36d-pilot-delivery-refresh`.
+- Purpose: refresh the pilot delivery package based on Phase 36. Supersedes Phase 35 delivery. No new features.
+- Update docs, acceptance checklist, delivery README, and re-run quality gates.
+- See `docs/PHASE-36D-PILOT-DELIVERY-REFRESH.md`.
+
+## Delivery tool
+- `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.
+- `tool\check_pilot_delivery_package.ps1` — verifies the delivery folder excludes source code.
+- Run both before any customer handoff.
+- Do not commit the `delivery/` folder.
+- Use `-OutputRoot` parameter to customise the folder name, or let it auto-stamp.
+
+## Core business rules
+- Money is stored internally as integer piasters/qirsh.
+- Normal UI displays ج.م/جنيه, not raw qirsh.
+- Minimum sale price is enforced before stock or sale mutation.
+- Reference cost is optional.
+- Estimated profit and stock valuation are incomplete when reference cost is missing.
+- Restore remains limited to an empty system under the current safe design.
+- Supplier account balance = debit (purchases) − credit (payments). Cannot go below zero.
+- Purchase cancellation is blocked if supplier payments have been recorded for that supplier.
+- Dashboard cash balance = cash sales + customer collections − expenses − supplier payments.

@@ -33,6 +33,18 @@ Collections reduce customer receivables only. They are not counted as new sales 
 ## Backup and restore wording
 Owner-facing wording now states that customer balances are calculated from credit-sale and collection movements. Backup preserves the customer ledger movements and collections, not a manually edited balance number.
 
+## Superseded delivery
+
+**Important:** The Phase 35 / Phase 35A delivery package has been superseded.
+See `docs/PHASE-36D-PILOT-DELIVERY-REFRESH.md` for the current delivery.
+
+The two pilot blockers found after Phase 35 delivery were:
+1. Dashboard/Home used hardcoded placeholder data instead of live repository data.
+2. Suppliers had no functional account connection (no ledger, no payment, no statement).
+
+Both were fixed in Phase 36. The current pilot delivery must be built from
+Phase 36 (commit `521d54f` or newer).
+
 ## Tests
 Phase 35 adds focused controller/source/widget coverage for:
 - credit sale requiring a customer;
