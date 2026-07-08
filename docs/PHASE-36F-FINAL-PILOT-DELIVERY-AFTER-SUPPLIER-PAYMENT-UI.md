@@ -1,5 +1,8 @@
 # Phase 36F — Final Pilot Delivery After Supplier Payment UI
 
+> **SUPERSEDED**: This delivery has been superseded by Phase 36H.
+> See `docs/PHASE-36H-DELIVERY-REFRESH-AFTER-UI-CLARITY-POLISH.md` for the current delivery baseline.
+
 ## Purpose
 
 Phase 36F is a delivery refresh only. It does not add new accounting features or business logic.

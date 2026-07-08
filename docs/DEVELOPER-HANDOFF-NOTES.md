@@ -1,12 +1,13 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 36G — pilot UI clarity & cancellation safety polish.
-- Functional baseline: Phase 36E supplier payment UI completion (tag `phase-36e-supplier-payment-ui-completion`).
-- Previous delivery: Phase 36D is superseded. Phase 36F was the delivery refresh.
+- Latest phase: Phase 36H — delivery refresh after UI clarity polish.
+- Functional baseline: Phase 36G pilot UI clarity & cancellation safety polish (tag `phase-36g-pilot-ui-clarity-cancellation-safety-polish`).
+- Analyze cleanup: `phase-36g-analyze-cleanup` — 0 warnings, 0 errors.
+- Previous delivery: Phase 36F is superseded. Phase 36H is the current delivery refresh.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
-- Full test suite: 294/294 passed.
+- Full test suite: 300/300 passed.
 - Delivery package: `delivery/grain_warehouse_erp_lite_pilot_<timestamp>/` (source-safe, owner-facing only).
 
 ## Verification commands
@@ -241,6 +242,19 @@ git status --short
 - Customer statement shows explanation that credit sales increase balance, collections decrease it.
 - No new features, no accounting changes, no safety weakening.
 - See `docs/PHASE-36G-PILOT-UI-CLARITY-CANCELLATION-SAFETY-POLISH.md`.
+
+## Phase 36G analyze cleanup
+- Current tag after this phase: `phase-36g-analyze-cleanup`.
+- Purpose: fix all warnings in Phase 36G test code before delivery refresh.
+- Removed unused import, fixed `@override` on 4 fake methods, removed unused helpers, added `const` on 2 constructors, fixed string interpolation braces.
+- Result: 0 errors, 0 warnings, 25 pre-existing info-only hints.
+
+## Phase 36H — Delivery refresh after UI clarity polish
+- Current tag after this phase: `phase-36h-delivery-refresh-after-ui-clarity-polish`.
+- Purpose: refresh the pilot delivery package after Phase 36G and analyze cleanup. Supersedes Phase 36F. No new features.
+- Phase 36G UI clarity improvements included: dashboard cash subtitle, report label clarity, supplier/customer statement explanations, cancellation safety UI.
+- All quality gates passed: analyze 0 warnings, tests 300/300, Windows build successful, delivery source-code safe.
+- See `docs/PHASE-36H-DELIVERY-REFRESH-AFTER-UI-CLARITY-POLISH.md`.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.
