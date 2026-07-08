@@ -1,12 +1,13 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 36E supplier payment UI completion.
-- Previous stable tag before this phase: `phase-36d-pilot-delivery-refresh`.
+- Latest phase: Phase 36F — final pilot delivery after supplier payment UI.
+- Functional baseline: Phase 36E supplier payment UI completion (tag `phase-36e-supplier-payment-ui-completion`).
+- Previous delivery: Phase 36D is superseded.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 - Full test suite: 294/294 passed.
-- Delivery package ready for pilot handoff.
+- Delivery package: `delivery/grain_warehouse_erp_lite_pilot_<timestamp>/` (source-safe, owner-facing only).
 
 ## Verification commands
 ```powershell
@@ -218,6 +219,17 @@ git status --short
 - Adds `SupplierPaymentDialog` (reusable), `totalSupplierPaymentsQirsh`/`totalOutstandingSupplierPayablesQirsh` to `DailyActivityReport`.
 - Full test suite: 294/294 green (12 new tests).
 - See `docs/PHASE-36E-SUPPLIER-PAYMENT-UI-COMPLETION.md`.
+
+## Phase 36F — Final pilot delivery after supplier payment UI
+- Current tag after this phase: `phase-36f-final-pilot-delivery-after-supplier-payment-ui`.
+- Purpose: final delivery refresh after Phase 36E. Supersedes Phase 36D. No new features.
+- Phase 36E is the functional baseline.
+- Supplier payment UI is available from supplier card and supplier statement.
+- Reports include supplier payments and outstanding supplier payables.
+- Dashboard cash balance includes supplier payments as cash outflow.
+- Updated Arabic checklist, handoff docs, delivery README.
+- Delivery package verified source-code safe.
+- See `docs/PHASE-36F-FINAL-PILOT-DELIVERY-AFTER-SUPPLIER-PAYMENT-UI.md`.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.

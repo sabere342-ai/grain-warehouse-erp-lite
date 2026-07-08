@@ -1,8 +1,8 @@
 # Phase 36D — Pilot Delivery Refresh After Supplier Accounts
 
-> **Superseded by Phase 36E.** The Phase 36E delivery package includes the
-> supplier payment UI completion (buttons, dialogs, balance display, reports).
-> Use the Phase 36E delivery package instead.
+> **Superseded by Phase 36F.** Phase 36F is the current delivery package.
+> Phase 36E completed the supplier payment UI workflow. Use the Phase 36F
+> delivery package instead.
 
 ## Purpose
 
