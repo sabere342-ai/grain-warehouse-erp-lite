@@ -93,10 +93,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     try {
       await _accountRepo.createPayment(draft);
       await _loadBalances();
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطأ في تسجيل الدفع: $e')),
+        const SnackBar(content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
       );
     }
   }
@@ -124,10 +124,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('تم تسجيل الرصيد الافتتاحي بنجاح.')),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطأ في تسجيل الرصيد الافتتاحي: $e')),
+        const SnackBar(content: Text('تعذر تسجيل الرصيد الافتتاحي. تأكد من صحة البيانات.')),
       );
     }
   }
