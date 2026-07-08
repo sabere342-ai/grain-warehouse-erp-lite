@@ -429,7 +429,7 @@ SupplierAccountEntry _paymentEntry({
   required DateTime createdAt,
 }) {
   return SupplierAccountEntry(
-    id: 'sle-${creditAmountQirsh}-${createdAt.microsecondsSinceEpoch}',
+    id: 'sle-$creditAmountQirsh-${createdAt.microsecondsSinceEpoch}',
     supplierId: 'supplier-id',
     date: createdAt,
     type: SupplierAccountEntryType.payment,

@@ -22,7 +22,6 @@ import 'package:grain_warehouse_erp_lite/core/reports/report_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
@@ -58,10 +57,10 @@ void main() {
           supplierAccountRepository: accountRepo,
         );
         supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد القمح'),
+          const SupplierDraft(name: 'مورد القمح'),
         );
         product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -354,7 +353,6 @@ DashboardService _dashboardService() {
 // --- Report helpers ---
 
 final _now = DateTime(2026, 7, 5);
-final _reportDay = DateTime(2026, 7, 5);
 final _midday = DateTime(2026, 7, 5, 12);
 
 final _owner = AppUser(
@@ -422,22 +420,6 @@ SaleRecord _sale(
   );
 }
 
-StockMovement _movement(
-  String id,
-  StockMovementType type,
-  int quantityKg,
-  DateTime createdAt,
-) {
-  return StockMovement(
-    id: id,
-    productId: _product.id,
-    movementType: type,
-    quantityKg: quantityKg,
-    createdByUserId: _owner.id,
-    createdAt: createdAt,
-  );
-}
-
 class _FakePurchaseRepository implements PurchaseRepository {
   const _FakePurchaseRepository(this.purchases);
   final List<PurchaseIntake> purchases;
@@ -461,7 +443,6 @@ class _FakePurchaseRepository implements PurchaseRepository {
     return purchases;
   }
 
-  @override
   Future<void> restorePurchaseIntakesIntoEmpty(
       List<PurchaseIntake> intakes) {
     throw UnimplementedError();
@@ -491,7 +472,6 @@ class _FakeSaleRepository implements SaleRepository {
     return sales;
   }
 
-  @override
   Future<void> restoreSalesIntoEmpty(List<SaleRecord> sales) {
     throw UnimplementedError();
   }
@@ -544,12 +524,10 @@ class _FakeProductRepository implements ProductRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<Product> deactivateProduct(String productId) {
     throw UnimplementedError();
   }
 
-  @override
   Future<Product> editProduct(String productId, ProductDraft draft) {
     throw UnimplementedError();
   }
