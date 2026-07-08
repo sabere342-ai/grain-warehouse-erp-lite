@@ -51,7 +51,7 @@ class BackupExportService {
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _now = now;
 
-  static const int backupVersion = 1;
+  static const int backupVersion = 2;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;

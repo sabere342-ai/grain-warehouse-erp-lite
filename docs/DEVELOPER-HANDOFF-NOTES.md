@@ -1,7 +1,10 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 36H — delivery refresh after UI clarity polish.
+- Latest phase: Phase 37A — accounting continuity: opening balances.
+- Functional baseline: Phase 36H delivery refresh + Phase 37A opening balances.
+- Full test suite: 310/310 passed.
+- Backup version: 2 (backward compatible with v1).
 - Functional baseline: Phase 36G pilot UI clarity & cancellation safety polish (tag `phase-36g-pilot-ui-clarity-cancellation-safety-polish`).
 - Analyze cleanup: `phase-36g-analyze-cleanup` — 0 warnings, 0 errors.
 - Previous delivery: Phase 36F is superseded. Phase 36H is the current delivery refresh.
@@ -255,6 +258,18 @@ git status --short
 - Phase 36G UI clarity improvements included: dashboard cash subtitle, report label clarity, supplier/customer statement explanations, cancellation safety UI.
 - All quality gates passed: analyze 0 warnings, tests 300/300, Windows build successful, delivery source-code safe.
 - See `docs/PHASE-36H-DELIVERY-REFRESH-AFTER-UI-CLARITY-POLISH.md`.
+
+## Phase 37A — Accounting continuity: opening balances
+- Current tag after this phase: `phase-37a-accounting-continuity-opening-balances`.
+- Purpose: enable pilot warehouse owner to record opening balances for inventory items and supplier accounts before starting daily operations.
+- **Inventory opening balance**: dedicated "إضافة رصيد افتتاحي" button on each product card without an opening balance. Unit selection (kg/ton). One opening balance per product.
+- **Supplier opening balance**: new `SupplierAccountEntryType.openingBalance` (`'رصيد افتتاحي'`). `createOpeningBalanceEntry` with duplicate rejection. Debit entry (`sourceDocumentType: 'supplierOpeningBalance'`). Amount must be positive and multiples of 100 qirsh.
+- **Supplier opening balance UI**: "رصيد افتتاحي" button on supplier cards (hidden after creation). `_SupplierOpeningBalanceDialog` with validation.
+- **Supplier statement**: opening balance displayed with `Icons.account_balance_rounded`, label `'رصيد افتتاحي'`, debit amount.
+- **Backup v2**: `backupVersion` bumped to 2. `supportedBackupVersions = {1, 2}`. v1 accepted (missing `supplierAccountEntries` resolves to `[]`). v99 rejected.
+- See `docs/PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md`.
+- Full test suite: 310/310 green (10 new Phase 37A tests).
+- Quality gates: analyze 0 warnings, test 310/310, Windows build success.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.

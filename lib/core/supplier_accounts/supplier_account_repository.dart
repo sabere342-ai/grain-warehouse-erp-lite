@@ -20,6 +20,14 @@ abstract class SupplierAccountRepository {
     required String cancelledByUserId,
     required String cancellationReason,
   });
+
+  Future<SupplierAccountEntry> createOpeningBalanceEntry({
+    required String supplierId,
+    required int amountQirsh,
+    required String createdByUserId,
+  });
+
+  Future<bool> hasOpeningBalanceEntry(String supplierId);
 }
 
 class LocalSupplierAccountRepository implements SupplierAccountRepository {
@@ -261,6 +269,61 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
       referenceId: cancelledPurchase.id,
     );
     return reversalEntry;
+  }
+
+  @override
+  Future<SupplierAccountEntry> createOpeningBalanceEntry({
+    required String supplierId,
+    required int amountQirsh,
+    required String createdByUserId,
+  }) async {
+    final id = _normalizedRequiredId(supplierId, 'supplierId');
+    final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
+    await _requireSupplier(id, includeInactive: true);
+
+    if (await hasOpeningBalanceEntry(id)) {
+      throw StateError('Opening balance already exists for this supplier.');
+    }
+    if (amountQirsh <= 0) {
+      throw ArgumentError.value(
+        amountQirsh,
+        'amountQirsh',
+        'Opening balance amount must be positive.',
+      );
+    }
+
+    final now = DateTime.now();
+    final entry = SupplierAccountEntry(
+      id: _generateEntryId(now),
+      supplierId: id,
+      date: now,
+      type: SupplierAccountEntryType.openingBalance,
+      debitAmountQirsh: amountQirsh,
+      creditAmountQirsh: 0,
+      sourceDocumentType: 'supplierOpeningBalance',
+      sourceDocumentId: 'ob-$id',
+      descriptionAr: 'رصيد افتتاحي للمورد',
+      createdAt: now,
+      createdByUserId: userId,
+    );
+    _validateEntry(entry);
+    _entries.add(entry);
+    await _recordAudit(
+      actionType: 'supplier.opening-balance.posted',
+      descriptionAr: 'تم تسجيل رصيد افتتاحي للمورد.',
+      referenceId: entry.id,
+    );
+    return entry;
+  }
+
+  @override
+  Future<bool> hasOpeningBalanceEntry(String supplierId) async {
+    final id = _normalizedRequiredId(supplierId, 'supplierId');
+    return _entries.any(
+      (entry) =>
+          entry.supplierId == id &&
+          entry.type == SupplierAccountEntryType.openingBalance,
+    );
   }
 
   Future<void> restoreSupplierAccountsIntoEmpty({

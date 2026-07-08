@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
-
 class BackupRestorePreviewService {
   const BackupRestorePreviewService();
 
-  static const supportedBackupVersion = BackupExportService.backupVersion;
+  static const supportedBackupVersions = {1, 2};
   static const _appName = 'grain-warehouse-erp-lite';
   static const _requiredCountKeys = [
     'products',
@@ -70,7 +68,7 @@ class BackupRestorePreviewService {
       }
 
       final backupVersion = metadata['backupVersion'];
-      if (backupVersion != supportedBackupVersion) {
+      if (backupVersion is! int || !supportedBackupVersions.contains(backupVersion)) {
         return _failure(
           'إصدار النسخة غير مدعوم.',
           'unsupported-version',

@@ -1,6 +1,7 @@
 enum SupplierAccountEntryType {
   purchase,
-  payment;
+  payment,
+  openingBalance;
 
   String get labelAr {
     switch (this) {
@@ -8,6 +9,8 @@ enum SupplierAccountEntryType {
         return 'مشتريات';
       case SupplierAccountEntryType.payment:
         return 'مدفوع';
+      case SupplierAccountEntryType.openingBalance:
+        return 'رصيد افتتاحي';
     }
   }
 }

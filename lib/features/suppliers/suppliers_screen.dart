@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
@@ -26,6 +27,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   late final SupplierAccountRepository _accountRepo;
   late final bool _ownsController;
   Map<String, int> _balances = const {};
+  Set<String> _suppliersWithOpeningBalance = const {};
 
   @override
   void initState() {
@@ -46,9 +48,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   Future<void> _loadBalances() async {
     try {
       final balances = await _accountRepo.balancesBySupplierId();
+      final entries = await _accountRepo.listEntries();
+      final withOpening = entries
+          .where((e) => e.type == SupplierAccountEntryType.openingBalance)
+          .map((e) => e.supplierId)
+          .toSet();
       if (!mounted) return;
       setState(() {
         _balances = balances;
+        _suppliersWithOpeningBalance = withOpening;
       });
     } catch (_) {
       if (!mounted) return;
@@ -89,6 +97,37 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('خطأ في تسجيل الدفع: $e')),
+      );
+    }
+  }
+
+  Future<void> _recordOpeningBalance(
+    BuildContext context, {
+    required user,
+    required Supplier supplier,
+  }) async {
+    final amount = await showDialog<int>(
+      context: context,
+      builder: (context) => const _SupplierOpeningBalanceDialog(),
+    );
+
+    if (amount == null) return;
+
+    try {
+      await _accountRepo.createOpeningBalanceEntry(
+        supplierId: supplier.id,
+        amountQirsh: amount,
+        createdByUserId: user.id,
+      );
+      await _loadBalances();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تسجيل الرصيد الافتتاحي بنجاح.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطأ في تسجيل الرصيد الافتتاحي: $e')),
       );
     }
   }
@@ -159,6 +198,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     supplier: supplier,
                     canManage: canManage,
                     balanceQirsh: _balances[supplier.id] ?? 0,
+                    hasOpeningBalance: _suppliersWithOpeningBalance.contains(supplier.id),
                     onEdit: () => _showSupplierForm(
                       context,
                       user: user,
@@ -170,6 +210,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       isActive: !supplier.isActive,
                     ),
                     onPayment: () => _recordPayment(context, user: user, supplier: supplier),
+                    onOpeningBalance: () => _recordOpeningBalance(context, user: user, supplier: supplier),
                   ),
                 ),
               ),
@@ -210,17 +251,21 @@ class _SupplierCard extends StatelessWidget {
     required this.supplier,
     required this.canManage,
     required this.balanceQirsh,
+    required this.hasOpeningBalance,
     required this.onEdit,
     required this.onToggleActive,
     this.onPayment,
+    this.onOpeningBalance,
   });
 
   final Supplier supplier;
   final bool canManage;
   final int balanceQirsh;
+  final bool hasOpeningBalance;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback? onPayment;
+  final VoidCallback? onOpeningBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -285,6 +330,12 @@ class _SupplierCard extends StatelessWidget {
                   ),
                   label: Text(supplier.isActive ? 'إيقاف' : 'تفعيل'),
                 ),
+                if (!hasOpeningBalance)
+                  OutlinedButton.icon(
+                    onPressed: onOpeningBalance,
+                    icon: const Icon(Icons.account_balance_rounded),
+                    label: const Text('رصيد افتتاحي'),
+                  ),
                 if (balanceQirsh > 0)
                   OutlinedButton.icon(
                     onPressed: onPayment,
@@ -455,5 +506,83 @@ class _SupplierFormDialogState extends State<_SupplierFormDialog> {
         notes: _notesController.text,
       ),
     );
+  }
+}
+
+class _SupplierOpeningBalanceDialog extends StatefulWidget {
+  const _SupplierOpeningBalanceDialog();
+
+  @override
+  State<_SupplierOpeningBalanceDialog> createState() =>
+      _SupplierOpeningBalanceDialogState();
+}
+
+class _SupplierOpeningBalanceDialogState
+    extends State<_SupplierOpeningBalanceDialog> {
+  final _amountController = TextEditingController();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('رصيد افتتاحي للمورد'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'أدخل المبلغ المستحق لهذا المورد كرصيد افتتاحي (بقيمة مالية).',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'المبلغ بقروش',
+                helperText: 'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('حفظ الرصيد الافتتاحي'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final amount = int.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() => _errorMessage = 'ادخل مبلغ صحيح أكبر من صفر.');
+      return;
+    }
+    if (amount % 100 != 0) {
+      setState(() => _errorMessage = 'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
+      return;
+    }
+
+    Navigator.of(context).pop(amount);
   }
 }

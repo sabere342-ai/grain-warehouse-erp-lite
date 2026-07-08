@@ -62,7 +62,7 @@ void main() {
       expect(decoded, containsPair('counts', isA<Map<String, Object?>>()));
       expect(decoded, containsPair('data', isA<Map<String, Object?>>()));
       expect(metadata['restoreSupported'], isFalse);
-      expect(metadata['backupVersion'], 1);
+      expect(metadata['backupVersion'], 2);
       expect(metadata['fileName'], result.fileName);
     });
 

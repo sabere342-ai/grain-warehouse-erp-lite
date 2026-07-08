@@ -638,6 +638,18 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
   }) {
     throw UnsupportedError('Reports test fake is read-only.');
   }
+
+  @override
+  Future<SupplierAccountEntry> createOpeningBalanceEntry({
+    required String supplierId,
+    required int amountQirsh,
+    required String createdByUserId,
+  }) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
+  Future<bool> hasOpeningBalanceEntry(String supplierId) async => false;
 }
 
 class _FakeProductRepository implements ProductRepository {

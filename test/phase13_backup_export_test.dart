@@ -95,7 +95,7 @@ void main() {
       final data = decoded['data'] as Map<String, Object?>;
 
       expect(metadata['app'], 'grain-warehouse-erp-lite');
-      expect(metadata['backupVersion'], 1);
+      expect(metadata['backupVersion'], 2);
       expect(metadata['generatedAt'], '2026-01-02T03:04:05.000Z');
       expect(metadata['restoreSupported'], isFalse);
       expect(metadata['warning'], contains('يمكن استرجاعها فقط إلى نظام فارغ'));

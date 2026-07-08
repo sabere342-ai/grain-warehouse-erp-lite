@@ -112,18 +112,77 @@ class _InventoryScreenState extends State<InventoryScreen> {
               )
             else
               ..._controller.products.map(
-                (product) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _InventoryProductCard(
-                    product: product,
-                    balanceKg: _controller.balanceForProduct(product.id),
-                    movements: _controller.movementsForProduct(product.id),
-                  ),
-                ),
+                (product) {
+                  final productId = product.id;
+                  final hasOpening =
+                      _controller.hasOpeningBalance(productId);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _InventoryProductCard(
+                      product: product,
+                      balanceKg: _controller.balanceForProduct(productId),
+                      movements:
+                          _controller.movementsForProduct(productId),
+                      canAdjust: canAdjust,
+                      hasOpeningBalance: hasOpening,
+                      onAddOpeningBalance: canAdjust && !hasOpening
+                          ? () => _addOpeningBalance(
+                                context,
+                                user: user,
+                                product: product,
+                              )
+                          : null,
+                    ),
+                  );
+                },
               ),
           ],
         );
       },
+    );
+  }
+
+  Future<void> _addOpeningBalance(
+    BuildContext context, {
+    required user,
+    required Product product,
+  }) async {
+    final quantityKg = await showDialog<int>(
+      context: context,
+      builder: (context) => _OpeningBalanceDialog(product: product),
+    );
+
+    if (quantityKg == null) return;
+    if (!context.mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد الرصيد الافتتاحي'),
+        content: Text(
+          'تأكيد تسجيل رصيد افتتاحي لـ ${product.name} بكمية $quantityKg كجم.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('رجوع'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('تأكيد'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    await _controller.createOpeningBalance(
+      user: user,
+      productId: product.id,
+      quantityKg: quantityKg,
+      note: null,
     );
   }
 
@@ -218,11 +277,17 @@ class _InventoryProductCard extends StatelessWidget {
     required this.product,
     required this.balanceKg,
     required this.movements,
+    this.canAdjust = false,
+    this.hasOpeningBalance = false,
+    this.onAddOpeningBalance,
   });
 
   final Product product;
   final int balanceKg;
   final List<StockMovement> movements;
+  final bool canAdjust;
+  final bool hasOpeningBalance;
+  final VoidCallback? onAddOpeningBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -259,6 +324,14 @@ class _InventoryProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
+          if (canAdjust && !hasOpeningBalance) ...[
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onAddOpeningBalance,
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              label: const Text('إضافة رصيد افتتاحي'),
+            ),
+          ],
         ],
       ),
     );
@@ -271,6 +344,112 @@ class _InventoryProductCard extends StatelessWidget {
     }
 
     return '$quantityKg كجم';
+  }
+}
+
+class _OpeningBalanceDialog extends StatefulWidget {
+  const _OpeningBalanceDialog({required this.product});
+
+  final Product product;
+
+  @override
+  State<_OpeningBalanceDialog> createState() => _OpeningBalanceDialogState();
+}
+
+class _OpeningBalanceDialogState extends State<_OpeningBalanceDialog> {
+  GrainUnit _inputUnit = GrainUnit.kilogram;
+  final _quantityController = TextEditingController();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('إضافة رصيد افتتاحي للمخزون'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('أدخل الكمية الافتتاحية لـ ${widget.product.name}.'),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'الكمية',
+                      helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+                    ),
+                    textDirection: TextDirection.ltr,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 120,
+                  child: DropdownButtonFormField<GrainUnit>(
+                    value: _inputUnit,
+                    decoration: const InputDecoration(labelText: 'الوحدة'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: GrainUnit.kilogram,
+                        child: Text('كجم'),
+                      ),
+                      DropdownMenuItem(
+                        value: GrainUnit.ton,
+                        child: Text('طن'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _inputUnit = value);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('حفظ'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    if (quantity == null || quantity <= 0) {
+      setState(() => _errorMessage = 'اكتب كمية صحيحة أكبر من صفر.');
+      return;
+    }
+
+    final quantityKg = _inputUnit == GrainUnit.ton
+        ? GrainUnitConverter.tonsToKilograms(quantity)
+        : quantity;
+
+    Navigator.of(context).pop(quantityKg);
   }
 }
 
