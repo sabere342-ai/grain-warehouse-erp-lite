@@ -463,6 +463,9 @@ class _CustomerStatementScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 const Text(
+                    'البيع الآجل يزيد رصيد العميل المستحق، والتحصيل يقلله.'),
+                const SizedBox(height: 6),
+                const Text(
                     'كشف الحساب يعرض كل الحركات التي صنعت الرصيد. لا يوجد رصيد افتتاحي يدوي.'),
               ],
             ),

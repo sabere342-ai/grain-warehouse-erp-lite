@@ -238,9 +238,7 @@ class _ReportBody extends StatelessWidget {
                 report.totalOutstandingReceivablesQirsh,
               ),
             ),
-            const Text(
-              'التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.',
-            ),
+            const Text('مبالغ لنا عند العملاء. التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.'),
           ],
         ),
         const SizedBox(height: 12),
@@ -259,9 +257,7 @@ class _ReportBody extends StatelessWidget {
                 report.totalOutstandingSupplierPayablesQirsh,
               ),
             ),
-            const Text(
-              'المدفوعات للموردين تقلل الرصيد المستحق فقط ولا تُحسب كمصروفات.',
-            ),
+            const Text('مبالغ علينا للموردين. المدفوعات للموردين تقلل الرصيد المستحق فقط ولا تُحسب كمصروفات.'),
           ],
         ),
         const SizedBox(height: 12),
@@ -389,11 +385,11 @@ class _SummaryGrid extends StatelessWidget {
             ),
             _SummaryCard(
               width: itemWidth,
-              title: 'إجمالي أرصدة العملاء المستحقة',
+              title: 'أرصدة العملاء المستحقة',
               value: MoneyUtils.formatPiastersAsEgp(
                 report.totalOutstandingReceivablesQirsh,
               ),
-              caption: 'مبالغ قائمة على العملاء حتى الآن',
+              caption: 'مبالغ لنا عند العملاء.',
               icon: Icons.account_balance_wallet_rounded,
             ),
             _SummaryCard(
@@ -411,14 +407,14 @@ class _SummaryGrid extends StatelessWidget {
               value: MoneyUtils.formatPiastersAsEgp(
                 report.totalOutstandingSupplierPayablesQirsh,
               ),
-              caption: 'مبالغ مستحقة للموردين',
+              caption: 'مبالغ علينا للموردين.',
               icon: Icons.account_balance_wallet_rounded,
             ),
             _SummaryCard(
               width: itemWidth,
-              title: 'صافي الحركة',
+              title: 'صافي حركة المستندات',
               value: MoneyUtils.formatPiastersAsEgp(report.netMovementQirsh),
-              caption: 'مبيعات ناقص مشتريات',
+              caption: 'إجمالي المبيعات ناقص إجمالي المشتريات، وليس رصيد النقدية.',
               icon: Icons.swap_vert_rounded,
             ),
             _SummaryCard(

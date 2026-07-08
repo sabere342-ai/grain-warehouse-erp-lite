@@ -6,15 +6,21 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class PurchasesScreen extends StatefulWidget {
-  const PurchasesScreen({super.key, this.controller});
+  const PurchasesScreen({
+    super.key,
+    this.controller,
+    this.supplierAccountRepository,
+  });
 
   final PurchaseController? controller;
+  final SupplierAccountRepository? supplierAccountRepository;
 
   @override
   State<PurchasesScreen> createState() => _PurchasesScreenState();
@@ -23,10 +29,14 @@ class PurchasesScreen extends StatefulWidget {
 class _PurchasesScreenState extends State<PurchasesScreen> {
   late final PurchaseController _controller;
   late final bool _ownsController;
+  late final SupplierAccountRepository _accountRepo;
+  Set<String> _supplierIdsWithPayments = {};
 
   @override
   void initState() {
     super.initState();
+    _accountRepo = widget.supplierAccountRepository ??
+        AppRepositories.supplierAccountRepository;
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
         PurchaseController(
@@ -38,8 +48,22 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
         _controller.load(user);
+        _loadPaymentSuppliers();
       }
     });
+  }
+
+  Future<void> _loadPaymentSuppliers() async {
+    try {
+      final payments = await _accountRepo.listPayments();
+      if (!mounted) return;
+      setState(() {
+        _supplierIdsWithPayments =
+            payments.map((p) => p.supplierId).toSet();
+      });
+    } catch (_) {
+      // silently ignore — cancel button stays active by default
+    }
   }
 
   @override
@@ -131,6 +155,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _PurchaseIntakeCard(
                     intake: intake,
+                    hasPayment: _supplierIdsWithPayments.contains(intake.supplierId),
                     supplierName: _controller.displaySupplierName(intake),
                     productName: _controller.productName(intake.productId),
                     canCancel: canCancel,
@@ -232,6 +257,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
 class _PurchaseIntakeCard extends StatelessWidget {
   const _PurchaseIntakeCard({
     required this.intake,
+    required this.hasPayment,
     required this.supplierName,
     required this.productName,
     required this.canCancel,
@@ -239,6 +265,7 @@ class _PurchaseIntakeCard extends StatelessWidget {
   });
 
   final PurchaseIntake intake;
+  final bool hasPayment;
   final String supplierName;
   final String productName;
   final bool canCancel;
@@ -286,7 +313,21 @@ class _PurchaseIntakeCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text('سبب الإلغاء: ${intake.cancellation!.cancellationReason}'),
           ],
-          if (canCancel && !intake.isCancelled) ...[
+          if (canCancel && !intake.isCancelled && hasPayment) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Tooltip(
+                message: 'للحفاظ على الحسابات، لا يتم إلغاء شراء تم تسجيل دفعة عليه.',
+                child: OutlinedButton.icon(
+                  onPressed: null,
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text('لا يمكن الإلغاء بعد تسجيل دفعة للمورد'),
+                ),
+              ),
+            ),
+          ],
+          if (canCancel && !intake.isCancelled && !hasPayment) ...[
             const SizedBox(height: 12),
             Align(
               alignment: AlignmentDirectional.centerStart,

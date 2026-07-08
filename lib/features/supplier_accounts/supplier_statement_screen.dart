@@ -143,6 +143,14 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text(
+            'المشتريات تزيد المبلغ المستحق للمورد، والدفعات تقلله.',
+            style: TextStyle(color: AppColors.mutedText, fontSize: 13),
+          ),
+        ),
         const SizedBox(height: 16),
         ...statement.lines.map((line) => _buildLine(line, textTheme)),
       ],
@@ -151,6 +159,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
 
   Widget _buildLine(SupplierStatementLine line, TextTheme textTheme) {
     final entry = line.entry;
+    final isPurchase = entry.type == SupplierAccountEntryType.purchase;
     return PremiumCard(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -160,7 +169,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
             Row(
               children: [
                 Icon(
-                  entry.type == SupplierAccountEntryType.purchase
+                  isPurchase
                       ? Icons.shopping_cart_rounded
                       : Icons.payments_rounded,
                   size: 18,
@@ -178,13 +187,14 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                _labelValue('مدين',
-                    MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)),
+                if (isPurchase)
+                  _labelValue('مشتريات',
+                      MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh))
+                else
+                  _labelValue('دفعة للمورد',
+                      MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh)),
                 const SizedBox(width: 16),
-                _labelValue('دائن',
-                    MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh)),
-                const Spacer(),
-                _labelValue('الرصيد',
+                _labelValue('المتبقي',
                     MoneyUtils.formatPiastersAsEgp(line.runningBalanceQirsh)),
               ],
             ),

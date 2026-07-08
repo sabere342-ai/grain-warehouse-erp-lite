@@ -1,9 +1,9 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 36F — final pilot delivery after supplier payment UI.
+- Latest phase: Phase 36G — pilot UI clarity & cancellation safety polish.
 - Functional baseline: Phase 36E supplier payment UI completion (tag `phase-36e-supplier-payment-ui-completion`).
-- Previous delivery: Phase 36D is superseded.
+- Previous delivery: Phase 36D is superseded. Phase 36F was the delivery refresh.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 - Full test suite: 294/294 passed.
@@ -230,6 +230,17 @@ git status --short
 - Updated Arabic checklist, handoff docs, delivery README.
 - Delivery package verified source-code safe.
 - See `docs/PHASE-36F-FINAL-PILOT-DELIVERY-AFTER-SUPPLIER-PAYMENT-UI.md`.
+
+## Phase 36G — Pilot UI clarity & cancellation safety polish
+- Current tag after this phase: `phase-36g-pilot-ui-clarity-cancellation-safety-polish`.
+- Purpose: improve clarity and safety of visible pilot UI without changing core accounting model.
+- Purchase with supplier payments shows disabled cancel button with clear Arabic message.
+- Report labels distinguish document movement from cash; customer/supplier balance labels clarified.
+- Dashboard cash card shows calculation formula in subtitle.
+- Supplier statement uses "مشتريات / دفعة للمورد / المتبقي" labels with explanation text.
+- Customer statement shows explanation that credit sales increase balance, collections decrease it.
+- No new features, no accounting changes, no safety weakening.
+- See `docs/PHASE-36G-PILOT-UI-CLARITY-CANCELLATION-SAFETY-POLISH.md`.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.

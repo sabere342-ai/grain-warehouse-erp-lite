@@ -117,6 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'رصيد النقدية',
                         MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
                         Icons.payments_rounded,
+                        subtitle: 'محسوب من النقد الداخل ناقص المصروفات ومدفوعات الموردين.',
                       ),
                       _MetricCard(
                         'مخزون القمح',
@@ -334,9 +335,11 @@ class _MetricCard extends StatelessWidget {
             ),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               subtitle!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: textTheme.bodySmall?.copyWith(
                 color: AppColors.mutedText,
               ),
