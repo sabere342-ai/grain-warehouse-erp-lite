@@ -37,7 +37,8 @@ $docs = @(
   "docs\PHASE-22-PILOT-DELIVERY-CHECKLIST.md",
   "docs\PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md",
   "docs\PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md",
-  "docs\PHASE-37B-CUSTOMER-OPENING-BALANCE.md"
+  "docs\PHASE-37B-CUSTOMER-OPENING-BALANCE.md",
+  "docs\PHASE-37C-REPORTS-TRUTHFULNESS-DAILY-CASH.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force
@@ -73,8 +74,8 @@ $readme = @"
 - عرض رصيد المورد المستحق على بطاقة المورد.
 - إضافة رصيد افتتاحي للمخزون (كجم / طن).
 - إضافة رصيد افتتاحي لحسابات العملاء (ديون سابقة).
-- التقارير اليومية تشمل مدفوعات الموردين وأرصدة الموردين المستحقة.
-- لوحة الرئيسية تعرض مبيعات اليوم ورصيد النقدية مع شرح طريقة الحساب والمخزون.
+- لوحة الرئيسية تعرض: مبيعات اليوم (نقدي/آجل)، نقد داخل اليوم، المستحق على العملاء، المستحق للموردين، رصيد النقدية التراكمي، المخزون.
+- التقارير اليومية تشمل قسم "حركة النقد اليوم" مع تفصيل النقد الداخل (مبيعات نقدية + تحصيلات) والنقد الخارج (مدفوعات موردين + مصروفات) وصافي حركة النقد.
 - التقارير توضح الفرق بين صافي حركة المستندات ورصيد النقدية، وتفصل بين أرصدة العملاء والموردين.
 - إدارة المخزون.
 - نسخ احتياطي واسترجاع (متوافق مع النسخ القديمة).

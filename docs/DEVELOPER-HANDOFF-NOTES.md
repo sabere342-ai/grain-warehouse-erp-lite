@@ -1,11 +1,11 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 37B — customer opening balance.
-- Functional baseline: Phase 37A opening balances + Phase 37B customer opening balance.
-- Full test suite: 321/321 passed (11 new Phase 37B tests).
+- Latest phase: Phase 37C — reports truthfulness & daily cash reconciliation.
+- Functional baseline: Phase 37A opening balances + Phase 37B customer opening balance + Phase 37C dashboard/report clarity.
+- Full test suite: 335/335 passed (14 new Phase 37C tests).
 - Backup version: 2 (backward compatible with v1).
-- Previous delivery: Phase 37A is superseded. Phase 37B is the current delivery.
+- Previous delivery: Phase 37B is superseded. Phase 37C is the current delivery.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
 - Delivery package: `delivery/grain_warehouse_erp_lite_pilot_<timestamp>/` (source-safe, owner-facing only).
@@ -279,6 +279,19 @@ git status --short
 - See `docs/PHASE-37B-CUSTOMER-OPENING-BALANCE.md`.
 - Full test suite: 321/321 green (11 new Phase 37B tests).
 - Quality gates: analyze 0 warnings, test 321/321, Windows build success.
+
+## Phase 37C — Reports truthfulness & daily cash reconciliation
+- Current tag after this phase: `phase-37c`.
+- Purpose: fix dashboard card labels and calculations so every visible number is truthful — no mixing of cash sales, credit sales, collections, supplier payments, expenses. Add a dedicated daily cash flow section to the daily report.
+- **Dashboard cards**: previous 4 cards → 7 cards. New: "نقد داخل اليوم", "المستحق على العملاء", "المستحق للموردين". "رصيد النقدية" relabeled to "رصيد النقدية التراكمي" with full explanation.
+- **DashboardData model**: 5 new fields (`todayCollectionsQirsh`, `todaySupplierPaymentsQirsh`, `todayExpensesQirsh`, `customerReceivablesQirsh`, `supplierPayablesQirsh`) + 3 computed getters (`todayCashInQirsh`, `todayCashOutQirsh`, `todayNetCashQirsh`).
+- **DailyActivityReport**: 4 new computed getters (`cashSalesAmountQirsh`, `cashInQirsh`, `cashOutQirsh`, `netCashQirsh`).
+- **Report cash flow section**: new "حركة النقد اليوم" section with detailed cash in/out breakdown. Summary grid adds 3 new cards.
+- **No schema changes**: backup version stays at v2.
+- **Accounting rules enforced**: collections/payments/expenses filtered by date (not creation timestamp). Receivables/payables sum positive balances only.
+- See `docs/PHASE-37C-REPORTS-TRUTHFULNESS-DAILY-CASH.md`.
+- Full test suite: 335/335 green (14 new Phase 37C tests).
+- Quality gates: analyze 0 warnings, test 335/335, Windows build success, diff-check clean.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.
