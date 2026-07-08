@@ -1,6 +1,7 @@
 ﻿enum CustomerAccountEntryType {
   creditSale,
-  collection;
+  collection,
+  openingBalance;
 
   String get labelAr {
     switch (this) {
@@ -8,6 +9,8 @@
         return '\u0628\u064a\u0639 \u0622\u062c\u0644';
       case CustomerAccountEntryType.collection:
         return '\u062a\u062d\u0635\u064a\u0644';
+      case CustomerAccountEntryType.openingBalance:
+        return '\u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a';
     }
   }
 }

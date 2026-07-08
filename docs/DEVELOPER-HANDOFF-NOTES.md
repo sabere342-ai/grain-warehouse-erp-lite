@@ -1,16 +1,13 @@
 # Developer Handoff Notes
 
 ## Current state
-- Latest phase: Phase 37A — accounting continuity: opening balances.
-- Functional baseline: Phase 36H delivery refresh + Phase 37A opening balances.
-- Full test suite: 310/310 passed.
+- Latest phase: Phase 37B — customer opening balance.
+- Functional baseline: Phase 37A opening balances + Phase 37B customer opening balance.
+- Full test suite: 321/321 passed (11 new Phase 37B tests).
 - Backup version: 2 (backward compatible with v1).
-- Functional baseline: Phase 36G pilot UI clarity & cancellation safety polish (tag `phase-36g-pilot-ui-clarity-cancellation-safety-polish`).
-- Analyze cleanup: `phase-36g-analyze-cleanup` — 0 warnings, 0 errors.
-- Previous delivery: Phase 36F is superseded. Phase 36H is the current delivery refresh.
+- Previous delivery: Phase 37A is superseded. Phase 37B is the current delivery.
 - Main app path: `C:\dev\multi-pos\grain-warehouse-erp-lite`.
 - Windows release exe path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`.
-- Full test suite: 300/300 passed.
 - Delivery package: `delivery/grain_warehouse_erp_lite_pilot_<timestamp>/` (source-safe, owner-facing only).
 
 ## Verification commands
@@ -270,6 +267,18 @@ git status --short
 - See `docs/PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md`.
 - Full test suite: 310/310 green (10 new Phase 37A tests).
 - Quality gates: analyze 0 warnings, test 310/310, Windows build success.
+
+## Phase 37B — Customer opening balance
+- Current tag after this phase: `phase-37b-customer-opening-balance-finalization`.
+- Purpose: enable pilot warehouse owner to record a pre-existing customer debt as an opening balance, mirroring the supplier opening balance pattern from Phase 37A.
+- **Pre-existing support**: `CustomerAccountRepository.createOpeningBalanceEntry` and `hasOpeningBalanceEntry` already existed. `CustomerAccountEntryType.openingBalance` (`'رصيد افتتاحي'`) already existed.
+- **Customer opening balance UI**: "رصيد افتتاحي" `OutlinedButton.icon` on customer cards (hidden after creation). `_CustomerOpeningBalanceDialog` with amount validation (positive, multiples of 100 qirsh). Success/error snackbars.
+- **Controller**: `recordOpeningBalance`, `hasOpeningBalanceForCustomer`, `_loadCustomersWithOpeningBalance`, `_openingBalanceMessageForError` — all new.
+- **Statement display**: opening balance shown with label `'الرصيد الافتتاحي: X ج.م'` instead of debit/credit. Misleading "لا يوجد رصيد افتتاحي يدوي" removed.
+- **Rules**: one opening balance per customer. No opening balance after existing transactions. No negative/zero amounts.
+- See `docs/PHASE-37B-CUSTOMER-OPENING-BALANCE.md`.
+- Full test suite: 321/321 green (11 new Phase 37B tests).
+- Quality gates: analyze 0 warnings, test 321/321, Windows build success.
 
 ## Delivery tool
 - `tool\create_pilot_delivery_package.ps1` — creates the customer delivery folder.

@@ -18,6 +18,14 @@ abstract class CustomerAccountRepository {
   Future<CustomerCollectionRecord> createCollection(
     CustomerCollectionDraft draft,
   );
+
+  Future<CustomerAccountEntry> createOpeningBalanceEntry({
+    required String customerId,
+    required int amountQirsh,
+    required String createdByUserId,
+  });
+
+  Future<bool> hasOpeningBalanceEntry(String customerId);
 }
 
 class LocalCustomerAccountRepository implements CustomerAccountRepository {
@@ -192,6 +200,68 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       referenceId: collection.id,
     );
     return collection;
+  }
+
+  @override
+  Future<CustomerAccountEntry> createOpeningBalanceEntry({
+    required String customerId,
+    required int amountQirsh,
+    required String createdByUserId,
+  }) async {
+    final id = _normalizedRequiredId(customerId, 'customerId');
+    final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
+    await _requireCustomer(id, includeInactive: true);
+
+    if (await hasOpeningBalanceEntry(id)) {
+      throw StateError('Opening balance already exists for this customer.');
+    }
+    if (amountQirsh <= 0) {
+      throw ArgumentError.value(
+        amountQirsh,
+        'amountQirsh',
+        'Opening balance amount must be positive.',
+      );
+    }
+
+    final hasTransactions = _entries.any((e) => e.customerId == id);
+    if (hasTransactions) {
+      throw StateError(
+        'Cannot add opening balance after customer has transactions.',
+      );
+    }
+
+    final now = DateTime.now();
+    final entry = CustomerAccountEntry(
+      id: _generateEntryId(now),
+      customerId: id,
+      date: now,
+      type: CustomerAccountEntryType.openingBalance,
+      debitAmountQirsh: amountQirsh,
+      creditAmountQirsh: 0,
+      sourceDocumentType: 'customerOpeningBalance',
+      sourceDocumentId: 'ob-$id',
+      descriptionAr: '\u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644',
+      createdAt: now,
+      createdByUserId: userId,
+    );
+    _validateEntry(entry);
+    _entries.add(entry);
+    await _recordAudit(
+      actionType: 'customer.opening-balance.posted',
+      descriptionAr: '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644.',
+      referenceId: entry.id,
+    );
+    return entry;
+  }
+
+  @override
+  Future<bool> hasOpeningBalanceEntry(String customerId) async {
+    final id = _normalizedRequiredId(customerId, 'customerId');
+    return _entries.any(
+      (e) =>
+          e.customerId == id &&
+          e.type == CustomerAccountEntryType.openingBalance,
+    );
   }
 
   Future<void> restoreCustomerAccountsIntoEmpty({

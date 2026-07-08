@@ -111,6 +111,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   child: _CustomerCard(
                     customer: customer,
                     balanceQirsh: _controller.balanceForCustomer(customer.id),
+                    hasOpeningBalance: _controller.hasOpeningBalanceForCustomer(customer.id),
                     canManage: canManage,
                     onEdit: () => _showCustomerForm(
                       context,
@@ -128,6 +129,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       user: user,
                       customer: customer,
                       balanceQirsh: _controller.balanceForCustomer(customer.id),
+                    ),
+                    onOpeningBalance: () => _recordOpeningBalance(
+                      context,
+                      user: user,
+                      customer: customer,
                     ),
                   ),
                 ),
@@ -199,26 +205,63 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ),
     );
   }
+
+  Future<void> _recordOpeningBalance(
+    BuildContext context, {
+    required AppUser user,
+    required Customer customer,
+  }) async {
+    final amount = await showDialog<int>(
+      context: context,
+      builder: (context) => const _CustomerOpeningBalanceDialog(),
+    );
+
+    if (amount == null) return;
+
+    final success = await _controller.recordOpeningBalance(
+      user: user,
+      customerId: customer.id,
+      amountQirsh: amount,
+    );
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تسجيل الرصيد الافتتاحي بنجاح.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _controller.errorMessage ?? 'خطأ في تسجيل الرصيد الافتتاحي.',
+          ),
+        ),
+      );
+    }
+  }
 }
 
 class _CustomerCard extends StatelessWidget {
   const _CustomerCard({
     required this.customer,
     required this.balanceQirsh,
+    required this.hasOpeningBalance,
     required this.canManage,
     required this.onEdit,
     required this.onToggleActive,
     required this.onStatement,
     required this.onCollection,
+    this.onOpeningBalance,
   });
 
   final Customer customer;
   final int balanceQirsh;
+  final bool hasOpeningBalance;
   final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onStatement;
   final VoidCallback onCollection;
+  final VoidCallback? onOpeningBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -263,6 +306,12 @@ class _CustomerCard extends StatelessWidget {
                 icon: const Icon(Icons.receipt_long_rounded),
                 label: const Text('كشف الحساب'),
               ),
+              if (!hasOpeningBalance)
+                OutlinedButton.icon(
+                  onPressed: onOpeningBalance,
+                  icon: const Icon(Icons.account_balance_rounded),
+                  label: const Text('رصيد افتتاحي'),
+                ),
               if (canManage && hasBalance)
                 FilledButton.icon(
                   onPressed: onCollection,
@@ -466,7 +515,7 @@ class _CustomerStatementScreen extends StatelessWidget {
                     'البيع الآجل يزيد رصيد العميل المستحق، والتحصيل يقلله.'),
                 const SizedBox(height: 6),
                 const Text(
-                    'كشف الحساب يعرض كل الحركات التي صنعت الرصيد. لا يوجد رصيد افتتاحي يدوي.'),
+                    'كشف الحساب يعرض كل الحركات التي صنعت الرصيد.'),
               ],
             ),
           ),
@@ -515,10 +564,15 @@ class _StatementLineCard extends StatelessWidget {
             children: [
               Text('التاريخ: ${_formatDate(entry.date)}'),
               Text('المستند: ${entry.sourceDocumentId}'),
-              Text(
-                  'مدين: ${MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)}'),
-              Text(
-                  'دائن / تحصيل: ${MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh)}'),
+              if (entry.type == CustomerAccountEntryType.openingBalance) ...[
+                Text(
+                    'الرصيد الافتتاحي: ${MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)}'),
+              ] else ...[
+                Text(
+                    'مدين: ${MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh)}'),
+                Text(
+                    'دائن / تحصيل: ${MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh)}'),
+              ],
               Text(
                   'الرصيد: ${MoneyUtils.formatPiastersAsEgp(line.runningBalanceQirsh)}'),
             ],
@@ -534,6 +588,84 @@ class _StatementLineCard extends StatelessWidget {
   }
 
   String _twoDigits(int value) => value.toString().padLeft(2, '0');
+}
+
+class _CustomerOpeningBalanceDialog extends StatefulWidget {
+  const _CustomerOpeningBalanceDialog();
+
+  @override
+  State<_CustomerOpeningBalanceDialog> createState() =>
+      _CustomerOpeningBalanceDialogState();
+}
+
+class _CustomerOpeningBalanceDialogState
+    extends State<_CustomerOpeningBalanceDialog> {
+  final _amountController = TextEditingController();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('رصيد افتتاحي للعميل'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'أدخل المبلغ المستحق على هذا العميل كرصيد افتتاحي (بقيمة مالية).',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'المبلغ بقروش',
+                helperText: 'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('حفظ الرصيد الافتتاحي'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final amount = int.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() => _errorMessage = 'ادخل مبلغ صحيح أكبر من صفر.');
+      return;
+    }
+    if (amount % 100 != 0) {
+      setState(() => _errorMessage = 'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
+      return;
+    }
+
+    Navigator.of(context).pop(amount);
+  }
 }
 
 class _CustomerFormDialog extends StatefulWidget {

@@ -36,7 +36,8 @@ $docs = @(
   "docs\RELEASE-NOTES-AR.md",
   "docs\PHASE-22-PILOT-DELIVERY-CHECKLIST.md",
   "docs\PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md",
-  "docs\PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md"
+  "docs\PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md",
+  "docs\PHASE-37B-CUSTOMER-OPENING-BALANCE.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force
@@ -68,8 +69,10 @@ $readme = @"
 - كشف حساب العميل.
 - شراء من موردين مربوط بالمورد.
 - حسابات الموردين: كشف حساب، تسجيل دفعة، رصيد افتتاحي.
+- حسابات العملاء: رصيد افتتاحي (ديون سابقة).
 - عرض رصيد المورد المستحق على بطاقة المورد.
 - إضافة رصيد افتتاحي للمخزون (كجم / طن).
+- إضافة رصيد افتتاحي لحسابات العملاء (ديون سابقة).
 - التقارير اليومية تشمل مدفوعات الموردين وأرصدة الموردين المستحقة.
 - لوحة الرئيسية تعرض مبيعات اليوم ورصيد النقدية مع شرح طريقة الحساب والمخزون.
 - التقارير توضح الفرق بين صافي حركة المستندات ورصيد النقدية، وتفصل بين أرصدة العملاء والموردين.

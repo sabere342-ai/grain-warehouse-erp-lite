@@ -17,6 +17,7 @@ class CustomerController extends ChangeNotifier {
   final CustomerAccountRepository? _accountRepository;
   List<Customer> _customers = const [];
   Map<String, int> _balancesByCustomerId = const {};
+  Set<String> _customersWithOpeningBalance = const {};
   String? _errorMessage;
   bool _isLoading = false;
 
@@ -25,10 +26,15 @@ class CustomerController extends ChangeNotifier {
       Map<String, int>.unmodifiable(_balancesByCustomerId);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
+  Set<String> get customersWithOpeningBalance =>
+      Set<String>.unmodifiable(_customersWithOpeningBalance);
 
   int balanceForCustomer(String customerId) {
     return _balancesByCustomerId[customerId] ?? 0;
   }
+
+  bool hasOpeningBalanceForCustomer(String customerId) =>
+      _customersWithOpeningBalance.contains(customerId);
 
   Future<void> loadCustomers(AppUser user) async {
     _isLoading = true;
@@ -39,6 +45,7 @@ class CustomerController extends ChangeNotifier {
     );
     _balancesByCustomerId =
         await _accountRepository?.balancesByCustomerId() ?? const {};
+    _customersWithOpeningBalance = await _loadCustomersWithOpeningBalance();
     _isLoading = false;
     notifyListeners();
   }
@@ -150,6 +157,48 @@ class CustomerController extends ChangeNotifier {
     }
   }
 
+  Future<bool> recordOpeningBalance({
+    required AppUser user,
+    required String customerId,
+    required int amountQirsh,
+  }) async {
+    if (!_canManage(user)) {
+      return false;
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      _errorMessage = 'تعذر تسجيل الرصيد الافتتاحي لأن سجل العملاء غير متاح.';
+      notifyListeners();
+      return false;
+    }
+    try {
+      await repository.createOpeningBalanceEntry(
+        customerId: customerId,
+        amountQirsh: amountQirsh,
+        createdByUserId: user.id,
+      );
+      await loadCustomers(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _openingBalanceMessageForError(error);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<Set<String>> _loadCustomersWithOpeningBalance() async {
+    final repository = _accountRepository;
+    if (repository == null) return const {};
+    final customers = _customers;
+    final result = <String>{};
+    for (final customer in customers) {
+      if (await repository.hasOpeningBalanceEntry(customer.id)) {
+        result.add(customer.id);
+      }
+    }
+    return result;
+  }
+
   bool _canManage(AppUser user) {
     if (!user.canProceed) {
       _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
@@ -183,5 +232,21 @@ class CustomerController extends ChangeNotifier {
       return 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق على العميل.';
     }
     return 'تعذر تسجيل التحصيل.';
+  }
+
+  String _openingBalanceMessageForError(Object error) {
+    if (error is ArgumentError) {
+      return 'اكتب مبلغ الرصيد الافتتاحي بشكل صحيح ويجب أن يكون أكبر من صفر.';
+    }
+    if (error is StateError) {
+      if (error.message.contains('already exists')) {
+        return 'الرصيد الافتتاحي موجود مسبقا لهذا العميل.';
+      }
+      if (error.message.contains('has transactions')) {
+        return 'لا يمكن إضافة رصيد افتتاحي بعد وجود مشتريات أو تحصيلات للعميل.';
+      }
+      return 'لا يمكن تسجيل الرصيد الافتتاحي بهذه البيانات.';
+    }
+    return 'تعذر تسجيل الرصيد الافتتاحي.';
   }
 }
