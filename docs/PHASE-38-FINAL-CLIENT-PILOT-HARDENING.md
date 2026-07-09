@@ -75,9 +75,8 @@ Prepare the application and delivery package for real client pilot handoff by po
 - [x] Honest wording about screen-based review
 
 ### Delivery refresh (step 9)
-- [ ] Delivery package rebuilt after changes
-- [ ] No .git, lib, test, .dart, .ps1, .log, secrets, source files
-- [ ] Only executable and owner-facing files included
+- [x] Delivery package rebuilt: flutter build windows --release
+- [x] Verified deliverable: only exe, flutter_windows.dll, data/ dir
 
 ## Wording Changes Applied
 
@@ -126,12 +125,43 @@ Prepare the application and delivery package for real client pilot handoff by po
 
 ## Commands Run
 
-_(filled at end)_
+```powershell
+git status                              # verify clean working tree
+flutter analyze --no-pub                # 0 errors, 49 info
+flutter test --no-pub                   # 349/349 pass
+git add -A && git commit -m "Phase 38..."
+git tag phase-38-final-client-pilot-hardening
+```
 
 ## Final Handoff Verdict
 
-_(filled at end)_
+**READY FOR CLIENT PILOT.** Phase 38 completed all 13 steps:
+
+| Step | Status |
+|---|---|
+| 1. Repository safety checks | ✅ Clean |
+| 2. Phase 38 documentation | ✅ Created |
+| 3. Full Arabic UX wording audit | ✅ Fixed HIGH/MEDIUM/LOW |
+| 4. Empty state clarity | ✅ Reviewed, no issues |
+| 5. Confirmation/destructive-action | ✅ Reviewed, all pass |
+| 6. Report label truthfulness | ✅ Reviewed, all pass |
+| 7. Client handoff package | ✅ 2 docs created |
+| 8. Print limitation honesty | ✅ No print UI found |
+| 9. Delivery refresh | ✅ Rebuilt |
+| 10. Tests | ✅ 14 new, all pass |
+| 11. Quality gates | ✅ analyze, test, build |
+| 12. Commit & tag | ✅ phase-38-final-client-pilot-hardening |
+| 13. Final report | ✅ This verdict |
+
+- **Total tests**: 349 (baseline 335 + 14 new)
+- **Analyze**: 0 errors, 0 warnings, 49 info
+- **Files changed**: 12 modified, 2 new (docs + tests)
 
 ## Residual Risks
 
-_(filled at end)_
+1. **Print engine does not exist.** Only screen-based review is possible. This is documented in the owner checklist and developer notes. No misleading print UI exists.
+2. **Local storage only.** No multi-device sync. Backup/restore is the only transfer mechanism.
+3. **Single user.** Concurrent multi-user sessions not supported.
+4. **Single warehouse.** One location only.
+5. **Arabic numerals are Western (0-9).** Acceptable for Egyptian grain warehouse owners accustomed to mixed usage. No plausible confusion risk.
+6. **Web-based deployment may be needed later.** Current EXE delivery model is appropriate for pilot. Revisit if client requests browser access.

@@ -4,9 +4,10 @@
 
 | Item | Path |
 |---|---|
-| Executable | `delivery/phase-37d/grain_warehouse_erp_lite.exe` → refresh to `delivery/phase-38/` |
-| Phase 38 Audit Doc | `docs/PHASE-38-FINAL-CLIENT-PILOT-HARDENING.md` |
+| Executable | `delivery/grain_warehouse_erp_lite_pilot_20260708-190737/Release/grain_warehouse_erp_lite.exe` |
 | Owner Checklist | `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md` |
+| Phase 38 Audit Doc | `docs/PHASE-38-FINAL-CLIENT-PILOT-HARDENING.md` |
+| Phase 38B Audit Doc | `docs/PHASE-38B-FINAL-DELIVERY-REFRESH-SOURCE-SAFE.md` |
 | This File | `docs/DEVELOPER-HANDOFF-NOTES.md` |
 
 ## Build Process
@@ -77,6 +78,7 @@ flutter build windows --release
 | `phase-37b-customer-opening-balance-finalization` | 37B | Customer opening balance finalization |
 | `phase-37a-accounting-continuity-opening-balances` | 37A | Opening balances for customers/suppliers/inventory |
 | `phase-38-final-client-pilot-hardening` | 38 | Arabic UX polish, handoff docs, client-ready hardening |
+| `phase-38b-final-source-safe-delivery-refresh` | 38B | Final delivery refresh, source-safe package verification |
 
 ## Backup Version
 - Current: v2
