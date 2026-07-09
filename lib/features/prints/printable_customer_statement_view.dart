@@ -47,7 +47,7 @@ class PrintableCustomerStatementView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PrintableDocumentScaffold(
       title: 'كشف حساب عميل',
-      subtitle: customerName,
+      subtitle: '$customerName — جميع الحركات المتاحة',
       documentDate: _formatDate(DateTime.now()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

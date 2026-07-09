@@ -61,6 +61,20 @@ class PrintableDailyReportView extends StatelessWidget {
           ),
           const Divider(),
           _Section(
+            title: 'التحصيل والمدفوعات',
+            children: [
+              _MetricLine(
+                'تحصيل من العملاء',
+                MoneyUtils.formatPiastersAsEgp(report.totalCollectionsAmountQirsh),
+              ),
+              _MetricLine(
+                'مدفوعات للموردين',
+                MoneyUtils.formatPiastersAsEgp(report.totalSupplierPaymentsQirsh),
+              ),
+            ],
+          ),
+          const Divider(),
+          _Section(
             title: 'الملخص',
             children: [
               _MetricLine(
@@ -71,6 +85,20 @@ class PrintableDailyReportView extends StatelessWidget {
                 _MetricLine(
                   'إجمالي المصروفات',
                   MoneyUtils.formatPiastersAsEgp(report.totalExpenseAmountQirsh),
+                ),
+              if (report.totalOutstandingReceivablesQirsh > 0)
+                _MetricLine(
+                  'المستحق على العملاء',
+                  MoneyUtils.formatPiastersAsEgp(
+                    report.totalOutstandingReceivablesQirsh,
+                  ),
+                ),
+              if (report.totalOutstandingSupplierPayablesQirsh > 0)
+                _MetricLine(
+                  'المستحق للموردين',
+                  MoneyUtils.formatPiastersAsEgp(
+                    report.totalOutstandingSupplierPayablesQirsh,
+                  ),
                 ),
               _MetricLine('عدد فواتير البيع', '${report.saleCount}'),
               _MetricLine('عدد فواتير الشراء', '${report.purchaseCount}'),

@@ -41,7 +41,7 @@ class PrintableSupplierStatementView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PrintableDocumentScaffold(
       title: 'كشف حساب مورد',
-      subtitle: supplierName,
+      subtitle: '$supplierName — جميع الحركات المتاحة',
       documentDate: _formatDate(DateTime.now()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

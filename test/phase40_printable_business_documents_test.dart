@@ -293,7 +293,7 @@ void main() {
         );
 
         expect(find.text('كشف حساب عميل'), findsOneWidget);
-        expect(find.text('عميل تجريبي'), findsOneWidget);
+        expect(find.textContaining('عميل تجريبي'), findsOneWidget);
         expect(find.textContaining('الرصيد النهائي'), findsWidgets);
       });
 
@@ -315,7 +315,7 @@ void main() {
           ),
         );
 
-        expect(find.text('عميل بدون رصيد'), findsOneWidget);
+        expect(find.textContaining('عميل بدون رصيد'), findsOneWidget);
         expect(find.textContaining('لا يوجد رصيد'), findsOneWidget);
       });
     });
@@ -552,11 +552,11 @@ void main() {
         );
 
         expect(find.text('كشف حساب مورد'), findsOneWidget);
-        expect(find.text('مورد تجريبي'), findsOneWidget);
+        expect(find.textContaining('مورد تجريبي'), findsOneWidget);
         expect(find.textContaining('الرصيد النهائي'), findsWidgets);
       });
 
-      testWidgets('handles zero supplier balance', (tester) async {
+      testWidgets('handles zero balance supplier', (tester) async {
         final statement = const SupplierStatement(
           supplierId: 's1',
           finalBalanceQirsh: 0,
@@ -574,8 +574,237 @@ void main() {
           ),
         );
 
-        expect(find.text('مورد بدون رصيد'), findsOneWidget);
+        expect(find.textContaining('مورد بدون رصيد'), findsOneWidget);
         expect(find.textContaining('لا يوجد رصيد'), findsOneWidget);
+      });
+    });
+
+    group('G. Phase 41 Preview Accuracy QA — Edge Cases', () {
+      testWidgets('unknown product name falls back to منتج غير معروف', (tester) async {
+        final sale = SaleRecord(
+          id: 'SALE-UKN',
+          productId: 'unknown-id',
+          quantityKg: 50,
+          salePriceQirshPerKg: 1000,
+          totalQirsh: 50000,
+          createdByUserId: 'owner',
+          createdAt: DateTime(2026, 7, 9),
+          stockMovementId: 'sm-ukn',
+          customerId: 'c1',
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableSalesInvoiceView(
+                sale: sale,
+                customerName: 'عميل',
+                productNames: const {},
+              ),
+            ),
+          ),
+        );
+
+        // Should show "منتج غير معروف" instead of raw "unknown-id"
+        expect(find.textContaining('منتج غير معروف'), findsWidgets);
+        expect(find.text('unknown-id'), findsNothing);
+      });
+
+      testWidgets(
+          'multi-item sale with unknown products shows منتج غير معروف',
+          (tester) async {
+        final sale = SaleRecord(
+          id: 'SALE-MUK',
+          productId: 'p1',
+          quantityKg: 0,
+          salePriceQirshPerKg: 0,
+          totalQirsh: 75000,
+          createdByUserId: 'owner',
+          createdAt: DateTime(2026, 7, 9),
+          stockMovementId: 'sm-muk',
+          customerId: 'c1',
+          items: const [
+            SaleLineItem(
+              productId: 'p1',
+              quantityKg: 30,
+              salePriceQirshPerKg: 1000,
+              lineTotalQirsh: 30000,
+            ),
+            SaleLineItem(
+              productId: 'p2',
+              quantityKg: 50,
+              salePriceQirshPerKg: 900,
+              lineTotalQirsh: 45000,
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableSalesInvoiceView(
+                sale: sale,
+                customerName: 'عميل',
+                productNames: const {}, // no product names available
+              ),
+            ),
+          ),
+        );
+
+        // Should show fallback instead of raw IDs
+        expect(find.textContaining('منتج غير معروف'), findsWidgets);
+        expect(find.text('p1'), findsNothing);
+        expect(find.text('p2'), findsNothing);
+      });
+
+      testWidgets('customer statement shows جميع الحركات المتاحة',
+          (tester) async {
+        final statement = CustomerStatement(
+          customerId: 'c1',
+          finalBalanceQirsh: 0,
+          lines: [],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableCustomerStatementView(
+                statement: statement,
+                customerName: 'عميل',
+              ),
+            ),
+          ),
+        );
+
+        expect(
+          find.textContaining('جميع الحركات المتاحة'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('supplier statement shows جميع الحركات المتاحة',
+          (tester) async {
+        final statement = SupplierStatement(
+          supplierId: 's1',
+          finalBalanceQirsh: 0,
+          lines: [],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableSupplierStatementView(
+                statement: statement,
+                supplierName: 'مورد',
+              ),
+            ),
+          ),
+        );
+
+        expect(
+          find.textContaining('جميع الحركات المتاحة'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('cancelled multi-item sale shows cancellation status',
+          (tester) async {
+        final now = DateTime(2026, 7, 9);
+        final sale = SaleRecord(
+          id: 'SALE-CMI',
+          productId: 'p1',
+          quantityKg: 0,
+          salePriceQirshPerKg: 0,
+          totalQirsh: 80000,
+          createdByUserId: 'owner',
+          createdAt: now,
+          stockMovementId: 'sm-cmi',
+          customerId: 'c1',
+          items: const [
+            SaleLineItem(
+              productId: 'p1',
+              quantityKg: 40,
+              salePriceQirshPerKg: 1000,
+              lineTotalQirsh: 40000,
+            ),
+            SaleLineItem(
+              productId: 'p2',
+              quantityKg: 40,
+              salePriceQirshPerKg: 1000,
+              lineTotalQirsh: 40000,
+            ),
+          ],
+          cancellation: CancellationMetadata(
+            cancelledByUserId: 'owner',
+            cancelledAt: now,
+            cancellationReason: 'إلغاء اختبار',
+            originalDocumentId: 'SALE-CMI',
+            reversalMovementIds: ['sm-cmi-rev'],
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableSalesInvoiceView(
+                sale: sale,
+                customerName: 'عميل',
+                productNames: const {'p1': 'قمح', 'p2': 'شعير'},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('ملغاة — تم عكس الأرصدة'), findsOneWidget);
+      });
+
+      testWidgets(
+          'daily report shows collections and outstanding balances',
+          (tester) async {
+        final date = DateTime(2026, 7, 9);
+        final report = DailyActivityReport(
+          start: date,
+          end: date,
+          totalPurchasedKg: 1000,
+          totalSoldKg: 500,
+          totalPurchaseAmountQirsh: 10000,
+          totalSalesAmountQirsh: 50000,
+          totalCreditSalesAmountQirsh: 20000,
+          totalExpenseAmountQirsh: 3000,
+          totalCollectionsAmountQirsh: 15000,
+          totalOutstandingReceivablesQirsh: 10000,
+          totalSupplierPaymentsQirsh: 5000,
+          totalOutstandingSupplierPayablesQirsh: 4000,
+          estimatedSalesCostQirsh: null,
+          estimatedGrossProfitQirsh: null,
+          estimatedStockValueQirsh: null,
+          hasCompleteSalesCost: false,
+          hasCompleteStockValuation: false,
+          missingSalesCostProductNames: [],
+          missingStockCostProductNames: [],
+          purchaseCount: 2,
+          saleCount: 5,
+          stockMovementCount: 7,
+          stockBalances: [],
+          recentMovements: [],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PrintableDailyReportView(
+                report: report,
+                reportDate: date,
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('التقرير اليومي'), findsOneWidget);
+        expect(find.textContaining('تحصيل من العملاء'), findsOneWidget);
+        expect(find.textContaining('مدفوعات للموردين'), findsOneWidget);
+        expect(find.textContaining('المستحق على العملاء'), findsOneWidget);
+        expect(find.textContaining('المستحق للموردين'), findsOneWidget);
       });
     });
   });

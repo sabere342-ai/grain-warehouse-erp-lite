@@ -113,8 +113,8 @@ class PrintableSalesInvoiceView extends StatelessWidget {
         ...sale.items.map(
           (item) => TableRow(
             children: [
-              _TableCell(productNames[item.productId] ?? item.productId),
-              _TableCell('${item.quantityKg}'),
+              _TableCell(productNames[item.productId] ?? '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'),
+              _TableCell('${item.quantityKg} \u0643\u062c\u0645'),
               _TableCell(
                 MoneyUtils.formatPiastersAsEgp(item.salePriceQirshPerKg),
               ),
@@ -135,9 +135,9 @@ class PrintableSalesInvoiceView extends StatelessWidget {
         children: [
           _infoRow(
             '\u0627\u0644\u0635\u0646\u0641',
-            productNames[sale.productId] ?? sale.productId,
+            productNames[sale.productId] ?? '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641',
           ),
-          _infoRow('\u0627\u0644\u0643\u0645\u064a\u0629', '${sale.quantityKg}'),
+          _infoRow('\u0627\u0644\u0643\u0645\u064a\u0629', '${sale.quantityKg} \u0643\u062c\u0645'),
           _infoRow(
             '\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629',
             MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg),
