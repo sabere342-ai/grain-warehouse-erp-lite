@@ -96,7 +96,7 @@ void main() {
               body: PrintableSalesInvoiceView(
                 sale: sale,
                 customerName: 'عميل تجريبي',
-                productNames: {'p1': 'قمح'},
+                productNames: const {'p1': 'قمح'},
               ),
             ),
           ),
@@ -137,7 +137,7 @@ void main() {
               body: PrintableSalesInvoiceView(
                 sale: sale,
                 customerName: 'عميل آخر',
-                productNames: {'p1': 'قمح'},
+                productNames: const {'p1': 'قمح'},
               ),
             ),
           ),
@@ -168,7 +168,7 @@ void main() {
               body: PrintableSalesInvoiceView(
                 sale: sale,
                 customerName: 'عميل جزئي',
-                productNames: {'p1': 'قمح'},
+                productNames: const {'p1': 'قمح'},
               ),
             ),
           ),
@@ -190,7 +190,7 @@ void main() {
           createdAt: DateTime(2026, 7, 9, 15, 0),
           stockMovementId: 'sm4',
           customerId: 'c1',
-          items: [
+          items: const [
             SaleLineItem(
               productId: 'p1',
               quantityKg: 50,
@@ -212,7 +212,7 @@ void main() {
               body: PrintableSalesInvoiceView(
                 sale: sale,
                 customerName: 'عميل متعدد',
-                productNames: {'p1': 'قمح', 'p2': 'شعير'},
+                productNames: const {'p1': 'قمح', 'p2': 'شعير'},
               ),
             ),
           ),
@@ -298,7 +298,7 @@ void main() {
       });
 
       testWidgets('handles zero balance', (tester) async {
-        final statement = CustomerStatement(
+        final statement = const CustomerStatement(
           customerId: 'c1',
           finalBalanceQirsh: 0,
           lines: [],
@@ -557,7 +557,7 @@ void main() {
       });
 
       testWidgets('handles zero supplier balance', (tester) async {
-        final statement = SupplierStatement(
+        final statement = const SupplierStatement(
           supplierId: 's1',
           finalBalanceQirsh: 0,
           lines: [],

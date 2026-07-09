@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_supplier_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -64,6 +65,23 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('كشف حساب ${supplier.name}'),
+        actions: [
+          if (_statement != null)
+            IconButton(
+              icon: const Icon(Icons.preview_rounded),
+              tooltip: 'معاينة كشف الحساب',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PrintableSupplierStatementView(
+                      statement: _statement!,
+                      supplierName: supplier.name,
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

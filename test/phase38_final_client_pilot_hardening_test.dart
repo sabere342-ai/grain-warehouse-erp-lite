@@ -157,7 +157,7 @@ void main() {
             createdByUserId: _owner.id,
           ),
         );
-        final cancelled = await purchases.cancelPurchaseIntake(
+        await purchases.cancelPurchaseIntake(
           purchaseIntakeId: intake.id,
           cancelledByUserId: _owner.id,
           cancellationReason: 'خطأ في الكمية',
@@ -201,7 +201,7 @@ void main() {
             customerId: customer.id,
           ),
         );
-        final cancelled = await sales.cancelSale(
+        await sales.cancelSale(
           saleId: sale.id,
           cancelledByUserId: _owner.id,
           cancellationReason: 'مرتجع',

@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 367, all passing
+- Tests: currently 381, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -83,7 +83,7 @@ flutter build windows --release
 ## Phase History (Recent)
 
 | Tag | Phase | Summary |
-|---|---|---|
+|---|---|---|---|
 | `phase-37d-operational-readiness-audit` | 37D | Full operational audit, 2 error text leaks fixed |
 | `phase-37c-delivery-refresh` | 37C | Dashboard labels, cash flow clarity |
 | `phase-37b-customer-opening-balance-finalization` | 37B | Customer opening balance finalization |
@@ -91,6 +91,8 @@ flutter build windows --release
 | `phase-38-final-client-pilot-hardening` | 38 | Arabic UX polish, handoff docs, client-ready hardening |
 | `phase-38b-final-source-safe-delivery-refresh` | 38B | Final delivery refresh, source-safe package verification |
 | `phase-39-customer-bound-multi-item-sales` | 39 | Customer-bound multi-item sales with cash/credit/partial payment modes |
+| `phase-40-printable-business-documents-foundation` | 40 | Preview-only printable document views for sales invoice, customer statement, daily report, purchase invoice, supplier statement |
+| `phase-40a-post-phase-40-repository-hygiene` | 40A | Repository cleanup — no dirty files, 2 warnings fixed, debug test removal confirmed, docs committed |
 
 ## Backup Version
 - Current: v2
@@ -98,4 +100,8 @@ flutter build windows --release
 - Old backups without these fields restore via single-field fallback
 
 ## Next Recommended Phase
-Phase 40: Post-pilot feedback implementation or next feature milestone based on client trial results.
+Phase 41 — Printable Preview Accuracy & Business Consistency QA
+
+### Later Roadmap
+- Phase 42 — PDF Export Foundation
+- Phase 43 — WhatsApp Assisted Sharing (opens WhatsApp with prepared message; manual send only; automatic sending out of scope)
