@@ -57,7 +57,7 @@ class _SalesScreenState extends State<SalesScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
-      return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض المبيعات.'));
+      return const PremiumCard(child: Text('\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0644\u0639\u0631\u0636 \u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a.'));
     }
 
     final canCreate = user.permissions.canCreateSale;
@@ -74,10 +74,10 @@ class _SalesScreenState extends State<SalesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('المبيعات', style: textTheme.headlineMedium),
+                      Text('\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a', style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
-                        'سجل بيع نقدي أو بيع آجل على عميل بنفس قواعد السعر والمخزون.',
+                        '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627\u060c \u0648\u062a\u062f\u0639\u0645 \u0623\u0643\u062b\u0631 \u0645\u0646 \u0635\u0646\u0641 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.mutedText,
                         ),
@@ -88,16 +88,17 @@ class _SalesScreenState extends State<SalesScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _openHistory(context),
                   icon: const Icon(Icons.manage_search_rounded),
-                  label: const Text('سجل المستندات'),
+                  label: const Text('\u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a'),
                 ),
                 const SizedBox(width: 8),
                 if (canCreate)
                   FilledButton.icon(
-                    onPressed: _controller.products.isEmpty
+                    onPressed: _controller.products.isEmpty ||
+                            _controller.customers.isEmpty
                         ? null
                         : () => _showSaleForm(context, user: user),
                     icon: const Icon(Icons.point_of_sale_rounded),
-                    label: const Text('تسجيل بيع حبوب'),
+                    label: const Text('\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
                   ),
               ],
             ),
@@ -130,7 +131,7 @@ class _SalesScreenState extends State<SalesScreen> {
               if (_controller.sales.isEmpty)
                 const PremiumCard(
                   child: Text(
-                    'لا توجد مبيعات حبوب مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
+                    '\u0644\u0627 \u062a\u0648\u062c\u062f \u0641\u0648\u0627\u062a\u064a\u0631 \u0628\u064a\u0639 \u0645\u0633\u062c\u0644\u0629 \u0628\u0639\u062f. \u0633\u062a\u0638\u0647\u0631 \u0647\u0646\u0627 \u0641\u0648\u0627\u062a\u064a\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0639\u062f \u0627\u0644\u062d\u0641\u0638.',
                   ),
                 )
               else
@@ -183,12 +184,14 @@ class _SalesScreenState extends State<SalesScreen> {
 
     await _controller.createSale(
       user: user,
-      productId: result.productId,
-      quantityKg: result.quantityKg,
-      salePriceQirshPerKg: result.salePriceQirshPerKg,
+      productId: result.items.first.productId,
+      quantityKg: result.items.first.quantityKg,
+      salePriceQirshPerKg: result.items.first.salePriceQirshPerKg,
       notes: result.notes,
       paymentMode: result.paymentMode,
       customerId: result.customerId,
+      items: result.items,
+      paidAmountQirsh: result.paidAmountQirsh,
     );
   }
 
@@ -201,18 +204,18 @@ class _SalesScreenState extends State<SalesScreen> {
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تأكيد إلغاء البيع'),
+        title: const Text('\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0628\u064a\u0639'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
+              '\u062a\u062d\u0630\u064a\u0631 \u0645\u0647\u0645: \u0633\u064a\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u062d\u0631\u0643\u0627\u062a \u0645\u062e\u0632\u0648\u0646 \u0639\u0643\u0633\u064a\u0629 \u0644\u0625\u0644\u063a\u0627\u0621 \u0623\u062b\u0631 \u0647\u0630\u0627 \u0627\u0644\u0628\u064a\u0639. \u0644\u0646 \u064a\u062a\u0645 \u062d\u0630\u0641 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0623\u0635\u0644\u064a \u0623\u0648 \u0627\u0644\u062d\u0631\u0643\u0629 \u0627\u0644\u0623\u0635\u0644\u064a\u0629\u060c \u0648\u0633\u064a\u0638\u0647\u0631 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 \u0641\u064a \u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0644\u0644\u0645\u0627\u0644\u0643.',
             ),
             const SizedBox(height: 12),
             TextField(
               controller: reasonController,
-              decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
+              decoration: const InputDecoration(labelText: '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),
@@ -221,11 +224,11 @@ class _SalesScreenState extends State<SalesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('رجوع'),
+            child: const Text('\u0631\u062c\u0648\u0639'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(reasonController.text),
-            child: const Text('تأكيد الإلغاء'),
+            child: const Text('\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
           ),
         ],
       ),
@@ -259,7 +262,7 @@ class _ProductSaleCards extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     if (products.isEmpty) {
       return const PremiumCard(
-        child: Text('أضف صنفا وكمية مخزون قبل تسجيل البيع.'),
+        child: Text('\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0643\u0645\u064a\u0629 \u0645\u062e\u0632\u0648\u0646 \u0642\u0628\u0644 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.'),
       );
     }
 
@@ -267,10 +270,10 @@ class _ProductSaleCards extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('اختر صنف البيع', style: textTheme.titleLarge),
+          Text('\u0627\u062e\u062a\u0631 \u0635\u0646\u0641 \u0627\u0644\u0628\u064a\u0639', style: textTheme.titleLarge),
           const SizedBox(height: 6),
           Text(
-            'اضغط على بطاقة الصنف لفتح نموذج البيع بنفس قواعد السعر والمخزون الحالية.',
+            '\u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0635\u0646\u0641 \u0644\u0641\u062a\u062d \u0646\u0645\u0648\u0630\u062c \u0627\u0644\u0628\u064a\u0639 \u0648\u0625\u0636\u0627\u0641\u0629 \u0623\u0635\u0646\u0627\u0641 \u0645\u062a\u0639\u062f\u062f\u0629 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
             style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
           ),
           const SizedBox(height: 12),
@@ -339,18 +342,18 @@ class _ProductSaleCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              Text('المخزون الحالي: $stockKg كجم'),
+              Text('\u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u0627\u0644\u062d\u0627\u0644\u064a: $stockKg \u0643\u062c\u0645'),
               const SizedBox(height: 6),
               Text(
                 defaultPrice == null
-                    ? 'سعر البيع الافتراضي: غير محدد'
-                    : 'سعر البيع الافتراضي: ${MoneyUtils.formatPiastersAsEgp(defaultPrice)} / كجم',
+                    ? '\u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a: \u063a\u064a\u0631 \u0645\u062d\u062f\u062f'
+                    : '\u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a: ${MoneyUtils.formatPiastersAsEgp(defaultPrice)} / \u0643\u062c\u0645',
               ),
               const SizedBox(height: 6),
               Text(
                 minimumPrice == null
-                    ? 'الحد الأدنى للبيع: غير محدد'
-                    : 'الحد الأدنى للبيع: ${MoneyUtils.formatPiastersAsEgp(minimumPrice)} / كجم',
+                    ? '\u0627\u0644\u062d\u062f \u0627\u0644\u0623\u062f\u0646\u0649 \u0644\u0644\u0628\u064a\u0639: \u063a\u064a\u0631 \u0645\u062d\u062f\u062f'
+                    : '\u0627\u0644\u062d\u062f \u0627\u0644\u0623\u062f\u0646\u0649 \u0644\u0644\u0628\u064a\u0639: ${MoneyUtils.formatPiastersAsEgp(minimumPrice)} / \u0643\u062c\u0645',
               ),
               const SizedBox(height: 12),
               Align(
@@ -358,7 +361,7 @@ class _ProductSaleCard extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onSelect,
                   icon: const Icon(Icons.point_of_sale_rounded),
-                  label: const Text('بيع هذا الصنف'),
+                  label: const Text('\u0628\u064a\u0639 \u0647\u0630\u0627 \u0627\u0644\u0635\u0646\u0641'),
                 ),
               ),
             ],
@@ -394,31 +397,71 @@ class _SaleCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(productName, style: textTheme.titleLarge)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (sale.isMultiItem)
+                      Text(
+                        '\u0641\u0627\u062a\u0648\u0631\u0629 ${sale.items.length} \u0623\u0635\u0646\u0627\u0641',
+                        style: textTheme.titleLarge,
+                      )
+                    else
+                      Text(productName, style: textTheme.titleLarge),
+                    if (customerName.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        customerName,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.mutedText,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
               Chip(label: Text(sale.paymentMode.labelAr)),
               if (sale.isCancelled) ...[
                 const SizedBox(width: 8),
                 Chip(
-                  label: const Text('ملغي'),
+                  label: const Text('\u0645\u0644\u063a\u064a'),
                   backgroundColor: Theme.of(context).colorScheme.errorContainer,
                 ),
               ],
             ],
           ),
           const SizedBox(height: 8),
+          if (sale.isMultiItem)
+            ...sale.items.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    '\u2022 $productName \u2014 $item.quantityKg \u0643\u062c\u0645 \u00d7 ${MoneyUtils.formatPiastersAsEgp(item.salePriceQirshPerKg)} = ${MoneyUtils.formatPiastersAsEgp(item.lineTotalQirsh)}',
+                    style: textTheme.bodyMedium,
+                  ),
+                ))
+          else ...[
+            Text('\u0627\u0644\u0643\u0645\u064a\u0629: ${sale.quantityKg} \u0643\u062c\u0645'),
+            Text(
+              '\u0627\u0644\u0633\u0639\u0631: ${MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg)} / \u0643\u062c\u0645',
+            ),
+          ],
+          const SizedBox(height: 4),
           Wrap(
             spacing: 12,
             runSpacing: 8,
             children: [
-              Text('الكمية: ${sale.quantityKg} كجم'),
               Text(
-                'السعر: ${MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg)} / كجم',
+                '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}',
               ),
-              Text(
-                'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}',
-              ),
-              Text('الوقت: ${_formatDateTime(sale.createdAt)}'),
-              if (sale.isCreditSale) Text('العميل: $customerName'),
+              Text('\u0627\u0644\u0648\u0642\u062a: ${_formatDateTime(sale.createdAt)}'),
+              if (sale.isPartialPayment)
+                Text(
+                  '\u0627\u0644\u0645\u062f\u0641\u0648\u0639: ${MoneyUtils.formatPiastersAsEgp(sale.effectivePaidAmountQirsh)}',
+                ),
+              if (sale.isPartialPayment)
+                Text(
+                  '\u0627\u0644\u0645\u062a\u0628\u0642\u064a: ${MoneyUtils.formatPiastersAsEgp(sale.remainingAmountQirsh)}',
+                ),
             ],
           ),
           if (sale.notes != null) ...[
@@ -427,7 +470,7 @@ class _SaleCard extends StatelessWidget {
           ],
           if (sale.cancellation != null) ...[
             const SizedBox(height: 8),
-            Text('سبب الإلغاء: ${sale.cancellation!.cancellationReason}'),
+            Text('\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621: ${sale.cancellation!.cancellationReason}'),
           ],
           if (canCancel && !sale.isCancelled) ...[
             const SizedBox(height: 12),
@@ -436,7 +479,7 @@ class _SaleCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onCancel,
                 icon: const Icon(Icons.cancel_outlined),
-                label: const Text('إلغاء مستند البيع'),
+                label: const Text('\u0625\u0644\u063a\u0627\u0621 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639'),
               ),
             ),
           ],
@@ -475,13 +518,24 @@ class _SaleFormDialog extends StatefulWidget {
 }
 
 class _SaleFormDialogState extends State<_SaleFormDialog> {
-  late String _productId = _initialProductId();
   SalePaymentMode _paymentMode = SalePaymentMode.cash;
   String? _customerId;
-  final _quantityController = TextEditingController();
-  final _priceController = TextEditingController();
   final _notesController = TextEditingController();
   String? _errorMessage;
+
+  final List<_LineItemEntry> _lineItems = [];
+
+  String? _paidAmountText;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialId = _initialProductId();
+    _lineItems.add(_LineItemEntry(
+      productId: initialId,
+      products: widget.products,
+    ));
+  }
 
   String _initialProductId() {
     final preferred = widget.initialProductId;
@@ -494,73 +548,97 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
 
   @override
   void dispose() {
-    _quantityController.dispose();
-    _priceController.dispose();
     _notesController.dispose();
+    for (final item in _lineItems) {
+      item.quantityController.dispose();
+      item.priceController.dispose();
+    }
     super.dispose();
+  }
+
+  int? _computeTotal() {
+    var total = 0;
+    for (final item in _lineItems) {
+      final qty = int.tryParse(item.quantityController.text.trim());
+      final price = _tryParsePrice(item.priceController.text);
+      if (qty == null || qty <= 0 || price == null || price <= 0) {
+        return null;
+      }
+      total += qty * price;
+    }
+    return total > 0 ? total : null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final quantity = int.tryParse(_quantityController.text.trim());
-    final price = _tryParsePrice(_priceController.text);
-    final total = quantity != null && quantity > 0 && price != null && price > 0
-        ? quantity * price
-        : null;
-    final isCredit = _paymentMode == SalePaymentMode.credit;
+    final total = _computeTotal();
+    final hasValidItems = _lineItems.isNotEmpty &&
+        _lineItems.every((item) {
+          final qty = int.tryParse(item.quantityController.text.trim());
+          final price = _tryParsePrice(item.priceController.text);
+          return qty != null && qty > 0 && price != null && price > 0;
+        });
+    final customerSelected =
+        _customerId != null && _customerId!.trim().isNotEmpty;
 
     return AlertDialog(
-      title: const Text('تسجيل بيع حبوب'),
+      title: const Text('\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                '\u0623\u0636\u0641 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
+                style: TextStyle(fontSize: 12, color: AppColors.mutedText),
+              ),
+            ),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _productId,
-              decoration: const InputDecoration(labelText: 'الصنف'),
+              value: _customerId,
+              decoration: const InputDecoration(
+                labelText: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 *',
+                helperText: '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627.',
+              ),
               items: [
-                for (final product in widget.products)
+                for (final customer in widget.customers)
                   DropdownMenuItem(
-                    value: product.id,
-                    child: Text(product.name),
+                    value: customer.id,
+                    child: Text(customer.name),
                   ),
               ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _productId = value);
-                }
-              },
+              onChanged: (value) => setState(() => _customerId = value),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _quantityController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'الكمية بالكجم',
-                helperText: 'اكتب كمية الحبوب الخارجة من المخزن.',
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                '\u0623\u0635\u0646\u0627\u0641 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629',
+                style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              onChanged: (_) => setState(() {}),
-              textDirection: TextDirection.ltr,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _priceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'سعر البيع بالجنيه / كجم',
-                helperText: 'اكتب سعر الكيلو بالجنيه ويمكن استخدام القروش.',
+            const SizedBox(height: 8),
+            for (int i = 0; i < _lineItems.length; i++) ...[
+              if (i > 0) const Divider(height: 16),
+              _buildLineItem(i),
+            ],
+            const SizedBox(height: 8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: widget.products.length > 1 ? _addLineItem : null,
+                icon: const Icon(Icons.add_circle_outline_rounded),
+                label: const Text('\u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 \u0622\u062e\u0631'),
               ),
-              onChanged: (_) => setState(() {}),
-              textDirection: TextDirection.ltr,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
                 total == null
-                    ? 'الإجمالي: -'
-                    : 'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(total)}',
+                    ? '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a: -'
+                    : '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a: ${MoneyUtils.formatPiastersAsEgp(total)}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -568,7 +646,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
-                'طريقة الدفع',
+                '\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u062f\u0641\u0639',
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
@@ -577,13 +655,18 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               segments: const [
                 ButtonSegment(
                   value: SalePaymentMode.cash,
-                  label: Text('نقدي'),
+                  label: Text('\u0646\u0642\u062f\u064a'),
                   icon: Icon(Icons.payments_rounded),
                 ),
                 ButtonSegment(
                   value: SalePaymentMode.credit,
-                  label: Text('آجل على عميل'),
+                  label: Text('\u0622\u062c\u0644'),
                   icon: Icon(Icons.person_pin_circle_rounded),
+                ),
+                ButtonSegment(
+                  value: SalePaymentMode.partial,
+                  label: Text('\u062f\u0641\u0639 \u062c\u0632\u0626\u064a'),
+                  icon: Icon(Icons.money_rounded),
                 ),
               ],
               selected: {_paymentMode},
@@ -591,32 +674,41 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 setState(() {
                   _paymentMode = selection.first;
                   if (_paymentMode == SalePaymentMode.cash) {
-                    _customerId = null;
+                    _paidAmountText = null;
                   }
                 });
               },
             ),
-            if (isCredit) ...[
+            if (_paymentMode == SalePaymentMode.partial) ...[
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _customerId,
-                decoration: const InputDecoration(labelText: 'اختر العميل'),
-                items: [
-                  for (final customer in widget.customers)
-                    DropdownMenuItem(
-                      value: customer.id,
-                      child: Text(customer.name),
-                    ),
-                ],
-                onChanged: (value) => setState(() => _customerId = value),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647',
+                  helperText: '\u0623\u062f\u062e\u0644 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0630\u064a \u062f\u0641\u0639\u0647 \u0627\u0644\u0639\u0645\u064a\u0644 \u0646\u0642\u062f\u0627\u060c \u0648\u0627\u0644\u0628\u0627\u0642\u064a \u0633\u064a\u0638\u0644 \u0639\u0644\u064a\u0647.',
+                ),
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.ltr,
+                onChanged: (value) => _paidAmountText = value,
               ),
+            ],
+            if (_paymentMode == SalePaymentMode.credit && total != null) ...[
               const SizedBox(height: 8),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: Text(
-                  total == null
-                      ? 'سيتم إضافة مبلغ الفاتورة على رصيد العميل بعد إدخال الكمية والسعر.'
-                      : 'سيتم إضافة مبلغ الفاتورة على رصيد العميل: ${MoneyUtils.formatPiastersAsEgp(total)}',
+                  '\u0633\u064a\u062a\u0645 \u0625\u0636\u0627\u0641\u0629 \u0642\u064a\u0645\u0629 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 \u0639\u0644\u0649 \u0631\u0635\u064a\u062f \u0627\u0644\u0639\u0645\u064a\u0644: ${MoneyUtils.formatPiastersAsEgp(total)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.mutedText,
+                      ),
+                ),
+              ),
+            ],
+            if (_paymentMode == SalePaymentMode.cash && total != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  '\u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 \u0645\u062f\u0641\u0648\u0639\u0629 \u0646\u0642\u062f\u0627\u060c \u0648\u0633\u062a\u0638\u0647\u0631 \u0641\u064a \u0643\u0634\u0641 \u062d\u0633\u0627\u0628 \u0627\u0644\u0639\u0645\u064a\u0644 \u0643\u0641\u0627\u062a\u0648\u0631\u0629 \u0645\u0633\u062f\u062f\u0629.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.mutedText,
                       ),
@@ -627,8 +719,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             TextField(
               controller: _notesController,
               decoration: const InputDecoration(
-                labelText: 'ملاحظات اختيارية',
-                helperText: 'مثال: اسم السائق أو رقم السيارة.',
+                labelText: '\u0645\u0644\u0627\u062d\u0638\u0627\u062a \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629',
+                helperText: '\u0645\u062b\u0627\u0644: \u0627\u0633\u0645 \u0627\u0644\u0633\u0627\u0626\u0642 \u0623\u0648 \u0631\u0642\u0645 \u0627\u0644\u0633\u064a\u0627\u0631\u0629.',
               ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
@@ -646,42 +738,193 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('إلغاء'),
+          child: const Text('\u0625\u0644\u063a\u0627\u0621'),
         ),
         FilledButton(
-          onPressed: _submit,
-          child: const Text('حفظ البيع'),
+          onPressed: !customerSelected || !hasValidItems ? null : _submit,
+          child: const Text('\u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
         ),
       ],
     );
   }
 
+  Widget _buildLineItem(int index) {
+    final item = _lineItems[index];
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: DropdownButtonFormField<String>(
+                value: item.productId,
+                decoration: const InputDecoration(
+                  labelText: '\u0627\u0644\u0635\u0646\u0641',
+                  isDense: true,
+                ),
+                items: [
+                  for (final product in widget.products)
+                    DropdownMenuItem(
+                      value: product.id,
+                      child: Text(product.name, overflow: TextOverflow.ellipsis),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => item.productId = value);
+                  }
+                },
+              ),
+            ),
+            if (_lineItems.length > 1) ...[
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline_rounded,
+                    color: Colors.red),
+                onPressed: () => setState(() {
+                  item.quantityController.dispose();
+                  item.priceController.dispose();
+                  _lineItems.removeAt(index);
+                }),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: item.quantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: '\u0627\u0644\u0643\u0645\u064a\u0629 (\u0643\u062c\u0645)',
+                  isDense: true,
+                ),
+                onChanged: (_) => setState(() {}),
+                textDirection: TextDirection.ltr,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: item.priceController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: '\u0627\u0644\u0633\u0639\u0631 / \u0643\u062c\u0645',
+                  isDense: true,
+                ),
+                onChanged: (_) => setState(() {}),
+                textDirection: TextDirection.ltr,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            _lineTotalPreview(index),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _lineTotalPreview(int index) {
+    final item = _lineItems[index];
+    final qty = int.tryParse(item.quantityController.text.trim());
+    final price = _tryParsePrice(item.priceController.text);
+    if (qty == null || qty <= 0 || price == null || price <= 0) {
+      return '\u0627\u0644\u0645\u062c\u0645\u0648\u0639: -';
+    }
+    return '\u0627\u0644\u0645\u062c\u0645\u0648\u0639: ${MoneyUtils.formatPiastersAsEgp(qty * price)}';
+  }
+
+  void _addLineItem() {
+    final usedProductIds =
+        _lineItems.map((item) => item.productId).toSet();
+    final available = widget.products
+        .where((p) => !usedProductIds.contains(p.id))
+        .toList();
+    if (available.isEmpty) return;
+
+    setState(() {
+      _lineItems.add(_LineItemEntry(
+        productId: available.first.id,
+        products: widget.products,
+      ));
+    });
+  }
+
   void _submit() {
-    final quantity = int.tryParse(_quantityController.text.trim());
-    final price = _tryParsePrice(_priceController.text);
-    if (quantity == null || quantity <= 0) {
+    final customerId = _customerId;
+    if (customerId == null || customerId.trim().isEmpty) {
       setState(() =>
-          _errorMessage = 'اكتب كمية البيع بالكيلو، ويجب أن تكون أكبر من صفر.');
+          _errorMessage = '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
       return;
     }
-    if (price == null || price <= 0) {
-      setState(() => _errorMessage = 'اكتب سعر البيع بالجنيه بشكل صحيح.');
+
+    if (_lineItems.isEmpty) {
+      setState(() =>
+          _errorMessage = '\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0627\u062d\u062f\u0627 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0644\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
       return;
     }
-    if (_paymentMode == SalePaymentMode.credit &&
-        (_customerId == null || _customerId!.trim().isEmpty)) {
-      setState(() => _errorMessage = 'البيع الآجل يحتاج اختيار عميل نشط.');
-      return;
+
+    final items = <SaleLineItemDraft>[];
+    for (final item in _lineItems) {
+      final qty = int.tryParse(item.quantityController.text.trim());
+      final price = _tryParsePrice(item.priceController.text);
+      if (qty == null || qty <= 0) {
+        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0643\u0645\u064a\u0629 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u0643\u064a\u0644\u0648\u060c \u0648\u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.');
+        return;
+      }
+      if (price == null || price <= 0) {
+        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.');
+        return;
+      }
+      items.add(SaleLineItemDraft(
+        productId: item.productId,
+        quantityKg: qty,
+        salePriceQirshPerKg: price,
+      ));
+    }
+
+    int? paidAmountQirsh;
+    if (_paymentMode == SalePaymentMode.partial) {
+      final total = _computeTotal();
+      try {
+        paidAmountQirsh = MoneyUtils.parseEgpToPiasters(
+          _paidAmountText ?? '',
+          allowZero: false,
+        );
+      } on Object {
+        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.');
+        return;
+      }
+      if (total != null && paidAmountQirsh > total) {
+        setState(() => _errorMessage =
+            '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0644\u0627 \u064a\u0645\u0643\u0646 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
+        return;
+      }
+      if (paidAmountQirsh <= 0) {
+        setState(() => _errorMessage =
+            '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u064a\u062c\u0628 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.');
+        return;
+      }
     }
 
     Navigator.of(context).pop(
       _SaleFormResult(
-        productId: _productId,
-        quantityKg: quantity,
-        salePriceQirshPerKg: price,
+        customerId: customerId,
         paymentMode: _paymentMode,
-        customerId: _customerId,
+        items: items,
         notes: _notesController.text,
+        paidAmountQirsh: paidAmountQirsh,
       ),
     );
   }
@@ -697,20 +940,30 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   }
 }
 
+class _LineItemEntry {
+  _LineItemEntry({
+    required this.productId,
+    required List<Product> products,
+  })  : quantityController = TextEditingController(),
+        priceController = TextEditingController();
+
+  String productId;
+  final TextEditingController quantityController;
+  final TextEditingController priceController;
+}
+
 class _SaleFormResult {
   const _SaleFormResult({
-    required this.productId,
-    required this.quantityKg,
-    required this.salePriceQirshPerKg,
+    required this.customerId,
     required this.paymentMode,
-    this.customerId,
+    required this.items,
     this.notes,
+    this.paidAmountQirsh,
   });
 
-  final String productId;
-  final int quantityKg;
-  final int salePriceQirshPerKg;
+  final String customerId;
   final SalePaymentMode paymentMode;
-  final String? customerId;
+  final List<SaleLineItemDraft> items;
   final String? notes;
+  final int? paidAmountQirsh;
 }

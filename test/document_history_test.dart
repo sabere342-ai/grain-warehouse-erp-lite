@@ -7,6 +7,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -224,6 +226,10 @@ Future<_Fixture> _fixture() async {
   final product = await products.createProduct(
     const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
   );
+  final customers = LocalCustomerRepository();
+  final customer = await customers.createCustomer(
+    const CustomerDraft(name: 'عميل اختبار', isActive: true),
+  );
   final inventory = LocalInventoryRepository(productRepository: products);
   await inventory.createMovement(
     StockMovementDraft(
@@ -255,6 +261,7 @@ Future<_Fixture> _fixture() async {
     purchases: purchases,
     sales: sales,
     history: history,
+    customer: customer,
   );
 }
 
@@ -275,6 +282,7 @@ PurchaseIntakeDraft _purchaseDraft(
 SaleDraft _saleDraft(
   _Fixture fixture, {
   int quantityKg = 100,
+  String? customerId,
 }) {
   return SaleDraft(
     productId: fixture.product.id,
@@ -282,6 +290,7 @@ SaleDraft _saleDraft(
     salePriceQirshPerKg: 700,
     createdByUserId: _owner.id,
     createdByUserName: _owner.name,
+    customerId: customerId ?? fixture.customer.id,
   );
 }
 
@@ -320,6 +329,7 @@ class _Fixture {
     required this.purchases,
     required this.sales,
     required this.history,
+    required this.customer,
   });
 
   final Supplier supplier;
@@ -327,6 +337,7 @@ class _Fixture {
   final LocalPurchaseRepository purchases;
   final LocalSaleRepository sales;
   final LocalDocumentHistoryRepository history;
+  final Customer customer;
 }
 
 const _reason = 'خطأ في الإدخال';

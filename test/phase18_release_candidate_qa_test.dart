@@ -15,6 +15,8 @@ import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -86,12 +88,16 @@ void main() {
       expect(await fixture.history.listHistory(), hasLength(2));
       expect(await fixture.inventory.currentStockKg(fixture.productId), 1000);
 
+      final restoreCustomer = await LocalCustomerRepository().createCustomer(
+        const CustomerDraft(name: 'عميل', isActive: true),
+      );
       await fixture.sales.createSale(
         SaleDraft(
           productId: fixture.productId,
           quantityKg: 100,
           salePriceQirshPerKg: 900,
           createdByUserId: _owner.id,
+          customerId: restoreCustomer.id,
         ),
       );
       expect(await fixture.inventory.currentStockKg(fixture.productId), 900);
@@ -309,6 +315,10 @@ Future<_BackupFixture> _seededBusinessDayFixture({
     exportFails: exportFails,
     saveFails: saveFails,
   );
+  final customers = LocalCustomerRepository();
+  final customer = await customers.createCustomer(
+    const CustomerDraft(name: 'عميل', isActive: true),
+  );
   final supplier = await fixture.suppliers.createSupplier(
     const SupplierDraft(name: 'supplier', phone: '01011112222'),
   );
@@ -337,6 +347,7 @@ Future<_BackupFixture> _seededBusinessDayFixture({
       quantityKg: 250,
       salePriceQirshPerKg: 800,
       createdByUserId: _owner.id,
+      customerId: customer.id,
     ),
   );
   await fixture.sales.cancelSale(

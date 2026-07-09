@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -45,7 +46,7 @@ void main() {
 
       expect(
         () => fixture.sales.createSale(
-          _saleDraft(fixture.costedProduct.id, quantityKg: 100, price: 799),
+          _saleDraft(fixture.costedProduct.id, quantityKg: 100, price: 799, customerId: _dummyCustomer.id),
         ),
         throwsA(isA<MinimumSalePriceViolation>()),
       );
@@ -55,7 +56,7 @@ void main() {
           1000);
 
       final costedSale = await fixture.sales.createSale(
-        _saleDraft(fixture.costedProduct.id, quantityKg: 200, price: 900),
+        _saleDraft(fixture.costedProduct.id, quantityKg: 200, price: 900, customerId: _dummyCustomer.id),
       );
       expect(costedSale.totalQirsh, 180000);
       expect(await fixture.inventory.currentStockKg(fixture.costedProduct.id),
@@ -74,7 +75,7 @@ void main() {
           contains(fixture.noCostProduct.name));
 
       final noCostSale = await fixture.sales.createSale(
-        _saleDraft(fixture.noCostProduct.id, quantityKg: 100, price: 1100),
+        _saleDraft(fixture.noCostProduct.id, quantityKg: 100, price: 1100, customerId: _dummyCustomer.id),
       );
       expect(noCostSale.totalQirsh, 110000);
       expect(await fixture.inventory.currentStockKg(fixture.noCostProduct.id),
@@ -145,7 +146,7 @@ void main() {
       await _setDesktopViewport(tester);
       final fixture = await _seededFixture();
       await fixture.sales.createSale(
-        _saleDraft(fixture.costedProduct.id, quantityKg: 100, price: 900),
+        _saleDraft(fixture.costedProduct.id, quantityKg: 100, price: 900, customerId: _dummyCustomer.id),
       );
       final auth = await _signedInController();
 
@@ -265,10 +266,19 @@ Future<_Fixture> _seededFixture() async {
   );
 }
 
+final _dummyCustomer = Customer(
+  id: 'dummy-customer',
+  name: 'عميل',
+  isActive: true,
+  createdAt: _now,
+  updatedAt: _now,
+);
+
 SaleDraft _saleDraft(
   String productId, {
   required int quantityKg,
   required int price,
+  String? customerId,
 }) {
   return SaleDraft(
     productId: productId,
@@ -276,6 +286,7 @@ SaleDraft _saleDraft(
     salePriceQirshPerKg: price,
     createdByUserId: _owner.id,
     createdByUserName: _owner.name,
+    customerId: customerId,
   );
 }
 

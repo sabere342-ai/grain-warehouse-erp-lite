@@ -10,6 +10,8 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
@@ -195,6 +197,9 @@ void main() {
         inventoryRepository: _LargeStockInventoryRepository(product.id),
       );
 
+      final testCustomer = await LocalCustomerRepository().createCustomer(
+        const CustomerDraft(name: 'test', isActive: true),
+      );
       expect(
         () => sales.createSale(
           SaleDraft(
@@ -202,6 +207,7 @@ void main() {
             quantityKg: 9223372036854775807,
             salePriceQirshPerKg: 2,
             createdByUserId: _owner.id,
+            customerId: testCustomer.id,
           ),
         ),
         throwsArgumentError,
@@ -227,6 +233,7 @@ void main() {
           productId: ownerFixture.product.id,
           quantityKg: 100,
           salePriceQirshPerKg: 700,
+          customerId: ownerFixture.customer.id,
         ),
         isTrue,
       );
@@ -236,6 +243,7 @@ void main() {
           productId: employeeFixture.product.id,
           quantityKg: 100,
           salePriceQirshPerKg: 700,
+          customerId: employeeFixture.customer.id,
         ),
         isTrue,
       );
@@ -276,7 +284,7 @@ void main() {
         _salesHarness(auth: ownerAuth, controller: ownerFixture.controller),
       );
       await tester.pumpAndSettle();
-      expect(find.text('تسجيل بيع حبوب'), findsOneWidget);
+      expect(find.text('تسجيل فاتورة بيع'), findsOneWidget);
 
       final employeeAuth = await _signedInController(
         phone: '01100000000',
@@ -291,7 +299,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('تسجيل بيع حبوب'), findsOneWidget);
+      expect(find.text('تسجيل فاتورة بيع'), findsOneWidget);
     });
 
 
@@ -318,14 +326,15 @@ void main() {
         _salesHarness(auth: auth, controller: fixture.controller),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تسجيل بيع حبوب'));
+      await tester.tap(find.text('تسجيل فاتورة بيع'));
       await tester.pumpAndSettle();
 
+      expect(find.text('اختر العميل *'), findsOneWidget);
       expect(find.text('الصنف'), findsOneWidget);
-      expect(find.text('الكمية بالكجم'), findsOneWidget);
-      expect(find.text('سعر البيع بالجنيه / كجم'), findsOneWidget);
+      expect(find.text('الكمية (كجم)'), findsOneWidget);
+      expect(find.text('السعر / كجم'), findsOneWidget);
       expect(find.text('الإجمالي: -'), findsOneWidget);
-      expect(find.text('حفظ البيع'), findsOneWidget);
+      expect(find.text('حفظ الفاتورة'), findsOneWidget);
     });
 
     testWidgets('owner sees sale cancellation action', (tester) async {
@@ -350,6 +359,7 @@ SaleDraft _saleDraft(
   String? productId,
   int quantityKg = 250,
   int price = 700,
+  String? customerId,
 }) {
   return SaleDraft(
     productId: productId ?? fixture.product.id,
@@ -358,6 +368,7 @@ SaleDraft _saleDraft(
     createdByUserId: _owner.id,
     createdByUserName: _owner.name,
     notes: 'بيع حبوب',
+    customerId: customerId ?? fixture.customer.id,
   );
 }
 
@@ -380,6 +391,10 @@ Future<_SalesFixture> _fixture() async {
       createdByUserId: _owner.id,
     ),
   );
+  final customers = LocalCustomerRepository();
+  final customer = await customers.createCustomer(
+    const CustomerDraft(name: 'عميل اختبار', isActive: true),
+  );
   final sales = LocalSaleRepository(
     productRepository: products,
     inventoryRepository: inventory,
@@ -388,6 +403,7 @@ Future<_SalesFixture> _fixture() async {
     saleRepository: sales,
     productRepository: products,
     inventoryRepository: inventory,
+    customerRepository: customers,
   );
   await controller.load(_owner);
 
@@ -397,6 +413,7 @@ Future<_SalesFixture> _fixture() async {
     sales: sales,
     controller: controller,
     product: product,
+    customer: customer,
   );
 }
 
@@ -435,6 +452,7 @@ class _SalesFixture {
     required this.sales,
     required this.controller,
     required this.product,
+    required this.customer,
   });
 
   final LocalProductRepository products;
@@ -442,6 +460,7 @@ class _SalesFixture {
   final LocalSaleRepository sales;
   final SaleController controller;
   final Product product;
+  final Customer customer;
 }
 
 class _LargeStockInventoryRepository implements InventoryRepository {

@@ -5,6 +5,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -88,6 +90,10 @@ void main() {
       test('sale creates Arabic movement note', () async {
         final products = LocalProductRepository();
         final product = await products.createProduct(_productDraft());
+        final customers = LocalCustomerRepository();
+        final customer = await customers.createCustomer(
+          const CustomerDraft(name: 'عميل', isActive: true),
+        );
         final inventory = LocalInventoryRepository(productRepository: products);
         await inventory.createMovement(
           StockMovementDraft(
@@ -108,6 +114,7 @@ void main() {
             quantityKg: 10,
             salePriceQirshPerKg: 5000,
             createdByUserId: _owner.id,
+            customerId: customer.id,
           ),
         );
         final movements = await inventory.listMovementsByProduct(product.id);
@@ -167,6 +174,10 @@ void main() {
       test('sale cancellation creates Arabic movement note', () async {
         final products = LocalProductRepository();
         final product = await products.createProduct(_productDraft());
+        final customers = LocalCustomerRepository();
+        final customer = await customers.createCustomer(
+          const CustomerDraft(name: 'عميل', isActive: true),
+        );
         final inventory = LocalInventoryRepository(productRepository: products);
         await inventory.createMovement(
           StockMovementDraft(
@@ -187,6 +198,7 @@ void main() {
             quantityKg: 10,
             salePriceQirshPerKg: 5000,
             createdByUserId: _owner.id,
+            customerId: customer.id,
           ),
         );
         final cancelled = await sales.cancelSale(

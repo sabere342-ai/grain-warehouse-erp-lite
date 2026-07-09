@@ -12,6 +12,8 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -159,9 +161,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تسجيل بيع حبوب'));
+      await tester.tap(find.text('تسجيل فاتورة بيع'));
       await tester.pumpAndSettle();
-      expect(find.text('سعر البيع بالجنيه / كجم'), findsOneWidget);
+      expect(find.text('السعر / كجم'), findsOneWidget);
       await tester.tap(find.text('إلغاء'));
       await tester.pumpAndSettle();
 
@@ -194,12 +196,13 @@ ProductDraft _productDraft({
   );
 }
 
-SaleDraft _saleDraft(_Fixture fixture, {required int price}) {
+SaleDraft _saleDraft(_Fixture fixture, {required int price, String? customerId}) {
   return SaleDraft(
     productId: fixture.product.id,
     quantityKg: 100,
     salePriceQirshPerKg: price,
     createdByUserId: _owner.id,
+    customerId: customerId ?? fixture.customer.id,
   );
 }
 
@@ -226,6 +229,10 @@ Future<_Fixture> _fixture({
       createdByUserId: _owner.id,
     ),
   );
+  final customers = LocalCustomerRepository();
+  final customer = await customers.createCustomer(
+    const CustomerDraft(name: 'عميل اختبار', isActive: true),
+  );
   final sales = LocalSaleRepository(
     productRepository: products,
     inventoryRepository: inventory,
@@ -245,6 +252,7 @@ Future<_Fixture> _fixture({
     saleRepository: sales,
     productRepository: products,
     inventoryRepository: inventory,
+    customerRepository: customers,
   );
   final purchaseController = PurchaseController(
     purchaseRepository: purchases,
@@ -262,6 +270,7 @@ Future<_Fixture> _fixture({
     saleController: saleController,
     purchaseController: purchaseController,
     product: product,
+    customer: customer,
   );
 }
 
@@ -336,6 +345,7 @@ class _Fixture {
     required this.saleController,
     required this.purchaseController,
     required this.product,
+    required this.customer,
   });
 
   final LocalProductRepository products;
@@ -347,6 +357,7 @@ class _Fixture {
   final SaleController saleController;
   final PurchaseController purchaseController;
   final Product product;
+  final Customer customer;
 }
 
 class _RestoreOutcome {

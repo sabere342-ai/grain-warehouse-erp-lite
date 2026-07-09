@@ -11,6 +11,8 @@ import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -107,12 +109,16 @@ void main() {
           createdByUserId: _owner.id,
         ),
       );
+      final existingCustomer = await LocalCustomerRepository().createCustomer(
+        const CustomerDraft(name: 'عميل', isActive: true),
+      );
       await fixture.sales.createSale(
         SaleDraft(
           productId: product.id,
           quantityKg: 10,
           salePriceQirshPerKg: 700,
           createdByUserId: _owner.id,
+          customerId: existingCustomer.id,
         ),
       );
 
@@ -424,12 +430,16 @@ Future<_BackupFixture> _seededFixture() async {
       createdByUserId: _owner.id,
     ),
   );
+  final backupCustomer = await LocalCustomerRepository().createCustomer(
+    const CustomerDraft(name: 'عميل', isActive: true),
+  );
   await fixture.sales.createSale(
     SaleDraft(
       productId: product.id,
       quantityKg: 250,
       salePriceQirshPerKg: 800,
       createdByUserId: _owner.id,
+      customerId: backupCustomer.id,
     ),
   );
   return fixture;

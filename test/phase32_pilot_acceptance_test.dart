@@ -79,10 +79,14 @@ void main() {
       );
       expect(await source.inventory.currentStockKg(product.id), 1000);
 
+      final cashCustomer = await source.customers.createCustomer(
+        const CustomerDraft(name: 'عميل نقدي', phone: '01033334445'),
+      );
       final salesController = SaleController(
         saleRepository: source.sales,
         productRepository: source.products,
         inventoryRepository: source.inventory,
+        customerRepository: source.customers,
       );
       await salesController.load(_owner);
       expect(salesController.stockForProduct(product.id), 1000);
@@ -93,6 +97,7 @@ void main() {
         quantityKg: 250,
         salePriceQirshPerKg: 1000,
         notes: 'Ø¨ÙŠØ¹ Ù†Ù‚Ø¯ÙŠ',
+        customerId: cashCustomer.id,
       );
       expect(saleCreated, isTrue);
       expect(await source.inventory.currentStockKg(product.id), 750);
@@ -105,6 +110,7 @@ void main() {
         productId: product.id,
         quantityKg: 10,
         salePriceQirshPerKg: 850,
+        customerId: cashCustomer.id,
       );
       expect(invalidSale, isFalse);
       expect(
@@ -164,9 +170,9 @@ void main() {
       expect(backup.counts.purchases, 1);
       expect(backup.counts.sales, 1);
       expect(backup.counts.documentHistory, 2);
-      expect(backup.counts.customers, 1);
+      expect(backup.counts.customers, 2);
       expect(backup.counts.expenses, 1);
-      expect(backup.counts.auditLogs, 2);
+      expect(backup.counts.auditLogs, 3);
 
       final target = _fixture();
       final restore = await target.restoreService.restoreToEmpty(
@@ -180,9 +186,9 @@ void main() {
       expect(await target.purchases.listPurchaseIntakes(), hasLength(1));
       expect(await target.sales.listSales(), hasLength(1));
       expect(await target.history.listHistory(), hasLength(2));
-      expect(await target.customers.listCustomers(), hasLength(1));
+      expect(await target.customers.listCustomers(), hasLength(2));
       expect(await target.expenses.listExpenses(), hasLength(1));
-      expect(await target.audit.listLogs(), hasLength(2));
+      expect(await target.audit.listLogs(), hasLength(3));
     });
 
     test('reports do not invent profit when reference cost is missing',
@@ -208,12 +214,16 @@ void main() {
           createdByUserId: _owner.id,
         ),
       );
+      final profitCustomer = await fixture.customers.createCustomer(
+        const CustomerDraft(name: 'عميل تقرير', isActive: true),
+      );
       await fixture.sales.createSale(
         SaleDraft(
           productId: product.id,
           quantityKg: 20,
           salePriceQirshPerKg: 900,
           createdByUserId: _owner.id,
+          customerId: profitCustomer.id,
         ),
       );
 

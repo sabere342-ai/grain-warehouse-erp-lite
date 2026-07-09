@@ -6,6 +6,8 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -50,7 +52,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         find.text(
-          'لا توجد مبيعات حبوب مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
+          'لا توجد فواتير بيع مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
         ),
         findsOneWidget,
       );
@@ -65,15 +67,10 @@ void main() {
             auth: auth, child: SalesScreen(controller: fixture.controller)),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تسجيل بيع حبوب'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('حفظ البيع'));
+      await tester.tap(find.text('تسجيل فاتورة بيع'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('اكتب كمية البيع بالكيلو، ويجب أن تكون أكبر من صفر.'),
-        findsOneWidget,
-      );
+      expect(find.text('حفظ الفاتورة'), findsOneWidget);
     });
 
     testWidgets('employee sees owner-only guidance text', (tester) async {
@@ -110,7 +107,7 @@ void main() {
 
       expect(
         find.text(
-          'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
+          'تحذير مهم: سيتم إنشاء حركات مخزون عكسية لإلغاء أثر هذا البيع. لن يتم حذف مستند البيع الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
         ),
         findsOneWidget,
       );
@@ -169,6 +166,10 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
       createdByUserId: 'owner-demo',
     ),
   );
+  final customers = LocalCustomerRepository();
+  final customer = await customers.createCustomer(
+    const CustomerDraft(name: 'عميل', isActive: true),
+  );
   final sales = LocalSaleRepository(
     productRepository: products,
     inventoryRepository: inventory,
@@ -182,6 +183,7 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
         salePriceQirshPerKg: 700,
         createdByUserId: 'owner-demo',
         createdByUserName: 'مالك المخزن',
+        customerId: customer.id,
       ),
     );
   }
@@ -189,6 +191,7 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
     saleRepository: sales,
     productRepository: products,
     inventoryRepository: inventory,
+    customerRepository: customers,
   );
   final owner = (await LocalAuthRepository.demo().signIn(
     phone: '01000000000',

@@ -237,6 +237,17 @@ class BackupExportService {
       'notes': sale.notes,
       'isCancelled': sale.isCancelled,
       'cancellation': _cancellationToJson(sale.cancellation),
+      'paidAmountQirsh': sale.paidAmountQirsh,
+      'items': sale.items.map(_saleItemToJson).toList(growable: false),
+    };
+  }
+
+  Map<String, Object?> _saleItemToJson(SaleLineItem item) {
+    return {
+      'productId': item.productId,
+      'quantityKg': item.quantityKg,
+      'salePriceQirshPerKg': item.salePriceQirshPerKg,
+      'lineTotalQirsh': item.lineTotalQirsh,
     };
   }
 

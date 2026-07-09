@@ -15,6 +15,10 @@ abstract class CustomerAccountRepository {
     required SaleRecord sale,
     required String customerId,
   });
+  Future<CustomerAccountEntry> createCashSaleEntry({
+    required SaleRecord sale,
+    required String customerId,
+  });
   Future<CustomerCollectionRecord> createCollection(
     CustomerCollectionDraft draft,
   );
@@ -141,6 +145,57 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       actionType: 'customer.credit_sale.posted',
       descriptionAr:
           '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0628\u064a\u0639 \u0622\u062c\u0644 \u0639\u0644\u0649 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}.',
+      referenceId: sale.id,
+    );
+    return entry;
+  }
+
+  @override
+  Future<CustomerAccountEntry> createCashSaleEntry({
+    required SaleRecord sale,
+    required String customerId,
+  }) async {
+    final customer = await _requireCustomer(customerId, includeInactive: false);
+    if (sale.paymentMode != SalePaymentMode.cash &&
+        sale.paymentMode != SalePaymentMode.partial) {
+      throw StateError('Only cash and partial sales create cash entries.');
+    }
+    if (sale.customerId != customer.id) {
+      throw StateError('Sale customer does not match ledger customer.');
+    }
+    if (sale.totalQirsh <= 0 || sale.isCancelled) {
+      throw StateError('Invalid sale for customer ledger.');
+    }
+    if (_entries.any((entry) =>
+        entry.sourceDocumentType == 'sale' && entry.sourceDocumentId == sale.id)) {
+      throw StateError('Sale ledger entry already exists.');
+    }
+
+    final now = DateTime.now();
+    final paidAmount = sale.effectivePaidAmountQirsh;
+    final descriptionAr = sale.isPartialPayment
+        ? '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 - \u062f\u0641\u0639 \u062c\u0632\u0626\u064a \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}'
+        : '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0646\u0642\u062f\u064a \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}';
+
+    final entry = CustomerAccountEntry(
+      id: _generateEntryId(now),
+      customerId: customer.id,
+      date: sale.createdAt,
+      type: CustomerAccountEntryType.cashSale,
+      debitAmountQirsh: sale.totalQirsh,
+      creditAmountQirsh: paidAmount,
+      sourceDocumentType: 'sale',
+      sourceDocumentId: sale.id,
+      descriptionAr: descriptionAr,
+      createdAt: now,
+      createdByUserId: sale.createdByUserId,
+    );
+    _validateEntry(entry);
+    _entries.add(entry);
+    await _recordAudit(
+      actionType: 'customer.cash_sale.posted',
+      descriptionAr:
+          '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}.',
       referenceId: sale.id,
     );
     return entry;
@@ -327,9 +382,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
     if (entry.debitAmountQirsh < 0 || entry.creditAmountQirsh < 0) {
       throw StateError('Customer ledger amounts cannot be negative.');
     }
-    if ((entry.debitAmountQirsh == 0 && entry.creditAmountQirsh == 0) ||
-        (entry.debitAmountQirsh > 0 && entry.creditAmountQirsh > 0)) {
-      throw StateError('Customer ledger entry must be debit or credit only.');
+    if (entry.debitAmountQirsh == 0 && entry.creditAmountQirsh == 0) {
+      throw StateError('Customer ledger entry must have a debit or credit amount.');
     }
   }
 

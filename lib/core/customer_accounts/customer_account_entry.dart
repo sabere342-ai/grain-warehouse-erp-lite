@@ -1,5 +1,6 @@
 ﻿enum CustomerAccountEntryType {
   creditSale,
+  cashSale,
   collection,
   openingBalance;
 
@@ -7,6 +8,8 @@
     switch (this) {
       case CustomerAccountEntryType.creditSale:
         return '\u0628\u064a\u0639 \u0622\u062c\u0644';
+      case CustomerAccountEntryType.cashSale:
+        return '\u0628\u064a\u0639 \u0646\u0642\u062f\u064a';
       case CustomerAccountEntryType.collection:
         return '\u062a\u062d\u0635\u064a\u0644';
       case CustomerAccountEntryType.openingBalance:

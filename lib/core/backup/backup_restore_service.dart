@@ -301,6 +301,12 @@ class BackupRestoreService {
 
   SaleRecord _parseSale(Object? value) {
     final map = _map(value);
+    final paymentMode = SalePaymentMode.values.byName(
+      _optionalString(map, 'paymentMode') ?? SalePaymentMode.cash.name,
+    );
+    final items = _optionalList(map, 'items')
+        .map(_parseSaleItem)
+        .toList(growable: false);
     return SaleRecord(
       id: _string(map, 'id'),
       productId: _string(map, 'productId'),
@@ -311,12 +317,22 @@ class BackupRestoreService {
       createdByUserName: _optionalString(map, 'createdByUserName'),
       createdAt: _date(map, 'createdAt'),
       stockMovementId: _string(map, 'stockMovementId'),
-      paymentMode: SalePaymentMode.values.byName(
-        _optionalString(map, 'paymentMode') ?? SalePaymentMode.cash.name,
-      ),
+      paymentMode: paymentMode,
       customerId: _optionalString(map, 'customerId'),
       notes: _optionalString(map, 'notes'),
       cancellation: _parseCancellation(map['cancellation']),
+      items: items,
+      paidAmountQirsh: _optionalInt(map, 'paidAmountQirsh'),
+    );
+  }
+
+  SaleLineItem _parseSaleItem(Object? value) {
+    final map = _map(value);
+    return SaleLineItem(
+      productId: _string(map, 'productId'),
+      quantityKg: _int(map, 'quantityKg'),
+      salePriceQirshPerKg: _int(map, 'salePriceQirshPerKg'),
+      lineTotalQirsh: _int(map, 'lineTotalQirsh'),
     );
   }
 
@@ -467,9 +483,24 @@ class BackupRestoreService {
     }
     for (final sale in data.sales) {
       if (!productIds.contains(sale.productId) ||
-          !movementIds.contains(sale.stockMovementId) ||
-          sale.totalQirsh != sale.quantityKg * sale.salePriceQirshPerKg) {
+          !movementIds.contains(sale.stockMovementId)) {
         throw StateError('Invalid sale relationship.');
+      }
+      if (sale.items.isNotEmpty) {
+        var computedTotal = 0;
+        for (final item in sale.items) {
+          if (!productIds.contains(item.productId)) {
+            throw StateError('Sale item references missing product.');
+          }
+          computedTotal += item.lineTotalQirsh;
+        }
+        if (computedTotal != sale.totalQirsh) {
+          throw StateError('Invalid sale total vs items total.');
+        }
+      } else {
+        if (sale.totalQirsh != sale.quantityKg * sale.salePriceQirshPerKg) {
+          throw StateError('Invalid sale relationship.');
+        }
       }
       _validateCancellationReferences(sale.cancellation, movementIds);
     }

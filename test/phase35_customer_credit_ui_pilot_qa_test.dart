@@ -42,8 +42,7 @@ void main() {
       expect(await fixture.sales.listSales(), isEmpty);
     });
 
-    test('cash sale posts without a customer and creates no ledger entry',
-        () async {
+    test('cash sale requires registered customer', () async {
       final fixture = _Fixture();
       await fixture.seedProduct();
       await fixture.saleController.load(_owner);
@@ -56,12 +55,11 @@ void main() {
         paymentMode: SalePaymentMode.cash,
       );
 
-      expect(created, isTrue);
-      expect(await fixture.inventory.currentStockKg(fixture.product.id), 90);
+      expect(created, isFalse);
+      expect(fixture.saleController.errorMessage, isNotNull);
+      expect(await fixture.inventory.currentStockKg(fixture.product.id), 100);
       expect(await fixture.ledger.listEntries(), isEmpty);
-      final sale = (await fixture.sales.listSales()).single;
-      expect(sale.paymentMode, SalePaymentMode.cash);
-      expect(sale.customerId, isNull);
+      expect(await fixture.sales.listSales(), isEmpty);
     });
 
     test('customer controller displays balance derived from ledger entries',

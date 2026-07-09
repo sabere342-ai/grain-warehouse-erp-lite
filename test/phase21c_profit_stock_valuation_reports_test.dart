@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -31,7 +32,7 @@ void main() {
         () async {
       final fixture = await _fixture(referenceCost: 700);
       final sale = await fixture.sales.createSale(
-        _saleDraft(fixture.product.id, price: 900),
+        _saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id),
       );
 
       final report = await fixture.reports.dailyActivityReport(
@@ -48,7 +49,7 @@ void main() {
         () async {
       final fixture = await _fixture(referenceCost: null);
       final sale = await fixture.sales.createSale(
-        _saleDraft(fixture.product.id, price: 900),
+        _saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id),
       );
 
       final report = await fixture.reports.dailyActivityReport(
@@ -92,7 +93,7 @@ void main() {
       final auth = await _signedInController();
       final fixture = await _fixture(referenceCost: null);
       await fixture.sales
-          .createSale(_saleDraft(fixture.product.id, price: 900));
+          .createSale(_saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id));
 
       await tester.pumpWidget(
         _harness(
@@ -131,7 +132,7 @@ void main() {
 
       expect(
         () => fixture.sales
-            .createSale(_saleDraft(fixture.product.id, price: 699)),
+            .createSale(_saleDraft(fixture.product.id, price: 699, customerId: _testCustomer.id)),
         throwsA(isA<MinimumSalePriceViolation>()),
       );
       expect(await fixture.sales.listSales(), isEmpty);
@@ -224,15 +225,24 @@ ProductDraft _productDraft({
   );
 }
 
-SaleDraft _saleDraft(String productId, {required int price}) {
+SaleDraft _saleDraft(String productId, {required int price, String? customerId}) {
   return SaleDraft(
     productId: productId,
     quantityKg: 100,
     salePriceQirshPerKg: price,
     createdByUserId: _owner.id,
     createdByUserName: _owner.name,
+    customerId: customerId,
   );
 }
+
+final _testCustomer = Customer(
+  id: 'test-customer-21c',
+  name: 'عميل',
+  isActive: true,
+  createdAt: _now,
+  updatedAt: _now,
+);
 
 Widget _harness({required AuthController auth, required Widget child}) {
   return AuthScope(

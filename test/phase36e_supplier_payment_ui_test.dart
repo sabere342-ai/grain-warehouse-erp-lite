@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
@@ -293,12 +294,16 @@ void main() {
           ),
         );
 
+        final cashCustomer = await customerRepo.createCustomer(
+          const CustomerDraft(name: 'عميل نقدي', isActive: true),
+        );
         await saleRepo.createSale(SaleDraft(
           productId: product.id,
           quantityKg: 200,
           salePriceQirshPerKg: 2000,
           createdByUserId: 'owner-1',
           paymentMode: SalePaymentMode.cash,
+          customerId: cashCustomer.id,
         ));
 
         await supplierAccountRepo.createPayment(SupplierPaymentDraft(

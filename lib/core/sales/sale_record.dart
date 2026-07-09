@@ -2,7 +2,8 @@
 
 enum SalePaymentMode {
   cash,
-  credit;
+  credit,
+  partial;
 
   String get labelAr {
     switch (this) {
@@ -10,8 +11,36 @@ enum SalePaymentMode {
         return '\u0646\u0642\u062f\u064a';
       case SalePaymentMode.credit:
         return '\u0622\u062c\u0644 \u0639\u0644\u0649 \u0639\u0645\u064a\u0644';
+      case SalePaymentMode.partial:
+        return '\u062f\u0641\u0639 \u062c\u0632\u0626\u064a';
     }
   }
+}
+
+class SaleLineItem {
+  const SaleLineItem({
+    required this.productId,
+    required this.quantityKg,
+    required this.salePriceQirshPerKg,
+    required this.lineTotalQirsh,
+  });
+
+  final String productId;
+  final int quantityKg;
+  final int salePriceQirshPerKg;
+  final int lineTotalQirsh;
+}
+
+class SaleLineItemDraft {
+  const SaleLineItemDraft({
+    required this.productId,
+    required this.quantityKg,
+    required this.salePriceQirshPerKg,
+  });
+
+  final String productId;
+  final int quantityKg;
+  final int salePriceQirshPerKg;
 }
 
 class SaleRecord {
@@ -29,6 +58,8 @@ class SaleRecord {
     this.createdByUserName,
     this.notes,
     this.cancellation,
+    this.items = const [],
+    this.paidAmountQirsh,
   });
 
   final String id;
@@ -44,13 +75,26 @@ class SaleRecord {
   final String? customerId;
   final String? notes;
   final CancellationMetadata? cancellation;
+  final List<SaleLineItem> items;
+  final int? paidAmountQirsh;
 
   bool get hasValidId => id.trim().isNotEmpty;
   bool get isCancelled => cancellation != null;
   bool get isCreditSale => paymentMode == SalePaymentMode.credit;
+  bool get isPartialPayment => paymentMode == SalePaymentMode.partial;
+  bool get isMultiItem => items.length > 1;
+
+  int get effectivePaidAmountQirsh {
+    if (paidAmountQirsh != null) return paidAmountQirsh!;
+    return isCreditSale ? 0 : totalQirsh;
+  }
+
+  int get remainingAmountQirsh => totalQirsh - effectivePaidAmountQirsh;
 
   SaleRecord copyWith({
     CancellationMetadata? cancellation,
+    List<SaleLineItem>? items,
+    int? paidAmountQirsh,
   }) {
     return SaleRecord(
       id: id,
@@ -66,6 +110,8 @@ class SaleRecord {
       customerId: customerId,
       notes: notes,
       cancellation: cancellation ?? this.cancellation,
+      items: items ?? this.items,
+      paidAmountQirsh: paidAmountQirsh ?? this.paidAmountQirsh,
     );
   }
 }
@@ -80,6 +126,8 @@ class SaleDraft {
     this.customerId,
     this.createdByUserName,
     this.notes,
+    this.items = const [],
+    this.paidAmountQirsh,
   });
 
   final String productId;
@@ -90,4 +138,13 @@ class SaleDraft {
   final String? customerId;
   final String? createdByUserName;
   final String? notes;
+  final List<SaleLineItemDraft> items;
+  final int? paidAmountQirsh;
+
+  bool get isMultiItem => items.length > 1;
+
+  int get effectivePaidAmountQirsh {
+    if (paidAmountQirsh != null) return paidAmountQirsh!;
+    return paymentMode == SalePaymentMode.credit ? 0 : 0;
+  }
 }
