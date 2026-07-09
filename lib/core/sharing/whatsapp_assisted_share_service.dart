@@ -75,7 +75,7 @@ class WhatsAppAssistedShareService {
       const SnackBar(
         content: Text(
           '\u0644\u0627 \u064A\u0648\u062C\u062F \u0631\u0642\u0645 \u0648\u0627\u062A\u0633\u0627\u0628 '
-          '\u0645\u062D\u0641\u0648\u0638 \u0644\u0647\u0630\u0627 \u0627\u0644\u0639\u0645\u064A\u0644.',
+          '\u0645\u062D\u0641\u0648\u0638 \u0644\u0644\u062A\u0648\u0627\u0635\u0644.',
           textDirection: TextDirection.rtl,
         ),
         backgroundColor: Colors.orange,
