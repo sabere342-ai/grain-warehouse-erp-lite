@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_daily_report_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -117,8 +118,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
               const PremiumCard(
                 child: Text('اختر تاريخا لعرض تقرير حركة المخزن.'),
               )
-            else
+            else ...[
               _ReportBody(report: report),
+              const SizedBox(height: 12),
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PrintableDailyReportView(
+                          report: report,
+                          reportDate: _controller.selectedDate,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.preview_rounded),
+                  label: const Text('معاينة التقرير'),
+                ),
+              ),
+            ],
           ],
         );
       },

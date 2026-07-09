@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_purchase_invoice_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierPurchasesScreen extends StatefulWidget {
@@ -172,6 +173,28 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
                           ),
                         ),
                       ],
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PrintablePurchaseInvoiceView(
+                                  purchase: intake,
+                                  supplierName: widget.supplierName,
+                                  productName: _controller
+                                      .productName(intake.productId),
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.preview_rounded),
+                          label:
+                              const Text('معاينة الفاتورة'),
+                        ),
+                      ),
                     ],
                   ),
                 ),

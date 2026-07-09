@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -124,6 +125,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       isActive: !customer.isActive,
                     ),
                     onStatement: () => _showStatement(context, customer),
+                    onPreviewStatement: () =>
+                        _showStatementPreview(context, customer),
                     onCollection: () => _showCollectionForm(
                       context,
                       user: user,
@@ -206,6 +209,20 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
+  Future<void> _showStatementPreview(
+      BuildContext context, Customer customer) async {
+    final statement = await _controller.statementForCustomer(customer.id);
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PrintableCustomerStatementView(
+          statement: statement,
+          customerName: customer.name,
+        ),
+      ),
+    );
+  }
+
   Future<void> _recordOpeningBalance(
     BuildContext context, {
     required AppUser user,
@@ -251,6 +268,7 @@ class _CustomerCard extends StatelessWidget {
     required this.onStatement,
     required this.onCollection,
     this.onOpeningBalance,
+    this.onPreviewStatement,
   });
 
   final Customer customer;
@@ -262,6 +280,7 @@ class _CustomerCard extends StatelessWidget {
   final VoidCallback onStatement;
   final VoidCallback onCollection;
   final VoidCallback? onOpeningBalance;
+  final VoidCallback? onPreviewStatement;
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +325,12 @@ class _CustomerCard extends StatelessWidget {
                 icon: const Icon(Icons.receipt_long_rounded),
                 label: const Text('كشف الحساب'),
               ),
+              if (onPreviewStatement != null)
+                OutlinedButton.icon(
+                  onPressed: onPreviewStatement,
+                  icon: const Icon(Icons.preview_rounded),
+                  label: const Text('معاينة كشف الحساب'),
+                ),
               if (!hasOpeningBalance)
                 OutlinedButton.icon(
                   onPressed: onOpeningBalance,
@@ -493,7 +518,25 @@ class _CustomerStatementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('كشف الحساب - ${customer.name}')),
+      appBar: AppBar(
+        title: Text('كشف الحساب - ${customer.name}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.preview_rounded),
+            tooltip: 'معاينة كشف الحساب',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PrintableCustomerStatementView(
+                    statement: statement,
+                    customerName: customer.name,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

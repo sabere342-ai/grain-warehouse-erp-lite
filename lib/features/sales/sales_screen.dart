@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_sales_invoice_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SalesScreen extends StatefulWidget {
@@ -146,6 +147,7 @@ class _SalesScreenState extends State<SalesScreen> {
                       onCancel: sale.isCancelled
                           ? null
                           : () => _confirmCancelSale(context, user, sale),
+                      onPreview: () => _showSalePreview(context, sale),
                     ),
                   ),
                 ),
@@ -153,6 +155,21 @@ class _SalesScreenState extends State<SalesScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _showSalePreview(BuildContext context, SaleRecord sale) {
+    final productNames = <String, String>{
+      for (final p in _controller.products) p.id: p.name,
+    };
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PrintableSalesInvoiceView(
+          sale: sale,
+          customerName: _controller.customerName(sale.customerId),
+          productNames: productNames,
+        ),
+      ),
     );
   }
 
@@ -379,6 +396,7 @@ class _SaleCard extends StatelessWidget {
     required this.customerName,
     required this.canCancel,
     this.onCancel,
+    this.onPreview,
   });
 
   final SaleRecord sale;
@@ -386,6 +404,7 @@ class _SaleCard extends StatelessWidget {
   final String customerName;
   final bool canCancel;
   final VoidCallback? onCancel;
+  final VoidCallback? onPreview;
 
   @override
   Widget build(BuildContext context) {
@@ -471,6 +490,17 @@ class _SaleCard extends StatelessWidget {
           if (sale.cancellation != null) ...[
             const SizedBox(height: 8),
             Text('\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621: ${sale.cancellation!.cancellationReason}'),
+          ],
+          if (onPreview != null) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                onPressed: onPreview,
+                icon: const Icon(Icons.preview_rounded),
+                label: const Text('\u0645\u0639\u0627\u064a\u0646\u0629 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
+              ),
+            ),
           ],
           if (canCancel && !sale.isCancelled) ...[
             const SizedBox(height: 12),
