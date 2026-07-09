@@ -167,6 +167,38 @@ flutter build windows --release
 ### Next Recommended Phase
 - Phase 51 — Real Business Day Simulation
 
+## Phase 51 - Real Business Day Simulation
+
+### Summary
+- This phase validates a realistic local business-day flow across the current Windows pilot.
+- No cloud sync was implemented.
+- No mobile app was implemented.
+- No multi-device live sync was implemented.
+- No schema change was made.
+- No production code changed.
+- New Phase 51 documentation was added: `docs/PHASE-51-REAL-BUSINESS-DAY-SIMULATION.md`.
+- New Phase 51 simulation test was added: `test/phase51_real_business_day_simulation_test.dart`.
+
+### Coverage
+- Purchases update stock and supplier payables.
+- Sales reduce stock and customer-bound credit/cash account entries remain consistent.
+- Customer collection reduces receivables.
+- Supplier payment reduces payables.
+- Expense and daily report totals match source records.
+- Stock movement history matches final inventory quantities.
+- Stock-taking style adjustment uses existing manual movement behavior.
+- Stock adjustment report remains read-only.
+- Document history shows purchase and sale records.
+
+### Verification Summary
+- Final test count: 506/506 passing.
+- Flutter analyze: no issues found.
+- Flutter build windows --release: succeeded.
+- `git diff --check`: clean.
+
+### Next Recommended Phase
+- Phase 52 - Accounting Freeze Audit
+
 ## Phase 44 — Final Owner Acceptance After PDF and WhatsApp
 
 - Final owner acceptance QA added after PDF export and WhatsApp assisted sharing.
