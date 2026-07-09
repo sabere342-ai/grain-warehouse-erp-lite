@@ -224,3 +224,32 @@ Phase 47 — Client Pilot Feedback Collection and Issue Resolution
 
 ### Next Recommended Phase
 Phase 49 — Controlled Post-Acceptance Feature Additions
+
+## Phase 49 — Controlled Post-Acceptance Feature Intake and Impact Audit
+
+### Baseline
+- Commit: `025d644`, Tag: `phase-48-final-client-delivery-archive`
+- Accepted final package: `delivery/grain_warehouse_erp_lite_final_client_delivery_20260709-175124/`
+
+### Requested Feature
+- **None explicitly provided.** A controlled backlog was created and the safest next feature was recommended.
+
+### Impact Audit Result
+- Created full post-acceptance backlog (HIGH/MEDIUM/LOW priority).
+- Stock-taking workflow (جرد المخزون) recommended as the safest next feature:
+  - **Zero accounting impact.**
+  - **Zero data model change.**
+  - **Zero backup/restore schema change.**
+  - Pure UI wrapper on existing `manualDecrease`/`manualIncrease` movement types.
+  - Clear business value for grain warehouse operations.
+
+### Production Code Changed
+- **None.** This phase is audit/documentation only.
+
+### Verification Status
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 466/466 passing
+- `git status`: clean
+
+### Next Recommended Phase
+Phase 49A — Stock-Taking Workflow (جرد المخزون)
