@@ -22,7 +22,6 @@ import 'package:grain_warehouse_erp_lite/features/prints/printable_purchase_invo
 import 'package:grain_warehouse_erp_lite/features/prints/printable_sales_invoice_view.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_supplier_statement_view.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
 
 void main() {
   final now = DateTime(2026, 7, 9, 10, 30);

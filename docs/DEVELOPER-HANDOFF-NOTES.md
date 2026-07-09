@@ -107,3 +107,13 @@ flutter build windows --release
 
 ### Later Roadmap
 - (none confirmed)
+
+## Phase 44 — Final Owner Acceptance After PDF and WhatsApp
+
+- Final owner acceptance QA added after PDF export and WhatsApp assisted sharing.
+- PDF export remains local.
+- WhatsApp behavior is assisted only: open WhatsApp with a prepared message, then the user manually reviews, attaches the PDF, and sends.
+- No automatic sending, no WhatsApp API, no tokens, no backend messaging, and no WhatsApp Web automation/scraping.
+- Daily report is intentionally excluded from WhatsApp sharing because there is no safe owner/internal recipient setting.
+- Phase 44 acceptance tests cover PDF/WhatsApp wording, missing/invalid phone safety, daily report exclusion, and forbidden send/token/API wording.
+- Next recommended phase: Phase 45 — Final Source-Safe Delivery Refresh After PDF and WhatsApp Assisted Sharing.
