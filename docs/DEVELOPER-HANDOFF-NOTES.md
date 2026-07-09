@@ -166,3 +166,35 @@ Phase 46 — Client Pilot Smoke on Delivered Package
 
 ### Next Recommended Phase
 Phase 47 — Client Pilot Feedback Collection and Issue Resolution
+
+## Phase 47 — Client Pilot Feedback Collection and Issue Resolution
+
+### Baseline
+- Commit: `f30fed1`, Tag: `phase-46-client-pilot-smoke-delivered-package`
+- Phase 46 recommendation: READY FOR CLIENT PILOT
+
+### Created Files
+- `docs/PHASE-47-CLIENT-PILOT-FEEDBACK-COLLECTION.md` — feedback collection rules, issue classification (P0–P4), resolution policy
+- `docs/CLIENT-PILOT-FEEDBACK-FORM-AR.md` — Arabic feedback form for the pilot owner
+- `docs/CLIENT-PILOT-ISSUE-LOG-AR.md` — Arabic issue log template with severity definitions and status values
+
+### Production Code Changes
+- **None.** This phase is documentation-only.
+
+### Existing Docs Preserved
+- `docs/PILOT-FEEDBACK-FORM-AR.md` and `docs/PILOT-ISSUE-LOG.md` remain untouched for backward compatibility with the delivery script.
+
+### Resolution Policy
+- P0 (blocker) / P1 (accounting defect) → immediate Phase 47A hotfix
+- P2 (usability) → fix if low-risk, else defer
+- P3 (documentation) → doc-only update
+- P4 (enhancement) → defer unless owner approves
+
+### Verification Status
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 466/466 passing
+- `git status`: clean
+
+### Next Recommended Phase
+- Phase 47A if a real client issue is discovered (P0/P1)
+- Phase 48 if pilot is accepted and a final delivery archive is needed
