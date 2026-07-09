@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
 class PrintablePurchaseInvoiceView extends StatelessWidget {
@@ -31,6 +32,12 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
       subtitle: supplierName,
       documentDate: _formatDate(purchase.createdAt),
       documentNumber: purchase.id,
+      onExportPdf: () => PdfExportService.exportPurchaseInvoice(
+        context,
+        purchase: purchase,
+        supplierName: supplierName,
+        productName: productName,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

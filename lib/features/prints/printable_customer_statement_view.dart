@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
 class PrintableCustomerStatementView extends StatelessWidget {
@@ -49,6 +50,11 @@ class PrintableCustomerStatementView extends StatelessWidget {
       title: 'كشف حساب عميل',
       subtitle: '$customerName — جميع الحركات المتاحة',
       documentDate: _formatDate(DateTime.now()),
+      onExportPdf: () => PdfExportService.exportCustomerStatement(
+        context,
+        statement: statement,
+        customerName: customerName,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

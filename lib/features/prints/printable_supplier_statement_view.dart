@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
 class PrintableSupplierStatementView extends StatelessWidget {
@@ -43,6 +44,11 @@ class PrintableSupplierStatementView extends StatelessWidget {
       title: 'كشف حساب مورد',
       subtitle: '$supplierName — جميع الحركات المتاحة',
       documentDate: _formatDate(DateTime.now()),
+      onExportPdf: () => PdfExportService.exportSupplierStatement(
+        context,
+        statement: statement,
+        supplierName: supplierName,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

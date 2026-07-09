@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
 class PrintableDailyReportView extends StatelessWidget {
@@ -25,6 +26,11 @@ class PrintableDailyReportView extends StatelessWidget {
     return PrintableDocumentScaffold(
       title: 'التقرير اليومي',
       subtitle: _formatDate(reportDate),
+      onExportPdf: () => PdfExportService.exportDailyReport(
+        context,
+        report: report,
+        reportDate: reportDate,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 387, all passing
+- Tests: currently 411, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -72,7 +72,7 @@ flutter build windows --release
 
 ## Known Limitations
 
-1. **No print engine**: Reports are screen-only. No PDF generation. Documented in owner checklist.
+1. **PDF export only, no print engine**: PDFs are saved to Documents/Exports/ and auto-opened. No physical printing. Documented in owner checklist.
 2. **Local-only storage**: Data is not synced across devices. Backup/restore is the only transfer mechanism.
 3. **Single user session**: Concurrent multi-user not supported.
 4. **Single warehouse**: One location only.
@@ -94,6 +94,7 @@ flutter build windows --release
 | `phase-40-printable-business-documents-foundation` | 40 | Preview-only printable document views for sales invoice, customer statement, daily report, purchase invoice, supplier statement |
 | `phase-40a-post-phase-40-repository-hygiene` | 40A | Repository cleanup — no dirty files, 2 warnings fixed, debug test removal confirmed, docs committed |
 | `phase-41-printable-preview-accuracy-qa` | 41 | Preview QA: fixed sales invoice ID leak + missing units, statement subtitle clarification, daily report collections/outstanding rows, 6 edge-case tests, forbidden text audit |
+| `phase-42-pdf-export-foundation` | 42 | PDF export foundation: 5 PDF builders with Amiri Arabic font, path_provider save to Exports/, open_filex auto-open, تصدير PDF button on all 5 previews, 24 new tests (411 total) |
 
 ## Backup Version
 - Current: v2
@@ -101,7 +102,7 @@ flutter build windows --release
 - Old backups without these fields restore via single-field fallback
 
 ## Next Recommended Phase
-Phase 42 — PDF Export Foundation
+Phase 43 — WhatsApp Assisted Sharing
 
 ### Later Roadmap
-- Phase 43 — WhatsApp Assisted Sharing (opens WhatsApp with prepared message; manual send only; automatic sending out of scope)
+- (none confirmed)
