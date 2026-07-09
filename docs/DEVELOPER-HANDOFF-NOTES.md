@@ -108,7 +108,7 @@ flutter build windows --release
 ### Later Roadmap
 - (none confirmed)
 
-## Phase 44 � Final Owner Acceptance After PDF and WhatsApp
+## Phase 44 — Final Owner Acceptance After PDF and WhatsApp
 
 - Final owner acceptance QA added after PDF export and WhatsApp assisted sharing.
 - PDF export remains local.
@@ -116,4 +116,29 @@ flutter build windows --release
 - No automatic sending, no WhatsApp API, no tokens, no backend messaging, and no WhatsApp Web automation/scraping.
 - Daily report is intentionally excluded from WhatsApp sharing because there is no safe owner/internal recipient setting.
 - Phase 44 acceptance tests cover PDF/WhatsApp wording, missing/invalid phone safety, daily report exclusion, and forbidden send/token/API wording.
-- Next recommended phase: Phase 45 � Final Source-Safe Delivery Refresh After PDF and WhatsApp Assisted Sharing.
+- Next recommended phase: Phase 45 — Final Source-Safe Delivery Refresh After PDF and WhatsApp Assisted Sharing.
+
+## Phase 45 — Final Source-Safe Delivery Refresh After PDF and WhatsApp
+
+### Delivery Package
+- Path: `delivery/grain_warehouse_erp_lite_pilot_20260709-172154/`
+- Client README: `README-AR.txt` (Arabic)
+- Client docs in `docs/` subfolder
+
+### Source-Safe Scan
+- PASSED — no `.git`, `.dart`, `.ps1`, `.yaml` (project-level), `analysis_options`, `pubspec`, `lib/`, `test/`, `tool/`, source maps
+- Exception: `native_assets.yaml` in Release/ is a required Flutter build artifact (runtime-required)
+
+### Verification Status
+- `git status`: clean
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 466/466 passing
+- `flutter build windows --release`: succeeded
+
+### Client Doc Updates
+- `OWNER-QUICK-START-AR.md`: added PDF export and WhatsApp assisted sharing sections
+- `PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md`: added PDF and WhatsApp checklist items
+- `PILOT-RELEASE-NOTES-AR.md`: rewritten to cover all features through Phase 45
+
+### Next Recommended Phase
+Phase 46 — Client Pilot Smoke on Delivered Package
