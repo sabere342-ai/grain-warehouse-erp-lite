@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_assisted_share_service.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_message_templates.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
@@ -9,10 +11,12 @@ class PrintableCustomerStatementView extends StatelessWidget {
     super.key,
     required this.statement,
     required this.customerName,
+    this.customerPhone,
   });
 
   final CustomerStatement statement;
   final String customerName;
+  final String? customerPhone;
 
   String _formatDate(DateTime dt) {
     final y = dt.year.toString();
@@ -46,15 +50,28 @@ class PrintableCustomerStatementView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final canWhatsApp = customerPhone != null && customerPhone!.trim().isNotEmpty;
+
     return PrintableDocumentScaffold(
       title: 'كشف حساب عميل',
       subtitle: '$customerName — جميع الحركات المتاحة',
-      documentDate: _formatDate(DateTime.now()),
+      documentDate: _formatDate(now),
       onExportPdf: () => PdfExportService.exportCustomerStatement(
         context,
         statement: statement,
         customerName: customerName,
       ),
+      onOpenWhatsApp: canWhatsApp
+          ? () => WhatsAppAssistedShareService.openWhatsApp(
+                phone: customerPhone!,
+                message: WhatsAppMessageTemplates.customerStatement(
+                  customerName: customerName,
+                  date: _formatDate(now),
+                ),
+                context: context,
+              )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

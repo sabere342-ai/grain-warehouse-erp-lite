@@ -11,6 +11,7 @@ class PrintableDocumentScaffold extends StatefulWidget {
     this.subtitle,
     required this.child,
     this.onExportPdf,
+    this.onOpenWhatsApp,
   });
 
   final String title;
@@ -19,6 +20,7 @@ class PrintableDocumentScaffold extends StatefulWidget {
   final String? subtitle;
   final Widget child;
   final Future<void> Function()? onExportPdf;
+  final Future<void> Function()? onOpenWhatsApp;
 
   @override
   State<PrintableDocumentScaffold> createState() =>
@@ -28,6 +30,7 @@ class PrintableDocumentScaffold extends StatefulWidget {
 class _PrintableDocumentScaffoldState
     extends State<PrintableDocumentScaffold> {
   bool _isExporting = false;
+  bool _isSharing = false;
 
   Future<void> _handleExport() async {
     if (_isExporting || widget.onExportPdf == null) return;
@@ -36,6 +39,16 @@ class _PrintableDocumentScaffoldState
       await widget.onExportPdf!();
     } finally {
       if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _handleWhatsApp() async {
+    if (_isSharing || widget.onOpenWhatsApp == null) return;
+    setState(() => _isSharing = true);
+    try {
+      await widget.onOpenWhatsApp!();
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
@@ -123,10 +136,12 @@ class _PrintableDocumentScaffoldState
                 padding:
                     const EdgeInsets.only(bottom: 16, left: 16, right: 16),
                 child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
                     children: [
-                      if (widget.onExportPdf != null) ...[
+                      if (widget.onExportPdf != null)
                         OutlinedButton.icon(
                           onPressed: _isExporting ? null : _handleExport,
                           icon: _isExporting
@@ -140,8 +155,19 @@ class _PrintableDocumentScaffoldState
                           label: const Text(
                               '\u062A\u0635\u062F\u064A\u0631 PDF'),
                         ),
-                        const SizedBox(width: 12),
-                      ],
+                      if (widget.onOpenWhatsApp != null)
+                        OutlinedButton.icon(
+                          onPressed: _isSharing ? null : _handleWhatsApp,
+                          icon: _isSharing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.chat),
+                          label: const Text('\u0641\u062A\u062D \u0648\u0627\u062A\u0633\u0627\u0628'),
+                        ),
                       OutlinedButton.icon(
                         onPressed: () => Navigator.of(context).maybePop(),
                         icon: const Icon(Icons.arrow_forward),

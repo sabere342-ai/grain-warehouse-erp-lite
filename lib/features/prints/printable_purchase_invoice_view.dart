@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_assisted_share_service.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_message_templates.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
@@ -10,11 +12,13 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
     required this.purchase,
     required this.supplierName,
     required this.productName,
+    this.supplierPhone,
   });
 
   final PurchaseIntake purchase;
   final String supplierName;
   final String productName;
+  final String? supplierPhone;
 
   String _formatDate(DateTime dt) {
     final y = dt.year.toString();
@@ -27,6 +31,8 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canWhatsApp = supplierPhone != null && supplierPhone!.trim().isNotEmpty;
+
     return PrintableDocumentScaffold(
       title: '\u0641\u0627\u062a\u0648\u0631\u0629 \u0634\u0631\u0627\u0621',
       subtitle: supplierName,
@@ -38,6 +44,17 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
         supplierName: supplierName,
         productName: productName,
       ),
+      onOpenWhatsApp: canWhatsApp
+          ? () => WhatsAppAssistedShareService.openWhatsApp(
+                phone: supplierPhone!,
+                message: WhatsAppMessageTemplates.purchaseInvoice(
+                  supplierName: supplierName,
+                  documentNumber: purchase.id,
+                  date: _formatDate(purchase.createdAt),
+                ),
+                context: context,
+              )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

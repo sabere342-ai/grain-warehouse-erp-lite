@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_assisted_share_service.dart';
+import 'package:grain_warehouse_erp_lite/core/sharing/whatsapp_message_templates.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_export_service.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
@@ -10,11 +12,13 @@ class PrintableSalesInvoiceView extends StatelessWidget {
     required this.sale,
     required this.customerName,
     required this.productNames,
+    this.customerPhone,
   });
 
   final SaleRecord sale;
   final String customerName;
   final Map<String, String> productNames;
+  final String? customerPhone;
 
   String _formatDate(DateTime dt) {
     final y = dt.year.toString();
@@ -41,6 +45,8 @@ class PrintableSalesInvoiceView extends StatelessWidget {
     final items = sale.items;
     final hasItems = items.isNotEmpty;
 
+    final canWhatsApp = customerPhone != null && customerPhone!.trim().isNotEmpty;
+
     return PrintableDocumentScaffold(
       title: '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639',
       subtitle: customerName,
@@ -52,6 +58,17 @@ class PrintableSalesInvoiceView extends StatelessWidget {
         customerName: customerName,
         productNames: productNames,
       ),
+      onOpenWhatsApp: canWhatsApp
+          ? () => WhatsAppAssistedShareService.openWhatsApp(
+                phone: customerPhone!,
+                message: WhatsAppMessageTemplates.salesInvoice(
+                  customerName: customerName,
+                  documentNumber: sale.id,
+                  date: _formatDate(sale.createdAt),
+                ),
+                context: context,
+              )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

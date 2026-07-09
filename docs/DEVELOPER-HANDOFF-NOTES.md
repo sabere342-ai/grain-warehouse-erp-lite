@@ -83,7 +83,7 @@ flutter build windows --release
 ## Phase History (Recent)
 
 | Tag | Phase | Summary |
-|---|---|---|---|
+|---|---|---|---|---|
 | `phase-37d-operational-readiness-audit` | 37D | Full operational audit, 2 error text leaks fixed |
 | `phase-37c-delivery-refresh` | 37C | Dashboard labels, cash flow clarity |
 | `phase-37b-customer-opening-balance-finalization` | 37B | Customer opening balance finalization |
@@ -95,6 +95,7 @@ flutter build windows --release
 | `phase-40a-post-phase-40-repository-hygiene` | 40A | Repository cleanup — no dirty files, 2 warnings fixed, debug test removal confirmed, docs committed |
 | `phase-41-printable-preview-accuracy-qa` | 41 | Preview QA: fixed sales invoice ID leak + missing units, statement subtitle clarification, daily report collections/outstanding rows, 6 edge-case tests, forbidden text audit |
 | `phase-42-pdf-export-foundation` | 42 | PDF export foundation: 5 PDF builders with Amiri Arabic font, path_provider save to Exports/, open_filex auto-open, تصدير PDF button on all 5 previews, 24 new tests (411 total) |
+| `phase-43-whatsapp-assisted-sharing` | 43 | WhatsApp assisted sharing: phone normalization, message templates, فتح واتساب button on 4 doc types (not daily report), url_launcher integration, 28 new tests (439 total) |
 
 ## Backup Version
 - Current: v2
@@ -102,7 +103,7 @@ flutter build windows --release
 - Old backups without these fields restore via single-field fallback
 
 ## Next Recommended Phase
-Phase 43 — WhatsApp Assisted Sharing
+(Phase 43 complete — next phase TBD)
 
 ### Later Roadmap
 - (none confirmed)
