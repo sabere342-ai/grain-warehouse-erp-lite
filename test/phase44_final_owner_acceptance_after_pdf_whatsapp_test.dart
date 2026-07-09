@@ -126,7 +126,7 @@ void main() {
 
     testWidgets('customer statement hides WhatsApp button when phone is null',
         (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
           body: PrintableCustomerStatementView(
             statement: CustomerStatement(
@@ -244,7 +244,7 @@ void main() {
   group('Scenario E — Statements', () {
     testWidgets('customer statement shows subtitle و WhatsApp when phone',
         (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
           body: PrintableCustomerStatementView(
             statement: CustomerStatement(
@@ -262,7 +262,7 @@ void main() {
 
     testWidgets('supplier statement shows subtitle و WhatsApp when phone',
         (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
           body: PrintableSupplierStatementView(
             statement: SupplierStatement(
@@ -280,7 +280,7 @@ void main() {
 
     testWidgets('supplier statement hides WhatsApp when no phone',
         (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
           body: PrintableSupplierStatementView(
             statement: SupplierStatement(

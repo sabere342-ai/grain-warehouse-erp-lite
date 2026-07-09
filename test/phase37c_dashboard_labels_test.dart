@@ -57,7 +57,7 @@ void main() {
       });
 
       test('todayCashInQirsh = cash sales + collections', () {
-        final data = DashboardData(
+        const data = DashboardData(
           todaySalesQirsh: 500000,
           todayCashSalesQirsh: 300000,
           todayCreditSalesQirsh: 200000,
@@ -117,7 +117,7 @@ void main() {
 
       test('todayCollectionsQirsh filters by date, not all-time', () async {
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -164,7 +164,7 @@ void main() {
           const SupplierDraft(name: 'مورد'),
         );
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -214,7 +214,7 @@ void main() {
 
       test('customerReceivablesQirsh tracks positive balances only', () async {
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -252,7 +252,7 @@ void main() {
           const SupplierDraft(name: 'مورد'),
         );
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -284,7 +284,7 @@ void main() {
 
       test('today metrics exclude out-of-range data', () async {
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(

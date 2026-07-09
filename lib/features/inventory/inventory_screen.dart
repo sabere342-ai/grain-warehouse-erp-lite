@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class InventoryScreen extends StatefulWidget {
@@ -82,12 +83,31 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ),
                 ),
                 if (canAdjust)
-                  FilledButton.icon(
-                    onPressed: _controller.products.isEmpty
-                        ? null
-                        : () => _showMovementForm(context, user: user),
-                    icon: const Icon(Icons.add_chart_rounded),
-                    label: const Text('إضافة حركة مخزون'),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _controller.products.isEmpty
+                            ? null
+                            : () => _showMovementForm(context, user: user),
+                        icon: const Icon(Icons.add_chart_rounded),
+                        label: const Text('إضافة حركة مخزون'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => StockTakeScreen(
+                                controller: _controller,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.balance_rounded),
+                        label: const Text('جرد المخزون'),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -114,15 +134,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ..._controller.products.map(
                 (product) {
                   final productId = product.id;
-                  final hasOpening =
-                      _controller.hasOpeningBalance(productId);
+                  final hasOpening = _controller.hasOpeningBalance(productId);
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _InventoryProductCard(
                       product: product,
                       balanceKg: _controller.balanceForProduct(productId),
-                      movements:
-                          _controller.movementsForProduct(productId),
+                      movements: _controller.movementsForProduct(productId),
                       canAdjust: canAdjust,
                       hasOpeningBalance: hasOpening,
                       onAddOpeningBalance: canAdjust && !hasOpening

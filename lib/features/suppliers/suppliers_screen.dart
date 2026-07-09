@@ -94,9 +94,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       await _accountRepo.createPayment(draft);
       await _loadBalances();
     } catch (_) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
+        const SnackBar(
+            content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
       );
     }
   }
@@ -120,14 +121,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         createdByUserId: user.id,
       );
       await _loadBalances();
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('تم تسجيل الرصيد الافتتاحي بنجاح.')),
       );
     } catch (_) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر تسجيل الرصيد الافتتاحي. تأكد من صحة البيانات.')),
+        const SnackBar(
+            content:
+                Text('تعذر تسجيل الرصيد الافتتاحي. تأكد من صحة البيانات.')),
       );
     }
   }
@@ -198,7 +201,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     supplier: supplier,
                     canManage: canManage,
                     balanceQirsh: _balances[supplier.id] ?? 0,
-                    hasOpeningBalance: _suppliersWithOpeningBalance.contains(supplier.id),
+                    hasOpeningBalance:
+                        _suppliersWithOpeningBalance.contains(supplier.id),
                     onEdit: () => _showSupplierForm(
                       context,
                       user: user,
@@ -209,8 +213,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       supplierId: supplier.id,
                       isActive: !supplier.isActive,
                     ),
-                    onPayment: () => _recordPayment(context, user: user, supplier: supplier),
-                    onOpeningBalance: () => _recordOpeningBalance(context, user: user, supplier: supplier),
+                    onPayment: () =>
+                        _recordPayment(context, user: user, supplier: supplier),
+                    onOpeningBalance: () => _recordOpeningBalance(context,
+                        user: user, supplier: supplier),
                   ),
                 ),
               ),
@@ -545,7 +551,8 @@ class _SupplierOpeningBalanceDialogState
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'المبلغ بقروش',
-                helperText: 'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
+                helperText:
+                    'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -579,7 +586,8 @@ class _SupplierOpeningBalanceDialogState
       return;
     }
     if (amount % 100 != 0) {
-      setState(() => _errorMessage = 'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
+      setState(() => _errorMessage =
+          'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
       return;
     }
 

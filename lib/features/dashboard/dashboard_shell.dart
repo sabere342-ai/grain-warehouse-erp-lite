@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dar
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
@@ -29,10 +30,12 @@ class _DashboardShellState extends State<DashboardShell> {
   static const _destinations = [
     _ShellDestination('الرئيسية', Icons.dashboard_rounded, DashboardScreen()),
     _ShellDestination('المبيعات', Icons.point_of_sale_rounded, SalesScreen()),
-    _ShellDestination('المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
+    _ShellDestination(
+        'المشتريات', Icons.shopping_bag_rounded, PurchasesScreen()),
     _ShellDestination('الأصناف', Icons.inventory_2_rounded, ProductsScreen()),
     _ShellDestination('المخزون', Icons.warehouse_rounded, InventoryScreen()),
-    _ShellDestination('الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
+    _ShellDestination(
+        'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
     _ShellDestination('العملاء', Icons.groups_2_rounded, CustomersScreen()),
     _ShellDestination(
       'المصروفات',
@@ -51,6 +54,12 @@ class _DashboardShellState extends State<DashboardShell> {
       Icons.bar_chart_rounded,
       ReportsScreen(),
       requiresReports: true,
+    ),
+    _ShellDestination(
+      'جرد المخزون',
+      Icons.balance_rounded,
+      StockTakeScreen(),
+      requiresStockAdjustment: true,
     ),
     _ShellDestination(
       'الإعدادات',
@@ -101,8 +110,9 @@ class _DashboardShellState extends State<DashboardShell> {
             NavigationRail(
               selectedIndex: selectedIndex,
               onDestinationSelected: _setSelectedIndex,
-              labelType: NavigationRailLabelType.all,
+              extended: true,
               minWidth: 104,
+              minExtendedWidth: 170,
               destinations: [
                 for (final destination in visibleDestinations)
                   NavigationRailDestination(
@@ -161,6 +171,7 @@ class _ShellDestination {
     this.requiresReports = false,
     this.requiresExpenses = false,
     this.requiresAuditLogs = false,
+    this.requiresStockAdjustment = false,
   });
 
   final String label;
@@ -170,6 +181,7 @@ class _ShellDestination {
   final bool requiresReports;
   final bool requiresExpenses;
   final bool requiresAuditLogs;
+  final bool requiresStockAdjustment;
 
   bool isVisibleFor(AppUser user) {
     if (requiresSettings) {
@@ -183,6 +195,9 @@ class _ShellDestination {
     }
     if (requiresAuditLogs) {
       return user.permissions.canViewAuditLogs;
+    }
+    if (requiresStockAdjustment) {
+      return user.permissions.canCreateStockAdjustment;
     }
 
     return true;

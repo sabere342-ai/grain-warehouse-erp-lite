@@ -415,7 +415,7 @@ class _AuditDetails extends StatelessWidget {
           Text('سبب الإلغاء: ${cancellation.cancellationReason}'),
           Text('وقت الإلغاء: ${_formatDateTime(cancellation.cancelledAt)}'),
           if (cancellation.reversalMovementIds.length == 1)
-            Text('تم إنشاء حركة مخزون عكسية.')
+            const Text('تم إنشاء حركة مخزون عكسية.')
           else
             Text('تم إنشاء ${cancellation.reversalMovementIds.length} حركات مخزون عكسية.'),
         ],

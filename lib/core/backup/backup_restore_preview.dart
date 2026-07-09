@@ -132,7 +132,7 @@ class BackupRestorePreviewService {
       return BackupRestorePreviewResult.valid(
         summary: BackupRestorePreviewSummary(
           generatedAt: DateTime.parse(generatedAtText),
-          backupVersion: backupVersion as int,
+          backupVersion: backupVersion,
           counts: BackupRestorePreviewCounts.fromMap(parsedCounts),
           fileName: metadata['fileName'] is String
               ? metadata['fileName'] as String

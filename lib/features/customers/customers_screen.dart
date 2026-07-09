@@ -112,7 +112,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   child: _CustomerCard(
                     customer: customer,
                     balanceQirsh: _controller.balanceForCustomer(customer.id),
-                    hasOpeningBalance: _controller.hasOpeningBalanceForCustomer(customer.id),
+                    hasOpeningBalance:
+                        _controller.hasOpeningBalanceForCustomer(customer.id),
                     canManage: canManage,
                     onEdit: () => _showCustomerForm(
                       context,
@@ -211,9 +212,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   Future<void> _showStatementPreview(
       BuildContext context, Customer customer) async {
+    final navigator = Navigator.of(context);
     final statement = await _controller.statementForCustomer(customer.id);
     if (!mounted) return;
-    await Navigator.of(context).push(
+    await navigator.push(
       MaterialPageRoute(
         builder: (context) => PrintableCustomerStatementView(
           statement: statement,
@@ -240,7 +242,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       customerId: customer.id,
       amountQirsh: amount,
     );
-    if (!mounted) return;
+    if (!context.mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('تم تسجيل الرصيد الافتتاحي بنجاح.')),
@@ -557,8 +559,7 @@ class _CustomerStatementScreen extends StatelessWidget {
                 const Text(
                     'البيع الآجل يزيد رصيد العميل المستحق، والتحصيل يقلله.'),
                 const SizedBox(height: 6),
-                const Text(
-                    'كشف الحساب يعرض كل الحركات التي صنعت الرصيد.'),
+                const Text('كشف الحساب يعرض كل الحركات التي صنعت الرصيد.'),
               ],
             ),
           ),
@@ -669,7 +670,8 @@ class _CustomerOpeningBalanceDialogState
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'المبلغ بقروش',
-                helperText: 'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
+                helperText:
+                    'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
               ),
               textDirection: TextDirection.ltr,
             ),
@@ -703,7 +705,8 @@ class _CustomerOpeningBalanceDialogState
       return;
     }
     if (amount % 100 != 0) {
-      setState(() => _errorMessage = 'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
+      setState(() => _errorMessage =
+          'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
       return;
     }
 

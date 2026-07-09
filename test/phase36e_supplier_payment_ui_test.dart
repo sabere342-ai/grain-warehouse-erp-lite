@@ -35,7 +35,7 @@ void main() {
 
       test('payment reduces balance correctly', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111111'),
+          const SupplierDraft(name: 'مورد', phone: '0111111111'),
         );
         final purchase = PurchaseIntake(
           id: 'pin-pay-1',
@@ -77,7 +77,7 @@ void main() {
 
       test('full payment zeros the balance', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد'),
+          const SupplierDraft(name: 'مورد'),
         );
         final purchase = PurchaseIntake(
           id: 'pin-pay-2',
@@ -105,10 +105,10 @@ void main() {
 
       test('balancesBySupplierId after payments', () async {
         final supplier1 = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد 1'),
+          const SupplierDraft(name: 'مورد 1'),
         );
         final supplier2 = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد 2'),
+          const SupplierDraft(name: 'مورد 2'),
         );
 
         final purchase1 = PurchaseIntake(
@@ -152,7 +152,7 @@ void main() {
 
       test('statement after payment shows running balance', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد'),
+          const SupplierDraft(name: 'مورد'),
         );
 
         final purchase = PurchaseIntake(
@@ -197,7 +197,7 @@ void main() {
 
       test('payment with empty userId is rejected', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111111'),
+          const SupplierDraft(name: 'مورد', phone: '0111111111'),
         );
         final purchase = PurchaseIntake(
           id: 'pin-empty-user',
@@ -265,7 +265,7 @@ void main() {
       test('cash balance correctly subtracts multiple supplier payments',
           () async {
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -277,7 +277,7 @@ void main() {
         );
 
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد'),
+          const SupplierDraft(name: 'مورد'),
         );
         await supplierAccountRepo.createPurchaseEntry(
           purchase: PurchaseIntake(
@@ -356,10 +356,10 @@ void main() {
       test('purchase creates supplier entry and payment reduces balance',
           () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد القمح'),
+          const SupplierDraft(name: 'مورد القمح'),
         );
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(
@@ -401,10 +401,10 @@ void main() {
 
       test('cancelling purchase after payment is blocked', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد'),
+          const SupplierDraft(name: 'مورد'),
         );
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await inventoryRepo.createMovement(
           StockMovementDraft(

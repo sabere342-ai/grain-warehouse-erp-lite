@@ -20,7 +20,8 @@ class WhatsAppAssistedShareService {
 
     final encoded = Uri.encodeComponent(message);
     final waUrl = 'https://wa.me/$normalized?text=$encoded';
-    final webUrl = 'https://web.whatsapp.com/send?phone=$normalized&text=$encoded';
+    final webUrl =
+        'https://web.whatsapp.com/send?phone=$normalized&text=$encoded';
 
     try {
       final launched = await launchUrl(
@@ -28,6 +29,7 @@ class WhatsAppAssistedShareService {
         mode: LaunchMode.externalApplication,
       );
       if (launched) {
+        if (!context.mounted) return true;
         _showInstruction(context);
         return true;
       }
@@ -41,6 +43,7 @@ class WhatsAppAssistedShareService {
         mode: LaunchMode.externalApplication,
       );
       if (launched) {
+        if (!context.mounted) return true;
         _showInstruction(context);
         return true;
       }
@@ -48,6 +51,7 @@ class WhatsAppAssistedShareService {
       // Fall through to error
     }
 
+    if (!context.mounted) return false;
     _showWhatsAppNotAvailable(context);
     return false;
   }

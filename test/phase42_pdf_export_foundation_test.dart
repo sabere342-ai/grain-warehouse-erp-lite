@@ -431,14 +431,14 @@ void main() {
     });
 
     testWidgets('customer statement shows تصدير PDF', (tester) async {
-      final statement = CustomerStatement(
+      const statement = CustomerStatement(
         customerId: 'c1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableCustomerStatementView(
               statement: statement,
@@ -523,14 +523,14 @@ void main() {
     });
 
     testWidgets('supplier statement shows تصدير PDF', (tester) async {
-      final statement = SupplierStatement(
+      const statement = SupplierStatement(
         supplierId: 's1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableSupplierStatementView(
               statement: statement,

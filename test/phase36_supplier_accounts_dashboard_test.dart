@@ -70,7 +70,7 @@ void main() {
 
     test('computes today sales correctly', () async {
       final product = await productRepo.createProduct(
-        ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+        const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
       await inventoryRepo.createMovement(
         StockMovementDraft(
@@ -101,7 +101,7 @@ void main() {
 
     test('computes cash balance including supplier payments', () async {
       final product = await productRepo.createProduct(
-        ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+        const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
       await inventoryRepo.createMovement(
         StockMovementDraft(
@@ -112,7 +112,7 @@ void main() {
         ),
       );
 
-      final supplier = await supplierRepo.createSupplier(SupplierDraft(
+      final supplier = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد',
       ));
       await supplierAccountRepo.createPurchaseEntry(
@@ -187,13 +187,13 @@ void main() {
     });
 
     test('auto-fills supplier snapshot on create', () async {
-      final supplier = await supplierRepo.createSupplier(SupplierDraft(
+      final supplier = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد القمح',
         phone: '0123456789',
         address: 'القاهرة',
       ));
       final product = await productRepo.createProduct(
-        ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+        const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
       await inventoryRepo.createMovement(
         StockMovementDraft(
@@ -221,13 +221,13 @@ void main() {
     });
 
     test('override supplier snapshot fields', () async {
-      final supplier = await supplierRepo.createSupplier(SupplierDraft(
+      final supplier = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد القمح',
         phone: '0123456789',
         address: 'القاهرة',
       ));
       final product = await productRepo.createProduct(
-        ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+        const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
       await inventoryRepo.createMovement(
         StockMovementDraft(
@@ -256,11 +256,11 @@ void main() {
     });
 
     test('creates supplier ledger entry on purchase', () async {
-      final supplier = await supplierRepo.createSupplier(SupplierDraft(
+      final supplier = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد القمح',
       ));
       final product = await productRepo.createProduct(
-        ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+        const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
       await inventoryRepo.createMovement(
         StockMovementDraft(
@@ -302,7 +302,7 @@ void main() {
       repo = LocalSupplierAccountRepository(
         supplierRepository: supplierRepo,
       );
-      supplier = await supplierRepo.createSupplier(SupplierDraft(
+      supplier = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد',
         phone: '0111111111',
       ));
@@ -574,7 +574,7 @@ void main() {
     });
 
     test('balancesBySupplierId aggregates correctly', () async {
-      final supplier2 = await supplierRepo.createSupplier(SupplierDraft(
+      final supplier2 = await supplierRepo.createSupplier(const SupplierDraft(
         name: 'مورد آخر',
       ));
 

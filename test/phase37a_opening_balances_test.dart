@@ -32,7 +32,7 @@ void main() {
 
       test('createOpeningBalanceEntry increases balance', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111111'),
+          const SupplierDraft(name: 'مورد', phone: '0111111111'),
         );
 
         await repo.createOpeningBalanceEntry(
@@ -53,7 +53,7 @@ void main() {
 
       test('duplicate opening balance is rejected', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111112'),
+          const SupplierDraft(name: 'مورد', phone: '0111111112'),
         );
 
         await repo.createOpeningBalanceEntry(
@@ -76,10 +76,10 @@ void main() {
 
       test('hasOpeningBalanceEntry returns correct status', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111113'),
+          const SupplierDraft(name: 'مورد', phone: '0111111113'),
         );
         final other = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'آخر', phone: '0111111114'),
+          const SupplierDraft(name: 'آخر', phone: '0111111114'),
         );
 
         expect(await repo.hasOpeningBalanceEntry(supplier.id), isFalse);
@@ -96,7 +96,7 @@ void main() {
 
       test('negative amount is rejected', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111115'),
+          const SupplierDraft(name: 'مورد', phone: '0111111115'),
         );
 
         expect(
@@ -112,7 +112,7 @@ void main() {
       test('statement shows opening balance entry with running balance',
           () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111116'),
+          const SupplierDraft(name: 'مورد', phone: '0111111116'),
         );
 
         await repo.createOpeningBalanceEntry(
@@ -133,7 +133,7 @@ void main() {
 
       test('opening balance combines with purchase in statement', () async {
         final supplier = await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111117'),
+          const SupplierDraft(name: 'مورد', phone: '0111111117'),
         );
 
         await repo.createOpeningBalanceEntry(
@@ -177,7 +177,7 @@ void main() {
         final supplierRepo = LocalSupplierRepository();
 
         final product = await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
 
         await inventoryRepo.createMovement(
@@ -379,10 +379,10 @@ void main() {
         final supplierRepo = LocalSupplierRepository();
 
         await productRepo.createProduct(
-          ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
+          const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
         );
         await supplierRepo.createSupplier(
-          SupplierDraft(name: 'مورد', phone: '0111111119'),
+          const SupplierDraft(name: 'مورد', phone: '0111111119'),
         );
 
         final service = BackupExportService(

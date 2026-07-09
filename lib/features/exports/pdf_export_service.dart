@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
@@ -42,14 +41,6 @@ class PdfExportService {
     return dir;
   }
 
-  static Future<bool> _saveAndOpen(Uint8List bytes, String filename) async {
-    final dir = await _exportDir();
-    final file = File('${dir.path}\\$filename');
-    await file.writeAsBytes(bytes);
-    await OpenFilex.open(file.path);
-    return true;
-  }
-
   static Future<bool> exportSalesInvoice(
     BuildContext context, {
     required SaleRecord sale,
@@ -66,8 +57,10 @@ class PdfExportService {
         arabicFontBold: _arabicFontBold!,
       );
       final filename = PdfFileNaming.salesInvoice(sale.id, sale.createdAt);
+      if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
+      if (!context.mounted) return false;
       _showError(context);
       return false;
     }
@@ -88,8 +81,10 @@ class PdfExportService {
       );
       final filename =
           PdfFileNaming.customerStatement(customerName, DateTime.now());
+      if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
+      if (!context.mounted) return false;
       _showError(context);
       return false;
     }
@@ -109,8 +104,10 @@ class PdfExportService {
         arabicFontBold: _arabicFontBold!,
       );
       final filename = PdfFileNaming.dailyReport(reportDate);
+      if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
+      if (!context.mounted) return false;
       _showError(context);
       return false;
     }
@@ -133,8 +130,10 @@ class PdfExportService {
       );
       final filename =
           PdfFileNaming.purchaseInvoice(purchase.id, purchase.createdAt);
+      if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
+      if (!context.mounted) return false;
       _showError(context);
       return false;
     }
@@ -155,8 +154,10 @@ class PdfExportService {
       );
       final filename =
           PdfFileNaming.supplierStatement(supplierName, DateTime.now());
+      if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
+      if (!context.mounted) return false;
       _showError(context);
       return false;
     }
@@ -199,13 +200,13 @@ class PdfExportService {
 
   static void _showError(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
+      const SnackBar(
+        content: Text(
           '\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0645\u0644\u0641 PDF. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0623\u0648 \u0627\u062e\u062a\u0631 \u0645\u0643\u0627\u0646\u064b\u0622 \u0622\u062e\u0631.',
           textDirection: TextDirection.rtl,
         ),
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 5),
+        duration: Duration(seconds: 5),
       ),
     );
   }

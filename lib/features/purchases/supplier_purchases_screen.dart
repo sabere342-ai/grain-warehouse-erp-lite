@@ -199,7 +199,7 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         );
         },

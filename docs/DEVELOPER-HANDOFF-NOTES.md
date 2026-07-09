@@ -253,3 +253,36 @@ Phase 49 — Controlled Post-Acceptance Feature Additions
 
 ### Next Recommended Phase
 Phase 49A — Stock-Taking Workflow (جرد المخزون)
+
+## Phase 49A — Stock-Taking Workflow / جرد المخزون
+
+### Summary
+- Added a real Arabic stock-taking workflow for owners.
+- Entry points: dashboard navigation and inventory screen.
+- The owner enters actual counted quantity per product; the app calculates variance and requires confirmation before applying.
+- Positive variance creates `manualIncrease`; negative variance creates `manualDecrease`; zero variance creates no movement.
+- Each non-zero adjustment saves note: `تسوية جرد المخزون`.
+
+### Schema / Backup
+- No schema change.
+- No backup/restore schema impact.
+- Corrections are saved as existing inventory movements covered by backup v2.
+
+### Accounting Impact
+- Inventory quantity only.
+- No customer balance mutation.
+- No supplier balance mutation.
+- No sales, purchase, cancellation, expense, payment, PDF, or WhatsApp behavior changed.
+
+### Verification Summary
+- Added 17 focused Phase 49A tests.
+- Resolved pre-existing analyzer info findings with behavior-preserving cleanup in older Phase 36-44 files.
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test test\phase49a_stock_take_test.dart`: 17/17 passing.
+- `flutter test`: 483/483 passing.
+- `flutter build windows --release`: succeeded with native CMake/MSVCRT warnings.
+- `git diff --check`: clean.
+- No new delivery package was created in Phase 49A.
+
+### Next Recommended Phase
+Phase 49B — Stock Adjustment Variance Report / printable audit view.

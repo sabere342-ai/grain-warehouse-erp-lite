@@ -206,14 +206,14 @@ void main() {
 
     testWidgets('customer statement shows فتح واتساب when phone provided',
         (tester) async {
-      final statement = CustomerStatement(
+      const statement = CustomerStatement(
         customerId: 'c1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableCustomerStatementView(
               statement: statement,
@@ -229,14 +229,14 @@ void main() {
 
     testWidgets('customer statement hides فتح واتساب when phone is null',
         (tester) async {
-      final statement = CustomerStatement(
+      const statement = CustomerStatement(
         customerId: 'c1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableCustomerStatementView(
               statement: statement,
@@ -312,14 +312,14 @@ void main() {
 
     testWidgets('supplier statement shows فتح واتساب when phone provided',
         (tester) async {
-      final statement = SupplierStatement(
+      const statement = SupplierStatement(
         supplierId: 's1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableSupplierStatementView(
               statement: statement,
@@ -335,14 +335,14 @@ void main() {
 
     testWidgets('supplier statement hides فتح واتساب when phone is null',
         (tester) async {
-      final statement = SupplierStatement(
+      const statement = SupplierStatement(
         supplierId: 's1',
         finalBalanceQirsh: 0,
         lines: [],
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrintableSupplierStatementView(
               statement: statement,
