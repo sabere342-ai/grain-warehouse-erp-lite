@@ -108,6 +108,26 @@ flutter build windows --release
 ### Later Roadmap
 - (none confirmed)
 
+## Phase 49B — Stock Adjustment Variance Report
+
+### Summary
+- Added a read-only Arabic stock adjustment variance report for owners with stock adjustment permission.
+- The report shows manual increase and decrease movements linked to stock adjustments and stock-taking notes.
+- It does not mutate inventory, customer balances, or supplier balances.
+
+### Key Notes
+- No schema change.
+- No backup/restore schema change.
+- PDF export remains deferred in Phase 49B because the current movement model does not reliably store before/after stock values.
+- The report clearly states that before/after stock is unavailable rather than inventing it.
+
+### Verification Summary
+- Focused Phase 49B tests: 15/15 passing.
+- Full validation remains to be completed before final commit.
+
+### Next Recommended Phase
+- Phase 49C or a future phase focused on printable audit history once reliable before/after stock values are available.
+
 ## Phase 44 — Final Owner Acceptance After PDF and WhatsApp
 
 - Final owner acceptance QA added after PDF export and WhatsApp assisted sharing.

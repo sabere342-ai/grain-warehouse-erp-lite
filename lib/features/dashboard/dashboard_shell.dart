@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dar
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
@@ -59,6 +60,12 @@ class _DashboardShellState extends State<DashboardShell> {
       'جرد المخزون',
       Icons.balance_rounded,
       StockTakeScreen(),
+      requiresStockAdjustment: true,
+    ),
+    _ShellDestination(
+      'تقرير التسويات',
+      Icons.fact_check_rounded,
+      StockAdjustmentReportScreen(),
       requiresStockAdjustment: true,
     ),
     _ShellDestination(

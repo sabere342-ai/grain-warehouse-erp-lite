@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -63,26 +64,32 @@ class _InventoryScreenState extends State<InventoryScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('المخزون', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        canAdjust
-                            ? 'الأرصدة محسوبة من حركات المخزون فقط. أي تعديل يدوي يحتاج سبب واضح.'
-                            : 'الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('المخزون', style: textTheme.headlineMedium),
+                          const SizedBox(height: 6),
+                          Text(
+                            canAdjust
+                                ? 'الأرصدة محسوبة من حركات المخزون فقط. أي تعديل يدوي يحتاج سبب واضح.'
+                                : 'الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.mutedText,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                if (canAdjust)
+                if (canAdjust) ...[
+                  const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -107,8 +114,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         icon: const Icon(Icons.balance_rounded),
                         label: const Text('جرد المخزون'),
                       ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => StockAdjustmentReportScreen(
+                                controller: _controller,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.fact_check_rounded),
+                        label: const Text('تقرير التسويات'),
+                      ),
                     ],
                   ),
+                ],
               ],
             ),
             if (_controller.errorMessage != null) ...[
