@@ -747,3 +747,51 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - (TBD — depends on owner feedback from the production-candidate trial.)
+
+## Phase 62 — Data Wipe Sequential Safety Audit
+
+### Summary
+- Audited the current data wipe implementation (`BusinessDataWipeService.wipeBusinessData()`) for sequential safety, access controls, confirmation requirements, and partial-wipe risk.
+- Documented the exact wipe order: audit log → expenses → customers → customer accounts → sales → purchases → supplier accounts → inventory → suppliers → products.
+- Verified two-level access control: owner-only at both UI and service level.
+- Verified mandatory backup-before-wipe: if backup fails, wipe is blocked entirely.
+- Verified confirmation phrase: "امسح بيانات التشغيل" must be typed exactly.
+- Verified document history is a computed view (no explicit clear needed).
+- Created Arabic owner guide for data wipe (`DATA-WIPE-SAFETY-GUIDE-AR.md`).
+- Transaction-safe wipe is **not implemented** — planned for when a persistent on-disk database engine is introduced alongside transaction-safe restore.
+
+### Production Code Changed
+- No (documentation + audit only)
+
+### Schema Changed
+- No
+
+### Tests Changed
+- No (tests remain 527/527)
+
+### New Documentation
+- `docs/PHASE-62-DATA-WIPE-SEQUENTIAL-SAFETY-AUDIT.md`
+- `docs/DATA-WIPE-SAFETY-GUIDE-AR.md` (Arabic owner guide)
+- `docs/PHASE-62-DATA-WIPE-SEQUENTIAL-SAFETY-SUMMARY.md`
+
+### Updated Documentation
+- `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md`
+- `docs/PILOT-RELEASE-NOTES-AR.md`
+- `docs/OWNER-QUICK-START-AR.md`
+- `docs/OWNER-TRIAL-INCIDENT-LOG-AR.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 527/527 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean (expected CRLF warnings only).
+- `git status --short`: clean after commit.
+
+### Remaining Limitations
+- Data wipe is still not transaction-safe (documented — planned for future phase).
+- Restore has the same sequential non-transactional pattern (documented in Phase 61).
+- Single-device local Windows only.
+- Cloud sync not implemented.
+
+### Next Recommended Phase
+- (TBD — depends on owner feedback from the production-candidate trial.)
