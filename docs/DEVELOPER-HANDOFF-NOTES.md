@@ -576,3 +576,47 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - Phase 58 - Review Real Pilot Feedback When Available.
+
+## Phase 58 - Accounting Freeze & Production Readiness Audit
+
+### Summary
+- Completed an accounting freeze audit covering sales, purchases, collections, payments, expenses, inventory, reports, document history, backup/restore, delivery package source safety, visible pages readiness, and formula consistency.
+- No production code was changed. The audit is documentation-only.
+- One known limitation was identified and documented: sale cancellation does not reverse customer account entries (asymmetric with purchase cancellation). Fix deferred.
+- No schema changed.
+- No tests changed.
+
+### Audited Areas
+1. **Accounting Freeze** — All business flows verified for consistency. Sale→stock→customer account and purchase→stock→supplier account chains are coherent.
+2. **Inventory Freeze** — Stock movement types, signed quantities, and balance computation verified.
+3. **Reports Read-Only** — All report screens confirmed read-only; no mutations occur during report generation.
+4. **Document History** — Document IDs stable; cancellations traceable via metadata; no silent deletion.
+5. **Backup/Restore** — Full export/restore cycle verified; restore only to empty system; relationship validation present.
+6. **Delivery Package Source Safety** — All 14 delivery packages scanned; all PASS source-safety.
+7. **Visible Pages Readiness** — No placeholder, "coming soon", or under-construction UI found. Dead code `PlaceholderFeatureScreen` not referenced.
+8. **Formula Consistency** — No conflicting formulas found. All calculations derive from the same source data.
+
+### Key Finding
+- Sale cancellation reverses stock but does not reverse customer account entries. Purchase cancellation correctly reverses supplier account entries. This asymmetry is documented as a known limitation.
+
+### New Documentation
+- `docs/PHASE-58-ACCOUNTING-FREEZE-AUDIT.md`
+
+### Updated Documentation
+- `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md` (freeze audit checklist items)
+- `docs/PILOT-RELEASE-NOTES-AR.md` (Phase 58 release note)
+- `docs/DEVELOPER-HANDOFF-NOTES.md` (this section)
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 518/518 passing (no tests changed).
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean.
+
+### Remaining Risks
+- Sale cancellation customer account reversal not implemented (asymmetric with purchase cancellation).
+- Backup restore writes without a transaction (acknowledged limitation).
+- Single-device local operation only.
+
+### Next Recommended Phase
+- Phase 59 - Resolve Sale Cancellation Customer Account Reversal Asymmetry.
