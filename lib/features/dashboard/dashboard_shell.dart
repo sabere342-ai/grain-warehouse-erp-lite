@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
@@ -96,11 +99,27 @@ class _DashboardShellState extends State<DashboardShell> {
     final selected = visibleDestinations[selectedIndex];
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
+    final identityCtrl = BusinessIdentityScope.maybeOf(context);
+    final identity = identityCtrl?.identity;
+    final hasLogo = identity?.hasLogo ?? false;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '${selected.label} - '
-          '${BusinessIdentityScope.maybeOf(context)?.identity.displayName ?? 'نظام إدارة مخازن الحبوب'}',
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasLogo) ...[
+              _AppBarLogo(managedFileName: identity?.logo?.managedFileName ?? ''),
+              const SizedBox(width: 8),
+            ],
+            Flexible(
+              child: Text(
+                '${selected.label} - '
+                '${identity?.displayName ?? 'نظام إدارة مخازن الحبوب'}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
         actions: [
           Padding(
@@ -212,5 +231,41 @@ class _ShellDestination {
     }
 
     return true;
+  }
+}
+
+class _AppBarLogo extends StatelessWidget {
+  const _AppBarLogo({required this.managedFileName});
+
+  final String managedFileName;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _loadBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const SizedBox.shrink();
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 32, maxWidth: 80),
+          child: Image.memory(
+            snapshot.data!,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Uint8List?> _loadBytes() async {
+    if (managedFileName.isEmpty) return null;
+    try {
+      return await AppRepositories.businessIdentityRepository
+          .loadLogoBytes(managedFileName);
+    } catch (_) {
+      return null;
+    }
   }
 }

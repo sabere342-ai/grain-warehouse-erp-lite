@@ -50,14 +50,23 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
+      final identity =
+          await AppRepositories.businessIdentityRepository.loadIdentity();
+      Uint8List? logoBytes;
+      if (identity.hasLogo && identity.logo != null) {
+        try {
+          logoBytes = await AppRepositories.businessIdentityRepository
+              .loadLogoBytes(identity.logo!.managedFileName);
+        } catch (_) {}
+      }
       final bytes = await PdfSalesInvoiceBuilder.build(
         sale: sale,
         customerName: customerName,
         productNames: productNames,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
-        businessIdentity:
-            await AppRepositories.businessIdentityRepository.loadIdentity(),
+        businessIdentity: identity,
+        logoBytes: logoBytes,
       );
       final filename = PdfFileNaming.salesInvoice(sale.id, sale.createdAt);
       if (!context.mounted) return false;
@@ -124,14 +133,23 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
+      final identity =
+          await AppRepositories.businessIdentityRepository.loadIdentity();
+      Uint8List? logoBytes;
+      if (identity.hasLogo && identity.logo != null) {
+        try {
+          logoBytes = await AppRepositories.businessIdentityRepository
+              .loadLogoBytes(identity.logo!.managedFileName);
+        } catch (_) {}
+      }
       final bytes = await PdfPurchaseInvoiceBuilder.build(
         purchase: purchase,
         supplierName: supplierName,
         productName: productName,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
-        businessIdentity:
-            await AppRepositories.businessIdentityRepository.loadIdentity(),
+        businessIdentity: identity,
+        logoBytes: logoBytes,
       );
       final filename =
           PdfFileNaming.purchaseInvoice(purchase.id, purchase.createdAt);

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
@@ -55,7 +56,7 @@ class BackupExportService {
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _now = now;
 
-  static const int backupVersion = 2;
+  static const int backupVersion = 3;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -139,7 +140,7 @@ class BackupExportService {
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
         'settings': {
-          'businessIdentity': businessIdentity.toJson(),
+          'businessIdentity': await _identityWithLogoJson(businessIdentity),
         },
       },
     };
@@ -387,6 +388,39 @@ class BackupExportService {
       'originalDocumentId': metadata.originalDocumentId,
       'reversalMovementIds': metadata.reversalMovementIds,
     };
+  }
+
+  Future<Map<String, Object?>> _identityWithLogoJson(
+    BusinessIdentity identity,
+  ) async {
+    final json = identity.toJson();
+    if (!identity.hasLogo || _businessIdentityRepository == null) {
+      return json;
+    }
+    try {
+      final logoBytes = await _businessIdentityRepository
+          .loadLogoBytes(identity.logo!.managedFileName);
+      if (logoBytes == null || logoBytes.isEmpty) {
+        return json;
+      }
+      final hash = sha256.convert(logoBytes).toString();
+      if (hash != identity.logo!.sha256) {
+        return json;
+      }
+      return {
+        ...json,
+        'logo': {
+          'mimeType': identity.logo!.mimeType,
+          'base64Data': base64Encode(logoBytes),
+          'sha256': hash,
+          'byteLength': logoBytes.length,
+          'width': identity.logo!.width,
+          'height': identity.logo!.height,
+        },
+      };
+    } catch (_) {
+      return json;
+    }
   }
 
   String _adler32(String input) {

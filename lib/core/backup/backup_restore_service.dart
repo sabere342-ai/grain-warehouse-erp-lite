@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
@@ -132,13 +135,17 @@ class BackupRestoreService {
         );
       }
 
+      final warnings = <String>[
+        'تم الاسترجاع إلى نظام كان فارغا فقط.',
+        'لم يتم استرجاع مستخدمين أو كلمات مرور أو جلسات دخول.',
+      ];
+      if (restored.logoRestoreWarning != null) {
+        warnings.add(restored.logoRestoreWarning!);
+      }
       return BackupRestoreResult.success(
         counts: preview.summary!.counts,
         metadata: preview.summary!,
-        warnings: const [
-          'تم الاسترجاع إلى نظام كان فارغا فقط.',
-          'لم يتم استرجاع مستخدمين أو كلمات مرور أو جلسات دخول.',
-        ],
+        warnings: warnings,
       );
     } catch (_) {
       return const BackupRestoreResult.failure(
@@ -201,9 +208,27 @@ class BackupRestoreService {
     final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
     final settings = data['settings'];
-    final businessIdentity = settings is Map<String, Object?>
-        ? BusinessIdentity.fromJson(settings['businessIdentity'])
-        : BusinessIdentity.empty;
+    final settingsMap = settings is Map<String, Object?>
+        ? settings
+        : <String, Object?>{};
+    final identityJson = settingsMap['businessIdentity'];
+    final identityMap = identityJson is Map<String, Object?>
+        ? identityJson
+        : <String, Object?>{};
+    final logoPayload = identityMap['logo'];
+
+    LogoMetadata? restoredLogo;
+    if (logoPayload is Map<String, Object?> && _businessIdentityRepository != null) {
+      restoredLogo = _restoreLogoPayload(
+        logoPayload,
+        _businessIdentityRepository,
+      );
+    }
+
+    final baseIdentity = BusinessIdentity.fromJson(identityJson);
+    final businessIdentity = restoredLogo != null
+        ? baseIdentity.copyWith(logo: restoredLogo)
+        : baseIdentity;
 
     return _RestoredBackupData(
       products: products,
@@ -220,6 +245,7 @@ class BackupRestoreService {
       auditLogs: auditLogs,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
+      logoRestoreWarning: _logoRestoreWarning,
     );
   }
 
@@ -606,6 +632,116 @@ class BackupRestoreService {
   DateTime _date(Map<String, Object?> map, String key) {
     return DateTime.parse(_string(map, key));
   }
+
+  String? _logoRestoreWarning;
+
+  LogoMetadata? _restoreLogoPayload(
+    Map<String, Object?> payload,
+    BusinessIdentityRepository repository,
+  ) {
+    try {
+      final mimeType = payload['mimeType'] as String? ?? '';
+      final base64Data = payload['base64Data'] as String? ?? '';
+      final claimedSha256 = payload['sha256'] as String?;
+      final width = payload['width'] as int? ?? 0;
+      final height = payload['height'] as int? ?? 0;
+
+      if (mimeType != 'image/png' && mimeType != 'image/jpeg') {
+        _logoRestoreWarning = 'شعار غير مدعوم ($mimeType). تم تجاهل الشعار.';
+        return null;
+      }
+
+      if (base64Data.isEmpty) {
+        _logoRestoreWarning = 'بيانات الشعار فارغة. تم تجاهل الشعار.';
+        return null;
+      }
+
+      Uint8List bytes;
+      try {
+        bytes = base64Decode(base64Data);
+      } catch (_) {
+        _logoRestoreWarning = 'بيانات الشعار تالفة (Base64). تم تجاهل الشعار.';
+        return null;
+      }
+
+      if (bytes.isEmpty) {
+        _logoRestoreWarning = 'ملف الشعار فارغ بعد الفك. تم تجاهل الشعار.';
+        return null;
+      }
+
+      if (bytes.length > 1024 * 1024) {
+        _logoRestoreWarning =
+            'حجم الشعار يتجاوز الحد الأقصى (${bytes.length} bytes). تم تجاهل الشعار.';
+        return null;
+      }
+
+      if (claimedSha256 != null) {
+        final actualHash = sha256.convert(bytes).toString();
+        if (actualHash != claimedSha256) {
+          _logoRestoreWarning =
+              'بيانات الشعار تختلف عن البصمة. تم تجاهل الشعار.';
+          return null;
+        }
+      }
+
+      final savedMetadata = _synchronousLogoSave(bytes, mimeType, repository);
+      if (savedMetadata == null) {
+        _logoRestoreWarning = 'تعذر حفظ الشعار. تم تجاهل الشعار.';
+        return null;
+      }
+
+      return LogoMetadata(
+        managedFileName: savedMetadata.managedFileName,
+        mimeType: mimeType,
+        sha256: savedMetadata.sha256,
+        byteLength: savedMetadata.byteLength,
+        width: width > 0 ? width : savedMetadata.width,
+        height: height > 0 ? height : savedMetadata.height,
+      );
+    } catch (_) {
+      _logoRestoreWarning = 'خطأ غير متوقع أثناء استرجاع الشعار. تم تجاهله.';
+      return null;
+    }
+  }
+
+  LogoMetadata? _synchronousLogoSave(
+    Uint8List bytes,
+    String mimeType,
+    BusinessIdentityRepository repository,
+  ) {
+    try {
+      final hash = sha256.convert(bytes).toString();
+      final ext = mimeType == 'image/png' ? 'png' : 'jpg';
+      final fileName = 'logo_${hash.substring(0, 16)}.$ext';
+      final dir = Directory(repository.managedLogosDirectory);
+      dir.createSync(recursive: true);
+      final filePath =
+          '${dir.path}${Platform.pathSeparator}$fileName';
+      final tempPath = '$filePath.tmp';
+      final tempFile = File(tempPath);
+      tempFile.writeAsBytesSync(bytes, flush: true);
+      final finalFile = File(filePath);
+      if (finalFile.existsSync()) {
+        tempFile.deleteSync();
+      } else {
+        tempFile.renameSync(filePath);
+      }
+      final verified = File(filePath);
+      if (!verified.existsSync()) return null;
+      final verifiedBytes = verified.readAsBytesSync();
+      if (verifiedBytes.length != bytes.length) return null;
+      return LogoMetadata(
+        managedFileName: fileName,
+        mimeType: mimeType,
+        sha256: hash,
+        byteLength: verifiedBytes.length,
+        width: 0,
+        height: 0,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 class BackupRestoreResult {
@@ -671,6 +807,7 @@ class _RestoredBackupData {
     required this.auditLogs,
     required this.businessIdentity,
     required this.documentHistoryCount,
+    this.logoRestoreWarning,
   });
 
   final List<Product> products;
@@ -687,4 +824,5 @@ class _RestoredBackupData {
   final List<AuditLogEntry> auditLogs;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
+  final String? logoRestoreWarning;
 }

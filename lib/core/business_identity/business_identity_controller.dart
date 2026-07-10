@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
@@ -25,7 +27,7 @@ class BusinessIdentityController extends ChangeNotifier {
 
   Future<void> saveEstablishmentName(String value) async {
     final trimmed = value.trim();
-    _identity = BusinessIdentity(
+    _identity = _identity.copyWith(
       establishmentName: trimmed.isEmpty ? null : trimmed,
     );
     _message = null;
@@ -36,6 +38,49 @@ class BusinessIdentityController extends ChangeNotifier {
     } catch (_) {
       _message =
           'تم تطبيق اسم المنشأة الآن، لكن تعذر حفظه للجلسة القادمة.';
+    }
+    notifyListeners();
+  }
+
+  Future<void> saveLogo(Uint8List bytes, String mimeType) async {
+    _isLoading = true;
+    _message = null;
+    notifyListeners();
+    try {
+      final oldLogo = _identity.logo;
+      final metadata = await _repository.saveLogoBytes(bytes, mimeType);
+      if (metadata == null) {
+        _message = 'تعذر حفظ الشعار. تحقق من الملف.';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      _identity = _identity.copyWith(logo: metadata);
+      await _repository.saveIdentity(_identity);
+      if (oldLogo != null && oldLogo.managedFileName != metadata.managedFileName) {
+        await _repository.deleteLogoFile(oldLogo.managedFileName);
+      }
+      _message = 'تم حفظ الشعار بنجاح.';
+    } catch (_) {
+      _message = 'تعذر حفظ الشعار.';
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> removeLogo() async {
+    final oldLogo = _identity.logo;
+    _identity = _identity.copyWith(clearLogo: true);
+    _message = null;
+    notifyListeners();
+    try {
+      await _repository.saveIdentity(_identity);
+      if (oldLogo != null) {
+        await _repository.deleteLogoFile(oldLogo.managedFileName);
+      }
+      _message = 'تم إزالة الشعار.';
+    } catch (_) {
+      _message = 'تمت إزالة الشعار من العرض، لكن تعذر الحفظ.';
     }
     notifyListeners();
   }

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
@@ -59,6 +62,9 @@ class _PrintableDocumentScaffoldState
     final displayName =
         BusinessIdentityScope.maybeOf(context)?.identity.displayName ??
             BusinessIdentity.defaultDisplayName;
+    final logo =
+        BusinessIdentityScope.maybeOf(context)?.identity.logo;
+    final hasLogo = logo != null && logo.isValid;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: SingleChildScrollView(
@@ -72,6 +78,9 @@ class _PrintableDocumentScaffoldState
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    if (hasLogo)
+                      _PrintableLogo(managedFileName: logo.managedFileName),
+                    if (hasLogo) const SizedBox(height: 8),
                     Text(
                       displayName,
                       textAlign: TextAlign.center,
@@ -196,5 +205,41 @@ class _PrintableDocumentScaffoldState
         ),
       ),
     );
+  }
+}
+
+class _PrintableLogo extends StatelessWidget {
+  const _PrintableLogo({required this.managedFileName});
+
+  final String managedFileName;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _loadBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const SizedBox.shrink();
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 60, maxWidth: 200),
+          child: Image.memory(
+            snapshot.data!,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Uint8List?> _loadBytes() async {
+    if (managedFileName.isEmpty) return null;
+    try {
+      return await AppRepositories.businessIdentityRepository
+          .loadLogoBytes(managedFileName);
+    } catch (_) {
+      return null;
+    }
   }
 }

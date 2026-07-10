@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -189,6 +190,22 @@ class _MemoryBusinessIdentityRepository implements BusinessIdentityRepository {
   Future<void> saveIdentity(BusinessIdentity identity) async {
     _identity = identity;
   }
+
+  @override
+  Future<LogoMetadata?> saveLogoBytes(Uint8List bytes, String mimeType) async {
+    return null;
+  }
+
+  @override
+  Future<Uint8List?> loadLogoBytes(String managedFileName) async {
+    return null;
+  }
+
+  @override
+  Future<void> deleteLogoFile(String managedFileName) async {}
+
+  @override
+  String get managedLogosDirectory => '';
 }
 
 class _RepoSet {

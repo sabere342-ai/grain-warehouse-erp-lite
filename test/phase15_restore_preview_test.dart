@@ -35,7 +35,7 @@ void main() {
 
       expect(result.isValid, isTrue);
       expect(result.message, 'تم فحص النسخة بنجاح.');
-      expect(result.summary!.backupVersion, 2);
+      expect(result.summary!.backupVersion, 3);
       expect(result.summary!.generatedAt.toUtc(),
           DateTime.utc(2026, 7, 6, 15, 42, 30));
       expect(result.summary!.counts.products, 1);

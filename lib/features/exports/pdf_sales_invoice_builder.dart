@@ -15,6 +15,7 @@ class PdfSalesInvoiceBuilder {
     required pw.Font arabicFont,
     required pw.Font arabicFontBold,
     BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     final pdf = pw.Document();
 
@@ -38,6 +39,15 @@ class PdfSalesInvoiceBuilder {
                     pw.Center(
                       child: pw.Column(
                         children: [
+                          if (logoBytes != null && logoBytes.isNotEmpty)
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.only(bottom: 8),
+                              child: pw.Image(
+                                pw.MemoryImage(logoBytes),
+                                height: 50,
+                                fit: pw.BoxFit.contain,
+                              ),
+                            ),
                           pw.Text(
                             businessIdentity.displayName,
                             style: pw.TextStyle(

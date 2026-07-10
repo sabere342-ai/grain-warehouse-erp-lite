@@ -3,7 +3,7 @@ import 'dart:convert';
 class BackupRestorePreviewService {
   const BackupRestorePreviewService();
 
-  static const supportedBackupVersions = {1, 2};
+  static const supportedBackupVersions = {1, 2, 3};
   static const _appName = 'grain-warehouse-erp-lite';
   static const _requiredCountKeys = [
     'products',
