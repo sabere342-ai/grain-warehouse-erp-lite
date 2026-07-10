@@ -13,12 +13,12 @@ if (-not (Test-Path -LiteralPath $exePath)) {
 
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
-  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase60_final_production_candidate_$stamp"
+  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase65_pilot_delivery_$stamp"
 }
 
 $outputPath = Join-Path $projectRoot $OutputRoot
 if (Test-Path -LiteralPath $outputPath) {
-  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase60_final_production_candidate_$stamp"
+  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase65_pilot_delivery_$stamp"
 }
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -44,7 +44,9 @@ $docs = @(
   "docs\PHASE-37B-CUSTOMER-OPENING-BALANCE.md",
   "docs\PHASE-37C-REPORTS-TRUTHFULNESS-DAILY-CASH.md",
   "docs\PHASE-59-SALE-CANCELLATION-CUSTOMER-LEDGER-SYMMETRY.md",
-  "docs\PHASE-60-FINAL-PRODUCTION-CANDIDATE-PACKAGING.md"
+  "docs\PHASE-60-FINAL-PRODUCTION-CANDIDATE-PACKAGING.md",
+  "docs\PHASE-64-OWNER-DASHBOARD-ALERTS.md",
+  "docs\PHASE-65-PILOT-DELIVERY-REFRESH-AFTER-OWNER-DASHBOARD-ALERTS.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force

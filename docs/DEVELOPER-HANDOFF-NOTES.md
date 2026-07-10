@@ -883,3 +883,32 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - (TBD — depends on owner feedback from the production-candidate trial.)
+## Phase 65 - Pilot Delivery Refresh After Owner Dashboard Alerts
+
+### Summary
+- Refreshed the pilot delivery package after Phase 64 Owner Dashboard Alerts.
+- Updated delivery packaging to use Phase 65 naming and include Phase 64/65 delivery documentation.
+- The package includes the read-only Owner Dashboard Alerts from Phase 64.
+- No new app features were added in Phase 65.
+- No production logic changed.
+- No accounting logic changed.
+- No schema changed.
+- No cloud sync, mobile app, or multi-device live sync was added.
+
+### Delivery Package
+- Package path: `delivery/grain_warehouse_erp_lite_phase65_pilot_delivery_20260710-151306`
+- Source-safety scan: PASS, no forbidden source/development files found.
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 542/542 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean.
+
+### Remaining Limitations
+- Local Windows single-device pilot package only.
+- Owner Dashboard Alerts are read-only reminders; they do not automate follow-up actions.
+- Cloud sync, mobile app, and multi-device live sync remain not implemented.
+
+### Next Recommended Phase
+- Run the owner pilot from the Phase 65 package and collect real feedback.
