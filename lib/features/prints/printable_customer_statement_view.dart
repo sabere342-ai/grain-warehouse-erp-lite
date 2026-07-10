@@ -35,6 +35,8 @@ class PrintableCustomerStatementView extends StatelessWidget {
         return 'تحصيل من العميل — ${entry.descriptionAr}';
       case CustomerAccountEntryType.openingBalance:
         return entry.descriptionAr;
+      case CustomerAccountEntryType.saleCancellation:
+        return '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 \u2014 ${entry.descriptionAr}';
     }
   }
 

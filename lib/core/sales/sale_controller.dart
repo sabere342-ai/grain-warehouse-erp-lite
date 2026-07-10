@@ -142,11 +142,19 @@ class SaleController extends ChangeNotifier {
     }
 
     try {
-      await _saleRepository.cancelSale(
+      final cancelled = await _saleRepository.cancelSale(
         saleId: saleId,
         cancelledByUserId: user.id,
         cancellationReason: cancellationReason,
       );
+      final accountRepo = _customerAccountRepository;
+      if (accountRepo != null && cancelled.customerId != null) {
+        await accountRepo.reverseSaleEntry(
+          cancelledSale: cancelled,
+          cancelledByUserId: user.id,
+          cancellationReason: cancellationReason,
+        );
+      }
       await load(user);
       return true;
     } catch (error) {

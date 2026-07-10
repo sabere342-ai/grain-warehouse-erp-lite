@@ -30,6 +30,12 @@ abstract class CustomerAccountRepository {
   });
 
   Future<bool> hasOpeningBalanceEntry(String customerId);
+
+  Future<CustomerAccountEntry> reverseSaleEntry({
+    required SaleRecord cancelledSale,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  });
 }
 
 class LocalCustomerAccountRepository implements CustomerAccountRepository {
@@ -317,6 +323,76 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
           e.customerId == id &&
           e.type == CustomerAccountEntryType.openingBalance,
     );
+  }
+
+  @override
+  Future<CustomerAccountEntry> reverseSaleEntry({
+    required SaleRecord cancelledSale,
+    required String cancelledByUserId,
+    required String cancellationReason,
+  }) async {
+    final userId = _normalizedRequiredId(cancelledByUserId, 'cancelledByUserId');
+    final reason = _normalizedOptionalText(cancellationReason);
+    if (reason == null) {
+      throw ArgumentError.value(
+        cancellationReason,
+        'cancellationReason',
+        'Cancellation reason is required.',
+      );
+    }
+
+    final originalEntryIndex = _entries.indexWhere(
+      (entry) =>
+          entry.sourceDocumentType == 'sale' &&
+          entry.sourceDocumentId == cancelledSale.id,
+    );
+    if (originalEntryIndex < 0) {
+      throw StateError('No ledger entry found for this sale.');
+    }
+
+    final originalEntry = _entries[originalEntryIndex];
+    final customer = await _requireCustomer(
+      originalEntry.customerId,
+      includeInactive: true,
+    );
+
+    final netImpact = originalEntry.signedBalanceImpactQirsh;
+    if (netImpact <= 0) {
+      return originalEntry;
+    }
+
+    final balanceBeforeReversal = await balanceForCustomer(customer.id);
+    final collectedAmount = netImpact - balanceBeforeReversal;
+    if (collectedAmount > 0) {
+      throw StateError(
+        'Cannot cancel sale: customer has made collections against this sale.',
+      );
+    }
+
+    final now = DateTime.now();
+    final reversalEntry = CustomerAccountEntry(
+      id: _generateEntryId(now),
+      customerId: originalEntry.customerId,
+      date: now,
+      type: CustomerAccountEntryType.saleCancellation,
+      debitAmountQirsh: 0,
+      creditAmountQirsh: netImpact,
+      sourceDocumentType: 'saleCancellation',
+      sourceDocumentId: cancelledSale.id,
+      descriptionAr:
+          '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}: $reason',
+      createdAt: now,
+      createdByUserId: userId,
+    );
+    _validateEntry(reversalEntry);
+    _entries.add(reversalEntry);
+    await _recordAudit(
+      actionType: 'customer.sale.reversed',
+      descriptionAr:
+          '\u062a\u0645 \u0639\u0643\u0633 \u0642\u064a\u062f \u0628\u064a\u0639 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}.',
+      referenceId: cancelledSale.id,
+    );
+    return reversalEntry;
   }
 
   Future<void> restoreCustomerAccountsIntoEmpty({
