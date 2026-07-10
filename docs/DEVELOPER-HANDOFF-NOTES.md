@@ -912,3 +912,29 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - Run the owner pilot from the Phase 65 package and collect real feedback.
+
+## Phase 66 - Controlled Owner Trial Execution
+
+### Summary
+- Phase 66 was opened to record the controlled owner trial using the Phase 65 pilot delivery package.
+- The Phase 65 package exists at `delivery/grain_warehouse_erp_lite_phase65_pilot_delivery_20260710-151306`.
+- The actual owner/operator trial was not executed or evidenced in this Codex run.
+- No owner acceptance, PASS result, FAIL result, NEEDS REVIEW result, incident, screenshot, or business observation is claimed.
+- No evidence folder was created because no sanitized and approved evidence was provided.
+
+### Production Code Changed
+- No. Documentation only.
+
+### Schema Changed
+- No.
+
+### Tests Changed
+- No.
+
+### Final Acceptance State
+- Not available because the owner trial was not executed.
+
+### Next Required Action
+- Run the real owner Day-1 trial from the Phase 65 package.
+- Record only actual results in `docs/PHASE-66-CONTROLLED-OWNER-TRIAL-EXECUTION.md` and the owner trial logs.
+- Create the Phase 66 commit/tag only after the real execution is completed and verified.
