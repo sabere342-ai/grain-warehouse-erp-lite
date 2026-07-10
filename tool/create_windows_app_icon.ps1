@@ -1,7 +1,5 @@
 param(
-  [Parameter(Mandatory=$true)]
-  [string]$SourceImage,
-
+  [string]$SourceImage = "",
   [string]$OutputPath = "",
   [switch]$Help
 )
@@ -24,6 +22,11 @@ if ($Help) {
   exit 0
 }
 
+if ([string]::IsNullOrWhiteSpace($SourceImage)) {
+  Write-Host "FAIL: -SourceImage parameter is required. Use -Help for usage." -ForegroundColor Red
+  exit 1
+}
+
 $projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
@@ -44,19 +47,24 @@ if ($ext -ne ".png" -and $ext -ne ".jpg" -and $ext -ne ".jpeg") {
 Add-Type -AssemblyName System.Drawing
 
 try {
-  $sourceImage = [System.Drawing.Image]::FromFile((Resolve-Path -LiteralPath $SourceImage).Path)
+  $resolvedPath = (Resolve-Path -LiteralPath $SourceImage).Path
+  $srcBitmap = New-Object System.Drawing.Bitmap($resolvedPath)
+  if ($null -eq $srcBitmap) {
+    Write-Host "FAIL: unable to load source image (null result)" -ForegroundColor Red
+    exit 1
+  }
 } catch {
   Write-Host "FAIL: unable to load source image: $_" -ForegroundColor Red
   exit 1
 }
 
-$sourceWidth = $sourceImage.Width
-$sourceHeight = $sourceHeight = $sourceImage.Height
+$sourceWidth = $srcBitmap.Width
+$sourceHeight = $srcBitmap.Height
 Write-Host "Source image: ${sourceWidth}x${sourceHeight} ($ext)"
 
 if ($sourceWidth -lt 16 -or $sourceHeight -lt 16) {
   Write-Host "FAIL: source image is too small (minimum 16x16)" -ForegroundColor Red
-  $sourceImage.Dispose()
+  $srcBitmap.Dispose()
   exit 1
 }
 
@@ -93,7 +101,7 @@ $icoEntries = @()
 
 foreach ($size in $targetSizes) {
   if ($size -le $sourceWidth -and $size -le $sourceHeight) {
-    $resized = ResizeImage -Image $sourceImage -TargetSize $size
+    $resized = ResizeImage -Image $srcBitmap -TargetSize $size
     $pngBytes = ImageToPngBytes -Image $resized
     $resized.Dispose()
     $icoEntries += @{
@@ -104,7 +112,7 @@ foreach ($size in $targetSizes) {
   }
 }
 
-$sourceImage.Dispose()
+$srcBitmap.Dispose()
 
 if ($icoEntries.Count -eq 0) {
   Write-Host "FAIL: no icon entries generated" -ForegroundColor Red
@@ -142,7 +150,8 @@ foreach ($entry in $icoEntries) {
 }
 
 foreach ($entry in $icoEntries) {
-  $bw.Write($entry.PngData)
+  $pngData = [byte[]]$entry.PngData
+  $bw.Write($pngData)
 }
 
 $bw.Flush()
@@ -154,5 +163,6 @@ $ms.Close()
 
 Write-Host ""
 Write-Host "SUCCESS: ICO file created at $OutputPath" -ForegroundColor Green
-Write-Host "  Entries: $($icoEntries.Count) ($($icoEntries | ForEach-Object { "$($_.Size)x$($_.Size)" } | Join-String -Separator ', '))"
+  $sizeList = ($icoEntries | ForEach-Object { "$($_.Size)x$($_.Size)" }) -join ', '
+  Write-Host "  Entries: $($icoEntries.Count) ($sizeList)"
 Write-Host "  File size: $($icoBytes.Length) bytes"
