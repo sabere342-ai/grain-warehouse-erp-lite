@@ -620,3 +620,57 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - Phase 59 - Resolve Sale Cancellation Customer Account Reversal Asymmetry.
+
+## Phase 59 — Sale Cancellation Customer Ledger Symmetry
+
+### Summary
+- Fixed the accounting asymmetry where sale cancellation did not reverse customer account entries.
+- Sale cancellation now creates a reversing customer account ledger entry where appropriate.
+- The fix mirrors the purchase cancellation pattern (`SupplierAccountRepository.reversePurchaseEntry`).
+- Original ledger history is preserved — no deletion or rewriting.
+- Duplicate reversal is guarded — cancellation is idempotent.
+- Existing collections block invalid cancellation (symmetric with supplier payments blocking purchase cancellation).
+- Fully paid cash sale cancellation does not create a fake reversal entry.
+- Partial payment reversal credits only the remaining net balance impact.
+- Audit log entry recorded on reversal.
+
+### Implementation
+- Added `saleCancellation` type to `CustomerAccountEntryType` enum.
+- Added `reverseSaleEntry()` method to `CustomerAccountRepository` (abstract + impl in `LocalCustomerAccountRepository`).
+- Wired reversal call into `SaleController.cancelSale()`.
+- Added switch case in `printable_customer_statement_view.dart`.
+
+### Files Changed (Phase 59)
+- `lib/core/customer_accounts/customer_account_entry.dart`
+- `lib/core/customer_accounts/customer_account_repository.dart`
+- `lib/core/sales/sale_controller.dart`
+- `lib/features/prints/printable_customer_statement_view.dart`
+
+### New Test File (Phase 59)
+- `test/phase59_sale_cancellation_customer_ledger_symmetry_test.dart` — 9 tests
+
+### Production Code Changed
+- Phase 59: Yes
+- Phase 59A (documentation closure): No
+
+### Schema Changed
+- No (enum/model-level change only)
+
+### Tests Changed
+- Phase 59: Yes (new test file)
+- Phase 59A: No
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test test/phase59_sale_cancellation_customer_ledger_symmetry_test.dart`: 9/9 passing.
+- `flutter test`: 527/527 passing (was 518 pre-Phase 59).
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+
+### Remaining Limitations
+- No remaining known limitation for this specific sale cancellation customer ledger symmetry issue.
+- Single-device local Windows only.
+- Cloud sync not implemented.
+- Backup restore writes without a transaction (acknowledged).
+
+### Next Recommended Phase
+- (TBD — depends on owner feedback or business priorities.)
