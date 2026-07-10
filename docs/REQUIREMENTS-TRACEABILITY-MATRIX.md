@@ -385,14 +385,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Future requirement for multi-account financial management. |
-| **Implementation evidence** | None. No `FinancialAccount` entity exists in the codebase. |
-| **Test evidence** | None |
-| **Missing behavior** | Financial account entity (treasury, bank, wallet), account balance tracking, account selection in transactions. |
-| **Dependencies** | None — but blocks ACC-008, ACC-009, ACC-010, ACC-011, ACC-012, ACC-013 |
-| **Proposed phase** | Deferred — Phase 70+ |
-| **Acceptance evidence** | N/A |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_account.dart` — `FinancialAccount` model with `FinancialAccountType` enum (treasury/bank/electronicWallet). `lib/core/financial_accounts/financial_account_repository.dart` — `LocalFinancialAccountRepository` with full CRUD, activate/deactivate, opening balance. `lib/features/financial_accounts/financial_accounts_screen.dart` — Account list screen. |
+| **Test evidence** | `test/phase71_unified_financial_accounts_foundation_test.dart` — Model tests, repository CRUD tests, activate/deactivate tests, opening balance tests, balance calculation tests. |
+| **Missing behavior** | None for Phase 71 scope. Account selection in transactions deferred to Phase 72. |
+| **Dependencies** | None |
+| **Proposed phase** | Phase 71 |
+| **Acceptance evidence** | FinancialAccount model created, repository supports CRUD, opening balance set once, activate/deactivate, 630/630 tests passing. |
 
 ---
 
@@ -400,14 +400,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Future requirement for cross-account ledger. |
-| **Implementation evidence** | None. |
-| **Test evidence** | None |
-| **Missing behavior** | Financial ledger tracking all account movements. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_account_entry.dart` — `FinancialAccountEntry` with `FinancialAccountEntryDirection` (inflow/outflow), `FinancialAccountEntrySource` (openingBalance/manualCorrection/restoreImport). Append-only ledger with running balance. `lib/core/financial_accounts/financial_account_repository.dart` — `statementForAccount()` with date filtering. |
+| **Test evidence** | `test/phase71_unified_financial_accounts_foundation_test.dart` — Entry model tests, statement filtering tests, balance calculation edge cases. |
+| **Missing behavior** | None for Phase 71 scope. Transaction integration deferred to Phase 72. |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 71 |
+| **Acceptance evidence** | FinancialAccountEntry model with direction/source enums, append-only ledger, statement with date filtering, 630/630 tests passing. |
 
 ---
 
@@ -1440,14 +1440,14 @@
 
 | Status | Count | IDs |
 |---|---|---|
-| **IMPLEMENTED** | 53 | OPS-001–018, ACC-001–006, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
-| **NOT IMPLEMENTED** | 27 | ACC-007–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
+| **IMPLEMENTED** | 55 | OPS-001–018, ACC-001–008, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
+| **NOT IMPLEMENTED** | 25 | ACC-009–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
 
 ### Not Implemented Requirements by Blocker
 
 | Blocker | Requirements |
 |---|---|
-| No financial account model (ACC-007) | ACC-007, ACC-008, ACC-009, ACC-010, ACC-011, ACC-012, ACC-013, CAN-007, RPT-003, RPT-004, RPT-007, RPT-008 |
+| No account selection in transactions (ACC-009) | ACC-009, ACC-010, ACC-011, ACC-012, ACC-013, CAN-007, RPT-003, RPT-004, RPT-007, RPT-008 |
 | No backend/cloud (CLD-002) | CLD-001–008, MOB-001–004 |
 | No in-memory transactions | BKP-008, BKP-009 |
 | Future scope only | CAN-005, CAN-006, INV-005, RPT-005, RPT-006 |

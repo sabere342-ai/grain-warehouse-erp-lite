@@ -324,14 +324,22 @@ The recommended path forward, respecting all dependencies:
 
 ### Next: Financial Accounts & Ledger (unlocks everything downstream)
 
-**Phase 70+: Financial Foundation**
-1. Define financial account model (treasury, bank, electronic wallet)
-2. Implement financial ledger (account movements table)
-3. Associate sales/purchases/collections/payments/expenses with financial accounts
-4. Add payment method tracking
-5. Implement transfer between accounts
-6. Daily cash closing/reconciliation
-7. Financial reports (balance, statement, inflows, outflows)
+**Phase 71: Financial Accounts Foundation (COMPLETED)**
+1. ✅ Define financial account model (treasury, bank, electronic wallet) — `FinancialAccount`, `FinancialAccountType` enum
+2. ✅ Implement financial ledger (account movements table) — `FinancialAccountEntry` with append-only ledger
+3. ✅ Account balance derived from ledger — `currentBalanceForAccount()`, `allAccountBalances()`
+4. ✅ Opening balance support — set once per account, stored on account + ledger entry
+5. ✅ Opening balance corrections — append-only correction entries with reason and audit trail
+6. ✅ Activate/deactivate accounts — owner-only, disabled accounts excluded from active list
+7. ✅ Account statement with date filtering — `statementForAccount()` with running balance
+8. ✅ Backup v4 with financial accounts data — backward-compatible with v1/v2/v3
+9. ✅ Backup restore, preview, and wipe support for financial accounts
+10. ✅ Dashboard navigation — owner-only financial accounts destination
+11. ✅ Comprehensive test coverage (44 new tests, 630 total)
+
+**Phase 72: Transaction Integration (Track B)**
+1. Associate sales/purchases/collections/payments/expenses with financial accounts
+2. Add payment method tracking
 
 ### Then: Financial Reporting & Reconciliation
 1. Sales by payment method report
@@ -368,6 +376,7 @@ The recommended path forward, respecting all dependencies:
 | Version | Date | Phase | Notes |
 |---------|------|-------|-------|
 | 1.0 | — | 69 | Initial master roadmap creation |
+| 1.1 | 2026-07-10 | 71 | Phase 71 completed — financial accounts foundation |
 
 ---
 

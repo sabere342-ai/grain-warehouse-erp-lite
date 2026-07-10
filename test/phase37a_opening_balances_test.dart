@@ -169,7 +169,7 @@ void main() {
     });
 
     group('Backup version backward compatibility', () {
-      test('backup exports at version 3', () async {
+      test('backup exports at version 4', () async {
         final productRepo = LocalProductRepository();
         final inventoryRepo = LocalInventoryRepository(
           productRepository: productRepo,
@@ -219,7 +219,7 @@ void main() {
         );
 
         final result = await service.createBackup();
-        expect(result.backupVersion, 3);
+        expect(result.backupVersion, 4);
       });
 
       test('v1 backup is accepted by preview service', () async {
@@ -371,7 +371,7 @@ void main() {
         expect(result.summary!.backupVersion, 1);
       });
 
-      test('v3 backup is accepted by preview service', () async {
+      test('v4 backup is accepted by preview service', () async {
         final productRepo = LocalProductRepository();
         final inventoryRepo = LocalInventoryRepository(
           productRepository: productRepo,
@@ -419,7 +419,7 @@ void main() {
             const BackupRestorePreviewService().preview(result.jsonText);
 
         expect(preview.isValid, isTrue);
-        expect(preview.summary!.backupVersion, 3);
+        expect(preview.summary!.backupVersion, 4);
       });
 
       test('unsupported version 99 is rejected', () {

@@ -15,6 +15,9 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -41,6 +44,7 @@ class BackupExportService {
     SupplierAccountRepository? supplierAccountRepository,
     ExpenseRepository? expenseRepository,
     AuditLogRepository? auditLogRepository,
+    FinancialAccountRepository? financialAccountRepository,
     DateTime Function()? now,
   })  : _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
@@ -54,9 +58,10 @@ class BackupExportService {
         _supplierAccountRepository = supplierAccountRepository,
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
+        _financialAccountRepository = financialAccountRepository,
         _now = now;
 
-  static const int backupVersion = 3;
+  static const int backupVersion = 4;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -70,6 +75,7 @@ class BackupExportService {
   final SupplierAccountRepository? _supplierAccountRepository;
   final ExpenseRepository _expenseRepository;
   final AuditLogRepository _auditLogRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final DateTime Function()? _now;
 
   Future<BackupExportResult> createBackup() async {
@@ -91,6 +97,8 @@ class BackupExportService {
     final supplierPayments = await _supplierAccountRepository?.listPayments() ?? const <SupplierPaymentRecord>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
+    final financialAccounts = await _financialAccountRepository?.listAccounts(includeInactive: true) ?? const <FinancialAccount>[];
+    final financialAccountEntries = await _listAllFinancialEntries();
     final businessIdentity =
         await _businessIdentityRepository?.loadIdentity() ??
             BusinessIdentity.empty;
@@ -109,6 +117,8 @@ class BackupExportService {
       supplierPayments: supplierPayments.length,
       expenses: expenses.length,
       auditLogs: auditLogs.length,
+      financialAccounts: financialAccounts.length,
+      financialAccountEntries: financialAccountEntries.length,
     );
     final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
@@ -139,6 +149,8 @@ class BackupExportService {
         'supplierPayments': supplierPayments.map(_supplierPaymentToJson).toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
+        'financialAccounts': financialAccounts.map(_financialAccountToJson).toList(growable: false),
+        'financialAccountEntries': financialAccountEntries.map(_financialAccountEntryToJson).toList(growable: false),
         'settings': {
           'businessIdentity': await _identityWithLogoJson(businessIdentity),
         },
@@ -423,6 +435,54 @@ class BackupExportService {
     }
   }
 
+  Future<List<FinancialAccountEntry>> _listAllFinancialEntries() async {
+    final repo = _financialAccountRepository;
+    if (repo == null) {
+      return const <FinancialAccountEntry>[];
+    }
+    final accounts = await repo.listAccounts(includeInactive: true);
+    final allEntries = <FinancialAccountEntry>[];
+    for (final account in accounts) {
+      final statement = await repo.statementForAccount(account.id);
+      allEntries.addAll(statement.lines.map((l) => l.entry));
+    }
+    return allEntries;
+  }
+
+  Map<String, Object?> _financialAccountToJson(FinancialAccount account) {
+    return {
+      'id': account.id,
+      'name': account.name,
+      'type': account.type.name,
+      'isActive': account.isActive,
+      'openingBalanceQirsh': account.openingBalanceQirsh,
+      'openingBalanceDate': account.openingBalanceDate?.toUtc().toIso8601String(),
+      'referenceInfo': account.referenceInfo,
+      'notes': account.notes,
+      'createdByUserId': account.createdByUserId,
+      'createdAt': account.createdAt.toUtc().toIso8601String(),
+    };
+  }
+
+  Map<String, Object?> _financialAccountEntryToJson(FinancialAccountEntry entry) {
+    return {
+      'id': entry.id,
+      'accountId': entry.accountId,
+      'direction': entry.direction.name,
+      'amountQirsh': entry.amountQirsh,
+      'sourceType': entry.sourceType.name,
+      'sourceDocumentId': entry.sourceDocumentId,
+      'sourceDocumentNumber': entry.sourceDocumentNumber,
+      'effectiveDate': entry.effectiveDate.toUtc().toIso8601String(),
+      'createdAt': entry.createdAt.toUtc().toIso8601String(),
+      'createdByUserId': entry.createdByUserId,
+      'reference': entry.reference,
+      'note': entry.note,
+      'reversalOf': entry.reversalOf,
+      'correctionGroup': entry.correctionGroup,
+    };
+  }
+
   String _adler32(String input) {
     const modulus = 65521;
     var a = 1;
@@ -471,6 +531,8 @@ class BackupExportCounts {
     this.supplierPayments = 0,
     required this.expenses,
     required this.auditLogs,
+    this.financialAccounts = 0,
+    this.financialAccountEntries = 0,
   });
 
   final int products;
@@ -486,6 +548,8 @@ class BackupExportCounts {
   final int supplierPayments;
   final int expenses;
   final int auditLogs;
+  final int financialAccounts;
+  final int financialAccountEntries;
 
   Map<String, int> toJson() {
     return {
@@ -502,6 +566,8 @@ class BackupExportCounts {
       'supplierPayments': supplierPayments,
       'expenses': expenses,
       'auditLogs': auditLogs,
+      'financialAccounts': financialAccounts,
+      'financialAccountEntries': financialAccountEntries,
     };
   }
 }

@@ -1007,16 +1007,73 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - `git diff --check`: clean.
 
 ### Remaining Limitations
-- No financial account model (treasury/bank/wallet) exists.
-- No financial ledger exists.
-- No payment method tracking exists.
-- No internal transfer capability exists.
-- No daily cash closing exists.
-- No financial account reports exist.
+- No account selection in transactions (deferred to Phase 72).
+- No payment method tracking exists (deferred to Phase 72).
+- No internal transfer capability exists (deferred to Phase 73).
+- No daily cash closing exists (deferred to Phase 73).
+- No financial account reports exist (deferred to Phase 73).
 - No cloud sync, backend server, or API exists.
 - No multi-device support exists.
 - No mobile app exists.
 - Phase 66 owner trial was never executed.
 
 ### Next Recommended Phase
-- Phase 71: Financial Accounts Foundation (Track A) — create unified financial account model, opening balances, financial ledger, repositories, controllers, permissions, backup compatibility, and tests.
+- Phase 72: Transaction Integration (Track B) — associate sales/purchases/collections/payments/expenses with financial accounts, add payment method tracking.
+
+## Phase 71 - Unified Financial Accounts Foundation
+
+### Summary
+- Created unified financial account model (treasury, bank, electronic wallet).
+- Implemented append-only financial ledger with entries (inflow/outflow).
+- Opening balance set once per account; corrections via append-only entries with reason and audit trail.
+- Activate/deactivate accounts (owner-only).
+- Account statement with date filtering and running balance.
+- Balance derived from ledger entries (opening balance on account + sum of entries).
+- Backup upgraded to v4 with financial accounts data; backward-compatible with v1/v2/v3.
+- Backup restore, preview, and wipe support for financial accounts.
+- Dashboard navigation added — owner-only financial accounts destination.
+- 44 new tests added (630 total).
+
+### Production Code Changed
+- Created `lib/core/financial_accounts/financial_account.dart`
+- Created `lib/core/financial_accounts/financial_account_entry.dart`
+- Created `lib/core/financial_accounts/financial_account_repository.dart`
+- Created `lib/core/financial_accounts/financial_account_controller.dart`
+- Created `lib/features/financial_accounts/financial_accounts_screen.dart`
+- Created `lib/features/financial_accounts/financial_account_statement_screen.dart`
+
+### Files Updated
+1. `lib/app/app_repositories.dart` — added financialAccountRepository, passed to backup/export/wipe
+2. `lib/features/dashboard/dashboard_shell.dart` — added financial accounts nav item, requiresFinancialAccounts flag
+3. `lib/core/backup/backup_export.dart` — v4, added financial accounts sections
+4. `lib/core/backup/backup_restore_service.dart` — parses/restores v4 financial data
+5. `lib/core/backup/backup_restore_preview.dart` — supports v4, financial counts
+6. `lib/core/backup/business_data_wipe_service.dart` — clears financial accounts on wipe
+
+### Test File Created
+- `test/phase71_unified_financial_accounts_foundation_test.dart` — 44 tests
+
+### Tests Updated
+- `test/phase13_backup_export_test.dart` — backup version 3→4
+- `test/phase14_backup_file_save_test.dart` — backup version 3→4
+- `test/phase15_restore_preview_test.dart` — backup version 3→4
+- `test/phase37a_opening_balances_test.dart` — backup version 3→4
+- `test/phase68_business_logo_invoice_windows_icon_test.dart` — backup version 3→4
+
+### Documentation Updated
+- `docs/MASTER-PRODUCT-ROADMAP.md` — Phase 71 completed
+- `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md` — ACC-007, ACC-008 implemented
+- `docs/ROADMAP-DECISION-REGISTER.md` — DC-R001 implemented
+
+### Verification Summary
+- `flutter analyze`: 0 errors, 0 warnings, 30 info hints
+- `flutter test`: 630/630 passing
+- `flutter build windows --release`: succeeded
+
+### Remaining Limitations
+- No account selection in transactions (deferred to Phase 72).
+- No payment method tracking (deferred to Phase 72).
+- No internal transfer capability (deferred to Phase 73).
+- No daily cash closing (deferred to Phase 73).
+- No financial account reports (deferred to Phase 73).
+- 12 owner decisions pending in ROADMAP-DECISION-REGISTER.md.

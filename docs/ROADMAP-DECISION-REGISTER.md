@@ -228,7 +228,7 @@
 | **Impact if A (Unified)** | Simpler codebase. Single transfer mechanism. Easier to extend with new account types. |
 | **Impact if B (Separate)** | More code duplication. Complex transfer logic between different models. More tables to maintain. |
 | **Deadline** | Before Track B (financial modules) begins |
-| **Status** | RECOMMENDATION PENDING — awaiting owner approval |
+| **Status** | IMPLEMENTED — Phase 71. `FinancialAccount` model with `FinancialAccountType` enum (treasury/bank/electronicWallet). `lib/core/financial_accounts/financial_account.dart` |
 
 ---
 

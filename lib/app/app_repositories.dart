@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -24,6 +25,9 @@ class AppRepositories {
 
   static final LocalBusinessIdentityRepository businessIdentityRepository =
       LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
+
+  static final LocalFinancialAccountRepository financialAccountRepository =
+      LocalFinancialAccountRepository(auditLogRepository: auditLogRepository);
 
   static final LocalCustomerRepository customerRepository =
       LocalCustomerRepository(auditLogRepository: auditLogRepository);
@@ -96,6 +100,7 @@ class AppRepositories {
         supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
+        financialAccountRepository: financialAccountRepository,
       );
 
   static BackupRestoreService get backupRestoreService => BackupRestoreService(
@@ -111,6 +116,7 @@ class AppRepositories {
         supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
+        financialAccountRepository: financialAccountRepository,
       );
 
   static BusinessDataWipeService get businessDataWipeService =>
@@ -128,5 +134,6 @@ class AppRepositories {
         supplierAccountRepository: supplierAccountRepository,
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
+        financialAccountRepository: financialAccountRepository,
       );
 }

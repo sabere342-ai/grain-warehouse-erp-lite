@@ -10,6 +10,7 @@ import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_accounts_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
@@ -42,6 +43,12 @@ class _DashboardShellState extends State<DashboardShell> {
     _ShellDestination(
         'الموردون', Icons.local_shipping_rounded, SuppliersScreen()),
     _ShellDestination('العملاء', Icons.groups_2_rounded, CustomersScreen()),
+    _ShellDestination(
+      'الحسابات المالية',
+      Icons.account_balance_wallet_rounded,
+      FinancialAccountsScreen(),
+      requiresFinancialAccounts: true,
+    ),
     _ShellDestination(
       'المصروفات',
       Icons.receipt_long_rounded,
@@ -202,6 +209,7 @@ class _ShellDestination {
     this.requiresExpenses = false,
     this.requiresAuditLogs = false,
     this.requiresStockAdjustment = false,
+    this.requiresFinancialAccounts = false,
   });
 
   final String label;
@@ -212,6 +220,7 @@ class _ShellDestination {
   final bool requiresExpenses;
   final bool requiresAuditLogs;
   final bool requiresStockAdjustment;
+  final bool requiresFinancialAccounts;
 
   bool isVisibleFor(AppUser user) {
     if (requiresSettings) {
@@ -228,6 +237,9 @@ class _ShellDestination {
     }
     if (requiresStockAdjustment) {
       return user.permissions.canCreateStockAdjustment;
+    }
+    if (requiresFinancialAccounts) {
+      return user.role.name == 'owner';
     }
 
     return true;

@@ -20,6 +20,9 @@ import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.da
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -46,6 +49,7 @@ class BackupRestoreService {
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
     LocalAuditLogRepository? auditLogRepository,
+    LocalFinancialAccountRepository? financialAccountRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _productRepository = productRepository,
@@ -60,6 +64,7 @@ class BackupRestoreService {
         _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
+        _financialAccountRepository = financialAccountRepository ?? LocalFinancialAccountRepository(),
         _previewService = previewService;
 
   final LocalProductRepository _productRepository;
@@ -74,6 +79,7 @@ class BackupRestoreService {
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
   final LocalAuditLogRepository _auditLogRepository;
+  final LocalFinancialAccountRepository _financialAccountRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BackupRestoreResult> restoreToEmpty({
@@ -129,6 +135,10 @@ class BackupRestoreService {
       );
       await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
       await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
+      await _financialAccountRepository.restoreFinancialAccountsIntoEmpty(
+        accounts: restored.financialAccounts,
+        entries: restored.financialAccountEntries,
+      );
       if (_businessIdentityRepository != null) {
         await _businessIdentityRepository.saveIdentity(
           restored.businessIdentity,
@@ -173,6 +183,7 @@ class BackupRestoreService {
     final supplierPayments = await _supplierAccountRepository.listPayments();
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
+    final financialAccounts = await _financialAccountRepository.listAccounts(includeInactive: true);
 
     if (products.isNotEmpty ||
         movements.isNotEmpty ||
@@ -186,7 +197,8 @@ class BackupRestoreService {
         supplierAccountEntries.isNotEmpty ||
         supplierPayments.isNotEmpty ||
         expenses.isNotEmpty ||
-        auditLogs.isNotEmpty) {
+        auditLogs.isNotEmpty ||
+        financialAccounts.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
     }
 
@@ -207,6 +219,8 @@ class BackupRestoreService {
     final supplierPayments = _optionalList(data, 'supplierPayments').map(_parseSupplierPayment).toList();
     final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
+    final financialAccounts = _optionalList(data, 'financialAccounts').map(_parseFinancialAccount).toList();
+    final financialAccountEntries = _optionalList(data, 'financialAccountEntries').map(_parseFinancialAccountEntry).toList();
     final settings = data['settings'];
     final settingsMap = settings is Map<String, Object?>
         ? settings
@@ -243,6 +257,8 @@ class BackupRestoreService {
       supplierPayments: supplierPayments,
       expenses: expenses,
       auditLogs: auditLogs,
+      financialAccounts: financialAccounts,
+      financialAccountEntries: financialAccountEntries,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
       logoRestoreWarning: _logoRestoreWarning,
@@ -474,6 +490,46 @@ class BackupRestoreService {
       referenceId: _optionalString(map, 'referenceId'),
     );
   }
+
+  FinancialAccount _parseFinancialAccount(Object? value) {
+    final map = _map(value);
+    final openingBalanceDateStr = _optionalString(map, 'openingBalanceDate');
+    return FinancialAccount(
+      id: _string(map, 'id'),
+      name: _string(map, 'name'),
+      type: FinancialAccountType.values.byName(_string(map, 'type')),
+      isActive: _optionalBool(map, 'isActive') ?? true,
+      openingBalanceQirsh: _optionalInt(map, 'openingBalanceQirsh') ?? 0,
+      openingBalanceDate: openingBalanceDateStr != null
+          ? DateTime.parse(openingBalanceDateStr)
+          : null,
+      referenceInfo: _optionalString(map, 'referenceInfo'),
+      notes: _optionalString(map, 'notes'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      createdAt: _date(map, 'createdAt'),
+    );
+  }
+
+  FinancialAccountEntry _parseFinancialAccountEntry(Object? value) {
+    final map = _map(value);
+    return FinancialAccountEntry(
+      id: _string(map, 'id'),
+      accountId: _string(map, 'accountId'),
+      direction: FinancialAccountEntryDirection.values.byName(_string(map, 'direction')),
+      amountQirsh: _int(map, 'amountQirsh'),
+      sourceType: FinancialAccountEntrySource.values.byName(_string(map, 'sourceType')),
+      sourceDocumentId: _string(map, 'sourceDocumentId'),
+      sourceDocumentNumber: _optionalString(map, 'sourceDocumentNumber'),
+      effectiveDate: _date(map, 'effectiveDate'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      reference: _optionalString(map, 'reference'),
+      note: _optionalString(map, 'note'),
+      reversalOf: _optionalString(map, 'reversalOf'),
+      correctionGroup: _optionalString(map, 'correctionGroup'),
+    );
+  }
+
   CancellationMetadata? _parseCancellation(Object? value) {
     if (value == null) {
       return null;
@@ -805,6 +861,8 @@ class _RestoredBackupData {
     required this.supplierPayments,
     required this.expenses,
     required this.auditLogs,
+    required this.financialAccounts,
+    required this.financialAccountEntries,
     required this.businessIdentity,
     required this.documentHistoryCount,
     this.logoRestoreWarning,
@@ -822,6 +880,8 @@ class _RestoredBackupData {
   final List<SupplierPaymentRecord> supplierPayments;
   final List<ExpenseRecord> expenses;
   final List<AuditLogEntry> auditLogs;
+  final List<FinancialAccount> financialAccounts;
+  final List<FinancialAccountEntry> financialAccountEntries;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
   final String? logoRestoreWarning;

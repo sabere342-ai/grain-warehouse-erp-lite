@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -29,6 +30,7 @@ class BusinessDataWipeService {
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
     LocalAuditLogRepository? auditLogRepository,
+    LocalFinancialAccountRepository? financialAccountRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _backupExportService = backupExportService,
@@ -44,6 +46,7 @@ class BusinessDataWipeService {
         _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
+        _financialAccountRepository = financialAccountRepository ?? LocalFinancialAccountRepository(),
         _previewService = previewService;
 
   static const confirmationPhrase =
@@ -62,6 +65,7 @@ class BusinessDataWipeService {
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
   final LocalAuditLogRepository _auditLogRepository;
+  final LocalFinancialAccountRepository _financialAccountRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BusinessDataWipeResult> wipeBusinessData({
@@ -112,6 +116,7 @@ class BusinessDataWipeService {
       await _inventoryRepository.clearForOwnerDataWipe();
       await _supplierRepository.clearForOwnerDataWipe();
       await _productRepository.clearForOwnerDataWipe();
+      await _financialAccountRepository.clearForOwnerDataWipe();
 
       return BusinessDataWipeResult.success(
         backupSaveResult: saveResult,
