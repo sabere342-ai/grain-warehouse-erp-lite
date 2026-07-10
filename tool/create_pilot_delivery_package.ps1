@@ -13,12 +13,12 @@ if (-not (Test-Path -LiteralPath $exePath)) {
 
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
-  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase54_final_delivery_$stamp"
+  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase60_final_production_candidate_$stamp"
 }
 
 $outputPath = Join-Path $projectRoot $OutputRoot
 if (Test-Path -LiteralPath $outputPath) {
-  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase54_final_delivery_$stamp"
+  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase60_final_production_candidate_$stamp"
 }
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -42,7 +42,9 @@ $docs = @(
   "docs\PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md",
   "docs\PHASE-37A-ACCOUNTING-CONTINUITY-OPENING-BALANCES.md",
   "docs\PHASE-37B-CUSTOMER-OPENING-BALANCE.md",
-  "docs\PHASE-37C-REPORTS-TRUTHFULNESS-DAILY-CASH.md"
+  "docs\PHASE-37C-REPORTS-TRUTHFULNESS-DAILY-CASH.md",
+  "docs\PHASE-59-SALE-CANCELLATION-CUSTOMER-LEDGER-SYMMETRY.md",
+  "docs\PHASE-60-FINAL-PRODUCTION-CANDIDATE-PACKAGING.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force
@@ -73,11 +75,12 @@ $readme = @"
 - رصيد المورد يعتمد على قيود حساب المورد.
 - التقارير للقراءة والمراجعة ولا تعدل البيانات الأصلية.
 - الجرد وتسويات المخزون لا تغير أرصدة العملاء أو الموردين.
-- الإلغاءات المدعومة تستخدم منطق عكسي للحفاظ على أثر المراجعة.
+- إلغاء البيع يعكس أثر رصيد العميل تلقائيا ولا يحذف الحركة القديمة.
 
 الوظائف المتوفرة حاليا:
 - بيع نقدي.
 - بيع آجل على عميل.
+- إلغاء بيع مع أثر عكسي على رصيد العميل.
 - تحصيل من العملاء وتحديث الرصيد.
 - كشف حساب العميل.
 - شراء من موردين مربوط بالمورد.

@@ -673,4 +673,44 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - Backup restore writes without a transaction (acknowledged).
 
 ### Next Recommended Phase
+- Phase 60 — Final Production Candidate Packaging & Owner Acceptance Freeze.
+
+## Phase 60 — Final Production Candidate Packaging & Owner Acceptance Freeze
+
+### Summary
+- Final production-candidate packaging after the Phase 59 accounting fix and Phase 59A documentation closure.
+- Delivery package created with Phase 60 naming.
+- Source-safety scan: PASS — no source files in the package.
+- Owner acceptance checklist frozen with Phase 59 cancellation behavior included.
+- No new features introduced.
+
+### Production Code Changed
+- No (documentation + packaging only; delivery script updated cosmetically)
+
+### Schema Changed
+- No
+
+### Tests Changed
+- No (tests remain 527/527)
+
+### Delivery Package Path
+- `delivery/grain_warehouse_erp_lite_phase60_final_production_candidate_<timestamp>/`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 527/527 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean (expected CRLF warnings only).
+- `git status --short`: clean after commit.
+- Delivery package source-safety scan: PASS.
+
+### Remaining Limitations
+- Single-device local Windows only.
+- Cloud sync not implemented.
+- Multi-device live sync not implemented.
+- Backup restore writes without a transaction (acknowledged).
+- No mobile app.
+- No online mode.
+
+### Next Recommended Phase
 - (TBD — depends on owner feedback or business priorities.)
