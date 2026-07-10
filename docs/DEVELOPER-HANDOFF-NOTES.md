@@ -959,3 +959,64 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 ### Remaining Limitations
 - Invoice logo upload is not implemented.
 - Windows app icon remains build-time controlled by `windows/runner/resources/app_icon.ico`; no runtime icon change is promised.
+
+## Phase 70 - Master Roadmap Recovery & Financial/Cloud Gap Audit
+
+### Summary
+- Phase 70 is a documentation and architecture audit phase only.
+- No production code, schema, accounting logic, or invoice totals changed.
+- Recovered the full master product roadmap from project history and codebase analysis.
+- Identified all financial accounts gaps (treasury, bank, wallet, ledger, account selection, payment methods, transfers, daily closing, financial reports).
+- Identified all cloud/sync/mobile/multi-device gaps (backend, API, identity, offline queue, conflicts, security, mobile options).
+- Created unified requirements traceability matrix (80 requirements, 53 implemented, 27 not implemented).
+- Created decision register (13 confirmed, 5 recommended, 12 owner decisions pending).
+- Created risk register (21 risks documented).
+- Confirmed that Cloud, Mobile, Multi-device, Treasury/Bank/Wallets are all within the product roadmap.
+- Confirmed Phase 66 was never executed and no Phase 66 tag exists.
+- Confirmed Phase 69 finished the local Windows branded delivery but did NOT finish the complete roadmap.
+
+### Production Code Changed
+- No.
+
+### Schema Changed
+- No.
+
+### Accounting Logic Changed
+- No.
+
+### Invoice Totals Changed
+- No.
+
+### Files Created
+1. `docs/PHASE-70-MASTER-ROADMAP-RECOVERY-FINANCIAL-CLOUD-GAP-AUDIT.md`
+2. `docs/MASTER-PRODUCT-ROADMAP.md`
+3. `docs/FINANCIAL-ACCOUNTS-GAP-AUDIT.md`
+4. `docs/CLOUD-SYNC-MULTI-DEVICE-MOBILE-GAP-AUDIT.md`
+5. `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md`
+6. `docs/ROADMAP-DECISION-REGISTER.md`
+7. `docs/ROADMAP-RISK-REGISTER.md`
+
+### Files Updated
+1. `docs/DEVELOPER-HANDOFF-NOTES.md` (this file)
+2. `docs/PILOT-RELEASE-NOTES-AR.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 586/586 passing.
+- `flutter build windows --release`: succeeded.
+- `git diff --check`: clean.
+
+### Remaining Limitations
+- No financial account model (treasury/bank/wallet) exists.
+- No financial ledger exists.
+- No payment method tracking exists.
+- No internal transfer capability exists.
+- No daily cash closing exists.
+- No financial account reports exist.
+- No cloud sync, backend server, or API exists.
+- No multi-device support exists.
+- No mobile app exists.
+- Phase 66 owner trial was never executed.
+
+### Next Recommended Phase
+- Phase 71: Financial Accounts Foundation (Track A) — create unified financial account model, opening balances, financial ledger, repositories, controllers, permissions, backup compatibility, and tests.
