@@ -795,3 +795,49 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - (TBD — depends on owner feedback from the production-candidate trial.)
+
+## Phase 63 — Controlled Owner Trial Day-1 Script & Acceptance Evidence Pack
+
+### Summary
+- Prepared a structured Day-1 controlled owner trial script (`docs/OWNER-TRIAL-DAY-1-SCRIPT-AR.md`).
+- Created an acceptance evidence pack (`docs/OWNER-ACCEPTANCE-EVIDENCE-PACK-AR.md`) with screenshot guidelines, folder structure, naming convention, and review table.
+- The trial script covers 20 steps (login through final owner review) with PASS/FAIL/NEEDS REVIEW criteria, stop conditions, and end-of-day owner sign-off.
+- The evidence pack defines 17 required evidence items across all major workflows.
+- The script connects to the Phase 60 delivery package, Phase 61 incident log, and Phase 62 data-wipe safety guide.
+- The trial has not been executed — this phase only prepares the script and evidence collection tools.
+
+### Production Code Changed
+- No (documentation only)
+
+### Schema Changed
+- No
+
+### Tests Changed
+- No (tests remain 527/527)
+
+### New Documentation
+- `docs/OWNER-TRIAL-DAY-1-SCRIPT-AR.md`
+- `docs/OWNER-ACCEPTANCE-EVIDENCE-PACK-AR.md`
+- `docs/PHASE-63-CONTROLLED-OWNER-TRIAL-DAY-1-SCRIPT.md`
+
+### Updated Documentation
+- `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md`
+- `docs/PILOT-RELEASE-NOTES-AR.md`
+- `docs/OWNER-QUICK-START-AR.md`
+- `docs/OWNER-TRIAL-INCIDENT-LOG-AR.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 527/527 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean (expected CRLF warnings only).
+- `git status --short`: clean after commit.
+
+### Remaining Limitations
+- Trial script and evidence pack prepared but trial not yet executed.
+- Day-1 script assumes the Phase 60 production-candidate package.
+- Single-device local Windows only.
+- Cloud sync not implemented.
+
+### Next Recommended Phase
+- Phase 64 — Depends on owner feedback from the production-candidate trial. Potential directions: owner trial feedback review, bug fixes, continued trial scripts, or persistent database engine with transaction-safe backup/restore.
