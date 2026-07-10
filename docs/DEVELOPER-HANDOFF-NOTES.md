@@ -523,3 +523,30 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 
 ### Next Recommended Phase
 - Phase 56 - Owner Pilot Observation and Issue Triage.
+
+## Phase 56 - Owner Pilot Observation and Issue Triage
+
+### Summary
+- Added a documentation-only pilot observation and issue triage system.
+- The project is now ready to receive owner/client pilot feedback in a structured way.
+- Created an empty triage log, severity guide, and decision rules for classifying pilot observations.
+- No production code changed.
+- No schema changed.
+- No tests changed.
+- No delivery package changed.
+- No accounting, inventory, sales, purchase, reports, or backup behavior changed.
+
+### New Documentation
+- `docs/PHASE-56-OWNER-PILOT-OBSERVATION.md`
+- `docs/PILOT-ISSUE-TRIAGE-LOG.md`
+- `docs/PILOT-ISSUE-SEVERITY-GUIDE.md`
+- `docs/PILOT-DECISION-RULES.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 518/518 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean.
+
+### Next Recommended Phase
+- Phase 57 - Review Actual Pilot Feedback and Decide Fix/Training/Backlog Actions.
