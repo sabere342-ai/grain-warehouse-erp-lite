@@ -1,5 +1,5 @@
 ﻿param(
-  [string]$OutputRoot = "delivery\grain_warehouse_erp_lite_pilot"
+  [string]$OutputRoot = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,10 +11,14 @@ if (-not (Test-Path -LiteralPath $exePath)) {
   throw "Windows release executable was not found. Run: flutter.bat build windows --release"
 }
 
+$stamp = Get-Date -Format "yyyyMMdd-HHmmss"
+if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
+  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase54_final_delivery_$stamp"
+}
+
 $outputPath = Join-Path $projectRoot $OutputRoot
 if (Test-Path -LiteralPath $outputPath) {
-  $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_pilot_$stamp"
+  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase54_final_delivery_$stamp"
 }
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -63,6 +67,14 @@ $readme = @"
 اعمل نسخة احتياطية بانتظام، خصوصا بعد إدخال بيانات مهمة أو قبل أي تجربة استرجاع.
 الاسترجاع يتم فقط إلى نظام فارغ بعد فحص النسخة من شاشة المعاينة.
 
+تنبيه المحاسبة والمخزون:
+- رصيد المخزون يعتمد على حركات المخزون المسجلة.
+- رصيد العميل يعتمد على قيود حساب العميل.
+- رصيد المورد يعتمد على قيود حساب المورد.
+- التقارير للقراءة والمراجعة ولا تعدل البيانات الأصلية.
+- الجرد وتسويات المخزون لا تغير أرصدة العملاء أو الموردين.
+- الإلغاءات المدعومة تستخدم منطق عكسي للحفاظ على أثر المراجعة.
+
 الوظائف المتوفرة حاليا:
 - بيع نقدي.
 - بيع آجل على عميل.
@@ -83,6 +95,10 @@ $readme = @"
 ما زال غير متوفر حاليا:
 - الدفعات المقدمة أو الرصيد السالب غير مدعوم - الرصيد لا يقل عن صفر.
 - لا توجد مزامنة سحابية في هذه النسخة.
+- لا يوجد تطبيق موبايل في هذه النسخة.
+- لا توجد مزامنة حية بين أكثر من جهاز في هذه النسخة.
+- لا تستخدم نفس البيانات على أكثر من جهاز كأنها مزامنة مباشرة.
+- جاهزية الانتقال السحابي موثقة للمستقبل فقط، ولم يتم تفعيل السحابة.
 
 طريقة إبلاغ المطور بأي مشكلة:
 - اكتب وصف المشكلة ببساطة.
