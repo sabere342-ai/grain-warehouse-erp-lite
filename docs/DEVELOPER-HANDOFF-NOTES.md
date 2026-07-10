@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 411, all passing
+- Tests: currently 542, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -840,4 +840,46 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - Cloud sync not implemented.
 
 ### Next Recommended Phase
-- Phase 64 — Depends on owner feedback from the production-candidate trial. Potential directions: owner trial feedback review, bug fixes, continued trial scripts, or persistent database engine with transaction-safe backup/restore.
+- Phase 64 — Owner Dashboard Alerts (implemented below)
+
+## Phase 64 — Owner Dashboard Alerts & Read-Only Risk Signals
+
+### Summary
+- Added a read-only owner-facing dashboard alerts section (`OwnerAlertsSection`) on the dashboard screen below the metrics grid.
+- Alerts include: customer balance alerts (receivables > 0), supplier payable alerts (payables > 0), low-stock alerts (> 0 && <= 5 kg), a static backup reminder, and a static trial/incident reminder.
+- All alerts are derived from existing repositories — no mutation, no new schema, no new accounting logic.
+- Data model `OwnerAlertData` supports optional repository injection for testability.
+
+### Production Code Changed
+- Created `lib/features/dashboard/dashboard_alerts_section.dart` (new widget + data class)
+- Modified `lib/features/dashboard/dashboard_screen.dart` (added `OwnerAlertsSection` after grid)
+
+### Schema Changed
+- No
+
+### Tests Changed
+- Created `test/phase64_owner_dashboard_alerts_test.dart` (15 new tests)
+
+### New Documentation
+- `docs/PHASE-64-OWNER-DASHBOARD-ALERTS.md`
+
+### Updated Documentation
+- `docs/DEVELOPER-HANDOFF-NOTES.md` (this file)
+- `docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md`
+- `docs/PILOT-RELEASE-NOTES-AR.md`
+- `docs/OWNER-QUICK-START-AR.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 542/542 passing (527 pre-existing + 15 new).
+- `flutter build windows --release`: (pending).
+- `git diff --check`: clean (expected CRLF warnings only).
+
+### Remaining Limitations
+- Low-stock threshold is hardcoded at 5 kg — no formal reorder-point field in Product model.
+- Backup and trial reminders are static text — no tracked backup metadata in codebase.
+- Single-device local Windows only.
+- Cloud sync not implemented.
+
+### Next Recommended Phase
+- (TBD — depends on owner feedback from the production-candidate trial.)

@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -164,6 +165,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
             ],
+            const SizedBox(height: 16),
+            const OwnerAlertsSection(),
             const SizedBox(height: 16),
             const PremiumCard(
               child: Text(
