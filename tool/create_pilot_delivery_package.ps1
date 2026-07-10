@@ -13,12 +13,12 @@ if (-not (Test-Path -LiteralPath $exePath)) {
 
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
-  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase65_pilot_delivery_$stamp"
+  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase69_branded_delivery_$stamp"
 }
 
 $outputPath = Join-Path $projectRoot $OutputRoot
 if (Test-Path -LiteralPath $outputPath) {
-  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase65_pilot_delivery_$stamp"
+  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase69_branded_delivery_$stamp"
 }
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -46,14 +46,18 @@ $docs = @(
   "docs\PHASE-59-SALE-CANCELLATION-CUSTOMER-LEDGER-SYMMETRY.md",
   "docs\PHASE-60-FINAL-PRODUCTION-CANDIDATE-PACKAGING.md",
   "docs\PHASE-64-OWNER-DASHBOARD-ALERTS.md",
-  "docs\PHASE-65-PILOT-DELIVERY-REFRESH-AFTER-OWNER-DASHBOARD-ALERTS.md"
+  "docs\PHASE-65-PILOT-DELIVERY-REFRESH-AFTER-OWNER-DASHBOARD-ALERTS.md",
+  "docs\PHASE-67-NAVIGATION-THEME-BRANDING.md",
+  "docs\PHASE-68-BUSINESS-LOGO-INVOICE-WINDOWS-ICON-BRANDING.md",
+  "docs\PHASE-68A-WINDOWS-ICON-TOOL-VERIFICATION-FIXES.md",
+  "docs\PHASE-69-FINAL-BRANDED-DELIVERY-PACKAGE-REFRESH.md"
 )
 foreach ($doc in $docs) {
   Copy-Item -LiteralPath (Join-Path $projectRoot $doc) -Destination $docsOutput -Force
 }
 
 $readme = @"
-برنامج إدارة مخزن الحبوب - نسخة تجريبية محلية
+برنامج إدارة مخزن الحبوب - نسخة ماركة مسجلة
 
 الهدف من النسخة:
 هذه نسخة مخصصة للتجربة العملية على جهاز ويندوز واحد. الهدف هو اختبار البيع والشراء والمخزون والتقارير والنسخ الاحتياطي قبل اعتماد أي تطوير إضافي.
@@ -67,9 +71,17 @@ $readme = @"
 إذا كانت هذه أول مرة تستخدم البرنامج، أنشئ حساب المالك من الشاشة الأولى.
 إذا كان الحساب موجودا بالفعل، سجل الدخول بالبيانات المتفق عليها.
 
-تنبيه مهم:
-اعمل نسخة احتياطية بانتظام، خصوصا بعد إدخال بيانات مهمة أو قبل أي تجربة استرجاع.
-الاسترجاع يتم فقط إلى نظام فارغ بعد فحص النسخة من شاشة المعاينة.
+اسم المنشأة والشعار:
+- يمكنك إعداد اسم المنشأة وشعارها من شاشة الإعدادات.
+- الشعار يظهر في أعلى الشاشة الرئيسية وفي الفواتير المطبوعة.
+- يُقبل شعار بصيغة PNG أو JPEG فقط.
+- يمكنك إزالة الشعار في أي وقت من شاشة الإعدادات.
+
+نسخ احتياطي واسترجاع:
+- اعمل نسخة احتياطية في نهاية كل يوم، واحفظها في مكان واضح. يفضل نسخها على فلاشة أو مكان خارجي.
+- النسخ الاحتياطي من الإصدار الثالث يحتوي على بيانات المنشأة والشعار بشكل اختياري.
+- يمكنك استرجاع نسخ احتياطية من الإصدارات القديمة (1 و 2 و 3).
+- الاسترجاع يتم فقط إلى نظام فارغ بعد فحص النسخة من شاشة المعاينة.
 
 تنبيه المحاسبة والمخزون:
 - رصيد المخزون يعتمد على حركات المخزون المسجلة.
@@ -96,6 +108,7 @@ $readme = @"
 - التقارير توضح الفرق بين صافي حركة المستندات ورصيد النقدية، وتفصل بين أرصدة العملاء والموردين.
 - إدارة المخزون.
 - نسخ احتياطي واسترجاع (متوافق مع النسخ القديمة).
+- إعداد اسم المنشأة وشعارها (PNG/JPEG).
 
 ما زال غير متوفر حاليا:
 - الدفعات المقدمة أو الرصيد السالب غير مدعوم - الرصيد لا يقل عن صفر.

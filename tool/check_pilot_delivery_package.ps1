@@ -13,7 +13,7 @@ if ([string]::IsNullOrWhiteSpace($PackagePath)) {
   }
 
   $latest = Get-ChildItem -LiteralPath $deliveryRoot -Directory |
-    Where-Object { $_.Name -like "grain_warehouse_erp_lite_pilot*" } |
+    Where-Object { $_.Name -like "grain_warehouse_erp_lite_phase69*" } |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 1
 
