@@ -713,4 +713,37 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - No online mode.
 
 ### Next Recommended Phase
-- (TBD — depends on owner feedback or business priorities.)
+- Phase 61 — Owner Trial Incident Log & Backup-Restore Transaction Safety Plan.
+
+## Phase 61 — Owner Trial Incident Log & Backup-Restore Transaction Safety Plan
+
+### Summary
+- Created owner trial incident log (`docs/OWNER-TRIAL-INCIDENT-LOG-AR.md`) for structured issue tracking during the production-candidate trial.
+- Created backup/restore transaction safety plan (`docs/PHASE-61-BACKUP-RESTORE-TRANSACTION-SAFETY-PLAN.md`) based on actual code inspection.
+- Documented current restore behavior, risks, and future algorithm for atomic restore.
+- Transaction-safe restore is **not implemented** — planned for when a persistent on-disk database engine is introduced.
+
+### Production Code Changed
+- No (documentation + audit only)
+
+### Schema Changed
+- No
+
+### Tests Changed
+- No (tests remain 527/527)
+
+### Verification Summary
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test`: 527/527 passing.
+- `flutter build windows --release`: succeeded with usual CMake/MSVCRT warnings only.
+- `git diff --check`: clean (expected CRLF warnings only).
+- `git status --short`: clean after commit.
+
+### Remaining Limitations
+- Restore is still not transaction-safe (documented — planned for future phase).
+- Data wipe has the same sequential non-transactional pattern.
+- Single-device local Windows only.
+- Cloud sync not implemented.
+
+### Next Recommended Phase
+- (TBD — depends on owner feedback from the production-candidate trial.)
