@@ -1,4 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
@@ -34,11 +36,14 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
   LocalSupplierAccountRepository({
     required SupplierRepository supplierRepository,
     AuditLogRepository? auditLogRepository,
+    FinancialAccountRepository? financialAccountRepository,
   })  : _supplierRepository = supplierRepository,
-        _auditLogRepository = auditLogRepository;
+        _auditLogRepository = auditLogRepository,
+        _financialAccountRepository = financialAccountRepository;
 
   final SupplierRepository _supplierRepository;
   final AuditLogRepository? _auditLogRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final List<SupplierAccountEntry> _entries = [];
   final List<SupplierPaymentRecord> _payments = [];
   int _generatedEntryIdCounter = 0;
@@ -176,6 +181,8 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
       createdByUserId: draft.createdByUserId.trim(),
       createdByUserName: _normalizedOptionalText(draft.createdByUserName),
       notes: _normalizedOptionalText(draft.notes),
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
     );
     _validatePayment(payment);
 
@@ -203,6 +210,25 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
           'تم تسجيل دفع للمورد ${supplier.name}.',
       referenceId: payment.id,
     );
+
+    final faRepo = _financialAccountRepository;
+    if (faRepo != null &&
+        payment.financialAccountId != null &&
+        payment.financialAccountId!.isNotEmpty) {
+      await faRepo.createEntry(
+        accountId: payment.financialAccountId!,
+        direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: payment.amountQirsh,
+        sourceType: FinancialAccountEntrySource.supplierSettlement,
+        sourceDocumentId: payment.id,
+        effectiveDate: payment.date,
+        createdByUserId: payment.createdByUserId,
+        reference: 'تسوية مع المورد ${supplier.name}',
+        note: 'دفع للمورد ${payment.amountQirsh} قيرش',
+        paymentMethod: payment.paymentMethod,
+      );
+    }
+
     return payment;
   }
 

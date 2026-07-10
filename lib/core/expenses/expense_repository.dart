@@ -1,5 +1,7 @@
 ﻿import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 
 abstract class ExpenseRepository {
   Future<List<ExpenseRecord>> listExpenses();
@@ -11,10 +13,14 @@ abstract class ExpenseRepository {
 }
 
 class LocalExpenseRepository implements ExpenseRepository {
-  LocalExpenseRepository({AuditLogRepository? auditLogRepository})
-      : _auditLogRepository = auditLogRepository;
+  LocalExpenseRepository({
+    AuditLogRepository? auditLogRepository,
+    FinancialAccountRepository? financialAccountRepository,
+  })  : _auditLogRepository = auditLogRepository,
+        _financialAccountRepository = financialAccountRepository;
 
   final AuditLogRepository? _auditLogRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final List<ExpenseRecord> _expenses = [];
   int _generatedIdCounter = 0;
 
@@ -42,6 +48,8 @@ class LocalExpenseRepository implements ExpenseRepository {
       amountQirsh: draft.amountQirsh,
       notes: _normalizedOptionalText(draft.notes),
       createdAt: now,
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
     );
     if (!expense.hasValidId) {
       throw StateError('Expense id is required.');
@@ -54,6 +62,25 @@ class LocalExpenseRepository implements ExpenseRepository {
         referenceId: expense.id,
       ),
     );
+
+    final faRepo = _financialAccountRepository;
+    if (faRepo != null &&
+        expense.financialAccountId != null &&
+        expense.financialAccountId!.isNotEmpty) {
+      await faRepo.createEntry(
+        accountId: expense.financialAccountId!,
+        direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: expense.amountQirsh,
+        sourceType: FinancialAccountEntrySource.expense,
+        sourceDocumentId: expense.id,
+        effectiveDate: expense.date,
+        createdByUserId: 'system',
+        reference: 'مصروف: ${expense.category}',
+        note: 'مصروف ${expense.amountQirsh} قيرش - ${expense.category}',
+        paymentMethod: expense.paymentMethod,
+      );
+    }
+
     return expense;
   }
 

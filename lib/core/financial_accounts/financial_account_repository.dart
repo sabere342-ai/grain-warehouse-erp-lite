@@ -25,6 +25,21 @@ abstract class FinancialAccountRepository {
   });
   Future<void> correctOpeningBalance(OpeningBalanceCorrectionDraft draft);
   Future<bool> accountHasEntries(String accountId);
+  Future<FinancialAccountEntry> createEntry({
+    required String accountId,
+    required FinancialAccountEntryDirection direction,
+    required int amountQirsh,
+    required FinancialAccountEntrySource sourceType,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    String? sourceDocumentNumber,
+    String? reference,
+    String? note,
+    String? reversalOf,
+    String? correctionGroup,
+    PaymentMethod? paymentMethod,
+  });
 }
 
 class LocalFinancialAccountRepository implements FinancialAccountRepository {
@@ -387,6 +402,63 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
   Future<bool> accountHasEntries(String accountId) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     return _entries.any((e) => e.accountId == id);
+  }
+
+  @override
+  Future<FinancialAccountEntry> createEntry({
+    required String accountId,
+    required FinancialAccountEntryDirection direction,
+    required int amountQirsh,
+    required FinancialAccountEntrySource sourceType,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    String? sourceDocumentNumber,
+    String? reference,
+    String? note,
+    String? reversalOf,
+    String? correctionGroup,
+    PaymentMethod? paymentMethod,
+  }) async {
+    final id = _normalizedRequiredId(accountId, 'accountId');
+    final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
+    await accountById(id);
+
+    if (amountQirsh <= 0) {
+      throw ArgumentError.value(
+        amountQirsh,
+        'amountQirsh',
+        'Entry amount must be positive.',
+      );
+    }
+
+    final now = DateTime.now();
+    final entry = FinancialAccountEntry(
+      id: _generateEntryId(now),
+      accountId: id,
+      direction: direction,
+      amountQirsh: amountQirsh,
+      sourceType: sourceType,
+      sourceDocumentId: sourceDocumentId,
+      sourceDocumentNumber: sourceDocumentNumber,
+      effectiveDate: effectiveDate,
+      createdAt: now,
+      createdByUserId: userId,
+      reference: reference,
+      note: note,
+      reversalOf: reversalOf,
+      correctionGroup: correctionGroup,
+      paymentMethod: paymentMethod,
+    );
+    _entries.add(entry);
+
+    await _recordAudit(
+      actionType: 'financial_account.entry.created',
+      descriptionAr:
+          'تم تسجيل حركة مالية ${direction.labelAr} بقيمة $amountQirsh قيرش.',
+      referenceId: entry.id,
+    );
+    return entry;
   }
 
   Future<void> restoreFinancialAccountsIntoEmpty({

@@ -415,14 +415,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
-| **Source evidence** | Future requirement — selecting which account receives/payments. |
-| **Implementation evidence** | None. |
-| **Test evidence** | None |
-| **Missing behavior** | UI and logic for account selection in sale/purchase/payment transactions. |
+| **Status** | IMPLEMENTED |
+| **Source evidence** | Transactions now accept optional `financialAccountId` to link to a unified financial account. |
+| **Implementation evidence** | `lib/core/sales/sale_record.dart:64` — `SaleRecord` has `financialAccountId` field. `lib/core/sales/sale_controller.dart:82–158` — `SaleController.createSale` creates FA `salePayment` entry when `financialAccountId` provided; `cancelSale` creates `cancellationReversal` entry. `lib/core/purchases/purchase_intake.dart:39–42` — `PurchaseIntake` has `financialAccountId`. `lib/core/purchases/purchase_repository.dart:96–118` — `LocalPurchaseRepository.createPurchaseIntake` creates FA `purchasePayment` entry. `lib/core/customer_accounts/customer_collection.dart:13–14` — `CustomerCollectionRecord` has `financialAccountId`. `lib/core/customer_accounts/customer_account_repository.dart:271–287` — `createCollection` creates FA `customerCollection` entry. `lib/core/supplier_accounts/supplier_payment.dart:13–14` — `SupplierPaymentRecord` has `financialAccountId`. `lib/core/supplier_accounts/supplier_account_repository.dart:214–230` — `createPayment` creates FA `supplierSettlement` entry. `lib/core/expenses/expense.dart:12–13` — `ExpenseRecord` has `financialAccountId`. `lib/core/expenses/expense_repository.dart:66–82` — `createExpense` creates FA `expense` entry. |
+| **Test evidence** | `test/phase72_transaction_integration_test.dart` — 43 tests covering: cash/partial/credit sales → FA entry creation, paid/partial/credit purchases → FA entry creation, customer collections → FA entry, supplier payments → FA entry, expenses → FA entry, cancellation reversals, balance consistency, direction consistency, no-FA-entry when `financialAccountId` null. |
+| **Missing behavior** | UI for account selection in sale/purchase/payment screens (deferred to separate UI phase). |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 72 |
+| **Acceptance evidence** | All transaction types correctly create/omit FA entries based on `financialAccountId` presence; balance consistency verified. |
 
 ---
 
@@ -430,14 +430,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
-| **Source evidence** | Future requirement — tracking cash vs. bank transfer vs. check. |
-| **Implementation evidence** | None. `SalePaymentMode` tracks credit/cash/partial but not the payment instrument. |
-| **Test evidence** | None |
-| **Missing behavior** | Payment method enum/model beyond credit/cash/partial. |
+| **Status** | IMPLEMENTED |
+| **Source evidence** | Payment method tracked alongside financial account selection. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_account_entry.dart:52–70` — `PaymentMethod` enum with `cash`, `bankTransfer`, `mobileWallet`, `check` values and Arabic labels. `lib/core/financial_accounts/financial_account_entry.dart:88` — `FinancialAccountEntry.paymentMethod` field. `lib/core/sales/sale_record.dart:84` — `SaleRecord.paymentMethod`. `lib/core/purchases/purchase_intake.dart:61` — `PurchaseIntake.paymentMethod`. `lib/core/customer_accounts/customer_collection.dart:26` — `CustomerCollectionRecord.paymentMethod`. `lib/core/supplier_accounts/supplier_payment.dart:26` — `SupplierPaymentRecord.paymentMethod`. `lib/core/expenses/expense.dart:22` — `ExpenseRecord.paymentMethod`. All repos forward `paymentMethod` to FA entries. |
+| **Test evidence** | `test/phase72_transaction_integration_test.dart` — Tests verify `PaymentMethod` enum labels, `paymentMethod` stored on FA entries, `paymentMethod` stored on all transaction records, `paymentMethod` forwarded through `copyWith`. |
+| **Missing behavior** | UI for payment method selection in transaction screens (deferred to separate UI phase). |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 72 |
+| **Acceptance evidence** | `PaymentMethod` enum functional; all transaction models and FA entries carry payment method; Arabic labels correct. |
 
 ---
 
@@ -1440,14 +1440,14 @@
 
 | Status | Count | IDs |
 |---|---|---|
-| **IMPLEMENTED** | 55 | OPS-001–018, ACC-001–008, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
-| **NOT IMPLEMENTED** | 25 | ACC-009–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
+| **IMPLEMENTED** | 57 | OPS-001–018, ACC-001–010, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
+| **NOT IMPLEMENTED** | 23 | ACC-011–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
 
 ### Not Implemented Requirements by Blocker
 
 | Blocker | Requirements |
 |---|---|
-| No account selection in transactions (ACC-009) | ACC-009, ACC-010, ACC-011, ACC-012, ACC-013, CAN-007, RPT-003, RPT-004, RPT-007, RPT-008 |
+| No internal transfers (ACC-011) | ACC-011, ACC-012, ACC-013, CAN-007, RPT-003, RPT-004, RPT-007, RPT-008 |
 | No backend/cloud (CLD-002) | CLD-001–008, MOB-001–004 |
 | No in-memory transactions | BKP-008, BKP-009 |
 | Future scope only | CAN-005, CAN-006, INV-005, RPT-005, RPT-006 |

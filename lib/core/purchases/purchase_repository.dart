@@ -1,6 +1,8 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -26,15 +28,18 @@ class LocalPurchaseRepository implements PurchaseRepository {
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
     SupplierAccountRepository? supplierAccountRepository,
+    FinancialAccountRepository? financialAccountRepository,
   })  : _supplierRepository = supplierRepository,
         _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
-        _supplierAccountRepository = supplierAccountRepository;
+        _supplierAccountRepository = supplierAccountRepository,
+        _financialAccountRepository = financialAccountRepository;
 
   final SupplierRepository _supplierRepository;
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final List<PurchaseIntake> _intakes = [];
   int _generatedIdCounter = 0;
 
@@ -62,6 +67,10 @@ class LocalPurchaseRepository implements PurchaseRepository {
       createdAt: now,
       stockMovementId: 'pending',
       notes: _normalizedOptionalText(draft.notes),
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
+      paymentMode: draft.paymentMode,
+      paidAmountQirsh: draft.paidAmountQirsh,
     );
 
     if (!intake.hasValidId) {
@@ -83,6 +92,31 @@ class LocalPurchaseRepository implements PurchaseRepository {
     _intakes.add(postedIntake);
     await _supplierAccountRepository
         ?.createPurchaseEntry(purchase: postedIntake);
+
+    final faRepo = _financialAccountRepository;
+    if (faRepo != null &&
+        postedIntake.financialAccountId != null &&
+        postedIntake.financialAccountId!.isNotEmpty &&
+        postedIntake.paymentMode != PurchasePaymentMode.credit) {
+      final paidAmount = postedIntake.effectivePaidAmountQirsh;
+      if (paidAmount > 0) {
+        await faRepo.createEntry(
+          accountId: postedIntake.financialAccountId!,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: paidAmount,
+          sourceType: FinancialAccountEntrySource.purchasePayment,
+          sourceDocumentId: postedIntake.id,
+          effectiveDate: postedIntake.createdAt,
+          createdByUserId: postedIntake.createdByUserId,
+          reference: 'دفعة مشتريات - استلام ${postedIntake.id}',
+          note: postedIntake.paymentMode == PurchasePaymentMode.partial
+              ? 'دفع جزئي'
+              : 'دفعة كاملة',
+          paymentMethod: postedIntake.paymentMethod,
+        );
+      }
+    }
+
     return postedIntake;
   }
 
@@ -146,6 +180,30 @@ class LocalPurchaseRepository implements PurchaseRepository {
       cancelledByUserId: userId,
       cancellationReason: reason,
     );
+
+    final faRepo = _financialAccountRepository;
+    if (faRepo != null &&
+        cancelled.financialAccountId != null &&
+        cancelled.financialAccountId!.isNotEmpty &&
+        cancelled.paymentMode != PurchasePaymentMode.credit) {
+      final paidAmount = cancelled.effectivePaidAmountQirsh;
+      if (paidAmount > 0) {
+        await faRepo.createEntry(
+          accountId: cancelled.financialAccountId!,
+          direction: FinancialAccountEntryDirection.inflow,
+          amountQirsh: paidAmount,
+          sourceType: FinancialAccountEntrySource.cancellationReversal,
+          sourceDocumentId: cancelled.id,
+          effectiveDate: DateTime.now(),
+          createdByUserId: userId,
+          reversalOf: cancelled.id,
+          reference: 'عكس إلغاء استلام شراء ${cancelled.id}',
+          note: 'إلغاء استلام شراء: $reason',
+          paymentMethod: cancelled.paymentMethod,
+        );
+      }
+    }
+
     return cancelled;
   }
 

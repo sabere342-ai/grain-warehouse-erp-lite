@@ -1071,9 +1071,49 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - `flutter build windows --release`: succeeded
 
 ### Remaining Limitations
-- No account selection in transactions (deferred to Phase 72).
-- No payment method tracking (deferred to Phase 72).
+- No account selection in transactions UI (deferred to Phase 73).
+- No payment method tracking UI (deferred to Phase 73).
 - No internal transfer capability (deferred to Phase 73).
 - No daily cash closing (deferred to Phase 73).
 - No financial account reports (deferred to Phase 73).
 - 12 owner decisions pending in ROADMAP-DECISION-REGISTER.md.
+
+---
+
+## Phase 72 - Transaction Integration
+
+### Summary
+- All transaction types (sales, purchases, collections, payments, expenses) now accept optional `financialAccountId` to link to a unified financial account.
+- `PaymentMethod` enum added (cash, bankTransfer, mobileWallet, check) with Arabic labels.
+- `PurchasePaymentMode` enum added (credit, paid, partial) mirroring `SalePaymentMode`.
+- Financial account entries created automatically when transactions have a `financialAccountId`.
+- Cancellation reversal entries created for cancelled sales/purchases with financial accounts.
+- `SaleRepository.createSale` bug fixed — now forwards `financialAccountId` and `paymentMethod` from draft to `SaleRecord`.
+- 43 new tests added (673 total).
+
+### Production Code Changed
+- Modified `lib/core/financial_accounts/financial_account_entry.dart` — added `PaymentMethod` enum, 6 new `FinancialAccountEntrySource` values, `paymentMethod` field on entry
+- Modified `lib/core/financial_accounts/financial_account_repository.dart` — added `createEntry()` method
+- Modified `lib/core/sales/sale_record.dart` — added `financialAccountId`, `paymentMethod` to `SaleRecord`/`SaleDraft`
+- Modified `lib/core/sales/sale_controller.dart` — FA entry creation for cash/partial sales + cancellation reversals
+- Modified `lib/core/sales/sale_repository.dart` — forwards `financialAccountId`/`paymentMethod` from draft (bug fix)
+- Modified `lib/core/purchases/purchase_intake.dart` — added `PurchasePaymentMode` enum, `financialAccountId`, `paymentMethod`, `paymentMode`, `paidAmountQirsh`
+- Modified `lib/core/purchases/purchase_repository.dart` — FA entry creation for paid/partial purchases + cancellation reversals
+- Modified `lib/core/customer_accounts/customer_collection.dart` — added `financialAccountId`, `paymentMethod`
+- Modified `lib/core/customer_accounts/customer_account_repository.dart` — FA entry creation in `createCollection()`
+- Modified `lib/core/supplier_accounts/supplier_payment.dart` — added `financialAccountId`, `paymentMethod`
+- Modified `lib/core/supplier_accounts/supplier_account_repository.dart` — FA entry creation in `createPayment()`
+- Modified `lib/core/expenses/expense.dart` — added `financialAccountId`, `paymentMethod`
+- Modified `lib/core/expenses/expense_repository.dart` — FA entry creation in `createExpense()`
+- Modified `lib/app/app_repositories.dart` — wired `financialAccountRepository` to all repos
+
+### Test File Created
+- `test/phase72_transaction_integration_test.dart` — 43 tests
+
+### Documentation Updated
+- `docs/MASTER-PRODUCT-ROADMAP.md` — Phase 72 completed
+- `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md` — ACC-009, ACC-010 implemented (57 total implemented)
+
+### Verification Summary
+- `flutter analyze`: 0 errors, 0 warnings
+- `flutter test`: 673/673 passing

@@ -1,5 +1,23 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+
+enum PurchasePaymentMode {
+  credit,
+  paid,
+  partial;
+
+  String get labelAr {
+    switch (this) {
+      case PurchasePaymentMode.credit:
+        return 'آجل على مورد';
+      case PurchasePaymentMode.paid:
+        return 'مدفوع';
+      case PurchasePaymentMode.partial:
+        return 'دفع جزئي';
+    }
+  }
+}
 
 class PurchaseIntake {
   const PurchaseIntake({
@@ -18,6 +36,10 @@ class PurchaseIntake {
     this.supplierAddress,
     this.notes,
     this.cancellation,
+    this.financialAccountId,
+    this.paymentMethod,
+    this.paymentMode = PurchasePaymentMode.credit,
+    this.paidAmountQirsh,
   });
 
   final String id;
@@ -35,6 +57,15 @@ class PurchaseIntake {
   final String stockMovementId;
   final String? notes;
   final CancellationMetadata? cancellation;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
+  final PurchasePaymentMode paymentMode;
+  final int? paidAmountQirsh;
+
+  int get effectivePaidAmountQirsh {
+    if (paidAmountQirsh != null) return paidAmountQirsh!;
+    return paymentMode == PurchasePaymentMode.credit ? 0 : totalAmountPiasters;
+  }
 
   bool get hasValidId => id.trim().isNotEmpty;
   bool get isCancelled => cancellation != null;
@@ -59,6 +90,10 @@ class PurchaseIntake {
       supplierAddress: supplierAddress,
       notes: notes,
       cancellation: cancellation ?? this.cancellation,
+      financialAccountId: financialAccountId,
+      paymentMethod: paymentMethod,
+      paymentMode: paymentMode,
+      paidAmountQirsh: paidAmountQirsh,
     );
   }
 }
@@ -75,6 +110,10 @@ class PurchaseIntakeDraft {
     this.supplierPhone,
     this.supplierAddress,
     this.notes,
+    this.financialAccountId,
+    this.paymentMethod,
+    this.paymentMode = PurchasePaymentMode.credit,
+    this.paidAmountQirsh,
   });
 
   final String supplierId;
@@ -87,6 +126,15 @@ class PurchaseIntakeDraft {
   final int unitPricePiastersPerKg;
   final String createdByUserId;
   final String? notes;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
+  final PurchasePaymentMode paymentMode;
+  final int? paidAmountQirsh;
 
   int get totalAmountPiasters => quantityKg * unitPricePiastersPerKg;
+
+  int get effectivePaidAmountQirsh {
+    if (paidAmountQirsh != null) return paidAmountQirsh!;
+    return paymentMode == PurchasePaymentMode.credit ? 0 : totalAmountPiasters;
+  }
 }

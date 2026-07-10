@@ -1,4 +1,6 @@
-﻿class CustomerCollectionRecord {
+﻿import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+
+class CustomerCollectionRecord {
   const CustomerCollectionRecord({
     required this.id,
     required this.customerId,
@@ -8,6 +10,8 @@
     required this.createdByUserId,
     this.createdByUserName,
     this.notes,
+    this.financialAccountId,
+    this.paymentMethod,
   });
 
   final String id;
@@ -18,6 +22,8 @@
   final String createdByUserId;
   final String? createdByUserName;
   final String? notes;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
 
   bool get hasValidId => id.trim().isNotEmpty;
 }
@@ -30,6 +36,8 @@ class CustomerCollectionDraft {
     required this.createdByUserId,
     this.createdByUserName,
     this.notes,
+    this.financialAccountId,
+    this.paymentMethod,
   });
 
   final String customerId;
@@ -38,4 +46,6 @@ class CustomerCollectionDraft {
   final String createdByUserId;
   final String? createdByUserName;
   final String? notes;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
 }

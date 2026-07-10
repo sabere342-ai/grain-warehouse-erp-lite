@@ -36,10 +36,14 @@ class AppRepositories {
       LocalCustomerAccountRepository(
     customerRepository: customerRepository,
     auditLogRepository: auditLogRepository,
+    financialAccountRepository: financialAccountRepository,
   );
 
   static final LocalExpenseRepository expenseRepository =
-      LocalExpenseRepository(auditLogRepository: auditLogRepository);
+      LocalExpenseRepository(
+    auditLogRepository: auditLogRepository,
+    financialAccountRepository: financialAccountRepository,
+  );
 
   static final LocalProductRepository productRepository =
       LocalProductRepository();
@@ -54,6 +58,7 @@ class AppRepositories {
       LocalSupplierAccountRepository(
     supplierRepository: supplierRepository,
     auditLogRepository: auditLogRepository,
+    financialAccountRepository: financialAccountRepository,
   );
 
   static final LocalPurchaseRepository purchaseRepository =
@@ -62,6 +67,7 @@ class AppRepositories {
     productRepository: productRepository,
     inventoryRepository: inventoryRepository,
     supplierAccountRepository: supplierAccountRepository,
+    financialAccountRepository: financialAccountRepository,
   );
 
   static final LocalSaleRepository saleRepository = LocalSaleRepository(

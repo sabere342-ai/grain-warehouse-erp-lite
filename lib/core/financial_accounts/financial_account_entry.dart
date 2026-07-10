@@ -17,7 +17,13 @@ enum FinancialAccountEntryDirection {
 enum FinancialAccountEntrySource {
   openingBalance,
   manualCorrection,
-  restoreImport;
+  restoreImport,
+  salePayment,
+  purchasePayment,
+  customerCollection,
+  supplierSettlement,
+  expense,
+  cancellationReversal;
 
   String get labelAr {
     switch (this) {
@@ -27,6 +33,38 @@ enum FinancialAccountEntrySource {
         return 'تصحيح يدوي';
       case FinancialAccountEntrySource.restoreImport:
         return 'استيراد/استرجاع';
+      case FinancialAccountEntrySource.salePayment:
+        return 'دفعة مبيعات';
+      case FinancialAccountEntrySource.purchasePayment:
+        return 'دفعة مشتريات';
+      case FinancialAccountEntrySource.customerCollection:
+        return 'تحصيل من عميل';
+      case FinancialAccountEntrySource.supplierSettlement:
+        return 'تسوية مع مورد';
+      case FinancialAccountEntrySource.expense:
+        return 'مصروف';
+      case FinancialAccountEntrySource.cancellationReversal:
+        return 'عكس إلغاء';
+    }
+  }
+}
+
+enum PaymentMethod {
+  cash,
+  bankTransfer,
+  mobileWallet,
+  check;
+
+  String get labelAr {
+    switch (this) {
+      case PaymentMethod.cash:
+        return 'نقدي';
+      case PaymentMethod.bankTransfer:
+        return 'تحويل بنكي';
+      case PaymentMethod.mobileWallet:
+        return 'محفظة إلكترونية';
+      case PaymentMethod.check:
+        return 'شيك';
     }
   }
 }
@@ -47,6 +85,7 @@ class FinancialAccountEntry {
     this.note,
     this.reversalOf,
     this.correctionGroup,
+    this.paymentMethod,
   });
 
   final String id;
@@ -63,6 +102,7 @@ class FinancialAccountEntry {
   final String? note;
   final String? reversalOf;
   final String? correctionGroup;
+  final PaymentMethod? paymentMethod;
 
   bool get hasValidId => id.trim().isNotEmpty;
   int get signedAmountQirsh =>

@@ -3,6 +3,8 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
 abstract class CustomerAccountRepository {
@@ -42,11 +44,14 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
   LocalCustomerAccountRepository({
     required CustomerRepository customerRepository,
     AuditLogRepository? auditLogRepository,
+    FinancialAccountRepository? financialAccountRepository,
   })  : _customerRepository = customerRepository,
-        _auditLogRepository = auditLogRepository;
+        _auditLogRepository = auditLogRepository,
+        _financialAccountRepository = financialAccountRepository;
 
   final CustomerRepository _customerRepository;
   final AuditLogRepository? _auditLogRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final List<CustomerAccountEntry> _entries = [];
   final List<CustomerCollectionRecord> _collections = [];
   int _generatedEntryIdCounter = 0;
@@ -234,6 +239,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       createdByUserId: draft.createdByUserId.trim(),
       createdByUserName: _normalizedOptionalText(draft.createdByUserName),
       notes: _normalizedOptionalText(draft.notes),
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
     );
     _validateCollection(collection);
 
@@ -260,6 +267,25 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
           '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}.',
       referenceId: collection.id,
     );
+
+    final faRepo = _financialAccountRepository;
+    if (faRepo != null &&
+        collection.financialAccountId != null &&
+        collection.financialAccountId!.isNotEmpty) {
+      await faRepo.createEntry(
+        accountId: collection.financialAccountId!,
+        direction: FinancialAccountEntryDirection.inflow,
+        amountQirsh: collection.amountQirsh,
+        sourceType: FinancialAccountEntrySource.customerCollection,
+        sourceDocumentId: collection.id,
+        effectiveDate: collection.date,
+        createdByUserId: collection.createdByUserId,
+        reference: '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
+        note: '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${collection.amountQirsh} \u0642\u064a\u0631\u0634',
+        paymentMethod: collection.paymentMethod,
+      );
+    }
+
     return collection;
   }
 

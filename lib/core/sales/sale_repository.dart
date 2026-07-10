@@ -100,6 +100,8 @@ class LocalSaleRepository implements SaleRepository {
       notes: _normalizedOptionalText(draft.notes),
       items: items,
       paidAmountQirsh: paidAmountQirsh,
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
     );
 
     if (!sale.hasValidId) {

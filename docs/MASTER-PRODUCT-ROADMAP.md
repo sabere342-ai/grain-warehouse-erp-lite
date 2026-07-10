@@ -337,9 +337,18 @@ The recommended path forward, respecting all dependencies:
 10. ✅ Dashboard navigation — owner-only financial accounts destination
 11. ✅ Comprehensive test coverage (44 new tests, 630 total)
 
-**Phase 72: Transaction Integration (Track B)**
-1. Associate sales/purchases/collections/payments/expenses with financial accounts
-2. Add payment method tracking
+**Phase 72: Transaction Integration (Track B) — COMPLETED**
+1. ✅ Associate sales/purchases/collections/payments/expenses with financial accounts — `financialAccountId` on all transaction models
+2. ✅ Add payment method tracking — `PaymentMethod` enum (cash, bankTransfer, mobileWallet, check)
+3. ✅ FA entry creation for cash/partial sales — inflow `salePayment` entries
+4. ✅ FA entry creation for paid/partial purchases — outflow `purchasePayment` entries
+5. ✅ FA entry creation for customer collections — inflow `customerCollection` entries
+6. ✅ FA entry creation for supplier payments — outflow `supplierSettlement` entries
+7. ✅ FA entry creation for expenses — outflow `expense` entries
+8. ✅ Cancellation reversal entries — outflow/inflow `cancellationReversal` entries
+9. ✅ `PurchasePaymentMode` enum (credit, paid, partial) mirroring `SalePaymentMode`
+10. ✅ Bug fix: `SaleRepository.createSale` now forwards `financialAccountId` and `paymentMethod` from draft
+11. ✅ Comprehensive test coverage (43 new tests, 673 total)
 
 ### Then: Financial Reporting & Reconciliation
 1. Sales by payment method report
@@ -349,7 +358,6 @@ The recommended path forward, respecting all dependencies:
 5. Transfer report
 6. Fee tracking
 7. Reconciliation report
-8. Cancellation reversal for financial accounts
 
 ### Then: Production Hardening
 1. Complete all partial implementations (split payments, invoice logos, PDF stock adjustment)
@@ -377,6 +385,7 @@ The recommended path forward, respecting all dependencies:
 |---------|------|-------|-------|
 | 1.0 | — | 69 | Initial master roadmap creation |
 | 1.1 | 2026-07-10 | 71 | Phase 71 completed — financial accounts foundation |
+| 1.2 | 2026-07-10 | 72 | Phase 72 completed — transaction integration with financial accounts |
 
 ---
 

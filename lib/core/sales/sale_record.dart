@@ -1,4 +1,5 @@
 ﻿import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
 enum SalePaymentMode {
   cash,
@@ -60,6 +61,8 @@ class SaleRecord {
     this.cancellation,
     this.items = const [],
     this.paidAmountQirsh,
+    this.financialAccountId,
+    this.paymentMethod,
   });
 
   final String id;
@@ -77,6 +80,8 @@ class SaleRecord {
   final CancellationMetadata? cancellation;
   final List<SaleLineItem> items;
   final int? paidAmountQirsh;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
 
   bool get hasValidId => id.trim().isNotEmpty;
   bool get isCancelled => cancellation != null;
@@ -112,6 +117,8 @@ class SaleRecord {
       cancellation: cancellation ?? this.cancellation,
       items: items ?? this.items,
       paidAmountQirsh: paidAmountQirsh ?? this.paidAmountQirsh,
+      financialAccountId: financialAccountId,
+      paymentMethod: paymentMethod,
     );
   }
 }
@@ -128,6 +135,8 @@ class SaleDraft {
     this.notes,
     this.items = const [],
     this.paidAmountQirsh,
+    this.financialAccountId,
+    this.paymentMethod,
   });
 
   final String productId;
@@ -140,6 +149,8 @@ class SaleDraft {
   final String? notes;
   final List<SaleLineItemDraft> items;
   final int? paidAmountQirsh;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
 
   bool get isMultiItem => items.length > 1;
 

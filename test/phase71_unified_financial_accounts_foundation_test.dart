@@ -47,7 +47,8 @@ void main() {
       test('FinancialAccountType labelAr returns Arabic labels', () {
         expect(FinancialAccountType.treasury.labelAr, 'خزينة');
         expect(FinancialAccountType.bank.labelAr, 'حساب بنكي');
-        expect(FinancialAccountType.electronicWallet.labelAr, 'محفظة إلكترونية');
+        expect(
+            FinancialAccountType.electronicWallet.labelAr, 'محفظة إلكترونية');
       });
     });
 
@@ -103,9 +104,12 @@ void main() {
       });
 
       test('FinancialAccountEntrySource labelAr returns Arabic labels', () {
-        expect(FinancialAccountEntrySource.openingBalance.labelAr, 'رصيد افتتاحي');
-        expect(FinancialAccountEntrySource.manualCorrection.labelAr, 'تصحيح يدوي');
-        expect(FinancialAccountEntrySource.restoreImport.labelAr, 'استيراد/استرجاع');
+        expect(
+            FinancialAccountEntrySource.openingBalance.labelAr, 'رصيد افتتاحي');
+        expect(
+            FinancialAccountEntrySource.manualCorrection.labelAr, 'تصحيح يدوي');
+        expect(FinancialAccountEntrySource.restoreImport.labelAr,
+            'استيراد/استرجاع');
       });
     });
 
@@ -124,7 +128,7 @@ void main() {
       });
 
       test('createAccount creates account with auto-generated id', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة المخزن',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -138,7 +142,7 @@ void main() {
       });
 
       test('createAccount rejects duplicate active name', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -148,14 +152,14 @@ void main() {
       });
 
       test('createAccount allows same name after deactivation', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
         );
         final account = await repo.createAccount(draft);
         await repo.deactivateAccount(account.id, 'owner');
-        final draft2 = FinancialAccountDraft(
+        const draft2 = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.bank,
           createdByUserId: 'owner',
@@ -166,7 +170,7 @@ void main() {
       });
 
       test('createAccount rejects empty name', () {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: '  ',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -175,12 +179,12 @@ void main() {
       });
 
       test('listAccounts excludes inactive by default', () async {
-        final draft1 = FinancialAccountDraft(
+        const draft1 = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
         );
-        final draft2 = FinancialAccountDraft(
+        const draft2 = FinancialAccountDraft(
           name: 'حساب بنكي',
           type: FinancialAccountType.bank,
           createdByUserId: 'owner',
@@ -198,7 +202,7 @@ void main() {
       });
 
       test('deactivateAccount sets isActive to false', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -210,7 +214,7 @@ void main() {
       });
 
       test('deactivateAccount rejects already inactive account', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -224,7 +228,7 @@ void main() {
       });
 
       test('reactivateAccount sets isActive to true', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -237,7 +241,7 @@ void main() {
       });
 
       test('reactivateAccount rejects already active account', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -254,7 +258,7 @@ void main() {
       });
 
       test('setOpeningBalance records opening balance entry', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -278,7 +282,7 @@ void main() {
 
       test('setOpeningBalance rejects if account already has opening balance',
           () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -302,7 +306,7 @@ void main() {
       });
 
       test('setOpeningBalance rejects zero amount', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -320,7 +324,7 @@ void main() {
       });
 
       test('correctOpeningBalance creates correction entries', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -352,7 +356,7 @@ void main() {
 
       test('correctOpeningBalance rejects when no opening balance exists',
           () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -370,7 +374,7 @@ void main() {
       });
 
       test('correctOpeningBalance rejects negative amount', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -394,12 +398,12 @@ void main() {
       });
 
       test('allAccountBalances returns correct balances', () async {
-        final draft1 = FinancialAccountDraft(
+        const draft1 = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
         );
-        final draft2 = FinancialAccountDraft(
+        const draft2 = FinancialAccountDraft(
           name: 'حساب بنكي',
           type: FinancialAccountType.bank,
           createdByUserId: 'owner',
@@ -422,12 +426,13 @@ void main() {
 
         final balances = await repo.allAccountBalances();
         expect(balances.length, 2);
-        final total = balances.fold<int>(0, (s, b) => s + b.currentBalanceQirsh);
+        final total =
+            balances.fold<int>(0, (s, b) => s + b.currentBalanceQirsh);
         expect(total, 600000);
       });
 
       test('accountHasEntries returns false for new account', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -437,7 +442,7 @@ void main() {
       });
 
       test('accountHasEntries returns true after opening balance', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -453,7 +458,7 @@ void main() {
       });
 
       test('statement filters by date range', () async {
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -486,7 +491,7 @@ void main() {
     group('clearForOwnerDataWipe', () {
       test('clears all accounts and entries', () async {
         final repo = LocalFinancialAccountRepository();
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -535,7 +540,7 @@ void main() {
 
       test('rejects restore into non-empty repository', () async {
         final repo = LocalFinancialAccountRepository();
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -629,7 +634,7 @@ void main() {
         final repo = LocalFinancialAccountRepository(
           auditLogRepository: auditRepo,
         );
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -645,7 +650,7 @@ void main() {
         final repo = LocalFinancialAccountRepository(
           auditLogRepository: auditRepo,
         );
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -665,7 +670,7 @@ void main() {
         final repo = LocalFinancialAccountRepository(
           auditLogRepository: auditRepo,
         );
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -690,7 +695,7 @@ void main() {
         final repo = LocalFinancialAccountRepository(
           auditLogRepository: auditRepo,
         );
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -728,7 +733,7 @@ void main() {
     group('Balance calculation edge cases', () {
       test('zero opening balance with no entries returns zero', () async {
         final repo = LocalFinancialAccountRepository();
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
@@ -740,7 +745,7 @@ void main() {
 
       test('statement with no entries returns empty lines', () async {
         final repo = LocalFinancialAccountRepository();
-        final draft = FinancialAccountDraft(
+        const draft = FinancialAccountDraft(
           name: 'خزينة',
           type: FinancialAccountType.treasury,
           createdByUserId: 'owner',
