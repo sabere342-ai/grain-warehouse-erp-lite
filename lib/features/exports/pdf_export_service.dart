@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
@@ -55,6 +56,8 @@ class PdfExportService {
         productNames: productNames,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
+        businessIdentity:
+            await AppRepositories.businessIdentityRepository.loadIdentity(),
       );
       final filename = PdfFileNaming.salesInvoice(sale.id, sale.createdAt);
       if (!context.mounted) return false;
@@ -127,6 +130,8 @@ class PdfExportService {
         productName: productName,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
+        businessIdentity:
+            await AppRepositories.businessIdentityRepository.loadIdentity(),
       );
       final filename =
           PdfFileNaming.purchaseInvoice(purchase.id, purchase.createdAt);

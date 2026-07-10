@@ -1,0 +1,66 @@
+import 'package:flutter/widgets.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
+
+class BusinessIdentityController extends ChangeNotifier {
+  BusinessIdentityController({required BusinessIdentityRepository repository})
+      : _repository = repository;
+
+  final BusinessIdentityRepository _repository;
+  BusinessIdentity _identity = BusinessIdentity.empty;
+  bool _isLoading = false;
+  String? _message;
+
+  BusinessIdentity get identity => _identity;
+  bool get isLoading => _isLoading;
+  String? get message => _message;
+
+  Future<void> initialize() async {
+    _isLoading = true;
+    notifyListeners();
+    _identity = await _repository.loadIdentity();
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> saveEstablishmentName(String value) async {
+    final trimmed = value.trim();
+    _identity = BusinessIdentity(
+      establishmentName: trimmed.isEmpty ? null : trimmed,
+    );
+    _message = null;
+    notifyListeners();
+    try {
+      await _repository.saveIdentity(_identity);
+      _message = 'تم حفظ اسم المنشأة.';
+    } catch (_) {
+      _message =
+          'تم تطبيق اسم المنشأة الآن، لكن تعذر حفظه للجلسة القادمة.';
+    }
+    notifyListeners();
+  }
+}
+
+class BusinessIdentityScope
+    extends InheritedNotifier<BusinessIdentityController> {
+  const BusinessIdentityScope({
+    super.key,
+    required BusinessIdentityController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static BusinessIdentityController of(BuildContext context) {
+    final scope =
+        context.dependOnInheritedWidgetOfExactType<BusinessIdentityScope>();
+    if (scope == null || scope.notifier == null) {
+      throw StateError('BusinessIdentityScope was not found.');
+    }
+    return scope.notifier!;
+  }
+
+  static BusinessIdentityController? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<BusinessIdentityScope>()
+        ?.notifier;
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class HelpGuideScreen extends StatelessWidget {
@@ -9,7 +10,11 @@ class HelpGuideScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('دليل الاستخدام')),
+      appBar: AppBar(
+        leadingWidth: 112,
+        leading: const AppBarBackButton(),
+        title: const Text('دليل الاستخدام'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [

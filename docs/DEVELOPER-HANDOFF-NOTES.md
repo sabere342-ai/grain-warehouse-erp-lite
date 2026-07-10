@@ -938,3 +938,24 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 - Run the real owner Day-1 trial from the Phase 65 package.
 - Record only actual results in `docs/PHASE-66-CONTROLLED-OWNER-TRIAL-EXECUTION.md` and the owner trial logs.
 - Create the Phase 66 commit/tag only after the real execution is completed and verified.
+
+## Phase 67 - Navigation, Theme Controls, and Business Branding
+
+### Summary
+- Added visible Arabic `رجوع` controls to AppBar-based sub-pages found in the audit: help guide, supplier purchases, supplier statement, and customer statement.
+- Updated shared `PageBackButton` to use `Navigator.maybePop(context)` by default.
+- Kept central theme presets and simplified owner labels.
+- Added local business identity settings for `اسم المنشأة`.
+- The establishment name appears in app title/dashboard title, printable invoice previews, and exported sales/purchase PDFs.
+- Backup v2 now includes optional `settings.businessIdentity`; old backups remain compatible.
+- Logo upload and Windows app icon replacement are deferred and documented.
+
+### Verification Summary
+- `flutter test`: 546/546 passing.
+- `flutter analyze --no-pub`: timed out without diagnostics in this run.
+- `flutter build windows --release`: timed out before returning output in this run.
+- No owner trial acceptance is claimed.
+
+### Remaining Limitations
+- Invoice logo upload is not implemented.
+- Windows app icon remains build-time controlled by `windows/runner/resources/app_icon.ico`; no runtime icon change is promised.

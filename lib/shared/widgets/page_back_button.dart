@@ -8,7 +8,8 @@ class PageBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canPop = Navigator.of(context).canPop();
-    final callback = onPressed ?? (canPop ? () => Navigator.of(context).pop() : null);
+    final callback =
+        onPressed ?? (canPop ? () => Navigator.of(context).maybePop() : null);
     if (callback == null) {
       return const SizedBox.shrink();
     }
@@ -20,6 +21,22 @@ class PageBackButton extends StatelessWidget {
         icon: const Icon(Icons.arrow_forward_rounded),
         label: const Text('رجوع'),
       ),
+    );
+  }
+}
+
+class AppBarBackButton extends StatelessWidget {
+  const AppBarBackButton({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final callback = onPressed ?? () => Navigator.of(context).maybePop();
+    return TextButton.icon(
+      onPressed: callback,
+      icon: const Icon(Icons.arrow_forward_rounded),
+      label: const Text('رجوع'),
     );
   }
 }

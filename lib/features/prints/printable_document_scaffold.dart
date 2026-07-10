@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -54,6 +56,9 @@ class _PrintableDocumentScaffoldState
 
   @override
   Widget build(BuildContext context) {
+    final displayName =
+        BusinessIdentityScope.maybeOf(context)?.identity.displayName ??
+            BusinessIdentity.defaultDisplayName;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: SingleChildScrollView(
@@ -67,6 +72,15 @@ class _PrintableDocumentScaffoldState
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    Text(
+                      displayName,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.text,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
                     Text(
                       widget.title,
                       textAlign: TextAlign.center,

@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -521,6 +522,8 @@ class _CustomerStatementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 112,
+        leading: const AppBarBackButton(),
         title: Text('كشف الحساب - ${customer.name}'),
         actions: [
           IconButton(

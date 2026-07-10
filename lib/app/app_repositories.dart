@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -20,6 +21,9 @@ class AppRepositories {
 
   static final LocalAuditLogRepository auditLogRepository =
       LocalAuditLogRepository();
+
+  static final LocalBusinessIdentityRepository businessIdentityRepository =
+      LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
 
   static final LocalCustomerRepository customerRepository =
       LocalCustomerRepository(auditLogRepository: auditLogRepository);
@@ -80,6 +84,7 @@ class AppRepositories {
   );
 
   static BackupExportService get backupExportService => BackupExportService(
+        businessIdentityRepository: businessIdentityRepository,
         productRepository: productRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
@@ -94,6 +99,7 @@ class AppRepositories {
       );
 
   static BackupRestoreService get backupRestoreService => BackupRestoreService(
+        businessIdentityRepository: businessIdentityRepository,
         productRepository: productRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,

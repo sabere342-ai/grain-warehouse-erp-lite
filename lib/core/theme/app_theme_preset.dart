@@ -31,7 +31,7 @@ class AppThemePreset {
 
   static const olive = AppThemePreset._(
     id: 'olive',
-    labelAr: 'أخضر زيتوني',
+    labelAr: 'اللون الافتراضي',
     seed: Color(0xFF2F5D2F),
     background: Color(0xFFF6F1E6),
     surface: Color(0xFFFFFCF4),
@@ -61,7 +61,7 @@ class AppThemePreset {
 
   static const wheat = AppThemePreset._(
     id: 'wheat',
-    labelAr: 'قمحي / بني',
+    labelAr: 'بني / قمح',
     seed: Color(0xFF79521B),
     background: Color(0xFFF7EEDB),
     surface: Color(0xFFFFFBF2),
@@ -76,7 +76,7 @@ class AppThemePreset {
 
   static const highContrast = AppThemePreset._(
     id: 'highContrast',
-    labelAr: 'داكن عالي التباين',
+    labelAr: 'داكن بسيط',
     seed: Color(0xFF9FD45A),
     background: Color(0xFF10140D),
     surface: Color(0xFF1A2116),

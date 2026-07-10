@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
@@ -97,7 +98,10 @@ class _DashboardShellState extends State<DashboardShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(selected.label),
+        title: Text(
+          '${selected.label} - '
+          '${BusinessIdentityScope.maybeOf(context)?.identity.displayName ?? 'نظام إدارة مخازن الحبوب'}',
+        ),
         actions: [
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 8),

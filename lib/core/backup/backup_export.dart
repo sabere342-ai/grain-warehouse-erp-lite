@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
@@ -32,6 +34,7 @@ class BackupExportService {
     required PurchaseRepository purchaseRepository,
     required SaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    BusinessIdentityRepository? businessIdentityRepository,
     CustomerRepository? customerRepository,
     CustomerAccountRepository? customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
@@ -44,6 +47,7 @@ class BackupExportService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _businessIdentityRepository = businessIdentityRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository,
         _supplierAccountRepository = supplierAccountRepository,
@@ -59,6 +63,7 @@ class BackupExportService {
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final BusinessIdentityRepository? _businessIdentityRepository;
   final CustomerRepository _customerRepository;
   final CustomerAccountRepository? _customerAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
@@ -85,6 +90,9 @@ class BackupExportService {
     final supplierPayments = await _supplierAccountRepository?.listPayments() ?? const <SupplierPaymentRecord>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
+    final businessIdentity =
+        await _businessIdentityRepository?.loadIdentity() ??
+            BusinessIdentity.empty;
 
     final counts = BackupExportCounts(
       products: products.length,
@@ -130,6 +138,9 @@ class BackupExportService {
         'supplierPayments': supplierPayments.map(_supplierPaymentToJson).toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
+        'settings': {
+          'businessIdentity': businessIdentity.toJson(),
+        },
       },
     };
 

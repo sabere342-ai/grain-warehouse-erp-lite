@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_purchase_invoice_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierPurchasesScreen extends StatefulWidget {
@@ -73,6 +74,8 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 112,
+        leading: const AppBarBackButton(),
         title: Text('مشتريات ${widget.supplierName}'),
       ),
       body: AnimatedBuilder(

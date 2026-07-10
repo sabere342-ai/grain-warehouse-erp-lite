@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_supplier_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierStatementScreen extends StatefulWidget {
@@ -64,6 +65,8 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 112,
+        leading: const AppBarBackButton(),
         title: Text('كشف حساب ${supplier.name}'),
         actions: [
           if (_statement != null)

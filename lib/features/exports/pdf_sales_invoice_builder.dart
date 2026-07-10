@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
@@ -13,6 +14,7 @@ class PdfSalesInvoiceBuilder {
     required Map<String, String> productNames,
     required pw.Font arabicFont,
     required pw.Font arabicFontBold,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
   }) async {
     final pdf = pw.Document();
 
@@ -34,9 +36,21 @@ class PdfSalesInvoiceBuilder {
                   crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                   children: [
                     pw.Center(
-                      child: pw.Text(
-                        '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639',
-                        style: headerStyle,
+                      child: pw.Column(
+                        children: [
+                          pw.Text(
+                            businessIdentity.displayName,
+                            style: pw.TextStyle(
+                              font: arabicFontBold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          pw.SizedBox(height: 4),
+                          pw.Text(
+                            '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639',
+                            style: headerStyle,
+                          ),
+                        ],
                       ),
                     ),
                     pw.SizedBox(height: 8),

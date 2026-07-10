@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
@@ -35,6 +37,7 @@ class BackupRestoreService {
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    BusinessIdentityRepository? businessIdentityRepository,
     LocalCustomerRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
@@ -48,6 +51,7 @@ class BackupRestoreService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _businessIdentityRepository = businessIdentityRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
         _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
@@ -61,6 +65,7 @@ class BackupRestoreService {
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final BusinessIdentityRepository? _businessIdentityRepository;
   final LocalCustomerRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
@@ -121,6 +126,11 @@ class BackupRestoreService {
       );
       await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
       await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
+      if (_businessIdentityRepository != null) {
+        await _businessIdentityRepository.saveIdentity(
+          restored.businessIdentity,
+        );
+      }
 
       return BackupRestoreResult.success(
         counts: preview.summary!.counts,
@@ -190,6 +200,10 @@ class BackupRestoreService {
     final supplierPayments = _optionalList(data, 'supplierPayments').map(_parseSupplierPayment).toList();
     final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
+    final settings = data['settings'];
+    final businessIdentity = settings is Map<String, Object?>
+        ? BusinessIdentity.fromJson(settings['businessIdentity'])
+        : BusinessIdentity.empty;
 
     return _RestoredBackupData(
       products: products,
@@ -204,6 +218,7 @@ class BackupRestoreService {
       supplierPayments: supplierPayments,
       expenses: expenses,
       auditLogs: auditLogs,
+      businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
     );
   }
@@ -654,6 +669,7 @@ class _RestoredBackupData {
     required this.supplierPayments,
     required this.expenses,
     required this.auditLogs,
+    required this.businessIdentity,
     required this.documentHistoryCount,
   });
 
@@ -669,5 +685,6 @@ class _RestoredBackupData {
   final List<SupplierPaymentRecord> supplierPayments;
   final List<ExpenseRecord> expenses;
   final List<AuditLogEntry> auditLogs;
+  final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
 }
