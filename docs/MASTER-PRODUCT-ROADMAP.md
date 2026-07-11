@@ -2,9 +2,9 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** Phase 77 — Financial Reporting Scope & Governing Baseline Reconciliation
-> **HEAD / الرأس الحالي:** `248dd2c`
-> **Tests / الاختبارات:** 676/676 passing
+> **Last Updated / آخر تحديث:** Phase 78 — Financial Owner Decisions Adoption & Compatibility Audit
+> **HEAD / الرأس الحالي:** `TBD`
+> **Tests / الاختبارات:** 709/709 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -47,7 +47,7 @@
 | Money type | `int` (Qirsh — no decimals) |
 | Weight type | `int` (grams) |
 | Persistence | In-memory repositories (`Local*Repository`) |
-| Backup/Restore | JSON export/import (Version 3 with logo) |
+| Backup/Restore | JSON export/import (Version 4 with financial accounts) |
 | PDF generation | Flutter PDF rendering |
 | Database | **None** — no SQLite, no cloud, no server |
 | Networking | None (offline-only) |
@@ -57,9 +57,9 @@
 
 ## Current Status
 
-**Phase:** 76 — Internal Financial Transfers Implementation
-**HEAD:** `248dd2c`
-**Test Suite:** 676/676 tests passing
+**Phase:** 78 — Financial Owner Decisions Adoption & Compatibility Audit
+**HEAD:** `TBD`
+**Test Suite:** 709/709 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
 
@@ -69,7 +69,7 @@ The application is in a **production-ready local state** for a single warehouse 
 
 ## Implemented
 
-The following features are fully implemented, tested, and passing all 676 tests:
+The following features are fully implemented, tested, and passing all 709 tests:
 
 ### Product Management / إدارة المنتجات
 - [x] Add/edit/list products
@@ -209,7 +209,7 @@ These features exist in some form but are incomplete or lack key integration:
 
 | Feature | Status | Missing |
 |---------|--------|---------|
-| `SalePaymentMode.partial` | Enum exists | Split payment (multiple accounts per invoice) NOT implemented — blocked by `DC-U002` |
+| `SalePaymentMode.partial` | Enum exists | Split payment (multiple accounts per invoice) NOT implemented — DC-U002 closed (owner decisions adopted Phase 78), awaiting implementation phase |
 | PDF stock adjustment report | — | NOT implemented |
 | Invoice logo display | Logo upload exists | Invoices do NOT show logo |
 | Windows app icon from business logo | — | NOT implemented at runtime |
@@ -234,7 +234,7 @@ The following features do not exist in any form:
 - [ ] Reconciliation report (RPT-008)
 
 ### Daily Close & Reconciliation / الإغلاق اليومي والتسوية
-- [ ] Daily cash closing — blocked by `DC-U006`
+- [ ] Daily cash closing — DC-U006 closed (owner decisions adopted Phase 78), scope defined in Phase 77
 - [ ] Cash count and reconciliation workflow
 - [ ] Period close
 
@@ -269,7 +269,7 @@ These features are blocked by upstream dependencies:
 ```
 Financial Reports (RPT-003–008)
   ├── ACC-011 (internal transfers) — ✅ implemented in Phase 76
-  ├── ACC-012 (daily cash closing) — blocked by DC-U006
+  ├── ACC-012 (daily cash closing) — DC-U006 CLOSED (owner decisions adopted Phase 78)
   └── scope and acceptance criteria must be defined before implementation
 
 Cloud sync
@@ -326,7 +326,8 @@ SaaS licensing
 | 74 | Internal financial transfers scope & owner decision pack | Documentation | ✅ Complete |
 | 75 | Internal financial transfers owner decisions adoption & implementation scope | Documentation | ✅ Complete |
 | 76 | Internal financial transfers implementation | Implementation | ✅ Complete |
-| 77 | Financial reporting scope & governing baseline reconciliation | Documentation | ✅ Complete (current) |
+| 77 | Financial reporting scope & governing baseline reconciliation | Documentation | ✅ Complete |
+| 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete (current) |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 
@@ -433,7 +434,7 @@ The following are planned capabilities, not yet approved numbered implementation
 4. Daily or period close — **blocked by `DC-U006`**
 
 ### Then: Production Hardening
-1. Complete all partial implementations (split payments — blocked by `DC-U002`, invoice logos, PDF stock adjustment)
+1. Complete all partial implementations (split payments — DC-U002 closed, awaiting implementation phase; invoice logos; PDF stock adjustment)
 2. Extended owner trial under real conditions
 3. Performance optimization
 4. Edge case hardening
@@ -464,6 +465,7 @@ The following are planned capabilities, not yet approved numbered implementation
 | 1.5 | 2026-07-11 | 75 | Owner decisions adopted and Phase 76 execution scope defined; documentation only, ACC-011 remains unimplemented |
 | 1.6 | 2026-07-11 | 76 | Internal financial transfers implemented; ACC-011 implemented |
 | 1.7 | 2026-07-11 | 77 | Governing baseline reconciliation; corrected stale roadmap/traceability/handoff data; defined financial reporting scope |
+| 1.8 | 2026-07-11 | 78 | Owner decisions adopted (DC-U002, DC-U006, DC-U007, DC-U008); compatibility audit completed; 33 characterization tests added |
 
 ---
 
