@@ -47,6 +47,7 @@ void main() {
     PaymentMethod? paymentMethod,
     String? reversalOf,
     String? reference,
+    String? approvedByUserId,
   }) async {
     await repo.createEntry(
       accountId: accountId,
@@ -59,6 +60,7 @@ void main() {
       paymentMethod: paymentMethod,
       reversalOf: reversalOf,
       reference: reference,
+      approvedByUserId: approvedByUserId,
     );
   }
 
@@ -644,6 +646,7 @@ void main() {
           amount: 5000,
           source: FinancialAccountEntrySource.transferOut,
           date: DateTime(2026, 1, 5),
+          approvedByUserId: owner.id,
         );
         await addEntry(
           accountId: dest.id,
@@ -1428,6 +1431,7 @@ void main() {
           source: FinancialAccountEntrySource.expense,
           date: DateTime(2026, 1, 5),
           paymentMethod: PaymentMethod.cash,
+          approvedByUserId: owner.id,
         );
         await addEntry(
           accountId: acc.id,

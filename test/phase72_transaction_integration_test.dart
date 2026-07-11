@@ -176,6 +176,7 @@ void main() {
           sourceDocumentId: 'exp-1',
           effectiveDate: DateTime(2026),
           createdByUserId: 'user-1',
+          approvedByUserId: 'owner',
         );
         expect(await repo.currentBalanceForAccount(accountId), -3000);
       });
@@ -210,6 +211,7 @@ void main() {
             amountQirsh: 2500,
             financialAccountId: accountId,
             paymentMethod: PaymentMethod.cash,
+            approvedByUserId: 'owner',
           ),
         );
 
@@ -442,6 +444,7 @@ void main() {
             createdByUserId: 'user-1',
             financialAccountId: faAccountId,
             paymentMethod: PaymentMethod.cash,
+            approvedByUserId: 'owner',
           ),
         );
 
@@ -821,6 +824,7 @@ void main() {
             financialAccountId: accountId,
             paymentMethod: PaymentMethod.cash,
             paymentMode: PurchasePaymentMode.paid,
+            approvedByUserId: 'owner',
           ),
         );
 
@@ -861,6 +865,7 @@ void main() {
             paymentMethod: PaymentMethod.bankTransfer,
             paymentMode: PurchasePaymentMode.partial,
             paidAmountQirsh: 20000,
+            approvedByUserId: 'owner',
           ),
         );
 
@@ -1067,6 +1072,7 @@ void main() {
           effectiveDate: DateTime(2026),
           createdByUserId: 'user-1',
           paymentMethod: PaymentMethod.bankTransfer,
+          approvedByUserId: 'owner',
         );
         expect(entry.signedAmountQirsh, -10000);
       });

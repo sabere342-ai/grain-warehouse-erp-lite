@@ -113,6 +113,7 @@ class LocalPurchaseRepository implements PurchaseRepository {
               ? 'دفع جزئي'
               : 'دفعة كاملة',
           paymentMethod: postedIntake.paymentMethod,
+          approvedByUserId: draft.approvedByUserId,
         );
       }
     }

@@ -533,6 +533,7 @@ class BackupExportService {
       'note': entry.note,
       'reversalOf': entry.reversalOf,
       'correctionGroup': entry.correctionGroup,
+      'approvedByUserId': entry.approvedByUserId,
     };
   }
 

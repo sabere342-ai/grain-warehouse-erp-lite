@@ -226,6 +226,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
         reference: 'تسوية مع المورد ${supplier.name}',
         note: 'دفع للمورد ${payment.amountQirsh} قيرش',
         paymentMethod: payment.paymentMethod,
+        approvedByUserId: draft.approvedByUserId,
       );
     }
 

@@ -114,6 +114,7 @@ class PurchaseIntakeDraft {
     this.paymentMethod,
     this.paymentMode = PurchasePaymentMode.credit,
     this.paidAmountQirsh,
+    this.approvedByUserId,
   });
 
   final String supplierId;
@@ -130,6 +131,7 @@ class PurchaseIntakeDraft {
   final PaymentMethod? paymentMethod;
   final PurchasePaymentMode paymentMode;
   final int? paidAmountQirsh;
+  final String? approvedByUserId;
 
   int get totalAmountPiasters => quantityKg * unitPricePiastersPerKg;
 

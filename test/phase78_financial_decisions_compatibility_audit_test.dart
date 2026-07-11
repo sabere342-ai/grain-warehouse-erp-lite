@@ -180,6 +180,7 @@ void main() {
         sourceDocumentId: 'exp-1',
         effectiveDate: DateTime(2026, 1, 2),
         createdByUserId: owner.id,
+        approvedByUserId: owner.id,
       );
 
       final balance = await faRepo.currentBalanceForAccount(treasury.id);
@@ -243,6 +244,7 @@ void main() {
         category: 'مصاريف إدارية',
         amountQirsh: 5000,
         financialAccountId: treasury.id,
+        approvedByUserId: owner.id,
       ));
 
       final balance = await faRepo.currentBalanceForAccount(treasury.id);

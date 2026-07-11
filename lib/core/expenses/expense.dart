@@ -32,6 +32,7 @@ class ExpenseDraft {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.approvedByUserId,
   });
 
   final DateTime date;
@@ -40,4 +41,5 @@ class ExpenseDraft {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final String? approvedByUserId;
 }

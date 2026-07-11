@@ -578,6 +578,7 @@ class BackupRestoreService {
       note: _optionalString(map, 'note'),
       reversalOf: _optionalString(map, 'reversalOf'),
       correctionGroup: _optionalString(map, 'correctionGroup'),
+      approvedByUserId: _optionalString(map, 'approvedByUserId'),
     );
   }
 

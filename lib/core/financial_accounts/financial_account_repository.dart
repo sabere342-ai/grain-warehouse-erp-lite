@@ -48,6 +48,7 @@ abstract class FinancialAccountRepository {
     String? reversalOf,
     String? correctionGroup,
     PaymentMethod? paymentMethod,
+    String? approvedByUserId,
   });
   Future<FinancialTransfer> createTransfer(
       {required AppUser user, required FinancialTransferDraft draft});
@@ -491,6 +492,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     String? reversalOf,
     String? correctionGroup,
     PaymentMethod? paymentMethod,
+    String? approvedByUserId,
   }) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
@@ -506,13 +508,23 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       );
     }
 
+    bool negativeBalanceApproved = false;
     if (direction == FinancialAccountEntryDirection.outflow) {
       final currentBalance = await currentBalanceForAccount(id);
       final projectedBalance = currentBalance - amountQirsh;
-      if (projectedBalance < 0 && !account.allowNegativeBalance) {
-        throw StateError(
-          'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
-        );
+      if (projectedBalance < 0) {
+        if (!account.allowNegativeBalance) {
+          throw StateError(
+            'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
+          );
+        }
+        final approver = approvedByUserId?.trim();
+        if (approver == null || approver.isEmpty) {
+          throw StateError(
+            'الرصيد غير كافٍ. تتطلب العملية موافقة المالك المباشرة.',
+          );
+        }
+        negativeBalanceApproved = true;
       }
     }
 
@@ -533,6 +545,9 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       reversalOf: reversalOf,
       correctionGroup: correctionGroup,
       paymentMethod: paymentMethod,
+      approvedByUserId: negativeBalanceApproved
+          ? _normalizedRequiredId(approvedByUserId!, 'approvedByUserId')
+          : null,
     );
     _entries.add(entry);
 
@@ -542,6 +557,15 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
           'تم تسجيل حركة مالية ${direction.labelAr} بقيمة $amountQirsh قيرش.',
       referenceId: entry.id,
     );
+    if (negativeBalanceApproved) {
+      await _recordAudit(
+        actionType: 'financial_account.entry.negative_balance_approved',
+        descriptionAr:
+            'تمت موافقة المالك على حركة تجعل الرصيد سالبًا. '
+            'الحساب: "${account.name}"، المبلغ: $amountQirsh قيرش.',
+        referenceId: entry.id,
+      );
+    }
     return entry;
   }
 
@@ -698,9 +722,15 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     if (!source.isActive || !destination.isActive) {
       throw StateError('الحساب المعطل لا يستخدم في تحويل جديد.');
     }
+    bool transferNegativeBalanceOverride = false;
     if (!source.allowNegativeBalance) {
       if (await currentBalanceForAccount(sourceId) < draft.amountQirsh) {
         throw StateError('رصيد الحساب المصدر غير كافٍ للتحويل.');
+      }
+    } else {
+      final currentBalance = await currentBalanceForAccount(sourceId);
+      if (currentBalance < draft.amountQirsh) {
+        transferNegativeBalanceOverride = true;
       }
     }
     final now = DateTime.now();
@@ -751,6 +781,13 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
         actionType: 'financial_transfer.created',
         descriptionAr: 'تم إنشاء تحويل مالي ${transfer.displayNumber}.',
         referenceId: transfer.id);
+    if (transferNegativeBalanceOverride) {
+      await _recordAudit(
+          actionType: 'financial_transfer.negative_balance_override',
+          descriptionAr:
+              'تم تحويل مالي يجعل رصيد الحساب "${source.name}" سالبًا بموافقة المالك.',
+          referenceId: transfer.id);
+    }
     return transfer;
   }
 

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
@@ -209,6 +210,8 @@ class SaleController extends ChangeNotifier {
             reference: 'عكس إلغاء فاتورة ${cancelled.id}',
             note: 'إلغاء فاتورة مبيعات: $cancellationReason',
             paymentMethod: cancelled.paymentMethod,
+            approvedByUserId:
+                user.role == UserRole.owner ? user.id : null,
           );
         }
       }

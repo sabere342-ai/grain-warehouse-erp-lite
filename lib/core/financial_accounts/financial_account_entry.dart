@@ -98,6 +98,7 @@ class FinancialAccountEntry {
     this.reversalOf,
     this.correctionGroup,
     this.paymentMethod,
+    this.approvedByUserId,
   });
 
   final String id;
@@ -115,6 +116,7 @@ class FinancialAccountEntry {
   final String? reversalOf;
   final String? correctionGroup;
   final PaymentMethod? paymentMethod;
+  final String? approvedByUserId;
 
   bool get hasValidId => id.trim().isNotEmpty;
   int get signedAmountQirsh =>

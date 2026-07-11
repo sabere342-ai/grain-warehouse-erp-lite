@@ -38,6 +38,7 @@ class SupplierPaymentDraft {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.approvedByUserId,
   });
 
   final String supplierId;
@@ -48,4 +49,5 @@ class SupplierPaymentDraft {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final String? approvedByUserId;
 }

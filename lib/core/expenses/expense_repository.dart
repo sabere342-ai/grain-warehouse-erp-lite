@@ -78,6 +78,7 @@ class LocalExpenseRepository implements ExpenseRepository {
         reference: 'مصروف: ${expense.category}',
         note: 'مصروف ${expense.amountQirsh} قيرش - ${expense.category}',
         paymentMethod: expense.paymentMethod,
+        approvedByUserId: draft.approvedByUserId,
       );
     }
 
