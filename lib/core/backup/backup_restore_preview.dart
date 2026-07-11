@@ -3,7 +3,7 @@ import 'dart:convert';
 class BackupRestorePreviewService {
   const BackupRestorePreviewService();
 
-  static const supportedBackupVersions = {1, 2, 3, 4};
+  static const supportedBackupVersions = {1, 2, 3, 4, 5};
   static const _appName = 'grain-warehouse-erp-lite';
   static const _requiredCountKeys = [
     'products',
@@ -24,6 +24,7 @@ class BackupRestorePreviewService {
     'financialAccounts',
     'financialAccountEntries',
     'financialTransfers',
+    'financialClosings',
   ];
   static const _sensitiveKeys = {
     'password',
@@ -265,6 +266,7 @@ class BackupRestorePreviewCounts {
     this.financialAccounts = 0,
     this.financialAccountEntries = 0,
     this.financialTransfers = 0,
+    this.financialClosings = 0,
   });
 
   factory BackupRestorePreviewCounts.fromMap(Map<String, int> counts) {
@@ -285,6 +287,7 @@ class BackupRestorePreviewCounts {
       financialAccounts: counts['financialAccounts'] ?? 0,
       financialAccountEntries: counts['financialAccountEntries'] ?? 0,
       financialTransfers: counts['financialTransfers'] ?? 0,
+      financialClosings: counts['financialClosings'] ?? 0,
     );
   }
 
@@ -304,4 +307,5 @@ class BackupRestorePreviewCounts {
   final int financialAccounts;
   final int financialAccountEntries;
   final int financialTransfers;
+  final int financialClosings;
 }

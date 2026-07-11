@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/features/financial_reports/account_bala
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_closing_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialReportsScreen extends StatelessWidget {
@@ -38,6 +39,14 @@ class FinancialReportsScreen extends StatelessWidget {
             subtitle: 'عرض أرصدة جميع الحسابات المالية لل période المحددة',
             icon: Icons.account_balance_wallet_rounded,
             onTap: () => _navigate(context, const AccountBalanceReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'الإغلاق المالي والتسوية',
+            subtitle:
+                'إغلاق يوم أو فترة، تسجيل الرصيد الفعلي، ومراجعة فروق التسوية',
+            icon: Icons.lock_clock_rounded,
+            onTap: () => _navigate(context, const FinancialClosingScreen()),
           ),
           const SizedBox(height: 12),
           _ReportCard(

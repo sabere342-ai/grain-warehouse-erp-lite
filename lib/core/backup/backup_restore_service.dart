@@ -24,6 +24,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -146,6 +147,7 @@ class BackupRestoreService {
         accounts: restored.financialAccounts,
         entries: restored.financialAccountEntries,
         transfers: restored.financialTransfers,
+        closings: restored.financialClosings,
       );
       if (_businessIdentityRepository != null) {
         await _businessIdentityRepository.saveIdentity(
@@ -253,6 +255,9 @@ class BackupRestoreService {
     final financialTransfers = _optionalList(data, 'financialTransfers')
         .map(_parseFinancialTransfer)
         .toList();
+    final financialClosings = _optionalList(data, 'financialClosings')
+        .map(_parseFinancialClosing)
+        .toList();
     final settings = data['settings'];
     final settingsMap =
         settings is Map<String, Object?> ? settings : <String, Object?>{};
@@ -292,6 +297,7 @@ class BackupRestoreService {
       financialAccounts: financialAccounts,
       financialAccountEntries: financialAccountEntries,
       financialTransfers: financialTransfers,
+      financialClosings: financialClosings,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
       logoRestoreWarning: _logoRestoreWarning,
@@ -583,6 +589,33 @@ class BackupRestoreService {
       originalTransferId: _optionalString(map, 'originalTransferId'),
       reversalTransferId: _optionalString(map, 'reversalTransferId'),
       reversalReason: _optionalString(map, 'reversalReason'),
+    );
+  }
+
+  FinancialClosing _parseFinancialClosing(Object? value) {
+    final map = _map(value);
+    final rawLines = map['lines'];
+    if (rawLines is! List<Object?>) {
+      throw StateError('Invalid financial closing lines.');
+    }
+    return FinancialClosing(
+      id: _string(map, 'id'),
+      kind: FinancialClosingKind.values.byName(_string(map, 'kind')),
+      fromDate: _date(map, 'fromDate'),
+      toDate: _date(map, 'toDate'),
+      lines: rawLines.map((raw) {
+        final line = _map(raw);
+        return FinancialClosingLine(
+            accountId: _string(line, 'accountId'),
+            expectedBalanceQirsh: _int(line, 'expectedBalanceQirsh'),
+            actualBalanceQirsh: _int(line, 'actualBalanceQirsh'));
+      }).toList(growable: false),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      note: _optionalString(map, 'note'),
+      reopenedAt: map['reopenedAt'] == null ? null : _date(map, 'reopenedAt'),
+      reopenedByUserId: _optionalString(map, 'reopenedByUserId'),
+      reopenReason: _optionalString(map, 'reopenReason'),
     );
   }
 
@@ -919,6 +952,7 @@ class _RestoredBackupData {
     required this.financialAccounts,
     required this.financialAccountEntries,
     required this.financialTransfers,
+    required this.financialClosings,
     required this.businessIdentity,
     required this.documentHistoryCount,
     this.logoRestoreWarning,
@@ -939,6 +973,7 @@ class _RestoredBackupData {
   final List<FinancialAccount> financialAccounts;
   final List<FinancialAccountEntry> financialAccountEntries;
   final List<FinancialTransfer> financialTransfers;
+  final List<FinancialClosing> financialClosings;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
   final String? logoRestoreWarning;

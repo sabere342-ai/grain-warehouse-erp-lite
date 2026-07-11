@@ -460,16 +460,14 @@ void main() {
       }
     });
 
-    test('backup version is 4', () {
-      expect(BackupExportService.backupVersion, 4);
+    test('backup version is 5', () {
+      expect(BackupExportService.backupVersion, 5);
     });
 
     test('backup includes base64-encoded logo in businessIdentity', () async {
       final identityRepository = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
-        logosDirectory:
-            '${sourceDir.path}${Platform.pathSeparator}logos',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        logosDirectory: '${sourceDir.path}${Platform.pathSeparator}logos',
       );
 
       final pngBytes = _createMinimalPng(64, 64);
@@ -508,8 +506,7 @@ void main() {
 
     test('backup without logo omits logo payload', () async {
       final identityRepository = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
       );
       await identityRepository.saveIdentity(
         const BusinessIdentity(establishmentName: 'بدون شعار'),
@@ -542,10 +539,8 @@ void main() {
 
     test('restore with valid logo payload restores logo', () async {
       final sourceIdentityRepo = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
-        logosDirectory:
-            '${sourceDir.path}${Platform.pathSeparator}logos',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        logosDirectory: '${sourceDir.path}${Platform.pathSeparator}logos',
       );
 
       final pngBytes = _createMinimalPng(48, 48);
@@ -564,10 +559,8 @@ void main() {
       final backup = await source.exportService.createBackup();
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
-        filePath:
-            '${targetDir.path}${Platform.pathSeparator}identity.json',
-        logosDirectory:
-            '${targetDir.path}${Platform.pathSeparator}logos',
+        filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',
+        logosDirectory: '${targetDir.path}${Platform.pathSeparator}logos',
       );
       final target = _RepoSet(identityRepository: targetIdentityRepo);
       final now = DateTime(2026, 7, 10);
@@ -590,15 +583,14 @@ void main() {
       expect(restored.hasLogo, isTrue);
       expect(restored.logo!.mimeType, 'image/png');
 
-      final restoredBytes =
-          await targetIdentityRepo.loadLogoBytes(restored.logo!.managedFileName);
+      final restoredBytes = await targetIdentityRepo
+          .loadLogoBytes(restored.logo!.managedFileName);
       expect(restoredBytes, pngBytes);
     });
 
     test('restore with corrupted logo data produces warning', () async {
       final identityRepository = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
       );
       await identityRepository.saveIdentity(
         const BusinessIdentity(establishmentName: 'Test'),
@@ -672,10 +664,8 @@ void main() {
       };
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
-        filePath:
-            '${targetDir.path}${Platform.pathSeparator}identity.json',
-        logosDirectory:
-            '${targetDir.path}${Platform.pathSeparator}logos',
+        filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',
+        logosDirectory: '${targetDir.path}${Platform.pathSeparator}logos',
       );
       final target = _RepoSet(identityRepository: targetIdentityRepo);
       final result = await target.restoreService.restoreToEmpty(
@@ -695,8 +685,7 @@ void main() {
 
     test('restore with unsupported MIME type produces warning', () async {
       final identityRepository = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
       );
       await identityRepository.saveIdentity(
         const BusinessIdentity(establishmentName: 'Test'),
@@ -770,10 +759,8 @@ void main() {
       };
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
-        filePath:
-            '${targetDir.path}${Platform.pathSeparator}identity.json',
-        logosDirectory:
-            '${targetDir.path}${Platform.pathSeparator}logos',
+        filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',
+        logosDirectory: '${targetDir.path}${Platform.pathSeparator}logos',
       );
       final target = _RepoSet(identityRepository: targetIdentityRepo);
       final result = await target.restoreService.restoreToEmpty(
@@ -788,8 +775,7 @@ void main() {
 
     test('restore v2 backup without logo still works', () async {
       final identityRepository = LocalBusinessIdentityRepository(
-        filePath:
-            '${sourceDir.path}${Platform.pathSeparator}identity.json',
+        filePath: '${sourceDir.path}${Platform.pathSeparator}identity.json',
       );
       await identityRepository.saveIdentity(
         const BusinessIdentity(establishmentName: 'اختبار v2'),
@@ -799,8 +785,7 @@ void main() {
       final backup = await source.exportService.createBackup();
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
-        filePath:
-            '${targetDir.path}${Platform.pathSeparator}identity.json',
+        filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',
       );
       final target = _RepoSet(identityRepository: targetIdentityRepo);
       final now = DateTime(2026, 7, 10);
@@ -924,10 +909,12 @@ void main() {
       final tempDir = await Directory.systemTemp.createTemp('phase68-ico-');
       addTearDown(() => tempDir.delete(recursive: true));
 
-      final sourcePng = File('${tempDir.path}${Platform.pathSeparator}source.png');
+      final sourcePng =
+          File('${tempDir.path}${Platform.pathSeparator}source.png');
       await sourcePng.writeAsBytes(_createMinimalPng(256, 256));
 
-      final outputIco = File('${tempDir.path}${Platform.pathSeparator}output.ico');
+      final outputIco =
+          File('${tempDir.path}${Platform.pathSeparator}output.ico');
 
       final scriptPath =
           '${projectDir.path}${Platform.pathSeparator}tool${Platform.pathSeparator}create_windows_app_icon.ps1';
@@ -936,10 +923,14 @@ void main() {
         'powershell.exe',
         [
           '-NoProfile',
-          '-ExecutionPolicy', 'Bypass',
-          '-File', scriptPath,
-          '-SourceImage', sourcePng.path,
-          '-OutputPath', outputIco.path,
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          scriptPath,
+          '-SourceImage',
+          sourcePng.path,
+          '-OutputPath',
+          outputIco.path,
         ],
         workingDirectory: projectDir.path,
       );
@@ -967,7 +958,8 @@ void main() {
       final tempDir = await Directory.systemTemp.createTemp('phase68-ico-');
       addTearDown(() => tempDir.delete(recursive: true));
 
-      final sourceBmp = File('${tempDir.path}${Platform.pathSeparator}source.bmp');
+      final sourceBmp =
+          File('${tempDir.path}${Platform.pathSeparator}source.bmp');
       await sourceBmp.writeAsBytes(Uint8List(100));
 
       final scriptPath =
@@ -977,9 +969,12 @@ void main() {
         'powershell.exe',
         [
           '-NoProfile',
-          '-ExecutionPolicy', 'Bypass',
-          '-File', scriptPath,
-          '-SourceImage', sourceBmp.path,
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          scriptPath,
+          '-SourceImage',
+          sourceBmp.path,
         ],
         workingDirectory: projectDir.path,
       );
@@ -999,8 +994,10 @@ void main() {
         'powershell.exe',
         [
           '-NoProfile',
-          '-ExecutionPolicy', 'Bypass',
-          '-File', scriptPath,
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          scriptPath,
           '-Help',
         ],
         workingDirectory: projectDir.path,
@@ -1048,7 +1045,14 @@ void main() {
 Uint8List _createMinimalPng(int width, int height) {
   // Minimal PNG: IHDR chunk with specified dimensions, single transparent pixel
   final pngSignature = Uint8List.fromList([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
   ]);
 
   // IHDR chunk

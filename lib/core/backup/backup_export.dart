@@ -18,6 +18,7 @@ import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -62,7 +63,7 @@ class BackupExportService {
         _financialAccountRepository = financialAccountRepository,
         _now = now;
 
-  static const int backupVersion = 4;
+  static const int backupVersion = 5;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -113,6 +114,9 @@ class BackupExportService {
     final financialTransfers =
         await _financialAccountRepository?.listTransfers() ??
             const <FinancialTransfer>[];
+    final financialClosings =
+        await _financialAccountRepository?.listClosings() ??
+            const <FinancialClosing>[];
     final businessIdentity =
         await _businessIdentityRepository?.loadIdentity() ??
             BusinessIdentity.empty;
@@ -134,6 +138,7 @@ class BackupExportService {
       financialAccounts: financialAccounts.length,
       financialAccountEntries: financialAccountEntries.length,
       financialTransfers: financialTransfers.length,
+      financialClosings: financialClosings.length,
     );
     final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
@@ -180,6 +185,9 @@ class BackupExportService {
             .toList(growable: false),
         'financialTransfers': financialTransfers
             .map(_financialTransferToJson)
+            .toList(growable: false),
+        'financialClosings': financialClosings
+            .map(_financialClosingToJson)
             .toList(growable: false),
         'settings': {
           'businessIdentity': await _identityWithLogoJson(businessIdentity),
@@ -536,6 +544,26 @@ class BackupExportService {
         'reversalReason': value.reversalReason,
       };
 
+  Map<String, Object?> _financialClosingToJson(FinancialClosing value) => {
+        'id': value.id,
+        'kind': value.kind.name,
+        'fromDate': value.fromDate.toUtc().toIso8601String(),
+        'toDate': value.toDate.toUtc().toIso8601String(),
+        'lines': value.lines
+            .map((line) => {
+                  'accountId': line.accountId,
+                  'expectedBalanceQirsh': line.expectedBalanceQirsh,
+                  'actualBalanceQirsh': line.actualBalanceQirsh,
+                })
+            .toList(growable: false),
+        'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'note': value.note,
+        'reopenedAt': value.reopenedAt?.toUtc().toIso8601String(),
+        'reopenedByUserId': value.reopenedByUserId,
+        'reopenReason': value.reopenReason,
+      };
+
   String _adler32(String input) {
     const modulus = 65521;
     var a = 1;
@@ -587,6 +615,7 @@ class BackupExportCounts {
     this.financialAccounts = 0,
     this.financialAccountEntries = 0,
     this.financialTransfers = 0,
+    this.financialClosings = 0,
   });
 
   final int products;
@@ -605,6 +634,7 @@ class BackupExportCounts {
   final int financialAccounts;
   final int financialAccountEntries;
   final int financialTransfers;
+  final int financialClosings;
 
   Map<String, int> toJson() {
     return {
@@ -624,6 +654,7 @@ class BackupExportCounts {
       'financialAccounts': financialAccounts,
       'financialAccountEntries': financialAccountEntries,
       'financialTransfers': financialTransfers,
+      'financialClosings': financialClosings,
     };
   }
 }

@@ -2,9 +2,9 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** Phase 79 — Account-Based Financial Reports Implementation
-> **HEAD / الرأس الحالي:** `f059a16`
-> **Tests / الاختبارات:** 774/774 passing
+> **Last Updated / آخر تحديث:** Phase 80 — Period Closing / Daily Closing / Financial Reconciliation
+> **HEAD / الرأس الحالي:** Phase 80 completion commit (this document)
+> **Tests / الاختبارات:** 779/779 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -47,7 +47,7 @@
 | Money type | `int` (Qirsh — no decimals) |
 | Weight type | `int` (grams) |
 | Persistence | In-memory repositories (`Local*Repository`) |
-| Backup/Restore | JSON export/import (Version 4 with financial accounts) |
+| Backup/Restore | JSON export/import (Version 5 with financial closings; backward-compatible with v1–v4) |
 | PDF generation | Flutter PDF rendering |
 | Database | **None** — no SQLite, no cloud, no server |
 | Networking | None (offline-only) |
@@ -57,9 +57,9 @@
 
 ## Current Status
 
-**Phase:** 79 — Account-Based Financial Reports Implementation
-**HEAD:** `f059a16`
-**Test Suite:** 774/774 tests passing
+**Phase:** 80 — Period Closing / Daily Closing / Financial Reconciliation
+**HEAD:** Phase 80 completion commit
+**Test Suite:** 779/779 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
 
@@ -232,12 +232,12 @@ The following features do not exist in any form:
 - [ ] Supplier payment by account report
 - [ ] Expense by account report
 - [ ] Fee tracking (bank/wallet fees)
-- [ ] Reconciliation report (RPT-008)
+- [x] Reconciliation history and differences (Phase 80)
 
 ### Daily Close & Reconciliation / الإغلاق اليومي والتسوية
-- [ ] Daily cash closing — DC-U006 closed (owner decisions adopted Phase 78), scope defined in Phase 77
-- [ ] Cash count and reconciliation workflow
-- [ ] Period close
+- [x] Daily cash closing (Phase 80)
+- [x] Cash count and reconciliation workflow (Phase 80)
+- [x] Period close and posting lock (Phase 80)
 
 ### Advanced Operations / العمليات المتقدمة
 - [ ] Mixed source operations
@@ -331,7 +331,8 @@ SaaS licensing
 | 76 | Internal financial transfers implementation | Implementation | ✅ Complete |
 | 77 | Financial reporting scope & governing baseline reconciliation | Documentation | ✅ Complete |
 | 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete |
-| 79 | Account-based financial reports implementation | Implementation | ✅ Complete (current) |
+| 79 | Account-based financial reports implementation | Implementation | ✅ Complete |
+| 80 | Period closing / daily closing / financial reconciliation | Implementation | ✅ Complete (current) |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 

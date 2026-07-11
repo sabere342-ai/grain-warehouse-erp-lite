@@ -1416,3 +1416,13 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 
 ### Next Recommended Phase
 - Phase 80 — Period Closing / Daily Closing / Reconciliation (depends on backup contract fix)
+
+## Phase 80 — Period Closing / Daily Closing / Financial Reconciliation
+
+- Implemented owner-only daily/period closing under the approved `DC-U006` policy.
+- Actual balance is mandatory for every active financial account; expected balance remains ledger-derived and differences never create balancing entries.
+- Approved periods block dated financial entries/transfers; owner reopening requires a reason and preserves the reconciliation record.
+- Added the real Arabic workflow and reconciliation history under Financial Reports.
+- Backup upgraded to v5 with closing records; restore remains backward-compatible with v1–v4.
+- Added 5 focused tests; full suite is 779/779 before final closure gates.
+- Split Payments were not included. Cloud Sync, multi-device, and mobile remain future roadmap work.

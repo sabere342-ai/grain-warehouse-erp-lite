@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 
 abstract class FinancialAccountRepository {
   Future<List<FinancialAccount>> listAccounts({bool includeInactive = false});
@@ -51,6 +52,13 @@ abstract class FinancialAccountRepository {
     required String reason,
   });
   Future<List<FinancialTransfer>> listTransfers();
+  Future<List<FinancialClosing>> listClosings();
+  Future<FinancialClosing> createClosing(
+      {required AppUser user, required FinancialClosingDraft draft});
+  Future<FinancialClosing> reopenClosing(
+      {required AppUser user,
+      required String closingId,
+      required String reason});
 }
 
 class LocalFinancialAccountRepository implements FinancialAccountRepository {
@@ -61,6 +69,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
   final List<FinancialAccount> _accounts = [];
   final List<FinancialAccountEntry> _entries = [];
   final List<FinancialTransfer> _transfers = [];
+  final List<FinancialClosing> _closings = [];
   int _generatedAccountIdCounter = 0;
   int _generatedEntryIdCounter = 0;
   int _generatedTransferIdCounter = 0;
@@ -436,7 +445,9 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
   }) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
-    await accountById(id);
+    final account = await accountById(id);
+    if (!account.isActive) throw StateError('Inactive financial account.');
+    _ensureDateIsOpen(effectiveDate);
 
     if (amountQirsh <= 0) {
       throw ArgumentError.value(
@@ -480,6 +491,110 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       List<FinancialTransfer>.unmodifiable(_transfers);
 
   @override
+  Future<List<FinancialClosing>> listClosings() async =>
+      List.unmodifiable(_closings.reversed);
+
+  @override
+  Future<FinancialClosing> createClosing(
+      {required AppUser user, required FinancialClosingDraft draft}) async {
+    _requireTransferOwner(user);
+    final from = _dateOnly(draft.fromDate);
+    final to = _dateOnly(draft.toDate);
+    final today = _dateOnly(DateTime.now());
+    if (to.isBefore(from) || to.isAfter(today)) {
+      throw ArgumentError('Invalid or future closing period.');
+    }
+    if (draft.kind == FinancialClosingKind.daily &&
+        !from.isAtSameMomentAs(to)) {
+      throw ArgumentError('Daily closing must cover one day.');
+    }
+    if (_closings.any((c) =>
+        !c.isOpen && !to.isBefore(c.fromDate) && !from.isAfter(c.toDate))) {
+      throw StateError('The period overlaps an approved closing.');
+    }
+    final accounts = await listAccounts();
+    if (accounts.isEmpty) throw StateError('No active financial accounts.');
+    if (draft.actualBalancesQirsh.length != accounts.length ||
+        accounts.any((a) => !draft.actualBalancesQirsh.containsKey(a.id))) {
+      throw StateError('Actual balance is required for every active account.');
+    }
+    final lines = <FinancialClosingLine>[];
+    for (final account in accounts) {
+      var expected = 0;
+      for (final entry in _entries.where((e) =>
+          e.accountId == account.id &&
+          !e.effectiveDate.isAfter(to
+              .add(const Duration(days: 1))
+              .subtract(const Duration(microseconds: 1))))) {
+        expected += entry.signedAmountQirsh;
+      }
+      lines.add(FinancialClosingLine(
+          accountId: account.id,
+          expectedBalanceQirsh: expected,
+          actualBalanceQirsh: draft.actualBalancesQirsh[account.id]!));
+    }
+    final now = DateTime.now();
+    final closing = FinancialClosing(
+        id: 'fac-${now.microsecondsSinceEpoch}',
+        kind: draft.kind,
+        fromDate: from,
+        toDate: to,
+        lines: List.unmodifiable(lines),
+        createdAt: now,
+        createdByUserId: user.id,
+        note: _normalizedOptionalText(draft.note));
+    _closings.add(closing);
+    await _recordAudit(
+        actionType: 'financial_closing.approved',
+        descriptionAr:
+            'تم اعتماد الإغلاق المالي للفترة المحددة دون تعديل الأرصدة الدفترية.',
+        referenceId: closing.id);
+    return closing;
+  }
+
+  @override
+  Future<FinancialClosing> reopenClosing(
+      {required AppUser user,
+      required String closingId,
+      required String reason}) async {
+    _requireTransferOwner(user);
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final index = _closings.indexWhere((c) => c.id == closingId);
+    if (index < 0) throw StateError('Closing not found.');
+    final old = _closings[index];
+    if (old.isOpen) throw StateError('Closing already reopened.');
+    final updated = FinancialClosing(
+        id: old.id,
+        kind: old.kind,
+        fromDate: old.fromDate,
+        toDate: old.toDate,
+        lines: old.lines,
+        createdAt: old.createdAt,
+        createdByUserId: old.createdByUserId,
+        note: old.note,
+        reopenedAt: DateTime.now(),
+        reopenedByUserId: user.id,
+        reopenReason: cleanReason);
+    _closings[index] = updated;
+    await _recordAudit(
+        actionType: 'financial_closing.reopened',
+        descriptionAr: 'تمت إعادة فتح فترة مالية مع الاحتفاظ بسجل التسوية.',
+        referenceId: old.id);
+    return updated;
+  }
+
+  void _ensureDateIsOpen(DateTime value) {
+    final date = _dateOnly(value);
+    if (_closings.any((c) =>
+        !c.isOpen && !date.isBefore(c.fromDate) && !date.isAfter(c.toDate))) {
+      throw StateError('Cannot post into an approved closed period.');
+    }
+  }
+
+  DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  @override
   Future<FinancialTransfer> createTransfer(
       {required AppUser user, required FinancialTransferDraft draft}) async {
     _requireTransferOwner(user);
@@ -505,6 +620,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     if (draft.effectiveDate.isAfter(DateTime.now())) {
       throw ArgumentError('لا يسمح بتاريخ تحويل مستقبلي.');
     }
+    _ensureDateIsOpen(draft.effectiveDate);
     final duplicate =
         _transfers.where((t) => t.clientRequestId == requestId).toList();
     if (duplicate.isNotEmpty) {
@@ -701,6 +817,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     required List<FinancialAccount> accounts,
     required List<FinancialAccountEntry> entries,
     List<FinancialTransfer> transfers = const [],
+    List<FinancialClosing> closings = const [],
   }) async {
     if (_accounts.isNotEmpty || _entries.isNotEmpty) {
       throw StateError('Financial account repository is not empty.');
@@ -708,15 +825,18 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     _validateUniqueRestoredAccounts(accounts);
     _validateUniqueRestoredEntries(entries);
     _validateRestoredTransfers(accounts, entries, transfers);
+    _validateRestoredClosings(accounts, closings);
     _accounts.addAll(accounts);
     _entries.addAll(entries);
     _transfers.addAll(transfers);
+    _closings.addAll(closings);
   }
 
   Future<void> clearForOwnerDataWipe() async {
     _accounts.clear();
     _entries.clear();
     _transfers.clear();
+    _closings.clear();
     _generatedAccountIdCounter = 0;
     _generatedEntryIdCounter = 0;
     _generatedTransferIdCounter = 0;
@@ -780,6 +900,24 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
           !entryIds.contains(transfer.sourceEntryId) ||
           !entryIds.contains(transfer.destinationEntryId)) {
         throw StateError('Invalid financial transfer backup data.');
+      }
+    }
+  }
+
+  void _validateRestoredClosings(
+      List<FinancialAccount> accounts, List<FinancialClosing> closings) {
+    final accountIds = accounts.map((value) => value.id).toSet();
+    final closingIds = <String>{};
+    for (final closing in closings) {
+      final lineAccountIds = <String>{};
+      if (closing.id.trim().isEmpty ||
+          !closingIds.add(closing.id) ||
+          closing.toDate.isBefore(closing.fromDate) ||
+          closing.lines.isEmpty ||
+          closing.lines.any((line) =>
+              !accountIds.contains(line.accountId) ||
+              !lineAccountIds.add(line.accountId))) {
+        throw StateError('Invalid financial closing backup data.');
       }
     }
   }
