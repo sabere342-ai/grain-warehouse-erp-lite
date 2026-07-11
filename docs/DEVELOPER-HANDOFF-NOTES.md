@@ -1146,3 +1146,20 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 ### Deferrals
 - Cloud sync, multi-device operation, and mobile remain planned roadmap items and are not removed.
 - No Phase 74 or other future implementation phase is authorized by this scope freeze.
+
+---
+
+## Phase 74 — Internal Financial Transfers Scope & Owner Decision Pack
+
+### Summary
+- Phase 74 is documentation, architecture, and owner-decision preparation only for `ACC-011`; it does not implement a transfer model, transfer UI, schema/migration, or backup-format change.
+- Current financial accounts remain ledger-derived with opening-balance entries and Phase 72 transaction integration. There is no transfer source type, shared transfer reference, transaction-level atomic pair creation, or transfer idempotency.
+- `ACC-011` remains unimplemented. `ACC-012` and `ACC-013` remain planned and unchanged. `DC-U006` remains OPEN and is not resolved by this phase.
+
+### Open Decision Gate
+- Transfer fees, insufficient balance policy, inactive-account use, dates/backdating, cancellation/reversal, permissions, idempotency, numbering, notes, allowed account types, editing, and confirmation UX are all OPEN owner decisions recorded in the decision register.
+- No internal-transfer implementation may start until the required owner decisions are explicitly recorded. The future implementation phase is not yet authorized or numbered.
+
+### Explicit Deferrals
+- Production transfer model and UI, transfer history, reversal, fees, reconciliation, cash counting, daily/period close, financial reports, cloud sync, multi-device, mobile, schema migration, and backup-version change.
+- Phase 66 remains not executed and has no tag.

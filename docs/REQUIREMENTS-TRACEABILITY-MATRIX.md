@@ -452,7 +452,7 @@
 | **Test evidence** | None |
 | **Missing behavior** | Transfer model, between-account balance adjustments. |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Planning: Phase 73. Implementation phase to be defined after a concrete transfer scope and acceptance criteria are approved. |
+| **Proposed phase** | Planning: Phase 73 scope freeze and Phase 74 owner decision pack. Production implementation remains pending and is not yet authorized or numbered. |
 | **Acceptance evidence** | Not implemented. A future implementation must use traceable source and destination entries of equal value, preserve zero net movement across financial assets except explicit documented fees, and reverse rather than delete posted history. |
 
 ---

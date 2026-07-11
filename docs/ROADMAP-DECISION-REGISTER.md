@@ -491,6 +491,156 @@
 
 ---
 
+## Phase 74 — Internal Financial Transfer Decisions
+
+All decisions in this section are linked to Phase 74 and `ACC-011`. They remain open; no production transfer behavior is authorized by recording them.
+
+### DC-U013: Transfer fees
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U013 |
+| **Question** | Does the first transfer implementation support explicit fees, and if so how are they posted? |
+| **Alternatives** | A) No fees in the first implementation; B) explicit separate fee posting with its own approved accounting treatment. |
+| **Recommendation** | A — avoids inventing expense, source-account, or net/gross rules before an owner decision. |
+| **Impact** | Fees cannot be silently absorbed into the transfer pair. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U014: Insufficient source balance
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U014 |
+| **Question** | Block transfer when the source balance is insufficient, allow a negative balance, or vary by account type? |
+| **Alternatives** | A) Block; B) allow negative; C) type-specific policy. |
+| **Recommendation** | A for the first transfer scope; current generic entry creation permits negative balances, so this must be explicitly decided rather than assumed. |
+| **Impact** | Determines transfer validation and whether a new balance guard is required. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U015: Inactive accounts
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U015 |
+| **Question** | May an inactive account be selected as transfer source or destination? |
+| **Alternatives** | A) Active accounts only; B) allow selected inactive-account cases. |
+| **Recommendation** | A — retain historical visibility in statements but prohibit new postings to inactive accounts. |
+| **Impact** | Affects account selection and repository validation. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U016: Transfer date and backdating
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U016 |
+| **Question** | Today only, or allow an effective date in the past? |
+| **Alternatives** | A) Today only; B) allow backdating with an auditable effective date. |
+| **Recommendation** | B only if the owner accepts it; current entries already have effective dates and no close lock, but no transfer policy exists. |
+| **Impact** | Affects statement order and future relationship to `DC-U006`. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U017: Cancellation and reversal
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U017 |
+| **Question** | No cancellation in the first release, or an auditable reversal with a reason? |
+| **Alternatives** | A) No cancellation; B) documented paired reversal requiring reason. |
+| **Recommendation** | B, consistent with the existing non-destructive reversal direction, but implementation remains unauthorized. |
+| **Impact** | Determines reversal linkage, permissions, and duplicate-reversal prevention. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U018: Transfer permissions
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U018 |
+| **Question** | Who may create or reverse a transfer? |
+| **Alternatives** | A) owner only; B) owner and employee; C) future dedicated permission. |
+| **Recommendation** | A until a dedicated permission is deliberately designed; the current roles are only owner and employee. |
+| **Impact** | Requires matching UI and repository authorization. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U019: Transfer idempotency
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U019 |
+| **Question** | Use a client request ID, a unique transfer reference, or both to protect retries? |
+| **Alternatives** | A) request ID; B) reference; C) both. |
+| **Recommendation** | C for a future durable implementation; no current financial-transfer idempotency convention exists. |
+| **Impact** | Prevents duplicate paired movements during retry. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U020: Transfer numbering
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U020 |
+| **Question** | Use a transfer-specific sequence, internal UUID plus display number, or an existing numbering scheme? |
+| **Alternatives** | A) sequence; B) UUID plus display number; C) existing compatible scheme. |
+| **Recommendation** | B if a display identifier is needed; current entry IDs are generated locally and no transfer document numbering exists. |
+| **Impact** | Defines the shared human-facing reference. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U021: Notes and reasons
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U021 |
+| **Question** | Are transfer notes optional, required, or selected from a reason list? |
+| **Alternatives** | A) optional; B) required; C) reason list plus note. |
+| **Recommendation** | A for ordinary transfers, with a mandatory reason if reversal is later approved. |
+| **Impact** | Affects data validation and audit detail. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U022: Allowed account types
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U022 |
+| **Question** | Allow all active financial accounts or restrict transfers by account type? |
+| **Alternatives** | A) all active accounts; B) selected type pairs; C) prohibit same-type transfers. |
+| **Recommendation** | A, subject to the inactive-account decision; the current unified model treats treasury, bank, and wallet as financial accounts. |
+| **Impact** | Defines eligible source/destination combinations. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U023: Edit policy
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U023 |
+| **Question** | Can a saved transfer be edited, or must correction be reversal plus a new transfer? |
+| **Alternatives** | A) immutable after save; B) drafts only before posting; C) reversal then new transfer. |
+| **Recommendation** | A/C — no silent historical edit; if a correction is needed, use an approved reversal and new transfer. |
+| **Impact** | Protects audit history and statement consistency. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+### DC-U024: Owner confirmation UX
+
+| Field | Detail |
+|---|---|
+| **Decision ID** | DC-U024 |
+| **Question** | Use one confirmation, a review screen, or an additional confirmation for high amounts? |
+| **Alternatives** | A) one confirmation; B) review screen; C) threshold-based extra confirmation. |
+| **Recommendation** | B — clear review without inventing an amount threshold. |
+| **Impact** | Affects future Arabic RTL flow and error prevention. |
+| **Deadline** | Before internal-transfer implementation |
+| **Status** | REQUIRES OWNER DECISION — OPEN |
+
+---
+
 ## Decision Dependencies
 
 ```

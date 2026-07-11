@@ -358,6 +358,13 @@ The recommended path forward, respecting all dependencies:
 5. ✅ Kept `DC-U006` open: no hard close, period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction without an explicit owner decision
 6. ✅ Recorded the dependency order and accounting invariants for future implementation
 
+**Phase 74: Internal Financial Transfers Scope & Owner Decision Pack — DOCUMENTATION COMPLETE**
+1. ✅ Documentation, architecture, and owner-decision preparation only for `ACC-011`
+2. ✅ No production transfer model, UI, schema, migration, or backup-format change
+3. ✅ Recorded transfer accounting invariants, candidate architecture, atomicity, statement/audit, schema, backup, and UI assessments
+4. ✅ Added open owner decisions required before any internal-transfer implementation
+5. ✅ Confirmed the next implementation phase is not authorized or numbered
+
 ### Then: Financial Reporting & Reconciliation
 The following are planned capabilities, not approved numbered implementation phases. Their detailed scope is frozen in Phase 73 and must be defined with acceptance criteria before implementation:
 
@@ -367,6 +374,8 @@ The following are planned capabilities, not approved numbered implementation pha
 4. Daily or period close only after `DC-U006` receives an explicit owner decision
 
 No Phase 73 production implementation exists for these capabilities. No account transfer, daily close, reconciliation, or financial report is implemented by this documentation phase.
+
+Phase 74 does not implement internal transfers. A future internal-transfer implementation phase is not yet authorized or numbered; it requires the Phase 74 owner decisions to be explicitly resolved first.
 
 ### Then: Production Hardening
 1. Complete all partial implementations (split payments, invoice logos, PDF stock adjustment)
@@ -396,6 +405,7 @@ No Phase 73 production implementation exists for these capabilities. No account 
 | 1.1 | 2026-07-10 | 71 | Phase 71 completed — financial accounts foundation |
 | 1.2 | 2026-07-10 | 72 | Phase 72 completed — transaction integration with financial accounts |
 | 1.3 | 2026-07-11 | 73 | Financial reporting & reconciliation scope freeze; documentation only, no production implementation |
+| 1.4 | 2026-07-11 | 74 | Internal financial transfers scope and owner decision pack; documentation only, ACC-011 remains unimplemented |
 
 ---
 
