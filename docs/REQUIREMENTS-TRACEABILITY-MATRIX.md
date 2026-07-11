@@ -1463,4 +1463,17 @@ This matrix was reconciled with the actual codebase state in Phase 77. The follo
 - CAN-007 updated to reflect that financial accounts exist but general-purpose financial-account reversal is not implemented.
 - RPT-003, RPT-004, RPT-007 updated to reflect that their dependencies (ACC-007, ACC-010, ACC-011) are now met.
 - Summary counts corrected: 58 implemented (was 57), 22 not implemented (was 23).
+
+---
+
+# Phase 78 owner decisions adoption & compatibility audit
+
+`DC-U002` (split payments), `DC-U006` (daily/period closing), `DC-U007` (negative balance), and `DC-U008` (overpayment) are all CLOSED per owner directive in Phase 78. The owner decisions are adopted as follows:
+
+- **DC-U002**: Max 3–5 payment methods per invoice; per-account owner config; partial payments allowed; no new financial-account creation during split.
+- **DC-U006**: Mandatory actual balance; owner-only approve/reopen; period lock with configurable periods; no backdated entries into locked periods.
+- **DC-U007**: Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient.
+- **DC-U008**: Owner approval per overpayment operation; recorded as customer/supplier credit or advance; no editing of original collection/payment document; refund via separate compensating entry.
+
+A compatibility audit of all production code was completed. No confirmed defects were found in audited areas (transfers, cancellations, reversals, balance invariants). Implementation gaps were documented for the decisions above — they require new implementation phases to realize.
 - Blocker table corrected to reflect current dependency state.

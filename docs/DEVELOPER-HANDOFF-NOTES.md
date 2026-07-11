@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 676, all passing
+- Tests: currently 709, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -1226,7 +1226,7 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 
 ### Explicit Boundaries
 - No transfer fee, multicurrency, reconciliation, closing policy, drafts, approvals, or changes to historic financial-operation rules were introduced.
-- DC-U006 remains open.
+- DC-U006 remains open — CLOSED in Phase 78.
 
 ---
 
@@ -1238,8 +1238,8 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - Corrected stale documentation that incorrectly listed financial accounts, financial ledger, transaction integration, payment method tracking, and internal transfers as NOT IMPLEMENTED.
 - Defined financial report scope: Account Balance Report, Financial Account Statement, Payment Method Report, Internal Transfer Report.
 - Documented accounting rules, date/ordering rules, permissions, filters, export/printing, backup impact, acceptance criteria, and test plans.
-- Documented open owner decisions (`DC-U002`, `DC-U006`, `DC-U007`, `DC-U008`).
-- Recommended next implementation phase: `Phase 78 — Account-Based Financial Reports Implementation` (pending owner decisions and roadmap update).
+- Documented open owner decisions (`DC-U002`, `DC-U006`, `DC-U007`, `DC-U008`) — all now CLOSED in Phase 78.
+- Recommended next implementation phase: `Phase 79 — Account-Based Financial Reports Implementation` (owner decisions now closed, roadmap updated).
 
 ### Production Code Changed
 - No.
@@ -1283,19 +1283,68 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 ### Open Owner Decisions
 | Decision | Status | Affected Capability |
 |----------|--------|-------------------|
-| DC-U002 | OPEN | Split payments |
-| DC-U006 | OPEN | Daily cash closing, reconciliation |
-| DC-U007 | OPEN | Negative account balance policy |
-| DC-U008 | OPEN | Overpayment/collection policy |
+| DC-U002 | CLOSED (Phase 78) | Split payments — owner decisions adopted |
+| DC-U006 | CLOSED (Phase 78) | Daily cash closing, reconciliation — owner decisions adopted |
+| DC-U007 | CLOSED (Phase 78) | Negative account balance policy — owner decisions adopted |
+| DC-U008 | CLOSED (Phase 78) | Overpayment/collection policy — owner decisions adopted |
 
 ### Remaining Limitations
-- No financial account reports implemented (scope defined in Phase 77).
-- No daily cash closing (blocked by DC-U006).
+- No financial account reports implemented (scope defined in Phase 77, owner decisions adopted Phase 78).
+- No daily cash closing (DC-U006 closed, awaiting implementation phase).
 - No cash count or reconciliation workflow.
-- No split payments (blocked by DC-U002).
+- No split payments (DC-U002 closed, awaiting implementation phase).
+- No negative balance guard on expense/supplier-payment paths (DC-U007 closed, awaiting implementation phase).
+- No overpayment/refund flow (DC-U008 closed, awaiting implementation phase).
+- Backup export missing transaction-level financial-account linkage (must be fixed before closing/reconciliation).
 - Single-device local Windows only.
 - Cloud sync not implemented.
 - Multi-device live sync not implemented.
 
 ### Next Recommended Phase
-- Phase 78 — Account-Based Financial Reports Implementation (pending owner decisions and Master Roadmap update)
+- Phase 79 — Account-Based Financial Reports Implementation (owner decisions now closed)
+
+---
+
+## Phase 78 — Financial Owner Decisions Adoption & Compatibility Audit
+
+### Summary
+- Phase 78 is a documentation + architecture + compatibility audit phase only.
+- Formally adopted all four open owner decisions: `DC-U002` (split payments), `DC-U006` (daily/period closing), `DC-U007` (negative balance), `DC-U008` (overpayment).
+- Completed a comprehensive compatibility audit of all production code against the adopted decisions.
+- No confirmed defects found in audited areas (transfers, cancellations, reversals, balance invariants).
+- Identified implementation gaps: no `allowNegativeBalance` field, no split payment model, no overpayment/refund concept, no expense cancellation, no closing/period lock, backup missing transaction-level FA linkage.
+- 33 characterization tests proving actual behavior of all audited areas.
+
+### Production Code Changed
+- No.
+
+### Schema Changed
+- No.
+
+### UI Changed
+- No.
+
+### Backup Contract Changed
+- No.
+
+### Test File Created
+- `test/phase78_financial_decisions_compatibility_audit_test.dart` — 33 tests
+
+### Files Updated
+1. `docs/MASTER-PRODUCT-ROADMAP.md` — Phase 78 completed, DC-U002/U006/U007/U008 closed, test count updated
+2. `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md` — Phase 78 reconciliation note, decisions closed
+3. `docs/DEVELOPER-HANDOFF-NOTES.md` — this section, test count updated, decisions closed
+
+### Files Created
+1. `docs/PHASE-78-FINANCIAL-OWNER-DECISIONS-ADOPTION-AND-COMPATIBILITY-AUDIT.md`
+
+### Verification Summary
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 709/709 passing
+- `flutter build windows --release`: succeeded
+- `git diff --check`: clean
+
+### Explicit Boundaries
+- No production code, schema, backup contract, or UI changes.
+- No new implementation phase claimed.
+- All findings are documentation and architecture only.
