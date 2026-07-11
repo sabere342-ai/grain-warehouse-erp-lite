@@ -23,7 +23,11 @@ enum FinancialAccountEntrySource {
   customerCollection,
   supplierSettlement,
   expense,
-  cancellationReversal;
+  cancellationReversal,
+  transferOut,
+  transferIn,
+  transferReversalOut,
+  transferReversalIn;
 
   String get labelAr {
     switch (this) {
@@ -45,6 +49,14 @@ enum FinancialAccountEntrySource {
         return 'مصروف';
       case FinancialAccountEntrySource.cancellationReversal:
         return 'عكس إلغاء';
+      case FinancialAccountEntrySource.transferOut:
+        return 'تحويل صادر';
+      case FinancialAccountEntrySource.transferIn:
+        return 'تحويل وارد';
+      case FinancialAccountEntrySource.transferReversalOut:
+        return 'عكس تحويل صادر';
+      case FinancialAccountEntrySource.transferReversalIn:
+        return 'عكس تحويل وارد';
     }
   }
 }

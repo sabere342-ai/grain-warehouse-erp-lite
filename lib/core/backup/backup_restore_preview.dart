@@ -23,6 +23,7 @@ class BackupRestorePreviewService {
     'auditLogs',
     'financialAccounts',
     'financialAccountEntries',
+    'financialTransfers',
   ];
   static const _sensitiveKeys = {
     'password',
@@ -70,7 +71,8 @@ class BackupRestorePreviewService {
       }
 
       final backupVersion = metadata['backupVersion'];
-      if (backupVersion is! int || !supportedBackupVersions.contains(backupVersion)) {
+      if (backupVersion is! int ||
+          !supportedBackupVersions.contains(backupVersion)) {
         return _failure(
           'إصدار النسخة غير مدعوم.',
           'unsupported-version',
@@ -262,6 +264,7 @@ class BackupRestorePreviewCounts {
     required this.auditLogs,
     this.financialAccounts = 0,
     this.financialAccountEntries = 0,
+    this.financialTransfers = 0,
   });
 
   factory BackupRestorePreviewCounts.fromMap(Map<String, int> counts) {
@@ -281,6 +284,7 @@ class BackupRestorePreviewCounts {
       auditLogs: counts['auditLogs'] ?? 0,
       financialAccounts: counts['financialAccounts'] ?? 0,
       financialAccountEntries: counts['financialAccountEntries'] ?? 0,
+      financialTransfers: counts['financialTransfers'] ?? 0,
     );
   }
 
@@ -299,4 +303,5 @@ class BackupRestorePreviewCounts {
   final int auditLogs;
   final int financialAccounts;
   final int financialAccountEntries;
+  final int financialTransfers;
 }

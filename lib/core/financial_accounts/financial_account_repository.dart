@@ -1,6 +1,9 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 
 abstract class FinancialAccountRepository {
   Future<List<FinancialAccount>> listAccounts({bool includeInactive = false});
@@ -40,6 +43,14 @@ abstract class FinancialAccountRepository {
     String? correctionGroup,
     PaymentMethod? paymentMethod,
   });
+  Future<FinancialTransfer> createTransfer(
+      {required AppUser user, required FinancialTransferDraft draft});
+  Future<FinancialTransfer> reverseTransfer({
+    required AppUser user,
+    required String transferId,
+    required String reason,
+  });
+  Future<List<FinancialTransfer>> listTransfers();
 }
 
 class LocalFinancialAccountRepository implements FinancialAccountRepository {
@@ -49,8 +60,10 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
   final AuditLogRepository? _auditLogRepository;
   final List<FinancialAccount> _accounts = [];
   final List<FinancialAccountEntry> _entries = [];
+  final List<FinancialTransfer> _transfers = [];
   int _generatedAccountIdCounter = 0;
   int _generatedEntryIdCounter = 0;
+  int _generatedTransferIdCounter = 0;
 
   @override
   Future<List<FinancialAccount>> listAccounts({
@@ -221,9 +234,8 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final account = await accountById(id);
 
-    var accountEntries = _entries
-        .where((e) => e.accountId == id)
-        .toList(growable: false);
+    var accountEntries =
+        _entries.where((e) => e.accountId == id).toList(growable: false);
     if (fromDate != null) {
       accountEntries = accountEntries
           .where((e) => !e.effectiveDate.isBefore(fromDate))
@@ -324,9 +336,11 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
   }
 
   @override
-  Future<void> correctOpeningBalance(OpeningBalanceCorrectionDraft draft) async {
+  Future<void> correctOpeningBalance(
+      OpeningBalanceCorrectionDraft draft) async {
     final id = _normalizedRequiredId(draft.accountId, 'accountId');
-    final userId = _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
+    final userId =
+        _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
     final reason = _normalizedRequiredText(draft.reason, 'reason');
     final account = await accountById(id);
 
@@ -461,24 +475,251 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     return entry;
   }
 
+  @override
+  Future<List<FinancialTransfer>> listTransfers() async =>
+      List<FinancialTransfer>.unmodifiable(_transfers);
+
+  @override
+  Future<FinancialTransfer> createTransfer(
+      {required AppUser user, required FinancialTransferDraft draft}) async {
+    _requireTransferOwner(user);
+    final sourceId =
+        _normalizedRequiredId(draft.sourceAccountId, 'sourceAccountId');
+    final destinationId = _normalizedRequiredId(
+        draft.destinationAccountId, 'destinationAccountId');
+    final requestId =
+        _normalizedRequiredText(draft.clientRequestId, 'clientRequestId');
+    final reference =
+        _normalizedRequiredText(draft.transferReference, 'transferReference');
+    final userId =
+        _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
+    if (user.id != userId) {
+      throw StateError('Transfer user does not match active session.');
+    }
+    if (sourceId == destinationId) {
+      throw ArgumentError('لا يمكن التحويل إلى الحساب نفسه.');
+    }
+    if (draft.amountQirsh <= 0) {
+      throw ArgumentError('مبلغ التحويل يجب أن يكون أكبر من صفر.');
+    }
+    if (draft.effectiveDate.isAfter(DateTime.now())) {
+      throw ArgumentError('لا يسمح بتاريخ تحويل مستقبلي.');
+    }
+    final duplicate =
+        _transfers.where((t) => t.clientRequestId == requestId).toList();
+    if (duplicate.isNotEmpty) {
+      final existing = duplicate.single;
+      if (existing.sourceAccountId == sourceId &&
+          existing.destinationAccountId == destinationId &&
+          existing.amountQirsh == draft.amountQirsh &&
+          existing.transferReference == reference) return existing;
+      throw StateError('تم استخدام معرف الطلب مع بيانات تحويل مختلفة.');
+    }
+    if (_transfers.any((t) => t.transferReference == reference)) {
+      throw StateError('مرجع التحويل مستخدم بالفعل.');
+    }
+    final source = await accountById(sourceId);
+    final destination = await accountById(destinationId);
+    if (!source.isActive || !destination.isActive) {
+      throw StateError('الحساب المعطل لا يستخدم في تحويل جديد.');
+    }
+    if (await currentBalanceForAccount(sourceId) < draft.amountQirsh) {
+      throw StateError('رصيد الحساب المصدر غير كافٍ للتحويل.');
+    }
+    final now = DateTime.now();
+    final transferId = _generateTransferId(now);
+    final sourceEntry = _newEntry(
+        id: _generateEntryId(now),
+        accountId: sourceId,
+        direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: draft.amountQirsh,
+        sourceType: FinancialAccountEntrySource.transferOut,
+        sourceDocumentId: transferId,
+        sourceDocumentNumber: _displayNumber(),
+        effectiveDate: draft.effectiveDate,
+        createdAt: now,
+        createdByUserId: userId,
+        reference: reference,
+        note: draft.note);
+    final destinationEntry = _newEntry(
+        id: _generateEntryId(now),
+        accountId: destinationId,
+        direction: FinancialAccountEntryDirection.inflow,
+        amountQirsh: draft.amountQirsh,
+        sourceType: FinancialAccountEntrySource.transferIn,
+        sourceDocumentId: transferId,
+        sourceDocumentNumber: sourceEntry.sourceDocumentNumber,
+        effectiveDate: draft.effectiveDate,
+        createdAt: now,
+        createdByUserId: userId,
+        reference: reference,
+        note: draft.note);
+    final transfer = FinancialTransfer(
+        id: transferId,
+        displayNumber: sourceEntry.sourceDocumentNumber!,
+        clientRequestId: requestId,
+        transferReference: reference,
+        sourceAccountId: sourceId,
+        destinationAccountId: destinationId,
+        amountQirsh: draft.amountQirsh,
+        effectiveDate: draft.effectiveDate,
+        createdAt: now,
+        createdByUserId: userId,
+        sourceEntryId: sourceEntry.id,
+        destinationEntryId: destinationEntry.id,
+        note: _normalizedOptionalText(draft.note));
+    _transfers.add(transfer);
+    _entries.addAll([sourceEntry, destinationEntry]);
+    await _recordAudit(
+        actionType: 'financial_transfer.created',
+        descriptionAr: 'تم إنشاء تحويل مالي ${transfer.displayNumber}.',
+        referenceId: transfer.id);
+    return transfer;
+  }
+
+  @override
+  Future<FinancialTransfer> reverseTransfer(
+      {required AppUser user,
+      required String transferId,
+      required String reason}) async {
+    _requireTransferOwner(user);
+    final originalIndex = _transfers.indexWhere((t) => t.id == transferId);
+    if (originalIndex < 0) throw StateError('التحويل غير موجود.');
+    final original = _transfers[originalIndex];
+    if (original.isReversal || original.isReversed) {
+      throw StateError('لا يمكن عكس هذا التحويل.');
+    }
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final userId = _normalizedRequiredId(user.id, 'createdByUserId');
+    final now = DateTime.now();
+    final reversalId = _generateTransferId(now);
+    final number = _displayNumber();
+    final out = _newEntry(
+        id: _generateEntryId(now),
+        accountId: original.destinationAccountId,
+        direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: original.amountQirsh,
+        sourceType: FinancialAccountEntrySource.transferReversalOut,
+        sourceDocumentId: reversalId,
+        sourceDocumentNumber: number,
+        effectiveDate: now,
+        createdAt: now,
+        createdByUserId: userId,
+        reference: original.transferReference,
+        note: cleanReason,
+        reversalOf: original.destinationEntryId);
+    final incoming = _newEntry(
+        id: _generateEntryId(now),
+        accountId: original.sourceAccountId,
+        direction: FinancialAccountEntryDirection.inflow,
+        amountQirsh: original.amountQirsh,
+        sourceType: FinancialAccountEntrySource.transferReversalIn,
+        sourceDocumentId: reversalId,
+        sourceDocumentNumber: number,
+        effectiveDate: now,
+        createdAt: now,
+        createdByUserId: userId,
+        reference: original.transferReference,
+        note: cleanReason,
+        reversalOf: original.sourceEntryId);
+    final reversal = FinancialTransfer(
+        id: reversalId,
+        displayNumber: number,
+        clientRequestId: 'reversal-$reversalId',
+        transferReference: '${original.transferReference}-R',
+        sourceAccountId: original.destinationAccountId,
+        destinationAccountId: original.sourceAccountId,
+        amountQirsh: original.amountQirsh,
+        effectiveDate: now,
+        createdAt: now,
+        createdByUserId: userId,
+        sourceEntryId: out.id,
+        destinationEntryId: incoming.id,
+        note: cleanReason,
+        originalTransferId: original.id,
+        reversalReason: cleanReason);
+    _transfers[originalIndex] = FinancialTransfer(
+        id: original.id,
+        displayNumber: original.displayNumber,
+        clientRequestId: original.clientRequestId,
+        transferReference: original.transferReference,
+        sourceAccountId: original.sourceAccountId,
+        destinationAccountId: original.destinationAccountId,
+        amountQirsh: original.amountQirsh,
+        effectiveDate: original.effectiveDate,
+        createdAt: original.createdAt,
+        createdByUserId: original.createdByUserId,
+        sourceEntryId: original.sourceEntryId,
+        destinationEntryId: original.destinationEntryId,
+        note: original.note,
+        reversalTransferId: reversal.id);
+    _transfers.add(reversal);
+    _entries.addAll([out, incoming]);
+    await _recordAudit(
+        actionType: 'financial_transfer.reversed',
+        descriptionAr: 'تم عكس التحويل المالي ${original.displayNumber}.',
+        referenceId: reversal.id);
+    return reversal;
+  }
+
+  FinancialAccountEntry _newEntry(
+          {required String id,
+          required String accountId,
+          required FinancialAccountEntryDirection direction,
+          required int amountQirsh,
+          required FinancialAccountEntrySource sourceType,
+          required String sourceDocumentId,
+          required String? sourceDocumentNumber,
+          required DateTime effectiveDate,
+          required DateTime createdAt,
+          required String createdByUserId,
+          String? reference,
+          String? note,
+          String? reversalOf}) =>
+      FinancialAccountEntry(
+          id: id,
+          accountId: accountId,
+          direction: direction,
+          amountQirsh: amountQirsh,
+          sourceType: sourceType,
+          sourceDocumentId: sourceDocumentId,
+          sourceDocumentNumber: sourceDocumentNumber,
+          effectiveDate: effectiveDate,
+          createdAt: createdAt,
+          createdByUserId: createdByUserId,
+          reference: reference,
+          note: note,
+          reversalOf: reversalOf);
+
+  void _requireTransferOwner(AppUser user) {
+    if (!user.canProceed || user.role != UserRole.owner) {
+      throw StateError('Financial transfers are available to the owner only.');
+    }
+  }
+
   Future<void> restoreFinancialAccountsIntoEmpty({
     required List<FinancialAccount> accounts,
     required List<FinancialAccountEntry> entries,
+    List<FinancialTransfer> transfers = const [],
   }) async {
     if (_accounts.isNotEmpty || _entries.isNotEmpty) {
       throw StateError('Financial account repository is not empty.');
     }
     _validateUniqueRestoredAccounts(accounts);
     _validateUniqueRestoredEntries(entries);
+    _validateRestoredTransfers(accounts, entries, transfers);
     _accounts.addAll(accounts);
     _entries.addAll(entries);
+    _transfers.addAll(transfers);
   }
 
   Future<void> clearForOwnerDataWipe() async {
     _accounts.clear();
     _entries.clear();
+    _transfers.clear();
     _generatedAccountIdCounter = 0;
     _generatedEntryIdCounter = 0;
+    _generatedTransferIdCounter = 0;
   }
 
   void _validateDraft(FinancialAccountDraft draft) {
@@ -521,6 +762,28 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     }
   }
 
+  void _validateRestoredTransfers(List<FinancialAccount> accounts,
+      List<FinancialAccountEntry> entries, List<FinancialTransfer> transfers) {
+    final accountIds = accounts.map((value) => value.id).toSet();
+    final entryIds = entries.map((value) => value.id).toSet();
+    final transferIds = <String>{};
+    final requestIds = <String>{};
+    final references = <String>{};
+    for (final transfer in transfers) {
+      if (!transferIds.add(transfer.id) ||
+          !requestIds.add(transfer.clientRequestId) ||
+          !references.add(transfer.transferReference) ||
+          transfer.sourceAccountId == transfer.destinationAccountId ||
+          transfer.amountQirsh <= 0 ||
+          !accountIds.contains(transfer.sourceAccountId) ||
+          !accountIds.contains(transfer.destinationAccountId) ||
+          !entryIds.contains(transfer.sourceEntryId) ||
+          !entryIds.contains(transfer.destinationEntryId)) {
+        throw StateError('Invalid financial transfer backup data.');
+      }
+    }
+  }
+
   String _normalizedRequiredId(String value, String fieldName) {
     final normalized = value.trim();
     if (normalized.isEmpty) {
@@ -552,6 +815,11 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     _generatedEntryIdCounter++;
     return 'fae-${now.microsecondsSinceEpoch}-$_generatedEntryIdCounter';
   }
+
+  String _generateTransferId(DateTime now) =>
+      'fat-${now.microsecondsSinceEpoch}-${++_generatedTransferIdCounter}';
+  String _displayNumber() =>
+      'TR-${(_generatedTransferIdCounter).toString().padLeft(6, '0')}';
 
   Future<void> _recordAudit({
     required String actionType,

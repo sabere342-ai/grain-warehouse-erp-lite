@@ -23,6 +23,7 @@ import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -60,11 +61,17 @@ class BackupRestoreService {
         _documentHistoryRepository = documentHistoryRepository,
         _businessIdentityRepository = businessIdentityRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
-        _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
-        _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
+        _customerAccountRepository = customerAccountRepository ??
+            LocalCustomerAccountRepository(
+                customerRepository:
+                    customerRepository ?? LocalCustomerRepository()),
+        _supplierAccountRepository = supplierAccountRepository ??
+            LocalSupplierAccountRepository(
+                supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
-        _financialAccountRepository = financialAccountRepository ?? LocalFinancialAccountRepository(),
+        _financialAccountRepository =
+            financialAccountRepository ?? LocalFinancialAccountRepository(),
         _previewService = previewService;
 
   final LocalProductRepository _productRepository;
@@ -138,6 +145,7 @@ class BackupRestoreService {
       await _financialAccountRepository.restoreFinancialAccountsIntoEmpty(
         accounts: restored.financialAccounts,
         entries: restored.financialAccountEntries,
+        transfers: restored.financialTransfers,
       );
       if (_businessIdentityRepository != null) {
         await _businessIdentityRepository.saveIdentity(
@@ -176,14 +184,19 @@ class BackupRestoreService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final history = await _documentHistoryRepository.listHistory();
-    final customers = await _customerRepository.listCustomers(includeInactive: true);
-    final customerAccountEntries = await _customerAccountRepository.listEntries();
-    final customerCollections = await _customerAccountRepository.listCollections();
-    final supplierAccountEntries = await _supplierAccountRepository.listEntries();
+    final customers =
+        await _customerRepository.listCustomers(includeInactive: true);
+    final customerAccountEntries =
+        await _customerAccountRepository.listEntries();
+    final customerCollections =
+        await _customerAccountRepository.listCollections();
+    final supplierAccountEntries =
+        await _supplierAccountRepository.listEntries();
     final supplierPayments = await _supplierAccountRepository.listPayments();
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
-    final financialAccounts = await _financialAccountRepository.listAccounts(includeInactive: true);
+    final financialAccounts =
+        await _financialAccountRepository.listAccounts(includeInactive: true);
 
     if (products.isNotEmpty ||
         movements.isNotEmpty ||
@@ -212,19 +225,37 @@ class BackupRestoreService {
         _list(data, 'inventoryMovements').map(_parseMovement).toList();
     final purchases = _list(data, 'purchases').map(_parsePurchase).toList();
     final sales = _list(data, 'sales').map(_parseSale).toList();
-    final customers = _optionalList(data, 'customers').map(_parseCustomer).toList();
-    final customerAccountEntries = _optionalList(data, 'customerAccountEntries').map(_parseCustomerAccountEntry).toList();
-    final customerCollections = _optionalList(data, 'customerCollections').map(_parseCustomerCollection).toList();
-    final supplierAccountEntries = _optionalList(data, 'supplierAccountEntries').map(_parseSupplierAccountEntry).toList();
-    final supplierPayments = _optionalList(data, 'supplierPayments').map(_parseSupplierPayment).toList();
-    final expenses = _optionalList(data, 'expenses').map(_parseExpense).toList();
-    final auditLogs = _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
-    final financialAccounts = _optionalList(data, 'financialAccounts').map(_parseFinancialAccount).toList();
-    final financialAccountEntries = _optionalList(data, 'financialAccountEntries').map(_parseFinancialAccountEntry).toList();
+    final customers =
+        _optionalList(data, 'customers').map(_parseCustomer).toList();
+    final customerAccountEntries = _optionalList(data, 'customerAccountEntries')
+        .map(_parseCustomerAccountEntry)
+        .toList();
+    final customerCollections = _optionalList(data, 'customerCollections')
+        .map(_parseCustomerCollection)
+        .toList();
+    final supplierAccountEntries = _optionalList(data, 'supplierAccountEntries')
+        .map(_parseSupplierAccountEntry)
+        .toList();
+    final supplierPayments = _optionalList(data, 'supplierPayments')
+        .map(_parseSupplierPayment)
+        .toList();
+    final expenses =
+        _optionalList(data, 'expenses').map(_parseExpense).toList();
+    final auditLogs =
+        _optionalList(data, 'auditLogs').map(_parseAuditLog).toList();
+    final financialAccounts = _optionalList(data, 'financialAccounts')
+        .map(_parseFinancialAccount)
+        .toList();
+    final financialAccountEntries =
+        _optionalList(data, 'financialAccountEntries')
+            .map(_parseFinancialAccountEntry)
+            .toList();
+    final financialTransfers = _optionalList(data, 'financialTransfers')
+        .map(_parseFinancialTransfer)
+        .toList();
     final settings = data['settings'];
-    final settingsMap = settings is Map<String, Object?>
-        ? settings
-        : <String, Object?>{};
+    final settingsMap =
+        settings is Map<String, Object?> ? settings : <String, Object?>{};
     final identityJson = settingsMap['businessIdentity'];
     final identityMap = identityJson is Map<String, Object?>
         ? identityJson
@@ -232,7 +263,8 @@ class BackupRestoreService {
     final logoPayload = identityMap['logo'];
 
     LogoMetadata? restoredLogo;
-    if (logoPayload is Map<String, Object?> && _businessIdentityRepository != null) {
+    if (logoPayload is Map<String, Object?> &&
+        _businessIdentityRepository != null) {
       restoredLogo = _restoreLogoPayload(
         logoPayload,
         _businessIdentityRepository,
@@ -259,6 +291,7 @@ class BackupRestoreService {
       auditLogs: auditLogs,
       financialAccounts: financialAccounts,
       financialAccountEntries: financialAccountEntries,
+      financialTransfers: financialTransfers,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
       logoRestoreWarning: _logoRestoreWarning,
@@ -361,9 +394,8 @@ class BackupRestoreService {
     final paymentMode = SalePaymentMode.values.byName(
       _optionalString(map, 'paymentMode') ?? SalePaymentMode.cash.name,
     );
-    final items = _optionalList(map, 'items')
-        .map(_parseSaleItem)
-        .toList(growable: false);
+    final items =
+        _optionalList(map, 'items').map(_parseSaleItem).toList(growable: false);
     return SaleRecord(
       id: _string(map, 'id'),
       productId: _string(map, 'productId'),
@@ -515,9 +547,11 @@ class BackupRestoreService {
     return FinancialAccountEntry(
       id: _string(map, 'id'),
       accountId: _string(map, 'accountId'),
-      direction: FinancialAccountEntryDirection.values.byName(_string(map, 'direction')),
+      direction: FinancialAccountEntryDirection.values
+          .byName(_string(map, 'direction')),
       amountQirsh: _int(map, 'amountQirsh'),
-      sourceType: FinancialAccountEntrySource.values.byName(_string(map, 'sourceType')),
+      sourceType:
+          FinancialAccountEntrySource.values.byName(_string(map, 'sourceType')),
       sourceDocumentId: _string(map, 'sourceDocumentId'),
       sourceDocumentNumber: _optionalString(map, 'sourceDocumentNumber'),
       effectiveDate: _date(map, 'effectiveDate'),
@@ -527,6 +561,28 @@ class BackupRestoreService {
       note: _optionalString(map, 'note'),
       reversalOf: _optionalString(map, 'reversalOf'),
       correctionGroup: _optionalString(map, 'correctionGroup'),
+    );
+  }
+
+  FinancialTransfer _parseFinancialTransfer(Object? value) {
+    final map = _map(value);
+    return FinancialTransfer(
+      id: _string(map, 'id'),
+      displayNumber: _string(map, 'displayNumber'),
+      clientRequestId: _string(map, 'clientRequestId'),
+      transferReference: _string(map, 'transferReference'),
+      sourceAccountId: _string(map, 'sourceAccountId'),
+      destinationAccountId: _string(map, 'destinationAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      effectiveDate: _date(map, 'effectiveDate'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      sourceEntryId: _string(map, 'sourceEntryId'),
+      destinationEntryId: _string(map, 'destinationEntryId'),
+      note: _optionalString(map, 'note'),
+      originalTransferId: _optionalString(map, 'originalTransferId'),
+      reversalTransferId: _optionalString(map, 'reversalTransferId'),
+      reversalReason: _optionalString(map, 'reversalReason'),
     );
   }
 
@@ -771,8 +827,7 @@ class BackupRestoreService {
       final fileName = 'logo_${hash.substring(0, 16)}.$ext';
       final dir = Directory(repository.managedLogosDirectory);
       dir.createSync(recursive: true);
-      final filePath =
-          '${dir.path}${Platform.pathSeparator}$fileName';
+      final filePath = '${dir.path}${Platform.pathSeparator}$fileName';
       final tempPath = '$filePath.tmp';
       final tempFile = File(tempPath);
       tempFile.writeAsBytesSync(bytes, flush: true);
@@ -863,6 +918,7 @@ class _RestoredBackupData {
     required this.auditLogs,
     required this.financialAccounts,
     required this.financialAccountEntries,
+    required this.financialTransfers,
     required this.businessIdentity,
     required this.documentHistoryCount,
     this.logoRestoreWarning,
@@ -882,6 +938,7 @@ class _RestoredBackupData {
   final List<AuditLogEntry> auditLogs;
   final List<FinancialAccount> financialAccounts;
   final List<FinancialAccountEntry> financialAccountEntries;
+  final List<FinancialTransfer> financialTransfers;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
   final String? logoRestoreWarning;

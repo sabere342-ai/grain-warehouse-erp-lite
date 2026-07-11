@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_account_statement_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_transfers_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialAccountsScreen extends StatefulWidget {
@@ -91,12 +92,25 @@ class _FinancialAccountsScreenState extends State<FinancialAccountsScreen> {
                 ),
                 if (isOwner)
                   FilledButton.icon(
-                    onPressed: () => _showCreateAccountDialog(context, user: user),
+                    onPressed: () =>
+                        _showCreateAccountDialog(context, user: user),
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('إضافة حساب'),
                   ),
               ],
             ),
+            if (isOwner) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => FinancialTransfersScreen(user: user))),
+                  icon: const Icon(Icons.swap_horiz_rounded),
+                  label: const Text('تحويل مالي'),
+                ),
+              ),
+            ],
             if (_controller.errorMessage != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -391,7 +405,8 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات (اختيارية)'),
+              decoration:
+                  const InputDecoration(labelText: 'ملاحظات (اختيارية)'),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),

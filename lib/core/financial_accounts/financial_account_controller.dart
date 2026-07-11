@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 
 class FinancialAccountController extends ChangeNotifier {
   FinancialAccountController({required FinancialAccountRepository repository})
@@ -97,6 +98,44 @@ class FinancialAccountController extends ChangeNotifier {
       _errorMessage = _messageForError(error);
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<FinancialTransfer?> createTransfer({
+    required AppUser user,
+    required FinancialTransferDraft draft,
+  }) async {
+    if (!_canManage(user)) return null;
+    try {
+      final transfer =
+          await _repository.createTransfer(user: user, draft: draft);
+      await loadAccounts(user);
+      return transfer;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<FinancialTransfer?> reverseTransfer({
+    required AppUser user,
+    required String transferId,
+    required String reason,
+  }) async {
+    if (!_canManage(user)) return null;
+    try {
+      final transfer = await _repository.reverseTransfer(
+        user: user,
+        transferId: transferId,
+        reason: reason,
+      );
+      await loadAccounts(user);
+      return transfer;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return null;
     }
   }
 

@@ -17,6 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.da
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -90,15 +91,28 @@ class BackupExportService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final documentHistory = await _documentHistoryRepository.listHistory();
-    final customers = await _customerRepository.listCustomers(includeInactive: true);
-    final customerAccountEntries = await _customerAccountRepository?.listEntries() ?? const <CustomerAccountEntry>[];
-    final customerCollections = await _customerAccountRepository?.listCollections() ?? const <CustomerCollectionRecord>[];
-    final supplierAccountEntries = await _supplierAccountRepository?.listEntries() ?? const <SupplierAccountEntry>[];
-    final supplierPayments = await _supplierAccountRepository?.listPayments() ?? const <SupplierPaymentRecord>[];
+    final customers =
+        await _customerRepository.listCustomers(includeInactive: true);
+    final customerAccountEntries =
+        await _customerAccountRepository?.listEntries() ??
+            const <CustomerAccountEntry>[];
+    final customerCollections =
+        await _customerAccountRepository?.listCollections() ??
+            const <CustomerCollectionRecord>[];
+    final supplierAccountEntries =
+        await _supplierAccountRepository?.listEntries() ??
+            const <SupplierAccountEntry>[];
+    final supplierPayments = await _supplierAccountRepository?.listPayments() ??
+        const <SupplierPaymentRecord>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
-    final financialAccounts = await _financialAccountRepository?.listAccounts(includeInactive: true) ?? const <FinancialAccount>[];
+    final financialAccounts = await _financialAccountRepository?.listAccounts(
+            includeInactive: true) ??
+        const <FinancialAccount>[];
     final financialAccountEntries = await _listAllFinancialEntries();
+    final financialTransfers =
+        await _financialAccountRepository?.listTransfers() ??
+            const <FinancialTransfer>[];
     final businessIdentity =
         await _businessIdentityRepository?.loadIdentity() ??
             BusinessIdentity.empty;
@@ -119,6 +133,7 @@ class BackupExportService {
       auditLogs: auditLogs.length,
       financialAccounts: financialAccounts.length,
       financialAccountEntries: financialAccountEntries.length,
+      financialTransfers: financialTransfers.length,
     );
     final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
@@ -143,14 +158,29 @@ class BackupExportService {
         'documentHistory':
             documentHistory.map(_documentHistoryToJson).toList(growable: false),
         'customers': customers.map(_customerToJson).toList(growable: false),
-        'customerAccountEntries': customerAccountEntries.map(_customerAccountEntryToJson).toList(growable: false),
-        'customerCollections': customerCollections.map(_customerCollectionToJson).toList(growable: false),
-        'supplierAccountEntries': supplierAccountEntries.map(_supplierAccountEntryToJson).toList(growable: false),
-        'supplierPayments': supplierPayments.map(_supplierPaymentToJson).toList(growable: false),
+        'customerAccountEntries': customerAccountEntries
+            .map(_customerAccountEntryToJson)
+            .toList(growable: false),
+        'customerCollections': customerCollections
+            .map(_customerCollectionToJson)
+            .toList(growable: false),
+        'supplierAccountEntries': supplierAccountEntries
+            .map(_supplierAccountEntryToJson)
+            .toList(growable: false),
+        'supplierPayments': supplierPayments
+            .map(_supplierPaymentToJson)
+            .toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
-        'financialAccounts': financialAccounts.map(_financialAccountToJson).toList(growable: false),
-        'financialAccountEntries': financialAccountEntries.map(_financialAccountEntryToJson).toList(growable: false),
+        'financialAccounts': financialAccounts
+            .map(_financialAccountToJson)
+            .toList(growable: false),
+        'financialAccountEntries': financialAccountEntries
+            .map(_financialAccountEntryToJson)
+            .toList(growable: false),
+        'financialTransfers': financialTransfers
+            .map(_financialTransferToJson)
+            .toList(growable: false),
         'settings': {
           'businessIdentity': await _identityWithLogoJson(businessIdentity),
         },
@@ -314,7 +344,8 @@ class BackupExportService {
     };
   }
 
-  Map<String, Object?> _customerCollectionToJson(CustomerCollectionRecord collection) {
+  Map<String, Object?> _customerCollectionToJson(
+      CustomerCollectionRecord collection) {
     return {
       'id': collection.id,
       'customerId': collection.customerId,
@@ -388,6 +419,7 @@ class BackupExportService {
       'referenceId': entry.referenceId,
     };
   }
+
   Map<String, Object?>? _cancellationToJson(CancellationMetadata? metadata) {
     if (metadata == null) {
       return null;
@@ -456,7 +488,8 @@ class BackupExportService {
       'type': account.type.name,
       'isActive': account.isActive,
       'openingBalanceQirsh': account.openingBalanceQirsh,
-      'openingBalanceDate': account.openingBalanceDate?.toUtc().toIso8601String(),
+      'openingBalanceDate':
+          account.openingBalanceDate?.toUtc().toIso8601String(),
       'referenceInfo': account.referenceInfo,
       'notes': account.notes,
       'createdByUserId': account.createdByUserId,
@@ -464,7 +497,8 @@ class BackupExportService {
     };
   }
 
-  Map<String, Object?> _financialAccountEntryToJson(FinancialAccountEntry entry) {
+  Map<String, Object?> _financialAccountEntryToJson(
+      FinancialAccountEntry entry) {
     return {
       'id': entry.id,
       'accountId': entry.accountId,
@@ -482,6 +516,25 @@ class BackupExportService {
       'correctionGroup': entry.correctionGroup,
     };
   }
+
+  Map<String, Object?> _financialTransferToJson(FinancialTransfer value) => {
+        'id': value.id,
+        'displayNumber': value.displayNumber,
+        'clientRequestId': value.clientRequestId,
+        'transferReference': value.transferReference,
+        'sourceAccountId': value.sourceAccountId,
+        'destinationAccountId': value.destinationAccountId,
+        'amountQirsh': value.amountQirsh,
+        'effectiveDate': value.effectiveDate.toUtc().toIso8601String(),
+        'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'sourceEntryId': value.sourceEntryId,
+        'destinationEntryId': value.destinationEntryId,
+        'note': value.note,
+        'originalTransferId': value.originalTransferId,
+        'reversalTransferId': value.reversalTransferId,
+        'reversalReason': value.reversalReason,
+      };
 
   String _adler32(String input) {
     const modulus = 65521;
@@ -533,6 +586,7 @@ class BackupExportCounts {
     required this.auditLogs,
     this.financialAccounts = 0,
     this.financialAccountEntries = 0,
+    this.financialTransfers = 0,
   });
 
   final int products;
@@ -550,6 +604,7 @@ class BackupExportCounts {
   final int auditLogs;
   final int financialAccounts;
   final int financialAccountEntries;
+  final int financialTransfers;
 
   Map<String, int> toJson() {
     return {
@@ -568,6 +623,7 @@ class BackupExportCounts {
       'auditLogs': auditLogs,
       'financialAccounts': financialAccounts,
       'financialAccountEntries': financialAccountEntries,
+      'financialTransfers': financialTransfers,
     };
   }
 }

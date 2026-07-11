@@ -1182,3 +1182,6 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 ### Still Open / Deferred
 - `DC-U006` remains open. Reconciliation, daily/period close, financial reports, cloud sync, multi-device, and mobile remain out of scope.
 - Phase 76 execution requires a separate task and full implementation verification.
+# Phase 76 handoff
+
+Internal financial transfers are implemented as `ACC-011`. Future work must preserve immutable paired ledger entries, owner-only access, and the Phase 75 exclusions; do not reinterpret DC-U006 as closed.

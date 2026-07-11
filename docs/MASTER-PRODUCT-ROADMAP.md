@@ -383,12 +383,12 @@ No Phase 73 production implementation exists for these capabilities. No account 
 
 Phase 74 does not implement internal transfers. Phase 75 records the owner decisions and formally defines the next execution scope:
 
-**Phase 76: Internal Financial Transfers Implementation — AUTHORIZED SCOPE, NOT STARTED**
+**Phase 76: Internal Financial Transfers Implementation — COMPLETE**
 - Implement only `ACC-011`: a dedicated transfer aggregate with exactly two linked financial-account ledger entries.
 - Apply the Phase 75 owner decisions: no first-release fees; sufficient source balance required; active distinct accounts only; auditable past dates but no future date; owner-only create/reverse; documented paired reversal with mandatory reason and no repeat; client request ID plus unique reference; UUID plus display sequence; optional normal note; full review then one confirmation.
 - Preserve atomicity, ledger-derived balances, backup/restore integrity, Arabic RTL functional UI, and all existing accounting/inventory/customer/supplier behavior.
 - Excludes reconciliation, daily/period close, financial reports, cloud, multi-device, and mobile work.
-- Execution is authorized only in a separate task; no Phase 76 code is started by Phase 75.
+- Implemented as the bounded `ACC-011` scope; see `PHASE-76-INTERNAL-FINANCIAL-TRANSFERS-IMPLEMENTATION.md`.
 
 ### Then: Production Hardening
 1. Complete all partial implementations (split payments, invoice logos, PDF stock adjustment)

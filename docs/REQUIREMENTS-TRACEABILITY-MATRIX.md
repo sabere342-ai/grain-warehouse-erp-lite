@@ -1452,3 +1452,6 @@
 | No backend/cloud (CLD-002) | CLD-001–008, MOB-001–004 |
 | No in-memory transactions | BKP-008, BKP-009 |
 | Future scope only | CAN-005, CAN-006, INV-005, RPT-005, RPT-006 |
+# Phase 76 traceability update
+
+`ACC-011` is implemented in Phase 76: immutable paired financial-account entries, owner-only transfer/reversal, idempotency, source-balance validation, review/history UI, and additive backup restore coverage. The historical Phase 75 entry below is superseded by this update; DC-U006 remains open.
