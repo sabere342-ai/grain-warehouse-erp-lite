@@ -74,6 +74,7 @@ void main() {
           const FinancialAccountDraft(
             name: 'خزينة',
             type: FinancialAccountType.treasury,
+            allowNegativeBalance: true,
             createdByUserId: 'owner',
           ),
         );
@@ -193,6 +194,7 @@ void main() {
           const FinancialAccountDraft(
             name: 'خزينة',
             type: FinancialAccountType.treasury,
+            allowNegativeBalance: true,
             createdByUserId: 'owner',
           ),
         );
@@ -397,6 +399,7 @@ void main() {
           const FinancialAccountDraft(
             name: 'خزينة',
             type: FinancialAccountType.treasury,
+            allowNegativeBalance: true,
             createdByUserId: 'owner',
           ),
         );
@@ -797,6 +800,7 @@ void main() {
           const FinancialAccountDraft(
             name: 'خزينة',
             type: FinancialAccountType.treasury,
+            allowNegativeBalance: true,
             createdByUserId: 'owner',
           ),
         );
@@ -1031,6 +1035,7 @@ void main() {
           const FinancialAccountDraft(
             name: 'حساب بنكي',
             type: FinancialAccountType.bank,
+            allowNegativeBalance: true,
             createdByUserId: 'owner',
           ),
         );

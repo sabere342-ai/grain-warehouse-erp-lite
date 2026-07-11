@@ -1285,7 +1285,7 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 |----------|--------|-------------------|
 | DC-U002 | CLOSED (Phase 78) | Split payments — owner decisions adopted |
 | DC-U006 | CLOSED (Phase 78) | Daily cash closing, reconciliation — owner decisions adopted |
-| DC-U007 | CLOSED (Phase 78) | Negative account balance policy — owner decisions adopted |
+| DC-U007 | CLOSED (Phase 78) | Negative account balance policy — owner decisions adopted; IMPLEMENTED |
 | DC-U008 | CLOSED (Phase 78) | Overpayment/collection policy — owner decisions adopted |
 
 ### Remaining Limitations
@@ -1293,7 +1293,7 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - No daily cash closing (DC-U006 closed, awaiting implementation phase).
 - No cash count or reconciliation workflow.
 - No split payments (DC-U002 closed, awaiting implementation phase).
-- No negative balance guard on expense/supplier-payment paths (DC-U007 closed, awaiting implementation phase).
+- No negative balance guard on expense/supplier-payment paths — RESOLVED (DC-U007 implemented; negative-balance controls active with per-account `allowNegativeBalance` toggle).
 - No overpayment/refund flow (DC-U008 closed, awaiting implementation phase).
 - Backup export missing transaction-level financial-account linkage (must be fixed before closing/reconciliation).
 - Single-device local Windows only.
@@ -1443,13 +1443,13 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - **Finding:** No "Phase 82" reference exists anywhere in the repository. No document assigns a specific phase number or title after Phase 81.
 - **Outcome:** Multiple valid candidates exist with no explicit ordering (Outcome C).
 - **Candidates identified:**
-  1. DC-U007 (Negative-balance controls) — HIGH integrity impact, recommended (adopted by Phase 78, not implemented)
+  1. ~~DC-U007 (Negative-balance controls)~~ — IMPLEMENTED (per-account `allowNegativeBalance`, balance guard, owner-only toggle, backup contract updated)
   2. CAN-005/CAN-006 (Collection/Payment cancellation) — MEDIUM integrity impact (not implemented per Master Roadmap)
   3. DC-U002 (Split payments) — LOW integrity, HIGH complexity (adopted by Phase 78, not implemented)
   4. DC-U008 (Overpayments/refunds) — LOW integrity, HIGH complexity (adopted by Phase 78, not implemented)
   5. Cloud Sync / Multi-Device / Mobile — deferred, not cancelled
-- **Documentation inconsistency:** Decision Register still shows DC-U002, DC-U007, DC-U008 as `REQUIRES OWNER DECISION` despite Phase 78 adoption.
+- **Documentation inconsistency (partially resolved):** DC-U002, DC-U008 still show `REQUIRES OWNER DECISION` despite Phase 78 adoption. DC-U007 updated to `IMPLEMENTED`.
 - **DC-U014:** CLOSED in Decision Register (`OWNER DECISION RECORDED — Phase 75`); implemented in Phase 76.
-- **Recommendation:** DC-U007 (negative-balance controls) as next implementation phase based on integrity evidence.
-- **Awaiting:** Owner decision on which candidate to implement next.
+- ~~**Recommendation:** DC-U007 (negative-balance controls) as next implementation phase based on integrity evidence.~~ IMPLEMENTED.
+- DC-U007 implemented. Remaining candidates: CAN-005/CAN-006, DC-U002, DC-U008.
 - See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.

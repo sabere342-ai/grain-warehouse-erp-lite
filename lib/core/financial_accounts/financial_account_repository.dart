@@ -21,6 +21,11 @@ abstract class FinancialAccountRepository {
     DateTime? fromDate,
     DateTime? toDate,
   });
+  Future<void> updateAccountPolicy({
+    required String accountId,
+    required bool allowNegativeBalance,
+    required String updatedByUserId,
+  });
   Future<void> setOpeningBalance({
     required String accountId,
     required int amountQirsh,
@@ -101,6 +106,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       id: _generateAccountId(now),
       name: name,
       type: draft.type,
+      allowNegativeBalance: draft.allowNegativeBalance,
       referenceInfo: _normalizedOptionalText(draft.referenceInfo),
       notes: _normalizedOptionalText(draft.notes),
       createdByUserId: draft.createdByUserId.trim(),
@@ -136,6 +142,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       name: account.name,
       type: account.type,
       isActive: false,
+      allowNegativeBalance: account.allowNegativeBalance,
       openingBalanceQirsh: account.openingBalanceQirsh,
       openingBalanceDate: account.openingBalanceDate,
       referenceInfo: account.referenceInfo,
@@ -178,6 +185,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       name: account.name,
       type: account.type,
       isActive: true,
+      allowNegativeBalance: account.allowNegativeBalance,
       openingBalanceQirsh: account.openingBalanceQirsh,
       openingBalanceDate: account.openingBalanceDate,
       referenceInfo: account.referenceInfo,
@@ -188,6 +196,45 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     await _recordAudit(
       actionType: 'financial_account.reactivated',
       descriptionAr: 'تم تنشيط حساب "${account.name}".',
+      referenceId: account.id,
+    );
+  }
+
+  @override
+  Future<void> updateAccountPolicy({
+    required String accountId,
+    required bool allowNegativeBalance,
+    required String updatedByUserId,
+  }) async {
+    final id = _normalizedRequiredId(accountId, 'accountId');
+    _normalizedRequiredId(updatedByUserId, 'updatedByUserId');
+    final index = _accounts.indexWhere((a) => a.id == id);
+    if (index < 0) {
+      throw StateError('الحساب غير موجود.');
+    }
+    final account = _accounts[index];
+    if (account.allowNegativeBalance == allowNegativeBalance) {
+      return;
+    }
+
+    _accounts[index] = FinancialAccount(
+      id: account.id,
+      name: account.name,
+      type: account.type,
+      isActive: account.isActive,
+      allowNegativeBalance: allowNegativeBalance,
+      openingBalanceQirsh: account.openingBalanceQirsh,
+      openingBalanceDate: account.openingBalanceDate,
+      referenceInfo: account.referenceInfo,
+      notes: account.notes,
+      createdByUserId: account.createdByUserId,
+      createdAt: account.createdAt,
+    );
+
+    final action = allowNegativeBalance ? 'تفعيل' : 'تعطيل';
+    await _recordAudit(
+      actionType: 'financial_account.negative_balance_policy.updated',
+      descriptionAr: 'تم $action السماح بالرصيد السالب لحساب "${account.name}".',
       referenceId: account.id,
     );
   }
@@ -312,6 +359,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       name: account.name,
       type: account.type,
       isActive: account.isActive,
+      allowNegativeBalance: account.allowNegativeBalance,
       openingBalanceQirsh: amountQirsh,
       openingBalanceDate: effectiveDate,
       referenceInfo: account.referenceInfo,
@@ -402,6 +450,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       name: account.name,
       type: account.type,
       isActive: account.isActive,
+      allowNegativeBalance: account.allowNegativeBalance,
       openingBalanceQirsh: draft.correctedOpeningBalanceQirsh,
       openingBalanceDate: now,
       referenceInfo: account.referenceInfo,
@@ -455,6 +504,16 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
         'amountQirsh',
         'Entry amount must be positive.',
       );
+    }
+
+    if (direction == FinancialAccountEntryDirection.outflow) {
+      final currentBalance = await currentBalanceForAccount(id);
+      final projectedBalance = currentBalance - amountQirsh;
+      if (projectedBalance < 0 && !account.allowNegativeBalance) {
+        throw StateError(
+          'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
+        );
+      }
     }
 
     final now = DateTime.now();
@@ -639,8 +698,10 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     if (!source.isActive || !destination.isActive) {
       throw StateError('الحساب المعطل لا يستخدم في تحويل جديد.');
     }
-    if (await currentBalanceForAccount(sourceId) < draft.amountQirsh) {
-      throw StateError('رصيد الحساب المصدر غير كافٍ للتحويل.');
+    if (!source.allowNegativeBalance) {
+      if (await currentBalanceForAccount(sourceId) < draft.amountQirsh) {
+        throw StateError('رصيد الحساب المصدر غير كافٍ للتحويل.');
+      }
     }
     final now = DateTime.now();
     final transferId = _generateTransferId(now);

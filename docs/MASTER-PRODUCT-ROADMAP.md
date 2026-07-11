@@ -2,9 +2,9 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** Phase 81 — Transaction-Level Financial Backup/Restore Contract Remediation
-> **HEAD / الرأس الحالي:** Phase 81 completion commit (this document)
-> **Tests / الاختبارات:** 784/784 passing
+> **Last Updated / آخر تحديث:** DC-U007 — Negative-Balance Controls (Post-Phase 81)
+> **HEAD / الرأس الحالي:** DC-U007 implementation
+> **Tests / الاختبارات:** 814/814 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -57,9 +57,9 @@
 
 ## Current Status
 
-**Phase:** 81 — Transaction-Level Financial Backup/Restore Contract Remediation
-**HEAD:** Phase 81 completion commit
-**Test Suite:** 784/784 tests passing
+**Phase:** Post-Phase 81 — DC-U007 Negative-Balance Controls
+**HEAD:** DC-U007 implementation commit
+**Test Suite:** 814/814 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
 
@@ -69,7 +69,7 @@ The application is in a **production-ready local state** for a single warehouse 
 
 ## Implemented
 
-The following features are fully implemented, tested, and passing all 784 tests:
+The following features are fully implemented, tested, and passing all 814 tests:
 
 ### Product Management / إدارة المنتجات
 - [x] Add/edit/list products
@@ -149,6 +149,7 @@ The following features are fully implemented, tested, and passing all 784 tests:
 - [x] Account statement report — per-account entry-level with running balance (Phase 79)
 - [x] Payment method report — aggregated by payment method, excluding transfers (Phase 79)
 - [x] Transfer report — authoritative transfer register with reversal tracking (Phase 79)
+- [x] Negative-balance controls — per-account `allowNegativeBalance` toggle, owner-only policy, balance guard on outflows and transfers (DC-U007)
 
 ### Inventory Management / إدارة المخزون
 - [x] Stock movements: opening balance, purchase intake, sale, manual increase/decrease
@@ -480,7 +481,7 @@ The recommended path forward, respecting all dependencies:
 
 ## Post-Phase 81 Governance Audit
 
-A governance audit was completed after Phase 81. No "Phase 82" or specific next phase number exists in the repository. The audit identified multiple valid candidates (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U007 (negative-balance controls) is recommended as highest priority based on integrity evidence. DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.
+A governance audit was completed after Phase 81. No "Phase 82" or specific next phase number exists in the repository. The audit identified multiple valid candidates (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U007 (negative-balance controls) was recommended as highest priority based on integrity evidence — IMPLEMENTED. Remaining candidates: CAN-005/CAN-006 (cancellations), DC-U002 (split payments), DC-U008 (overpayments/refunds). DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.
 
 ---
 

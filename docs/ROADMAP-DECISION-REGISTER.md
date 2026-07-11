@@ -407,7 +407,7 @@
 | **Impact if C (With approval)** | Middle ground. Owner must approve credit. Adds workflow step. |
 | **Deadline** | Before Track B begins |
 | **Owner decision** | Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient; owner can override with audit trail. |
-| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
+| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTED |
 
 ---
 
@@ -676,7 +676,7 @@ DC-006 (Treasury/bank/wallets)
 ├── DC-U003 (Multi-currency) — must decide before Track B
 ├── DC-U005 (Cash registers) — must decide before Track B
 ├── DC-U006 (Daily closing) — must decide before Track B
-├── DC-U007 (Negative balance) — must decide before Track B
+├── DC-U007 (Negative balance) — implemented (negative-balance controls)
 └── DC-U008 (Overpayment) — must decide before Track B
 
 DC-005 (Multi-device)
@@ -690,7 +690,7 @@ DC-005 (Multi-device)
 
 | Deadline | Decisions Due |
 |----------|---------------|
-| Before Track B begins | DC-R001, DC-U002, DC-U003, DC-U004, DC-U005, DC-U006, DC-U007, DC-U008 |
+| Before Track B begins | DC-R001, DC-U002, DC-U003, DC-U004, DC-U005, DC-U006, DC-U008 |
 | Before Track H begins | DC-U001, DC-U009, DC-U012 |
 | Before cloud implementation | DC-U010, DC-R002, DC-R003, DC-R004 |
 | Deferred | DC-U011 (after cloud is built) |

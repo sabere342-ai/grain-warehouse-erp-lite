@@ -32,6 +32,7 @@ class FinancialAccount {
     required this.name,
     required this.type,
     this.isActive = true,
+    this.allowNegativeBalance = false,
     this.openingBalanceQirsh = 0,
     this.openingBalanceDate,
     this.referenceInfo,
@@ -44,6 +45,7 @@ class FinancialAccount {
   final String name;
   final FinancialAccountType type;
   final bool isActive;
+  final bool allowNegativeBalance;
   final int openingBalanceQirsh;
   final DateTime? openingBalanceDate;
   final String? referenceInfo;
@@ -58,6 +60,7 @@ class FinancialAccountDraft {
   const FinancialAccountDraft({
     required this.name,
     required this.type,
+    this.allowNegativeBalance = false,
     this.referenceInfo,
     this.notes,
     required this.createdByUserId,
@@ -65,6 +68,7 @@ class FinancialAccountDraft {
 
   final String name;
   final FinancialAccountType type;
+  final bool allowNegativeBalance;
   final String? referenceInfo;
   final String? notes;
   final String createdByUserId;

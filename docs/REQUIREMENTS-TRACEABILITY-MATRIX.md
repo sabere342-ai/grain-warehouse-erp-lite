@@ -1,7 +1,7 @@
 # Requirements Traceability Matrix
 
-> Grain Warehouse ERP Lite — Phase 81 (Transaction-Level Financial Backup/Restore Contract Remediation)
-> Generated from source code evidence as of Phase 81 completion tree.
+> Grain Warehouse ERP Lite — Post-Phase 81 (DC-U007 Negative-Balance Controls)
+> Generated from source code evidence as of DC-U007 implementation.
 
 ---
 
@@ -1472,10 +1472,10 @@ This matrix was reconciled with the actual codebase state in Phase 77. The follo
 
 - **DC-U002**: Max 3–5 payment methods per invoice; per-account owner config; partial payments allowed; no new financial-account creation during split.
 - **DC-U006**: Mandatory actual balance; owner-only approve/reopen; period lock with configurable periods; no backdated entries into locked periods.
-- **DC-U007**: Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient.
+- **DC-U007**: Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient. **IMPLEMENTED** — `allowNegativeBalance` field, balance guard in `createEntry`, owner-only `updateAccountPolicy`, backup contract updated.
 - **DC-U008**: Owner approval per overpayment operation; recorded as customer/supplier credit or advance; no editing of original collection/payment document; refund via separate compensating entry.
 
-A compatibility audit of all production code was completed. No confirmed defects were found in audited areas (transfers, cancellations, reversals, balance invariants). Implementation gaps were documented for the decisions above — they require new implementation phases to realize.
+A compatibility audit of all production code was completed. No confirmed defects were found in audited areas (transfers, cancellations, reversals, balance invariants). DC-U007 has been implemented. Implementation gaps remain for DC-U002, DC-U006, DC-U008 — they require new implementation phases to realize.
 - Blocker table corrected to reflect current dependency state.
 
 ---
@@ -1490,4 +1490,4 @@ Backup v6 preserves `financialAccountId` and `paymentMethod` on sales, purchases
 
 # Post-Phase 81 governance audit
 
-Governance audit completed. No "Phase 82" exists in the repository. Multiple valid candidates identified (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). DC-U007 (negative-balance controls) recommended as highest priority based on integrity evidence. See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md`.
+Governance audit completed. No "Phase 82" exists in the repository. Multiple valid candidates identified (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). DC-U007 (negative-balance controls) — **IMPLEMENTED**. Remaining candidates: CAN-005/CAN-006, DC-U002, DC-U008. See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md`.

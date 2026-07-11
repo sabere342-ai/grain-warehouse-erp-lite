@@ -505,6 +505,7 @@ class BackupExportService {
       'name': account.name,
       'type': account.type.name,
       'isActive': account.isActive,
+      'allowNegativeBalance': account.allowNegativeBalance,
       'openingBalanceQirsh': account.openingBalanceQirsh,
       'openingBalanceDate':
           account.openingBalanceDate?.toUtc().toIso8601String(),

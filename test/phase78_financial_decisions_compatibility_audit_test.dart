@@ -126,8 +126,8 @@ void main() {
   // ─────────────────────────────────────────────────
   // SECTION 1: DC-U007 allowNegativeBalance
   // ─────────────────────────────────────────────────
-  group('DC-U007 allowNegativeBalance — current behavior', () {
-    test('FinancialAccount model has no allowNegativeBalance field', () {
+  group('DC-U007 allowNegativeBalance — implemented behavior', () {
+    test('FinancialAccount model has allowNegativeBalance field', () {
       final account = FinancialAccount(
         id: 'test',
         name: 'test',
@@ -135,13 +135,42 @@ void main() {
         createdByUserId: 'u',
         createdAt: DateTime(2026),
       );
+      expect(account.allowNegativeBalance, isFalse);
       expect(account.isActive, isTrue);
       expect(account.openingBalanceQirsh, 0);
     });
 
-    test('balance CAN go negative through outflow entries', () async {
+    test('balance is BLOCKED by default when outflow exceeds balance',
+        () async {
       final treasury = await createAccount();
       await setBalance(treasury, 5000);
+
+      expect(
+        () => faRepo.createEntry(
+          accountId: treasury.id,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: 8000,
+          sourceType: FinancialAccountEntrySource.expense,
+          sourceDocumentId: 'exp-1',
+          effectiveDate: DateTime(2026, 1, 2),
+          createdByUserId: owner.id,
+        ),
+        throwsStateError,
+      );
+
+      final balance = await faRepo.currentBalanceForAccount(treasury.id);
+      expect(balance, 5000);
+    });
+
+    test('balance CAN go negative when allowNegativeBalance is enabled',
+        () async {
+      final treasury = await createAccount();
+      await setBalance(treasury, 5000);
+      await faRepo.updateAccountPolicy(
+        accountId: treasury.id,
+        allowNegativeBalance: true,
+        updatedByUserId: owner.id,
+      );
 
       await faRepo.createEntry(
         accountId: treasury.id,
@@ -182,9 +211,32 @@ void main() {
       );
     });
 
-    test('expense does NOT check financial account balance', () async {
+    test('expense DOES check financial account balance by default', () async {
       final treasury = await createAccount();
       await setBalance(treasury, 1000);
+
+      expect(
+        () => expenseRepo.createExpense(ExpenseDraft(
+          date: DateTime(2026, 1, 2),
+          category: 'مصاريف إدارية',
+          amountQirsh: 5000,
+          financialAccountId: treasury.id,
+        )),
+        throwsStateError,
+      );
+
+      final balance = await faRepo.currentBalanceForAccount(treasury.id);
+      expect(balance, 1000);
+    });
+
+    test('expense is allowed when allowNegativeBalance is enabled', () async {
+      final treasury = await createAccount();
+      await setBalance(treasury, 1000);
+      await faRepo.updateAccountPolicy(
+        accountId: treasury.id,
+        allowNegativeBalance: true,
+        updatedByUserId: owner.id,
+      );
 
       await expenseRepo.createExpense(ExpenseDraft(
         date: DateTime(2026, 1, 2),

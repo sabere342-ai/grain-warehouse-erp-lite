@@ -547,6 +547,7 @@ class BackupRestoreService {
       name: _string(map, 'name'),
       type: FinancialAccountType.values.byName(_string(map, 'type')),
       isActive: _optionalBool(map, 'isActive') ?? true,
+      allowNegativeBalance: _optionalBool(map, 'allowNegativeBalance') ?? false,
       openingBalanceQirsh: _optionalInt(map, 'openingBalanceQirsh') ?? 0,
       openingBalanceDate: openingBalanceDateStr != null
           ? DateTime.parse(openingBalanceDateStr)

@@ -633,6 +633,11 @@ void main() {
         final source =
             await createAccount('خزينة', FinancialAccountType.treasury);
         final dest = await createAccount('بنك', FinancialAccountType.bank);
+        await repo.updateAccountPolicy(
+          accountId: source.id,
+          allowNegativeBalance: true,
+          updatedByUserId: owner.id,
+        );
         await addEntry(
           accountId: source.id,
           direction: FinancialAccountEntryDirection.outflow,
@@ -1411,6 +1416,11 @@ void main() {
 
       test('negative net movement on payment method', () async {
         final acc = await createAccount('خزينة', FinancialAccountType.treasury);
+        await repo.updateAccountPolicy(
+          accountId: acc.id,
+          allowNegativeBalance: true,
+          updatedByUserId: owner.id,
+        );
         await addEntry(
           accountId: acc.id,
           direction: FinancialAccountEntryDirection.outflow,

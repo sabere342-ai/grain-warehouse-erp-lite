@@ -139,6 +139,27 @@ class FinancialAccountController extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateNegativeBalancePolicy({
+    required AppUser user,
+    required String accountId,
+    required bool allowNegativeBalance,
+  }) async {
+    if (!_canManage(user)) return false;
+    try {
+      await _repository.updateAccountPolicy(
+        accountId: accountId,
+        allowNegativeBalance: allowNegativeBalance,
+        updatedByUserId: user.id,
+      );
+      await loadAccounts(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return false;
+    }
+  }
+
   bool _canManage(AppUser user) {
     if (!user.canProceed) {
       _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';
