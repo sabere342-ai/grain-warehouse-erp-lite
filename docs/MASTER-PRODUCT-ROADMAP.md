@@ -478,4 +478,10 @@ The recommended path forward, respecting all dependencies:
 
 ---
 
+## Post-Phase 81 Governance Audit
+
+A governance audit was completed after Phase 81. No "Phase 82" or specific next phase number exists in the repository. The audit identified multiple valid candidates (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U007 (negative-balance controls) is recommended as highest priority based on integrity evidence. DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.
+
+---
+
 *This document is the single source of truth for product direction. All planning decisions should reference this file.*

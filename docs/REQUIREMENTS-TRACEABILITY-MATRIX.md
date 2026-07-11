@@ -1487,3 +1487,7 @@ RPT-003 (account balance report), RPT-004 (payment method report), and RPT-007 (
 # Phase 81 transaction-level financial Backup/Restore remediation
 
 Backup v6 preserves `financialAccountId` and `paymentMethod` on sales, purchases, customer collections, supplier payments, and expenses. Restore accepts v1–v5 with safe `null` defaults when the fields are absent and rejects non-null references to missing financial accounts before writes. This closes the transaction-linkage Backup gap recorded in Phase 78 without changing transaction accounting, stock, reports, or closing behavior.
+
+# Post-Phase 81 governance audit
+
+Governance audit completed. No "Phase 82" exists in the repository. Multiple valid candidates identified (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). DC-U007 (negative-balance controls) recommended as highest priority based on integrity evidence. See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md`.
