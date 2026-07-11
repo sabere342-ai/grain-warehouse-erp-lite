@@ -323,11 +323,12 @@
 | **Decision ID** | DC-U002 |
 | **Question** | Should one invoice be payable from multiple accounts? |
 | **Alternatives** | A) Yes (split payment), B) No (single account only) |
-| **Recommendation** | None yet |
+| **Recommendation** | A (split payment) — adopted Phase 78 |
 | **Impact if A (Yes)** | Higher UI complexity. Ledger must track partial payments across accounts. More flexible for clients. |
 | **Impact if B (No)** | Simpler UI and ledger. Less flexible. May not match real-world business practices. |
 | **Deadline** | Before Track B begins |
-| **Status** | REQUIRES OWNER DECISION |
+| **Owner decision** | Max 3–5 payment methods per invoice; per-account owner configuration; partial payments allowed; no new financial-account creation during split payment; single-account fallback for full payments. |
+| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
 
 ---
 
@@ -400,12 +401,13 @@
 | **Decision ID** | DC-U007 |
 | **Question** | Should customer accounts be allowed to go negative (credit)? |
 | **Alternatives** | A) Allow negative, B) Prevent negative, C) Allow with approval |
-| **Recommendation** | None yet |
+| **Recommendation** | C (Allow with approval) — adopted Phase 78 |
 | **Impact if A (Allow)** | Customers can owe money. Requires credit limit logic. More realistic for B2B. |
 | **Impact if B (Prevent)** | Sales blocked when balance is zero. Simpler. May not match real business practices. |
 | **Impact if C (With approval)** | Middle ground. Owner must approve credit. Adds workflow step. |
 | **Deadline** | Before Track B begins |
-| **Status** | REQUIRES OWNER DECISION |
+| **Owner decision** | Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient; owner can override with audit trail. |
+| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
 
 ---
 
@@ -416,12 +418,13 @@
 | **Decision ID** | DC-U008 |
 | **Question** | Can a customer pay more than owed? Can a supplier receive more than due? |
 | **Alternatives** | A) Allow, B) Prevent, C) Allow with owner approval |
-| **Recommendation** | None yet |
+| **Recommendation** | C (Allow with owner approval) — adopted Phase 78 |
 | **Impact if A (Allow)** | Overpayments create credit balances. Requires credit/refund workflow. More flexible. |
 | **Impact if B (Prevent)** | Exact amounts only. Simpler but less flexible. |
 | **Impact if C (With approval)** | Middle ground. Owner must approve overpayments. Adds workflow step. |
 | **Deadline** | Before Track B begins |
-| **Status** | REQUIRES OWNER DECISION |
+| **Owner decision** | Owner approval per overpayment operation; recorded as customer/supplier credit or advance; no editing of original collection/payment document; refund via separate compensating entry from same account. |
+| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
 
 ---
 
