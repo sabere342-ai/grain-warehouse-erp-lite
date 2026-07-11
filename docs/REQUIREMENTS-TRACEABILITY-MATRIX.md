@@ -446,13 +446,13 @@
 
 | Field | Value |
 |---|---|
-| **Status** | PLANNED — SCOPE FROZEN IN PHASE 73 |
+| **Status** | PLANNED — IMPLEMENTATION SCOPE APPROVED IN PHASE 75; NOT IMPLEMENTED |
 | **Source evidence** | Future requirement — transferring between treasury/bank/wallet. |
 | **Implementation evidence** | None. |
 | **Test evidence** | None |
 | **Missing behavior** | Transfer model, between-account balance adjustments. |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Planning: Phase 73 scope freeze and Phase 74 owner decision pack. Production implementation remains pending and is not yet authorized or numbered. |
+| **Proposed phase** | Phase 76 — Internal Financial Transfers Implementation. Scope approved in Phase 75; production implementation remains pending. |
 | **Acceptance evidence** | Not implemented. A future implementation must use traceable source and destination entries of equal value, preserve zero net movement across financial assets except explicit documented fees, and reverse rather than delete posted history. |
 
 ---

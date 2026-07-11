@@ -505,7 +505,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A — avoids inventing expense, source-account, or net/gross rules before an owner decision. |
 | **Impact** | Fees cannot be silently absorbed into the transfer pair. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | No transfer fees in the first release. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U014: Insufficient source balance
 
@@ -517,7 +518,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A for the first transfer scope; current generic entry creation permits negative balances, so this must be explicitly decided rather than assumed. |
 | **Impact** | Determines transfer validation and whether a new balance guard is required. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Block a new transfer when the source account has insufficient balance. This applies to new transfers only and does not automatically change legacy financial-operation rules. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U015: Inactive accounts
 
@@ -529,7 +531,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A — retain historical visibility in statements but prohibit new postings to inactive accounts. |
 | **Impact** | Affects account selection and repository validation. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | New transfers use active accounts only. Inactive accounts remain visible in historical statements and records. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U016: Transfer date and backdating
 
@@ -541,7 +544,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | B only if the owner accepts it; current entries already have effective dates and no close lock, but no transfer policy exists. |
 | **Impact** | Affects statement order and future relationship to `DC-U006`. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Allow auditable past effective dates, prohibit future dates, and retain actual creation time separately. Revisit only after `DC-U006` closing policy is decided. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U017: Cancellation and reversal
 
@@ -553,7 +557,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | B, consistent with the existing non-destructive reversal direction, but implementation remains unauthorized. |
 | **Impact** | Determines reversal linkage, permissions, and duplicate-reversal prevention. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Support documented paired reversal with mandatory reason. Original transfer is neither deleted nor edited; repeated reversal is prohibited. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U018: Transfer permissions
 
@@ -565,7 +570,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A until a dedicated permission is deliberately designed; the current roles are only owner and employee. |
 | **Impact** | Requires matching UI and repository authorization. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Owner only may create and reverse transfers in the first release. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U019: Transfer idempotency
 
@@ -577,7 +583,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | C for a future durable implementation; no current financial-transfer idempotency convention exists. |
 | **Impact** | Prevents duplicate paired movements during retry. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Use both client request ID and unique transfer reference to protect retries. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U020: Transfer numbering
 
@@ -589,7 +596,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | B if a display identifier is needed; current entry IDs are generated locally and no transfer document numbering exists. |
 | **Impact** | Defines the shared human-facing reference. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Use stable internal UUID with a clear sequential display number. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U021: Notes and reasons
 
@@ -601,7 +609,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A for ordinary transfers, with a mandatory reason if reversal is later approved. |
 | **Impact** | Affects data validation and audit detail. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Normal transfer note is optional; a reversal reason is mandatory. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U022: Allowed account types
 
@@ -613,7 +622,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A, subject to the inactive-account decision; the current unified model treats treasury, bank, and wallet as financial accounts. |
 | **Impact** | Defines eligible source/destination combinations. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Allow all active financial accounts, including treasury, bank, wallet, and distinct accounts of the same type. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U023: Edit policy
 
@@ -625,7 +635,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | A/C — no silent historical edit; if a correction is needed, use an approved reversal and new transfer. |
 | **Impact** | Protects audit history and statement consistency. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Saved transfer is immutable; correction is documented reversal followed by a new transfer. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ### DC-U024: Owner confirmation UX
 
@@ -637,7 +648,8 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Recommendation** | B — clear review without inventing an amount threshold. |
 | **Impact** | Affects future Arabic RTL flow and error prevention. |
 | **Deadline** | Before internal-transfer implementation |
-| **Status** | REQUIRES OWNER DECISION — OPEN |
+| **Owner decision** | Show full review of source, destination, amount, date, note, and both balances, then one final confirmation. No large-amount threshold is adopted. |
+| **Status** | OWNER DECISION RECORDED — Phase 75 |
 
 ---
 

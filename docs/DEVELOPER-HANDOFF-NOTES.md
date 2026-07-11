@@ -1163,3 +1163,22 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 ### Explicit Deferrals
 - Production transfer model and UI, transfer history, reversal, fees, reconciliation, cash counting, daily/period close, financial reports, cloud sync, multi-device, mobile, schema migration, and backup-version change.
 - Phase 66 remains not executed and has no tag.
+
+---
+
+## Phase 75 — Internal Financial Transfers Owner Decisions Adoption & Implementation Scope
+
+### Summary
+- The owner decisions `DC-U013` through `DC-U024` are recorded as decided for the first internal-transfer implementation.
+- Phase 75 is documentation only: no transfer production code, UI, schema, migration, or backup-format/version change is made.
+- `ACC-011` remains unimplemented. Phase 76 — Internal Financial Transfers Implementation is the defined execution scope, but it is not started by this phase.
+
+### Approved Execution Scope
+- A dedicated transfer aggregate will link exactly two equal and opposite ledger entries in one atomic persistence operation.
+- New transfers require distinct active accounts, a positive amount, and sufficient source balance; this transfer-only rule does not alter legacy financial-operation behavior.
+- No first-release fees. Owner-only creation/reversal. Past effective dates are auditable; future dates are forbidden. Saved transfers are immutable and correction is paired reversal plus a new transfer.
+- Retry protection requires both client request ID and a unique transfer reference. The user-facing identifier is a stable UUID plus a display sequence.
+
+### Still Open / Deferred
+- `DC-U006` remains open. Reconciliation, daily/period close, financial reports, cloud sync, multi-device, and mobile remain out of scope.
+- Phase 76 execution requires a separate task and full implementation verification.

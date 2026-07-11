@@ -365,6 +365,12 @@ The recommended path forward, respecting all dependencies:
 4. ✅ Added open owner decisions required before any internal-transfer implementation
 5. ✅ Confirmed the next implementation phase is not authorized or numbered
 
+**Phase 75: Internal Financial Transfers Owner Decisions Adoption & Implementation Scope — DOCUMENTATION COMPLETE**
+1. ✅ Recorded the owner's official decisions for `DC-U013` through `DC-U024`
+2. ✅ Defined and approved the bounded scope and acceptance criteria for Phase 76 without starting it
+3. ✅ Kept `ACC-011` unimplemented and kept `DC-U006` open
+4. ✅ No production code, UI, schema, migration, or backup-format change
+
 ### Then: Financial Reporting & Reconciliation
 The following are planned capabilities, not approved numbered implementation phases. Their detailed scope is frozen in Phase 73 and must be defined with acceptance criteria before implementation:
 
@@ -375,7 +381,14 @@ The following are planned capabilities, not approved numbered implementation pha
 
 No Phase 73 production implementation exists for these capabilities. No account transfer, daily close, reconciliation, or financial report is implemented by this documentation phase.
 
-Phase 74 does not implement internal transfers. A future internal-transfer implementation phase is not yet authorized or numbered; it requires the Phase 74 owner decisions to be explicitly resolved first.
+Phase 74 does not implement internal transfers. Phase 75 records the owner decisions and formally defines the next execution scope:
+
+**Phase 76: Internal Financial Transfers Implementation — AUTHORIZED SCOPE, NOT STARTED**
+- Implement only `ACC-011`: a dedicated transfer aggregate with exactly two linked financial-account ledger entries.
+- Apply the Phase 75 owner decisions: no first-release fees; sufficient source balance required; active distinct accounts only; auditable past dates but no future date; owner-only create/reverse; documented paired reversal with mandatory reason and no repeat; client request ID plus unique reference; UUID plus display sequence; optional normal note; full review then one confirmation.
+- Preserve atomicity, ledger-derived balances, backup/restore integrity, Arabic RTL functional UI, and all existing accounting/inventory/customer/supplier behavior.
+- Excludes reconciliation, daily/period close, financial reports, cloud, multi-device, and mobile work.
+- Execution is authorized only in a separate task; no Phase 76 code is started by Phase 75.
 
 ### Then: Production Hardening
 1. Complete all partial implementations (split payments, invoice logos, PDF stock adjustment)
@@ -406,6 +419,7 @@ Phase 74 does not implement internal transfers. A future internal-transfer imple
 | 1.2 | 2026-07-10 | 72 | Phase 72 completed — transaction integration with financial accounts |
 | 1.3 | 2026-07-11 | 73 | Financial reporting & reconciliation scope freeze; documentation only, no production implementation |
 | 1.4 | 2026-07-11 | 74 | Internal financial transfers scope and owner decision pack; documentation only, ACC-011 remains unimplemented |
+| 1.5 | 2026-07-11 | 75 | Owner decisions adopted and Phase 76 execution scope defined; documentation only, ACC-011 remains unimplemented |
 
 ---
 
