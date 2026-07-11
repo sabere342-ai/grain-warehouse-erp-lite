@@ -13,6 +13,7 @@
 | PARTIALLY IMPLEMENTED | Core logic exists but UI, edge cases, or secondary paths are incomplete |
 | NOT IMPLEMENTED | No source code or test evidence |
 | DEFERRED BY DEPENDENCY | Blocked by another module not yet built |
+| PLANNED — SCOPE FROZEN | Remains in the product roadmap; its implementation scope and dependencies were documented without production code |
 | REQUIRES OWNER DECISION | Architecture or scope decision needed before implementation |
 
 ---
@@ -445,14 +446,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | PLANNED — SCOPE FROZEN IN PHASE 73 |
 | **Source evidence** | Future requirement — transferring between treasury/bank/wallet. |
 | **Implementation evidence** | None. |
 | **Test evidence** | None |
 | **Missing behavior** | Transfer model, between-account balance adjustments. |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Planning: Phase 73. Implementation phase to be defined after a concrete transfer scope and acceptance criteria are approved. |
+| **Acceptance evidence** | Not implemented. A future implementation must use traceable source and destination entries of equal value, preserve zero net movement across financial assets except explicit documented fees, and reverse rather than delete posted history. |
 
 ---
 
@@ -460,14 +461,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | PLANNED — SCOPE FROZEN IN PHASE 73 |
 | **Source evidence** | Future requirement — end-of-day cash reconciliation. |
 | **Implementation evidence** | None. The daily activity report (`RPT-001`) provides cash in/out calculations but not a formal closing process. |
 | **Test evidence** | None |
 | **Missing behavior** | Cash closing process, expected vs. actual cash, discrepancy recording. |
 | **Dependencies** | ACC-007, ACC-010 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Planning: Phase 73. Implementation is blocked by open owner decision `DC-U006`. |
+| **Acceptance evidence** | Not implemented. No hard daily close, accounting-period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction may be implemented until an explicit owner decision is recorded. |
 
 ---
 
@@ -475,14 +476,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | PLANNED — SCOPE FROZEN IN PHASE 73 |
 | **Source evidence** | Future requirement — P&L, balance sheet, cash flow. |
 | **Implementation evidence** | None. Current reports are operational, not financial accounting reports. |
 | **Test evidence** | None |
 | **Missing behavior** | Financial report generation from financial account data. |
 | **Dependencies** | ACC-007, ACC-008 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Planning: Phase 73. Implementation phase to be defined after report scope and acceptance criteria are approved. |
+| **Acceptance evidence** | Not implemented. Future reports must be derived from the auditable financial-account ledger and must not store independent or invented balances. |
 
 ---
 

@@ -1117,3 +1117,32 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 ### Verification Summary
 - `flutter analyze`: 0 errors, 0 warnings
 - `flutter test`: 673/673 passing
+
+---
+
+## Phase 73 — Financial Reporting & Reconciliation Scope Freeze
+
+### Summary
+- Phase 72 is the latest completed production implementation phase.
+- Phase 73 is documentation, architecture, and decision-register work only; it adds no production features, schema changes, backup-version changes, or UI pages.
+- The source-of-truth review confirmed that internal account transfers, daily close/period lock, reconciliation workflow, and financial-account reports are not implemented.
+- `ACC-011`, `ACC-012`, and `ACC-013` remain planned roadmap requirements with scope frozen in Phase 73; they are not marked implemented.
+
+### Current Code Reality
+- Financial accounts support treasury, bank, and electronic-wallet account types, append-only entries, statements, opening balances/corrections, and backup v4 data.
+- Phase 72 connects sales, purchases, customer collections, supplier payments, expenses, and cancellation reversals to financial-account entries when a financial account is selected.
+- There is no transfer model or transfer entry source; no reconciliation model; no close/lock model; and no financial-account reporting workflow beyond the existing account statement.
+
+### Decision Gate
+- `DC-U006` remains OPEN. No hard daily close, accounting-period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction may be implemented until the owner explicitly selects and records a daily-closing policy.
+- The absence of an implementation is not a decision to remove daily closing from the product roadmap.
+
+### Next Implementation Prerequisites
+1. Define and approve the transfer model, including source/destination pairing, reversal behavior, and explicit fee handling.
+2. Define and approve cash-count/reconciliation behavior and the `DC-U006` closing policy.
+3. Define report filters, ledger-derived calculations, and acceptance criteria.
+4. Implement only after the approved scope includes migrations, backup/restore handling, permissions, UI navigation, and regression tests where applicable.
+
+### Deferrals
+- Cloud sync, multi-device operation, and mobile remain planned roadmap items and are not removed.
+- No Phase 74 or other future implementation phase is authorized by this scope freeze.

@@ -389,7 +389,7 @@
 | **Impact if B (Summary)** | Simpler. Shows totals without physical count. Less accurate. |
 | **Impact if C (Not required)** | Simplest. No closing workflow. Risk of unaccounted differences. |
 | **Deadline** | Before Track B begins |
-| **Status** | REQUIRES OWNER DECISION |
+| **Status** | REQUIRES OWNER DECISION — OPEN. Phase 73 froze scope only; it did not select an alternative. No hard daily close, accounting-period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction shall be implemented until an explicit owner decision is recorded. |
 
 ---
 
