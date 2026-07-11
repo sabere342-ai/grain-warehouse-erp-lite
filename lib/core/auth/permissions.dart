@@ -18,6 +18,8 @@ class Permissions {
     required this.canExportBackups,
     required this.canWipeBusinessData,
     required this.canApproveBelowMinimumPrice,
+    this.canViewFinancialReports = false,
+    this.canExportFinancialReports = false,
   });
 
   final bool canCreateSale;
@@ -36,6 +38,8 @@ class Permissions {
   final bool canExportBackups;
   final bool canWipeBusinessData;
   final bool canApproveBelowMinimumPrice;
+  final bool canViewFinancialReports;
+  final bool canExportFinancialReports;
 
   static const owner = Permissions(
     canCreateSale: true,
@@ -54,6 +58,8 @@ class Permissions {
     canExportBackups: true,
     canWipeBusinessData: true,
     canApproveBelowMinimumPrice: true,
+    canViewFinancialReports: true,
+    canExportFinancialReports: true,
   );
 
   static const employee = Permissions(
@@ -100,6 +106,8 @@ class Permissions {
         canAccessSettings &&
         canExportBackups &&
         canWipeBusinessData &&
-        canApproveBelowMinimumPrice;
+        canApproveBelowMinimumPrice &&
+        canViewFinancialReports &&
+        canExportFinancialReports;
   }
 }

@@ -10,12 +10,15 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/financial_report_csv_exporter.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/financial_report_pdf_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_customer_statement_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_daily_report_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_file_naming.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_purchase_invoice_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_sales_invoice_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_supplier_statement_builder.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 
 class PdfExportService {
   PdfExportService._();
@@ -204,6 +207,147 @@ class PdfExportService {
       if (context.mounted) {
         _showError(context);
       }
+      return false;
+    }
+  }
+
+  static Future<bool> exportAccountBalanceReport(
+    BuildContext context, {
+    required AccountBalanceReport report,
+  }) async {
+    try {
+      await FinancialReportPdfBuilder.initialize();
+      final file = await FinancialReportPdfBuilder.buildAccountBalanceReport(
+          report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportAccountStatementReport(
+    BuildContext context, {
+    required AccountStatementReport report,
+  }) async {
+    try {
+      await FinancialReportPdfBuilder.initialize();
+      final file = await FinancialReportPdfBuilder.buildAccountStatementReport(
+          report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportPaymentMethodReport(
+    BuildContext context, {
+    required PaymentMethodReport report,
+  }) async {
+    try {
+      await FinancialReportPdfBuilder.initialize();
+      final file = await FinancialReportPdfBuilder.buildPaymentMethodReport(
+          report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportTransferReport(
+    BuildContext context, {
+    required TransferReport report,
+  }) async {
+    try {
+      await FinancialReportPdfBuilder.initialize();
+      final file =
+          await FinancialReportPdfBuilder.buildTransferReport(report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportAccountBalanceReportCsv(
+    BuildContext context, {
+    required AccountBalanceReport report,
+  }) async {
+    try {
+      final file = await FinancialReportCsvExporter.exportAccountBalanceReport(
+          report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportAccountStatementReportCsv(
+    BuildContext context, {
+    required AccountStatementReport report,
+  }) async {
+    try {
+      final file =
+          await FinancialReportCsvExporter.exportAccountStatementReport(
+              report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportPaymentMethodReportCsv(
+    BuildContext context, {
+    required PaymentMethodReport report,
+  }) async {
+    try {
+      final file = await FinancialReportCsvExporter.exportPaymentMethodReport(
+          report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
+      return false;
+    }
+  }
+
+  static Future<bool> exportTransferReportCsv(
+    BuildContext context, {
+    required TransferReport report,
+  }) async {
+    try {
+      final file =
+          await FinancialReportCsvExporter.exportTransferReport(report: report);
+      if (!context.mounted) return false;
+      _showSuccess(context, file.path);
+      return true;
+    } catch (e) {
+      if (!context.mounted) return false;
+      _showError(context);
       return false;
     }
   }

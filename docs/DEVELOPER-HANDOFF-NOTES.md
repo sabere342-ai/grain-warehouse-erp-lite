@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 709, all passing
+- Tests: currently 774, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -1348,3 +1348,71 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - No production code, schema, backup contract, or UI changes.
 - No new implementation phase claimed.
 - All findings are documentation and architecture only.
+
+---
+
+## Phase 79 — Account-Based Financial Reports Implementation
+
+### Summary
+- Implemented 4 production-grade financial reports with permission-gated access, PDF/CSV export, and comprehensive filtering.
+- Account Balance Report: per-account opening/closing balance with inflow/outflow totals.
+- Account Statement Report: per-account entry-level statement with running balance and reversal status.
+- Payment Method Report: aggregated by payment method, excluding transfer entries.
+- Transfer Report: authoritative transfer register with reversal/reversed tracking.
+- 5 new screens: hub screen + 4 report views, all with Arabic RTL UI.
+- 2 new core services: `FinancialReportService` (aggregation) and `FinancialReportModels` (immutable data classes).
+- 2 new export modules: `FinancialReportPdfBuilder` and `FinancialReportCsvExporter`.
+- 2 new permission flags: `canViewFinancialReports`, `canExportFinancialReports` (safe defaults: false).
+- 65 new tests added (774 total).
+- No schema changes — reports are read-only from existing ledger data.
+
+### Production Code Changed
+- Created `lib/core/financial_accounts/financial_report_models.dart` — 6 model classes
+- Created `lib/core/financial_accounts/financial_report_service.dart` — 343 lines, 4 report methods
+- Created `lib/features/financial_reports/financial_reports_screen.dart` — Hub screen with permission gate
+- Created `lib/features/financial_reports/account_balance_report_screen.dart` — Balance report with filters and export
+- Created `lib/features/financial_reports/account_statement_report_screen.dart` — Statement with running balance
+- Created `lib/features/financial_reports/payment_method_report_screen.dart` — Payment method aggregation
+- Created `lib/features/financial_reports/transfer_report_screen.dart` — Transfer register with status tracking
+- Created `lib/features/exports/financial_report_pdf_builder.dart` — PDF generation for 4 reports
+- Created `lib/features/exports/financial_report_csv_exporter.dart` — CSV export for 4 reports
+- Modified `lib/core/auth/permissions.dart` — Added `canViewFinancialReports`, `canExportFinancialReports`
+- Modified `lib/features/exports/pdf_file_naming.dart` — Added 8 financial report file naming methods
+- Modified `lib/features/exports/pdf_export_service.dart` — Added 8 financial report export methods
+- Modified `lib/features/dashboard/dashboard_shell.dart` — Added "التقارير المالية" navigation entry
+
+### Schema Changed
+- No
+
+### Tests Changed
+- Created `test/phase79_account_based_financial_reports_test.dart` — 65 tests
+
+### Key Design Decisions
+- Reports are read-only from existing ledger data (no schema changes)
+- Transfers excluded from Payment Method Report via `transferSourceTypes` set filtering
+- Reversal treatment: original entries shown, reversal status indicated
+- Permission model: two new boolean flags with safe defaults (false)
+- Account Balance: opening balance computed from entries before period start
+- Statement: deterministic sort by effectiveDate then ID
+- Transfer Report: based on authoritative transfer register, not double-parsed entries
+
+### Verification Summary
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 774/774 passing (709 baseline + 65 new)
+- `flutter build windows --release`: succeeded
+- `git diff --check`: clean
+
+### Remaining Limitations
+- PDF export requires platform-level `open_filex` for file opening
+- Transfer reversal effectiveDate uses `DateTime.now()` (test timing dependent)
+- No daily cash closing (DC-U006 closed, awaiting implementation phase)
+- No cash count or reconciliation workflow
+- No split payments (DC-U002 closed, awaiting implementation phase)
+- No negative balance guard on expense/supplier-payment paths (DC-U007 closed, awaiting implementation phase)
+- No overpayment/refund flow (DC-U008 closed, awaiting implementation phase)
+- Single-device local Windows only
+- Cloud sync not implemented
+- Multi-device live sync not implemented
+
+### Next Recommended Phase
+- Phase 80 — Period Closing / Daily Closing / Reconciliation (depends on backup contract fix)

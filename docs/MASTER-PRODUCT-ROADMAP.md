@@ -2,9 +2,9 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** Phase 78 — Financial Owner Decisions Adoption & Compatibility Audit
+> **Last Updated / آخر تحديث:** Phase 79 — Account-Based Financial Reports Implementation
 > **HEAD / الرأس الحالي:** `f059a16`
-> **Tests / الاختبارات:** 709/709 passing
+> **Tests / الاختبارات:** 774/774 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -57,9 +57,9 @@
 
 ## Current Status
 
-**Phase:** 78 — Financial Owner Decisions Adoption & Compatibility Audit
+**Phase:** 79 — Account-Based Financial Reports Implementation
 **HEAD:** `f059a16`
-**Test Suite:** 709/709 tests passing
+**Test Suite:** 774/774 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
 
@@ -69,7 +69,7 @@ The application is in a **production-ready local state** for a single warehouse 
 
 ## Implemented
 
-The following features are fully implemented, tested, and passing all 709 tests:
+The following features are fully implemented, tested, and passing all 774 tests:
 
 ### Product Management / إدارة المنتجات
 - [x] Add/edit/list products
@@ -129,7 +129,7 @@ The following features are fully implemented, tested, and passing all 709 tests:
 - [x] Payment method tracking (Phase 72)
 - [x] Financial account ledger entry on expense creation (Phase 72)
 
-### Financial Accounts / الحسابات المالية (Phases 71, 72, 76)
+### Financial Accounts / الحسابات المالية (Phases 71, 72, 76, 79)
 - [x] Financial account model — treasury, bank, electronic wallet (Phase 71)
 - [x] Financial ledger — append-only account entries with inflow/outflow direction (Phase 71)
 - [x] Account balance derived from ledger entries (Phase 71)
@@ -145,6 +145,10 @@ The following features are fully implemented, tested, and passing all 709 tests:
 - [x] Transfer reversal with mandatory reason (Phase 76)
 - [x] Transfer history and audit (Phase 76)
 - [x] Backup/restore for transfers (Phase 76)
+- [x] Account balance report — per-account opening/closing with inflow/outflow (Phase 79)
+- [x] Account statement report — per-account entry-level with running balance (Phase 79)
+- [x] Payment method report — aggregated by payment method, excluding transfers (Phase 79)
+- [x] Transfer report — authoritative transfer register with reversal tracking (Phase 79)
 
 ### Inventory Management / إدارة المخزون
 - [x] Stock movements: opening balance, purchase intake, sale, manual increase/decrease
@@ -168,6 +172,7 @@ The following features are fully implemented, tested, and passing all 709 tests:
 - [x] Daily activity report (purchases, sales, expenses, collections, payments, stock balances)
 - [x] PDF export: sales invoice, purchase invoice, customer statement, supplier statement, daily report
 - [x] 6 printable document views
+- [x] Account-based financial reports — balance, statement, payment method, transfer (Phase 79)
 
 ### PDF & Printing / الطباعة
 - [x] Sales invoice PDF
@@ -221,15 +226,11 @@ These features exist in some form but are incomplete or lack key integration:
 The following features do not exist in any form:
 
 ### Financial Reports / التقارير المالية
-- [ ] Account balance report (RPT-003)
-- [ ] Financial account statement report
 - [ ] Inflows report
 - [ ] Outflows report
-- [ ] Sales by payment method report (RPT-004)
 - [ ] Collection by account report
 - [ ] Supplier payment by account report
 - [ ] Expense by account report
-- [ ] Transfer report (RPT-007)
 - [ ] Fee tracking (bank/wallet fees)
 - [ ] Reconciliation report (RPT-008)
 
@@ -267,8 +268,10 @@ The following features do not exist in any form:
 These features are blocked by upstream dependencies:
 
 ```
-Financial Reports (RPT-003–008)
+Financial Reports (RPT-003–007)
   ├── ACC-011 (internal transfers) — ✅ implemented in Phase 76
+  ├── RPT-003, RPT-004, RPT-007 — ✅ implemented in Phase 79
+  ├── RPT-008 (reconciliation) — blocked by ACC-012
   ├── ACC-012 (daily cash closing) — DC-U006 CLOSED (owner decisions adopted Phase 78)
   └── scope and acceptance criteria must be defined before implementation
 
@@ -327,7 +330,8 @@ SaaS licensing
 | 75 | Internal financial transfers owner decisions adoption & implementation scope | Documentation | ✅ Complete |
 | 76 | Internal financial transfers implementation | Implementation | ✅ Complete |
 | 77 | Financial reporting scope & governing baseline reconciliation | Documentation | ✅ Complete |
-| 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete (current) |
+| 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete |
+| 79 | Account-based financial reports implementation | Implementation | ✅ Complete (current) |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 
@@ -416,7 +420,7 @@ The recommended path forward, respecting all dependencies:
 3. ✅ Preserved atomicity, ledger-derived balances, backup/restore integrity, Arabic RTL functional UI, and all existing accounting/inventory/customer/supplier behavior
 4. ✅ Comprehensive test coverage (110 new tests, 676 total)
 
-### Then: Financial Reporting & Reconciliation — SCOPE DEFINED
+### Then: Financial Reporting & Reconciliation — COMPLETE
 
 **Phase 77: Financial Reporting Scope & Governing Baseline Reconciliation — COMPLETED**
 1. ✅ Reconciled Master Roadmap, Traceability Matrix, and Developer Handoff Notes with actual code state
@@ -426,12 +430,12 @@ The recommended path forward, respecting all dependencies:
 5. ✅ Documented open owner decisions (`DC-U002`, `DC-U006`, `DC-U007`, `DC-U008`)
 6. ✅ No production code, UI, schema, or backup-format change
 
-The following are planned capabilities, not yet approved numbered implementation phases. Their detailed scope is defined in `PHASE-77-FINANCIAL-REPORTING-RECONCILIATION-SCOPE-AND-GOVERNING-BASELINE.md`:
-
-1. Account-based financial reports: account balance, payment method, transfer reports
-2. Financial account statement report
-3. Cash count and reconciliation workflow — **blocked by `DC-U006`**
-4. Daily or period close — **blocked by `DC-U006`**
+**Phase 79: Account-Based Financial Reports Implementation — COMPLETED**
+1. ✅ Implemented 4 production-grade financial reports: Account Balance, Account Statement, Payment Method, Transfer
+2. ✅ Permission-gated access with `canViewFinancialReports` and `canExportFinancialReports`
+3. ✅ PDF and CSV export for all 4 reports
+4. ✅ 65 new tests (774 total)
+5. ✅ No schema changes — read-only from existing ledger data
 
 ### Then: Production Hardening
 1. Complete all partial implementations (split payments — DC-U002 closed, awaiting implementation phase; invoice logos; PDF stock adjustment)
@@ -466,6 +470,7 @@ The following are planned capabilities, not yet approved numbered implementation
 | 1.6 | 2026-07-11 | 76 | Internal financial transfers implemented; ACC-011 implemented |
 | 1.7 | 2026-07-11 | 77 | Governing baseline reconciliation; corrected stale roadmap/traceability/handoff data; defined financial reporting scope |
 | 1.8 | 2026-07-11 | 78 | Owner decisions adopted (DC-U002, DC-U006, DC-U007, DC-U008); compatibility audit completed; 33 characterization tests added |
+| 1.9 | 2026-07-11 | 79 | Account-based financial reports implemented (balance, statement, payment method, transfer); 65 new tests (774 total) |
 
 ---
 

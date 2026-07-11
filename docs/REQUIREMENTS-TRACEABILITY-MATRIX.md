@@ -1,7 +1,7 @@
 # Requirements Traceability Matrix
 
-> Grain Warehouse ERP Lite — Phase 77 (Financial Reporting Scope & Governing Baseline Reconciliation)
-> Generated from source code evidence as of Phase 76 (commit `248dd2c`).
+> Grain Warehouse ERP Lite — Phase 79 (Account-Based Financial Reports Implementation)
+> Generated from source code evidence as of Phase 79 (commit `f059a16`).
 
 ---
 
@@ -1351,14 +1351,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Requires ACC-007 financial accounts. |
-| **Implementation evidence** | None. ACC-007 is implemented (Phase 71). |
-| **Test evidence** | None |
-| **Missing behavior** | Balance report per financial account. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_report_service.dart` — `accountBalanceReport()` method reads from `FinancialAccountRepository`, computes opening balance (entries before period start), inflow/outflow totals, and closing balance per account. `lib/core/financial_accounts/financial_report_models.dart` — `AccountBalanceRow` immutable data class. `lib/features/financial_reports/account_balance_report_screen.dart` — Arabic RTL UI with date filters and PDF/CSV export. `lib/features/exports/financial_report_pdf_builder.dart` — PDF generation for balance report. `lib/features/exports/financial_report_csv_exporter.dart` — CSV export for balance report. |
+| **Test evidence** | `test/phase79_account_based_financial_reports_test.dart` — Balance report tests covering empty period, date filtering, opening balance computation, inflow/outflow totals, closing balance, permission gating, PDF/CSV export. |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-007 ✅ |
-| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 79 |
+| **Acceptance evidence** | Balance report shows per-account opening/closing balance with inflow/outflow totals; read-only from ledger data; permission-gated; PDF/CSV export functional. |
 
 ---
 
@@ -1366,14 +1366,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Requires ACC-010 payment method tracking. |
-| **Implementation evidence** | None. ACC-010 is implemented (Phase 72). |
-| **Test evidence** | None |
-| **Missing behavior** | Report breaking down transactions by payment method. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_report_service.dart` — `paymentMethodReport()` method reads FA entries, filters out transfer-related sources via `transferSourceTypes` set, aggregates by `PaymentMethod` enum. `lib/core/financial_accounts/financial_report_models.dart` — `PaymentMethodRow` immutable data class. `lib/features/financial_reports/payment_method_report_screen.dart` — Arabic RTL UI with date/method filters and PDF/CSV export. `lib/features/exports/financial_report_pdf_builder.dart` — PDF generation for payment method report. `lib/features/exports/financial_report_csv_exporter.dart` — CSV export for payment method report. |
+| **Test evidence** | `test/phase79_account_based_financial_reports_test.dart` — Payment method report tests covering empty data, transfer exclusion, per-method aggregation, date filtering, permission gating, PDF/CSV export. |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-010 ✅ |
-| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 79 |
+| **Acceptance evidence** | Payment method report aggregates FA entries by method (cash, bankTransfer, mobileWallet, check); transfers excluded; read-only; permission-gated; PDF/CSV export functional. |
 
 ---
 
@@ -1411,14 +1411,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Requires ACC-011 internal transfers. |
-| **Implementation evidence** | None. ACC-011 is implemented (Phase 76). |
-| **Test evidence** | None |
-| **Missing behavior** | Report for internal fund transfers. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_report_service.dart` — `transferReport()` method reads from authoritative transfer register via `listTransfers()`, joins with account names, shows reversal/reversed status. `lib/core/financial_accounts/financial_report_models.dart` — `TransferReportRow` immutable data class with reversal status fields. `lib/features/financial_reports/transfer_report_screen.dart` — Arabic RTL UI with date/status filters and PDF/CSV export. `lib/features/exports/financial_report_pdf_builder.dart` — PDF generation for transfer report. `lib/features/exports/financial_report_csv_exporter.dart` — CSV export for transfer report. |
+| **Test evidence** | `test/phase79_account_based_financial_reports_test.dart` — Transfer report tests covering empty data, date filtering, reversal status, reversed status, permission gating, PDF/CSV export. |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-011 ✅ |
-| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | Phase 79 |
+| **Acceptance evidence** | Transfer report reads from authoritative transfer register; shows source/destination accounts, amount, date, reversal status; read-only; permission-gated; PDF/CSV export functional. |
 
 ---
 
@@ -1441,15 +1441,15 @@
 
 | Status | Count | IDs |
 |---|---|---|
-| **IMPLEMENTED** | 58 | OPS-001–018, ACC-001–011, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
-| **NOT IMPLEMENTED** | 22 | ACC-012–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
+| **IMPLEMENTED** | 61 | OPS-001–018, ACC-001–011, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–004, RPT-007 |
+| **NOT IMPLEMENTED** | 19 | ACC-012–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-005–006, RPT-008 |
 
 ### Not Implemented Requirements by Blocker
 
 | Blocker | Requirements |
 |---|---|
 | Blocked by DC-U006 (daily closing policy) | ACC-012, RPT-008 |
-| Scope defined, pending approved phase | ACC-013, RPT-003, RPT-004, RPT-007 |
+| Scope defined, pending approved phase | ACC-013 |
 | No backend/cloud (CLD-002) | CLD-001–008, MOB-001–004 |
 | No in-memory transactions | BKP-008, BKP-009 |
 | Future scope only | CAN-005, CAN-006, CAN-007, INV-005, RPT-005, RPT-006 |
@@ -1477,3 +1477,9 @@ This matrix was reconciled with the actual codebase state in Phase 77. The follo
 
 A compatibility audit of all production code was completed. No confirmed defects were found in audited areas (transfers, cancellations, reversals, balance invariants). Implementation gaps were documented for the decisions above — they require new implementation phases to realize.
 - Blocker table corrected to reflect current dependency state.
+
+---
+
+# Phase 79 account-based financial reports implementation
+
+RPT-003 (account balance report), RPT-004 (payment method report), and RPT-007 (transfer report) are IMPLEMENTED in Phase 79. A new Account Statement report (unnumbered in the traceability matrix but covered by Phase 79 scope) was also implemented. Summary counts corrected: 61 implemented (was 58), 19 not implemented (was 22).

@@ -13,25 +13,72 @@ class PdfFileNaming {
 
   static String salesInvoice(String saleId, DateTime date) {
     final safeId = saleId.replaceAll(_forbidden, '-');
-    return _sanitize('\u0641\u0627\u062a\u0648\u0631\u0629-\u0628\u064a\u0639-$safeId-${_datePart(date)}.pdf');
+    return _sanitize(
+        '\u0641\u0627\u062a\u0648\u0631\u0629-\u0628\u064a\u0639-$safeId-${_datePart(date)}.pdf');
   }
 
   static String customerStatement(String customerName, DateTime date) {
     final safeName = customerName.replaceAll(_forbidden, '-');
-    return _sanitize('\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0639\u0645\u064a\u0644-$safeName-${_datePart(date)}.pdf');
+    return _sanitize(
+        '\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0639\u0645\u064a\u0644-$safeName-${_datePart(date)}.pdf');
   }
 
   static String dailyReport(DateTime date) {
-    return _sanitize('\u062a\u0642\u0631\u064a\u0631-\u064a\u0648\u0645\u064a-${_datePart(date)}.pdf');
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u064a\u0648\u0645\u064a-${_datePart(date)}.pdf');
   }
 
   static String purchaseInvoice(String purchaseId, DateTime date) {
     final safeId = purchaseId.replaceAll(_forbidden, '-');
-    return _sanitize('\u0641\u0627\u062a\u0648\u0631\u0629-\u0634\u0631\u0627\u0621-$safeId-${_datePart(date)}.pdf');
+    return _sanitize(
+        '\u0641\u0627\u062a\u0648\u0631\u0629-\u0634\u0631\u0627\u0621-$safeId-${_datePart(date)}.pdf');
   }
 
   static String supplierStatement(String supplierName, DateTime date) {
     final safeName = supplierName.replaceAll(_forbidden, '-');
-    return _sanitize('\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0645\u0648\u0631\u062f-$safeName-${_datePart(date)}.pdf');
+    return _sanitize(
+        '\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0645\u0648\u0631\u062f-$safeName-${_datePart(date)}.pdf');
+  }
+
+  static String accountBalanceReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0623\u0631\u0635\u062f\u0629-${_datePart(date)}.pdf');
+  }
+
+  static String accountStatementReport(String accountName, DateTime date) {
+    final safeName = accountName.replaceAll(_forbidden, '-');
+    return _sanitize(
+        '\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0645\u0627\u0644\u064a-$safeName-${_datePart(date)}.pdf');
+  }
+
+  static String paymentMethodReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0637\u0631\u0642-\u0627\u0644\u062f\u0641\u0639-${_datePart(date)}.pdf');
+  }
+
+  static String transferReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062d\u0648\u064a\u0644\u0627\u062a-${_datePart(date)}.pdf');
+  }
+
+  static String accountBalanceReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0623\u0631\u0635\u062f\u0629-${_datePart(date)}.csv');
+  }
+
+  static String accountStatementReportCsv(String accountName, DateTime date) {
+    final safeName = accountName.replaceAll(_forbidden, '-');
+    return _sanitize(
+        '\u0643\u0634\u0641-\u062d\u0633\u0627\u0628-\u0645\u0627\u0644\u064a-$safeName-${_datePart(date)}.csv');
+  }
+
+  static String paymentMethodReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0637\u0631\u0642-\u0627\u0644\u062f\u0641\u0639-${_datePart(date)}.csv');
+  }
+
+  static String transferReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062d\u0648\u064a\u0644\u0627\u062a-${_datePart(date)}.csv');
   }
 }
