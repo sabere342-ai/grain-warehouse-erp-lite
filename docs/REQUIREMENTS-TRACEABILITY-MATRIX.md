@@ -1,7 +1,7 @@
 # Requirements Traceability Matrix
 
-> Grain Warehouse ERP Lite — Phase 69 (Final Branded Delivery Package)
-> Generated from source code evidence as of current codebase state.
+> Grain Warehouse ERP Lite — Phase 77 (Financial Reporting Scope & Governing Baseline Reconciliation)
+> Generated from source code evidence as of Phase 76 (commit `248dd2c`).
 
 ---
 
@@ -446,14 +446,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | PLANNED — IMPLEMENTATION SCOPE APPROVED IN PHASE 75; NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Future requirement — transferring between treasury/bank/wallet. |
-| **Implementation evidence** | None. |
-| **Test evidence** | None |
-| **Missing behavior** | Transfer model, between-account balance adjustments. |
+| **Implementation evidence** | `lib/core/financial_accounts/financial_transfer.dart` — `FinancialTransfer` model with `id`, `displayNumber`, `clientRequestId`, `transferReference`, `sourceAccountId`, `destinationAccountId`, `amountQirsh`, `effectiveDate`, `createdAt`, `createdByUserId`, `sourceEntryId`, `destinationEntryId`, `note`, `originalTransferId`, `reversalTransferId`, `reversalReason`. `lib/core/financial_accounts/financial_account_repository.dart` — `createTransfer()` creates atomic paired entries (source outflow + destination inflow); `reverseTransfer()` creates documented paired reversal with mandatory reason; `listTransfers()` for transfer history. `lib/core/financial_accounts/financial_account_entry.dart` — `FinancialAccountEntrySource` includes `transferOut`, `transferIn`, `transferReversalOut`, `transferReversalIn`. `lib/features/financial_accounts/financial_transfers_screen.dart` — Arabic RTL transfer review/confirmation UI, transfer history, reversal action. |
+| **Test evidence** | `test/phase76_internal_financial_transfers_test.dart` — 110 tests covering: creation happy path, same-account rejection, inactive account rejection, zero/negative amount rejection, future date rejection, insufficient balance rejection, idempotency, atomic rollback, duplicate reversal rejection, source/reversal linkage, balance conservation, permission enforcement, backup/restore round-trip. |
+| **Missing behavior** | None for Phase 76 scope. Transfer fees deferred (DC-U013: no first-release fees). |
 | **Dependencies** | ACC-007 |
-| **Proposed phase** | Phase 76 — Internal Financial Transfers Implementation. Scope approved in Phase 75; production implementation remains pending. |
-| **Acceptance evidence** | Not implemented. A future implementation must use traceable source and destination entries of equal value, preserve zero net movement across financial assets except explicit documented fees, and reverse rather than delete posted history. |
+| **Proposed phase** | Phase 76 |
+| **Acceptance evidence** | Transfer creates two equal/opposite linked ledger entries atomically; source balance sufficient check enforced; owner-only create/reverse; documented paired reversal with mandatory reason; immutable saved transfers; idempotent retry; Arabic RTL review/confirmation UI; backup/restore preserves transfer relationships. |
 
 ---
 
@@ -660,12 +660,12 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED (no financial accounts) |
+| **Status** | NOT IMPLEMENTED |
 | **Source evidence** | Requires ACC-007 financial account model. |
-| **Implementation evidence** | None. No financial accounts exist to reverse against. |
-| **Test evidence** | None |
-| **Missing behavior** | All of ACC-007 must be implemented first. |
-| **Dependencies** | ACC-007 |
+| **Implementation evidence** | ACC-007 (financial accounts) is implemented. Financial account entry reversals for transfer reversal exist (Phase 76). However, general-purpose collection cancellation (CAN-005) and payment cancellation (CAN-006) against financial accounts are not implemented. |
+| **Test evidence** | None for general-purpose financial account reversal. |
+| **Missing behavior** | Collection cancellation with financial account reversal; payment cancellation with financial account reversal. |
+| **Dependencies** | ACC-007 ✅, CAN-005, CAN-006 |
 | **Proposed phase** | Deferred |
 | **Acceptance evidence** | N/A |
 
@@ -1351,13 +1351,13 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
 | **Source evidence** | Requires ACC-007 financial accounts. |
-| **Implementation evidence** | None. |
+| **Implementation evidence** | None. ACC-007 is implemented (Phase 71). |
 | **Test evidence** | None |
 | **Missing behavior** | Balance report per financial account. |
-| **Dependencies** | ACC-007 |
-| **Proposed phase** | Deferred |
+| **Dependencies** | ACC-007 ✅ |
+| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
 | **Acceptance evidence** | N/A |
 
 ---
@@ -1366,13 +1366,13 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
 | **Source evidence** | Requires ACC-010 payment method tracking. |
-| **Implementation evidence** | None. |
+| **Implementation evidence** | None. ACC-010 is implemented (Phase 72). |
 | **Test evidence** | None |
 | **Missing behavior** | Report breaking down transactions by payment method. |
-| **Dependencies** | ACC-010 |
-| **Proposed phase** | Deferred |
+| **Dependencies** | ACC-010 ✅ |
+| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
 | **Acceptance evidence** | N/A |
 
 ---
@@ -1411,13 +1411,13 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | NOT IMPLEMENTED — dependencies met, scope defined in Phase 77 |
 | **Source evidence** | Requires ACC-011 internal transfers. |
-| **Implementation evidence** | None. |
+| **Implementation evidence** | None. ACC-011 is implemented (Phase 76). |
 | **Test evidence** | None |
 | **Missing behavior** | Report for internal fund transfers. |
-| **Dependencies** | ACC-011 |
-| **Proposed phase** | Deferred |
+| **Dependencies** | ACC-011 ✅ |
+| **Proposed phase** | Scope defined in Phase 77; implementation pending approved numbered phase |
 | **Acceptance evidence** | N/A |
 
 ---
@@ -1441,17 +1441,26 @@
 
 | Status | Count | IDs |
 |---|---|---|
-| **IMPLEMENTED** | 57 | OPS-001–018, ACC-001–010, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
-| **NOT IMPLEMENTED** | 23 | ACC-011–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
+| **IMPLEMENTED** | 58 | OPS-001–018, ACC-001–011, INV-001–004, CAN-001–004, CAN-008, DOC-001–008, BKP-001–007, AUTH-001–005, AUD-001–003, BRD-001–004, RPT-001–002 |
+| **NOT IMPLEMENTED** | 22 | ACC-012–013, INV-005, CAN-005–007, BKP-008–009, CLD-001–008, MOB-001–004, RPT-003–008 |
 
 ### Not Implemented Requirements by Blocker
 
 | Blocker | Requirements |
 |---|---|
-| No internal transfers (ACC-011) | ACC-011, ACC-012, ACC-013, CAN-007, RPT-003, RPT-004, RPT-007, RPT-008 |
+| Blocked by DC-U006 (daily closing policy) | ACC-012, RPT-008 |
+| Scope defined, pending approved phase | ACC-013, RPT-003, RPT-004, RPT-007 |
 | No backend/cloud (CLD-002) | CLD-001–008, MOB-001–004 |
 | No in-memory transactions | BKP-008, BKP-009 |
-| Future scope only | CAN-005, CAN-006, INV-005, RPT-005, RPT-006 |
-# Phase 76 traceability update
+| Future scope only | CAN-005, CAN-006, CAN-007, INV-005, RPT-005, RPT-006 |
+
+# Phase 77 governing baseline reconciliation
 
 `ACC-011` is implemented in Phase 76: immutable paired financial-account entries, owner-only transfer/reversal, idempotency, source-balance validation, review/history UI, and additive backup restore coverage. The historical Phase 75 entry below is superseded by this update; DC-U006 remains open.
+
+This matrix was reconciled with the actual codebase state in Phase 77. The following corrections were made:
+- ACC-011 status corrected from "NOT IMPLEMENTED" to "IMPLEMENTED" (Phase 76).
+- CAN-007 updated to reflect that financial accounts exist but general-purpose financial-account reversal is not implemented.
+- RPT-003, RPT-004, RPT-007 updated to reflect that their dependencies (ACC-007, ACC-010, ACC-011) are now met.
+- Summary counts corrected: 58 implemented (was 57), 22 not implemented (was 23).
+- Blocker table corrected to reflect current dependency state.

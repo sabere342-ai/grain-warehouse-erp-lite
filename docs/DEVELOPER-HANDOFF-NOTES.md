@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 542, all passing
+- Tests: currently 676, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -98,12 +98,15 @@ flutter build windows --release
 | `phase-43-whatsapp-assisted-sharing` | 43 | WhatsApp assisted sharing: phone normalization, message templates, فتح واتساب button on 4 doc types (not daily report), url_launcher integration, 28 new tests (439 total) |
 
 ## Backup Version
-- Current: v2
-- Phase 39: Added `items` (array of SaleLineItem JSON) and `paidAmountQirsh` as optional fields
-- Old backups without these fields restore via single-field fallback
+- Current: v4 (Phase 71 — financial accounts data)
+- v4 added: `financialAccounts`, `financialAccountEntries`, `financialTransfers` sections
+- v3 added: business logo as base64 (Phase 68)
+- v2 added: `settings.businessIdentity` with establishment name (Phase 67)
+- v1 → v2: backward-compatible; old backups restore via optional-field fallback
+- Old backups without financial data restore via `_optionalList()` fallback
 
 ## Next Recommended Phase
-(Phase 43 complete — next phase TBD)
+(Phase 77 complete — financial reporting scope defined; next implementation phase pending owner decisions and roadmap update)
 
 ### Later Roadmap
 - (none confirmed)
@@ -1185,3 +1188,114 @@ Phase 49B — Stock Adjustment Variance Report / printable audit view.
 # Phase 76 handoff
 
 Internal financial transfers are implemented as `ACC-011`. Future work must preserve immutable paired ledger entries, owner-only access, and the Phase 75 exclusions; do not reinterpret DC-U006 as closed.
+
+### Summary
+- Implemented `ACC-011`: dedicated transfer aggregate with exactly two linked financial-account ledger entries.
+- Owner-only create and reversal at UI, controller, and repository layers.
+- Immutable transfer with UUID internal identifier, sequential display number, client request id, and unique reference.
+- Two equal and opposite ledger entries for each transfer; no revenue, expense, inventory, customer, or supplier impact.
+- Positive amount, distinct active accounts, no future effective date, source-ledger sufficiency check, and idempotent retry behavior.
+- Documented paired reversal with mandatory reason; originals are neither edited nor deleted and cannot be reversed twice.
+- Arabic review-before-confirmation UI, transfer history, and reversal action.
+- Additive backup/export/preview/restore support for `financialTransfers`; v4 remains compatible with older backups.
+
+### Production Code Changed
+- Created `lib/core/financial_accounts/financial_transfer.dart`
+- Modified `lib/core/financial_accounts/financial_account_entry.dart` — added `transferOut`, `transferIn`, `transferReversalOut`, `transferReversalIn` sources
+- Modified `lib/core/financial_accounts/financial_account_repository.dart` — added `createTransfer`, `reverseTransfer`, `listTransfers`
+- Modified `lib/core/financial_accounts/financial_account_controller.dart` — added transfer methods
+- Created `lib/features/financial_accounts/financial_transfers_screen.dart`
+- Modified `lib/features/financial_accounts/financial_accounts_screen.dart` — added transfer navigation
+- Modified `lib/core/backup/backup_export.dart` — exports `financialTransfers`
+- Modified `lib/core/backup/backup_restore_service.dart` — restores `financialTransfers`
+- Modified `lib/core/backup/backup_restore_preview.dart` — previews `financialTransfers`
+
+### Test File Created
+- `test/phase76_internal_financial_transfers_test.dart` — 110 tests
+
+### Documentation Updated
+- `docs/MASTER-PRODUCT-ROADMAP.md` — Phase 76 completed
+- `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md` — ACC-011 implemented
+- `docs/DEVELOPER-HANDOFF-NOTES.md` — this section
+
+### Verification Summary
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 676/676 passing
+- `flutter build windows --release`: succeeded
+- `git diff --check`: clean
+
+### Explicit Boundaries
+- No transfer fee, multicurrency, reconciliation, closing policy, drafts, approvals, or changes to historic financial-operation rules were introduced.
+- DC-U006 remains open.
+
+---
+
+## Phase 77 — Financial Reporting Scope & Governing Baseline Reconciliation
+
+### Summary
+- Phase 77 is a documentation + architecture scope phase only.
+- Reconciled the Master Roadmap, Requirements Traceability Matrix, and Developer Handoff Notes with the actual codebase state after Phases 71, 72, and 76.
+- Corrected stale documentation that incorrectly listed financial accounts, financial ledger, transaction integration, payment method tracking, and internal transfers as NOT IMPLEMENTED.
+- Defined financial report scope: Account Balance Report, Financial Account Statement, Payment Method Report, Internal Transfer Report.
+- Documented accounting rules, date/ordering rules, permissions, filters, export/printing, backup impact, acceptance criteria, and test plans.
+- Documented open owner decisions (`DC-U002`, `DC-U006`, `DC-U007`, `DC-U008`).
+- Recommended next implementation phase: `Phase 78 — Account-Based Financial Reports Implementation` (pending owner decisions and roadmap update).
+
+### Production Code Changed
+- No.
+
+### Schema Changed
+- No.
+
+### UI Changed
+- No.
+
+### Backup Contract Changed
+- No.
+
+### Files Updated
+1. `docs/MASTER-PRODUCT-ROADMAP.md` — corrected header, Phase History, Implemented, Partially Implemented, NOT Implemented, Future Roadmap, Version History
+2. `docs/REQUIREMENTS-TRACEABILITY-MATRIX.md` — corrected ACC-011, CAN-007, RPT-003/004/007, Summary, Blocker table
+3. `docs/DEVELOPER-HANDOFF-NOTES.md` — corrected test count, backup version, added Phase 76 handoff and Phase 77 section
+
+### Files Created
+1. `docs/PHASE-77-FINANCIAL-REPORTING-RECONCILIATION-SCOPE-AND-GOVERNING-BASELINE.md`
+
+### Documentation Corrections Made
+| Document | Old Value | Corrected Value |
+|----------|-----------|-----------------|
+| Master Roadmap header | Phase 69, HEAD c37db59, 586 tests | Phase 76, HEAD 248dd2c, 676 tests |
+| Master Roadmap Implemented | 586 tests | 676 tests |
+| Master Roadmap Partially Implemented | Expenses/Collections/Payments: "No account/payment method" | Removed (implemented in Phase 72) |
+| Master Roadmap NOT Implemented | Financial accounts, ledger, selection, methods, transfers | Removed (implemented in Phases 71/72/76) |
+| Traceability Matrix header | Phase 69 | Phase 77 |
+| Traceability Matrix ACC-011 | NOT IMPLEMENTED | IMPLEMENTED (Phase 76) |
+| Traceability Matrix Summary | 57 implemented, 23 not implemented | 58 implemented, 22 not implemented |
+| Handoff Notes Quality Gates | 542 tests | 676 tests |
+| Handoff Notes Backup Version | v2 | v4 |
+
+### Verification Summary
+- `flutter analyze --no-pub`: 0 errors, 0 warnings
+- `flutter test`: 676/676 passing
+- `flutter build windows --release`: succeeded
+- `git diff --check`: clean
+
+### Open Owner Decisions
+| Decision | Status | Affected Capability |
+|----------|--------|-------------------|
+| DC-U002 | OPEN | Split payments |
+| DC-U006 | OPEN | Daily cash closing, reconciliation |
+| DC-U007 | OPEN | Negative account balance policy |
+| DC-U008 | OPEN | Overpayment/collection policy |
+
+### Remaining Limitations
+- No financial account reports implemented (scope defined in Phase 77).
+- No daily cash closing (blocked by DC-U006).
+- No cash count or reconciliation workflow.
+- No split payments (blocked by DC-U002).
+- Single-device local Windows only.
+- Cloud sync not implemented.
+- Multi-device live sync not implemented.
+
+### Next Recommended Phase
+- Phase 78 — Account-Based Financial Reports Implementation (pending owner decisions and Master Roadmap update)
