@@ -2,9 +2,9 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** Phase 80 — Period Closing / Daily Closing / Financial Reconciliation
-> **HEAD / الرأس الحالي:** Phase 80 completion commit (this document)
-> **Tests / الاختبارات:** 779/779 passing
+> **Last Updated / آخر تحديث:** Phase 81 — Transaction-Level Financial Backup/Restore Contract Remediation
+> **HEAD / الرأس الحالي:** Phase 81 completion commit (this document)
+> **Tests / الاختبارات:** 784/784 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -47,7 +47,7 @@
 | Money type | `int` (Qirsh — no decimals) |
 | Weight type | `int` (grams) |
 | Persistence | In-memory repositories (`Local*Repository`) |
-| Backup/Restore | JSON export/import (Version 5 with financial closings; backward-compatible with v1–v4) |
+| Backup/Restore | JSON export/import (Version 6 with transaction financial linkage; backward-compatible with v1–v5) |
 | PDF generation | Flutter PDF rendering |
 | Database | **None** — no SQLite, no cloud, no server |
 | Networking | None (offline-only) |
@@ -57,9 +57,9 @@
 
 ## Current Status
 
-**Phase:** 80 — Period Closing / Daily Closing / Financial Reconciliation
-**HEAD:** Phase 80 completion commit
-**Test Suite:** 779/779 tests passing
+**Phase:** 81 — Transaction-Level Financial Backup/Restore Contract Remediation
+**HEAD:** Phase 81 completion commit
+**Test Suite:** 784/784 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
 
@@ -69,7 +69,7 @@ The application is in a **production-ready local state** for a single warehouse 
 
 ## Implemented
 
-The following features are fully implemented, tested, and passing all 774 tests:
+The following features are fully implemented, tested, and passing all 784 tests:
 
 ### Product Management / إدارة المنتجات
 - [x] Add/edit/list products
@@ -332,7 +332,8 @@ SaaS licensing
 | 77 | Financial reporting scope & governing baseline reconciliation | Documentation | ✅ Complete |
 | 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete |
 | 79 | Account-based financial reports implementation | Implementation | ✅ Complete |
-| 80 | Period closing / daily closing / financial reconciliation | Implementation | ✅ Complete (current) |
+| 80 | Period closing / daily closing / financial reconciliation | Implementation | ✅ Complete |
+| 81 | Transaction-level financial Backup/Restore contract remediation | Implementation | ✅ Complete (current) |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 
@@ -439,10 +440,11 @@ The recommended path forward, respecting all dependencies:
 5. ✅ No schema changes — read-only from existing ledger data
 
 ### Then: Production Hardening
-1. Complete all partial implementations (split payments — DC-U002 closed, awaiting implementation phase; invoice logos; PDF stock adjustment)
-2. Extended owner trial under real conditions
-3. Performance optimization
-4. Edge case hardening
+1. ✅ Preserve transaction-level financial-account and payment-method linkage in Backup/Restore (Phase 81)
+2. Complete remaining partial implementations (split payments — DC-U002 closed, awaiting its own implementation phase; invoice-logo status reconciliation; PDF stock adjustment)
+3. Extended owner trial under real conditions
+4. Performance optimization
+5. Edge case hardening
 
 ### Only After Local Model Is Proven: Cloud Readiness
 1. Cloud sync architecture
@@ -472,6 +474,7 @@ The recommended path forward, respecting all dependencies:
 | 1.7 | 2026-07-11 | 77 | Governing baseline reconciliation; corrected stale roadmap/traceability/handoff data; defined financial reporting scope |
 | 1.8 | 2026-07-11 | 78 | Owner decisions adopted (DC-U002, DC-U006, DC-U007, DC-U008); compatibility audit completed; 33 characterization tests added |
 | 1.9 | 2026-07-11 | 79 | Account-based financial reports implemented (balance, statement, payment method, transfer); 65 new tests (774 total) |
+| 2.0 | 2026-07-11 | 81 | Backup v6 preserves transaction-level financial account and payment method links; v1–v5 remain compatible; 784 tests |
 
 ---
 

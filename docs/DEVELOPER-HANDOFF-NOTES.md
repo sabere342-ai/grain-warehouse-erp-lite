@@ -33,7 +33,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 774, all passing
+- Tests: currently 784, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -1426,3 +1426,13 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - Backup upgraded to v5 with closing records; restore remains backward-compatible with v1–v4.
 - Added 5 focused tests; full suite is 779/779 before final closure gates.
 - Split Payments were not included. Cloud Sync, multi-device, and mobile remain future roadmap work.
+
+## Phase 81 — Transaction-Level Financial Backup/Restore Contract Remediation
+
+- Owner-adopted official scope after the post-Phase-80 roadmap governance audit.
+- Backup v6 now exports and restores `financialAccountId` and `paymentMethod` for sales, purchases, customer collections, supplier payments, and expenses.
+- v1–v5 remain supported. Missing fields restore as `null`; no account or payment method is invented.
+- Restore validates every non-null transaction account reference before repository writes.
+- No ledger entry, balance, stock movement, Phase 79 report calculation, Phase 80 closing calculation, or UI workflow changed.
+- Added 5 focused service-level tests; both final full-suite runs passed 784/784, analyzer passed twice, and Windows release build passed.
+- Split Payments, negative-balance controls, overpayments/refunds, cancellations, Cloud Sync, multi-device, mobile, and SaaS remain outside Phase 81.

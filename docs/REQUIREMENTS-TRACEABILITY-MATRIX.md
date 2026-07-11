@@ -1,7 +1,7 @@
 # Requirements Traceability Matrix
 
-> Grain Warehouse ERP Lite — Phase 79 (Account-Based Financial Reports Implementation)
-> Generated from source code evidence as of Phase 79 (commit `f059a16`).
+> Grain Warehouse ERP Lite — Phase 81 (Transaction-Level Financial Backup/Restore Contract Remediation)
+> Generated from source code evidence as of Phase 81 completion tree.
 
 ---
 
@@ -1483,3 +1483,7 @@ A compatibility audit of all production code was completed. No confirmed defects
 # Phase 79 account-based financial reports implementation
 
 RPT-003 (account balance report), RPT-004 (payment method report), and RPT-007 (transfer report) are IMPLEMENTED in Phase 79. A new Account Statement report (unnumbered in the traceability matrix but covered by Phase 79 scope) was also implemented. Summary counts corrected: 61 implemented (was 58), 19 not implemented (was 22).
+
+# Phase 81 transaction-level financial Backup/Restore remediation
+
+Backup v6 preserves `financialAccountId` and `paymentMethod` on sales, purchases, customer collections, supplier payments, and expenses. Restore accepts v1–v5 with safe `null` defaults when the fields are absent and rejects non-null references to missing financial accounts before writes. This closes the transaction-linkage Backup gap recorded in Phase 78 without changing transaction accounting, stock, reports, or closing behavior.

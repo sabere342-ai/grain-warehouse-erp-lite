@@ -392,6 +392,8 @@ class BackupRestoreService {
       stockMovementId: _string(map, 'stockMovementId'),
       notes: _optionalString(map, 'notes'),
       cancellation: _parseCancellation(map['cancellation']),
+      financialAccountId: _optionalString(map, 'financialAccountId'),
+      paymentMethod: _optionalPaymentMethod(map),
     );
   }
 
@@ -418,6 +420,8 @@ class BackupRestoreService {
       cancellation: _parseCancellation(map['cancellation']),
       items: items,
       paidAmountQirsh: _optionalInt(map, 'paidAmountQirsh'),
+      financialAccountId: _optionalString(map, 'financialAccountId'),
+      paymentMethod: _optionalPaymentMethod(map),
     );
   }
 
@@ -459,6 +463,8 @@ class BackupRestoreService {
       createdByUserId: _string(map, 'createdByUserId'),
       createdByUserName: _optionalString(map, 'createdByUserName'),
       notes: _optionalString(map, 'notes'),
+      financialAccountId: _optionalString(map, 'financialAccountId'),
+      paymentMethod: _optionalPaymentMethod(map),
     );
   }
 
@@ -503,6 +509,8 @@ class BackupRestoreService {
       createdByUserId: _string(map, 'createdByUserId'),
       createdByUserName: _optionalString(map, 'createdByUserName'),
       notes: _optionalString(map, 'notes'),
+      financialAccountId: _optionalString(map, 'financialAccountId'),
+      paymentMethod: _optionalPaymentMethod(map),
     );
   }
 
@@ -515,6 +523,8 @@ class BackupRestoreService {
       amountQirsh: _int(map, 'amountQirsh'),
       notes: _optionalString(map, 'notes'),
       createdAt: _date(map, 'createdAt'),
+      financialAccountId: _optionalString(map, 'financialAccountId'),
+      paymentMethod: _optionalPaymentMethod(map),
     );
   }
 
@@ -641,6 +651,8 @@ class BackupRestoreService {
     final productIds = data.products.map((product) => product.id).toSet();
     final supplierIds = data.suppliers.map((supplier) => supplier.id).toSet();
     final movementIds = data.movements.map((movement) => movement.id).toSet();
+    final financialAccountIds =
+        data.financialAccounts.map((account) => account.id).toSet();
 
     if (productIds.length != data.products.length ||
         supplierIds.length != data.suppliers.length ||
@@ -666,6 +678,8 @@ class BackupRestoreService {
         throw StateError('Invalid purchase relationship.');
       }
       _validateCancellationReferences(purchase.cancellation, movementIds);
+      _validateFinancialAccountReference(
+          purchase.financialAccountId, financialAccountIds);
     }
     for (final sale in data.sales) {
       if (!productIds.contains(sale.productId) ||
@@ -689,6 +703,20 @@ class BackupRestoreService {
         }
       }
       _validateCancellationReferences(sale.cancellation, movementIds);
+      _validateFinancialAccountReference(
+          sale.financialAccountId, financialAccountIds);
+    }
+    for (final collection in data.customerCollections) {
+      _validateFinancialAccountReference(
+          collection.financialAccountId, financialAccountIds);
+    }
+    for (final payment in data.supplierPayments) {
+      _validateFinancialAccountReference(
+          payment.financialAccountId, financialAccountIds);
+    }
+    for (final expense in data.expenses) {
+      _validateFinancialAccountReference(
+          expense.financialAccountId, financialAccountIds);
     }
     if (data.documentHistoryCount !=
         data.purchases.length + data.sales.length) {
@@ -734,6 +762,20 @@ class BackupRestoreService {
       return value;
     }
     throw StateError('Invalid string field: $key');
+  }
+
+  void _validateFinancialAccountReference(
+      String? accountId, Set<String> financialAccountIds) {
+    if (accountId != null &&
+        accountId.isNotEmpty &&
+        !financialAccountIds.contains(accountId)) {
+      throw StateError('Transaction references missing financial account.');
+    }
+  }
+
+  PaymentMethod? _optionalPaymentMethod(Map<String, Object?> map) {
+    final name = _optionalString(map, 'paymentMethod');
+    return name == null ? null : PaymentMethod.values.byName(name);
   }
 
   int _int(Map<String, Object?> map, String key) {

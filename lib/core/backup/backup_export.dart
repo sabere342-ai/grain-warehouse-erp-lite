@@ -63,7 +63,7 @@ class BackupExportService {
         _financialAccountRepository = financialAccountRepository,
         _now = now;
 
-  static const int backupVersion = 5;
+  static const int backupVersion = 6;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -280,6 +280,8 @@ class BackupExportService {
       'notes': purchase.notes,
       'isCancelled': purchase.isCancelled,
       'cancellation': _cancellationToJson(purchase.cancellation),
+      'financialAccountId': purchase.financialAccountId,
+      'paymentMethod': purchase.paymentMethod?.name,
     };
   }
 
@@ -301,6 +303,8 @@ class BackupExportService {
       'cancellation': _cancellationToJson(sale.cancellation),
       'paidAmountQirsh': sale.paidAmountQirsh,
       'items': sale.items.map(_saleItemToJson).toList(growable: false),
+      'financialAccountId': sale.financialAccountId,
+      'paymentMethod': sale.paymentMethod?.name,
     };
   }
 
@@ -363,6 +367,8 @@ class BackupExportService {
       'createdByUserId': collection.createdByUserId,
       'createdByUserName': collection.createdByUserName,
       'notes': collection.notes,
+      'financialAccountId': collection.financialAccountId,
+      'paymentMethod': collection.paymentMethod?.name,
     };
   }
 
@@ -392,6 +398,8 @@ class BackupExportService {
       'createdByUserId': payment.createdByUserId,
       'createdByUserName': payment.createdByUserName,
       'notes': payment.notes,
+      'financialAccountId': payment.financialAccountId,
+      'paymentMethod': payment.paymentMethod?.name,
     };
   }
 
@@ -415,6 +423,8 @@ class BackupExportService {
       'amountQirsh': expense.amountQirsh,
       'notes': expense.notes,
       'createdAt': expense.createdAt.toUtc().toIso8601String(),
+      'financialAccountId': expense.financialAccountId,
+      'paymentMethod': expense.paymentMethod?.name,
     };
   }
 
