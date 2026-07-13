@@ -1,4 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -18,6 +20,12 @@ abstract class SupplierAccountRepository {
     required PurchaseIntake purchase,
   });
   Future<SupplierPaymentRecord> createPayment(SupplierPaymentDraft draft);
+  Future<SupplierPaymentCancellation> cancelPayment({
+    required AppUser user,
+    required String paymentId,
+    required String reason,
+    required String operationRequestId,
+  });
   Future<SupplierAccountEntry> reversePurchaseEntry({
     required PurchaseIntake cancelledPurchase,
     required String cancelledByUserId,
@@ -49,8 +57,10 @@ class LocalSupplierAccountRepository
   final List<SupplierAccountEntry> _entries = [];
   final List<SupplierPaymentRecord> _payments = [];
   final Map<String, String> _paymentRequestFingerprints = {};
+  final Map<String, String> _cancellationRequestIds = {};
   int _generatedEntryIdCounter = 0;
   int _generatedPaymentIdCounter = 0;
+  int _generatedCancellationIdCounter = 0;
 
   @override
   Future<List<SupplierAccountEntry>> listEntries() async {
@@ -256,6 +266,131 @@ class LocalSupplierAccountRepository
   }
 
   @override
+  Future<SupplierPaymentCancellation> cancelPayment({
+    required AppUser user,
+    required String paymentId,
+    required String reason,
+    required String operationRequestId,
+  }) async {
+    _requireOwner(user);
+    final id = _normalizedRequiredId(paymentId, 'paymentId');
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final requestId = _normalizedRequiredText(
+      operationRequestId,
+      'operationRequestId',
+    );
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    final financialRepository = _financialAccountRepository;
+    if (financialRepository != null) {
+      if (financialRepository is! TransactionSnapshotProvider) {
+        throw StateError(
+            'Financial account repository does not support atomic transactions.');
+      }
+      snapshots.add(
+        (financialRepository as TransactionSnapshotProvider)
+            .createTransactionSnapshot(),
+      );
+    }
+    return RepositoryTransaction.execute(snapshots, () async {
+      if (_cancellationRequestIds.containsKey(requestId)) {
+        throw StateError(
+            'Supplier payment cancellation request was already processed.');
+      }
+      final index = _payments.indexWhere((payment) => payment.id == id);
+      if (index < 0) throw StateError('Supplier payment was not found.');
+      final payment = _payments[index];
+      if (payment.isCancelled) {
+        throw StateError('Supplier payment was already cancelled.');
+      }
+      final supplier = await _requireSupplier(
+        payment.supplierId,
+        includeInactive: true,
+      );
+      final now = DateTime.now();
+      final cancellationId = _generateCancellationId(now);
+      final ledgerReversal = SupplierAccountEntry(
+        id: _generateEntryId(now),
+        supplierId: payment.supplierId,
+        date: now,
+        type: SupplierAccountEntryType.paymentCancellation,
+        debitAmountQirsh: payment.amountQirsh,
+        creditAmountQirsh: 0,
+        sourceDocumentType: 'supplierPaymentCancellation',
+        sourceDocumentId: cancellationId,
+        descriptionAr: 'عكس دفعة المورد ${supplier.name}: $cleanReason',
+        createdAt: now,
+        createdByUserId: user.id,
+      );
+      _validateEntry(ledgerReversal);
+      _entries.add(ledgerReversal);
+
+      String? financialReversalEntryId;
+      if (payment.financialAccountId?.trim().isNotEmpty == true) {
+        final statement = await financialRepository!.statementForAccount(
+          payment.financialAccountId!,
+        );
+        FinancialAccountEntry? originalFinancialEntry;
+        for (final line in statement.lines) {
+          if (line.entry.sourceType ==
+                  FinancialAccountEntrySource.supplierSettlement &&
+              line.entry.sourceDocumentId == payment.id) {
+            originalFinancialEntry = line.entry;
+            break;
+          }
+        }
+        if (originalFinancialEntry == null) {
+          throw StateError(
+              'Financial entry for this supplier payment was not found.');
+        }
+        final financialReversal = await financialRepository.createEntry(
+          accountId: payment.financialAccountId!,
+          direction: FinancialAccountEntryDirection.inflow,
+          amountQirsh: payment.amountQirsh,
+          sourceType: FinancialAccountEntrySource.cancellationReversal,
+          sourceDocumentId: cancellationId,
+          effectiveDate: now,
+          createdByUserId: user.id,
+          reference: 'عكس دفعة المورد ${payment.id}',
+          note: cleanReason,
+          reversalOf: originalFinancialEntry.id,
+          paymentMethod: payment.paymentMethod,
+        );
+        financialReversalEntryId = financialReversal.id;
+      }
+
+      final cancellation = SupplierPaymentCancellation(
+        id: cancellationId,
+        originalPaymentId: payment.id,
+        cancelledAt: now,
+        cancelledByUserId: user.id,
+        reason: cleanReason,
+        supplierLedgerReversalEntryId: ledgerReversal.id,
+        financialAccountReversalEntryId: financialReversalEntryId,
+      );
+      _payments[index] = SupplierPaymentRecord(
+        id: payment.id,
+        supplierId: payment.supplierId,
+        date: payment.date,
+        amountQirsh: payment.amountQirsh,
+        createdAt: payment.createdAt,
+        createdByUserId: payment.createdByUserId,
+        createdByUserName: payment.createdByUserName,
+        notes: payment.notes,
+        financialAccountId: payment.financialAccountId,
+        paymentMethod: payment.paymentMethod,
+        cancellation: cancellation,
+      );
+      _cancellationRequestIds[requestId] = cancellationId;
+      await _recordAudit(
+        actionType: 'supplier.payment.reversed',
+        descriptionAr: 'تم عكس دفعة المورد ${supplier.name}.',
+        referenceId: cancellationId,
+      );
+      return cancellation;
+    });
+  }
+
+  @override
   Future<SupplierAccountEntry> reversePurchaseEntry({
     required PurchaseIntake cancelledPurchase,
     required String cancelledByUserId,
@@ -392,8 +527,10 @@ class LocalSupplierAccountRepository
     _entries.clear();
     _payments.clear();
     _paymentRequestFingerprints.clear();
+    _cancellationRequestIds.clear();
     _generatedEntryIdCounter = 0;
     _generatedPaymentIdCounter = 0;
+    _generatedCancellationIdCounter = 0;
   }
 
   @override
@@ -403,6 +540,8 @@ class LocalSupplierAccountRepository
           List<SupplierAccountEntry>,
           List<SupplierPaymentRecord>,
           Map<String, String>,
+          Map<String, String>,
+          int,
           int,
           int
         )>(
@@ -410,8 +549,10 @@ class LocalSupplierAccountRepository
         List<SupplierAccountEntry>.from(_entries),
         List<SupplierPaymentRecord>.from(_payments),
         Map<String, String>.from(_paymentRequestFingerprints),
+        Map<String, String>.from(_cancellationRequestIds),
         _generatedEntryIdCounter,
         _generatedPaymentIdCounter,
+        _generatedCancellationIdCounter,
       ),
       restoreState: (state) {
         _entries
@@ -423,8 +564,12 @@ class LocalSupplierAccountRepository
         _paymentRequestFingerprints
           ..clear()
           ..addAll(state.$3);
-        _generatedEntryIdCounter = state.$4;
-        _generatedPaymentIdCounter = state.$5;
+        _cancellationRequestIds
+          ..clear()
+          ..addAll(state.$4);
+        _generatedEntryIdCounter = state.$5;
+        _generatedPaymentIdCounter = state.$6;
+        _generatedCancellationIdCounter = state.$7;
       },
     );
     if (_auditLogRepository is! TransactionSnapshotProvider) {
@@ -479,6 +624,21 @@ class LocalSupplierAccountRepository
       draft.paymentMethod?.name ?? '',
       draft.negativeBalanceApprovalId?.trim() ?? '',
     ].join('|');
+  }
+
+  String _normalizedRequiredText(String value, String fieldName) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(value, fieldName, '$fieldName is required.');
+    }
+    return normalized;
+  }
+
+  void _requireOwner(AppUser user) {
+    if (!user.canProceed || user.role != UserRole.owner) {
+      throw StateError(
+          'Supplier payment cancellation is available to the owner only.');
+    }
   }
 
   void _validateEntry(SupplierAccountEntry entry) {
@@ -551,6 +711,11 @@ class LocalSupplierAccountRepository
   String _generatePaymentId(DateTime now) {
     _generatedPaymentIdCounter++;
     return 'spy-${now.microsecondsSinceEpoch}-$_generatedPaymentIdCounter';
+  }
+
+  String _generateCancellationId(DateTime now) {
+    _generatedCancellationIdCounter++;
+    return 'spc-${now.microsecondsSinceEpoch}-$_generatedCancellationIdCounter';
   }
 
   String? _normalizedOptionalText(String? value) {

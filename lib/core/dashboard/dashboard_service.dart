@@ -67,12 +67,12 @@ class DashboardService {
     required ExpenseRepository expenseRepository,
     required CustomerAccountRepository customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
-  }) : _saleRepository = saleRepository,
-       _inventoryRepository = inventoryRepository,
-       _productRepository = productRepository,
-       _expenseRepository = expenseRepository,
-       _customerAccountRepository = customerAccountRepository,
-       _supplierAccountRepository = supplierAccountRepository;
+  })  : _saleRepository = saleRepository,
+        _inventoryRepository = inventoryRepository,
+        _productRepository = productRepository,
+        _expenseRepository = expenseRepository,
+        _customerAccountRepository = customerAccountRepository,
+        _supplierAccountRepository = supplierAccountRepository;
 
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
@@ -87,11 +87,14 @@ class DashboardService {
     final todayEnd = todayStart.add(const Duration(days: 1));
 
     final allSales = await _saleRepository.listSales();
-    final products = await _productRepository.listProducts(includeInactive: true);
-    final todaySales = allSales.where((sale) =>
-        !sale.isCancelled &&
-        !sale.createdAt.isBefore(todayStart) &&
-        sale.createdAt.isBefore(todayEnd)).toList(growable: false);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
+    final todaySales = allSales
+        .where((sale) =>
+            !sale.isCancelled &&
+            !sale.createdAt.isBefore(todayStart) &&
+            sale.createdAt.isBefore(todayEnd))
+        .toList(growable: false);
 
     final todaySalesQirsh = todaySales.fold<int>(0, (t, s) => t + s.totalQirsh);
     final todayCashSalesQirsh = todaySales
@@ -101,33 +104,48 @@ class DashboardService {
         .where((s) => s.isCreditSale)
         .fold<int>(0, (t, s) => t + s.totalQirsh);
 
-    final todayCollections = (await _customerAccountRepository.listCollections())
-        .where((c) => !c.date.isBefore(todayStart) && c.date.isBefore(todayEnd))
-        .fold<int>(0, (t, c) => t + c.amountQirsh);
+    final todayCollections =
+        (await _customerAccountRepository.listCollections())
+            .where((c) =>
+                !c.isCancelled &&
+                !c.date.isBefore(todayStart) &&
+                c.date.isBefore(todayEnd))
+            .fold<int>(0, (t, c) => t + c.amountQirsh);
 
     final todayExpenses = (await _expenseRepository.listExpenses())
         .where((e) => !e.date.isBefore(todayStart) && e.date.isBefore(todayEnd))
         .fold<int>(0, (t, e) => t + e.amountQirsh);
 
-    final allSupplierPayments = await _supplierAccountRepository?.listPayments() ?? [];
+    final allSupplierPayments =
+        await _supplierAccountRepository?.listPayments() ?? [];
     final todaySupplierPayments = allSupplierPayments
-        .where((p) => !p.date.isBefore(todayStart) && p.date.isBefore(todayEnd))
+        .where((p) =>
+            !p.isCancelled &&
+            !p.date.isBefore(todayStart) &&
+            p.date.isBefore(todayEnd))
         .fold<int>(0, (t, p) => t + p.amountQirsh);
 
     final totalCashSalesQirsh = allSales
         .where((s) => !s.isCancelled && s.paymentMode == SalePaymentMode.cash)
         .fold<int>(0, (t, s) => t + s.totalQirsh);
 
-    final totalCollections = (await _customerAccountRepository.listCollections())
-        .fold<int>(0, (t, c) => t + c.amountQirsh);
+    final totalCollections =
+        (await _customerAccountRepository.listCollections())
+            .where((collection) => !collection.isCancelled)
+            .fold<int>(0, (t, c) => t + c.amountQirsh);
 
     final allExpenses = await _expenseRepository.listExpenses();
-    final totalExpensesQirsh = allExpenses.fold<int>(0, (t, e) => t + e.amountQirsh);
+    final totalExpensesQirsh =
+        allExpenses.fold<int>(0, (t, e) => t + e.amountQirsh);
 
-    final totalSupplierPaymentsQirsh = allSupplierPayments.fold<int>(0, (t, p) => t + p.amountQirsh);
+    final totalSupplierPaymentsQirsh = allSupplierPayments
+        .where((payment) => !payment.isCancelled)
+        .fold<int>(0, (t, p) => t + p.amountQirsh);
 
-    final cashBalanceQirsh = totalCashSalesQirsh + totalCollections -
-        totalExpensesQirsh - totalSupplierPaymentsQirsh;
+    final cashBalanceQirsh = totalCashSalesQirsh +
+        totalCollections -
+        totalExpensesQirsh -
+        totalSupplierPaymentsQirsh;
 
     final receivablesByCustomer =
         await _customerAccountRepository.balancesByCustomerId();
@@ -136,7 +154,8 @@ class DashboardService {
         .fold<int>(0, (t, v) => t + v);
 
     final payablesBySupplier =
-        await _supplierAccountRepository?.balancesBySupplierId() ?? const <String, int>{};
+        await _supplierAccountRepository?.balancesBySupplierId() ??
+            const <String, int>{};
     final supplierPayablesQirsh = payablesBySupplier.values
         .where((v) => v > 0)
         .fold<int>(0, (t, v) => t + v);
@@ -145,8 +164,12 @@ class DashboardService {
     final totalStockKg = balances.values.fold<int>(0, (t, v) => t + v);
 
     int wheatStockKg = 0;
-    final wheatProduct = products.where((p) =>
-        p.name.contains('قمح') || p.name.contains(' Wheat') || p.name.contains('wheat')).toList();
+    final wheatProduct = products
+        .where((p) =>
+            p.name.contains('قمح') ||
+            p.name.contains(' Wheat') ||
+            p.name.contains('wheat'))
+        .toList();
     if (wheatProduct.isNotEmpty) {
       wheatStockKg = balances[wheatProduct.first.id] ?? 0;
     }

@@ -1,9 +1,10 @@
-﻿enum CustomerAccountEntryType {
+enum CustomerAccountEntryType {
   creditSale,
   cashSale,
   collection,
   openingBalance,
-  saleCancellation;
+  saleCancellation,
+  collectionCancellation;
 
   String get labelAr {
     switch (this) {
@@ -17,6 +18,8 @@
         return '\u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a';
       case CustomerAccountEntryType.saleCancellation:
         return '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639';
+      case CustomerAccountEntryType.collectionCancellation:
+        return '\u0639\u0643\u0633 \u062a\u062d\u0635\u064a\u0644';
     }
   }
 }

@@ -631,6 +631,16 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
   }
 
   @override
+  Future<SupplierPaymentCancellation> cancelPayment({
+    required dynamic user,
+    required String paymentId,
+    required String reason,
+    required String operationRequestId,
+  }) {
+    throw UnsupportedError('Reports test fake is read-only.');
+  }
+
+  @override
   Future<SupplierAccountEntry> reversePurchaseEntry({
     required PurchaseIntake cancelledPurchase,
     required String cancelledByUserId,

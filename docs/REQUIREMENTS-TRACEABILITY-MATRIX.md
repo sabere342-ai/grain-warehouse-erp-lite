@@ -630,14 +630,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Future requirement — reversing a customer collection. |
-| **Implementation evidence** | None. No `cancelCollection` method exists on `CustomerAccountRepository`. |
-| **Test evidence** | None |
-| **Missing behavior** | Collection cancellation with customer ledger reversal. |
+| **Implementation evidence** | `CustomerAccountRepository.cancelCollection()` creates an immutable cancellation operation, compensating customer-ledger entry, linked financial-account reversal, and audit trail in one `RepositoryTransaction`. |
+| **Test evidence** | `test/can_005_006_007_financial_reversals_test.dart` |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-001 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | CAN-005/006/007 financial reversals |
+| **Acceptance evidence** | Original collection is retained, reversal links are recorded, duplicate/replay attempts are rejected, and fault-injection rollback is verified. |
 
 ---
 
@@ -645,14 +645,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Future requirement — reversing a supplier payment. |
-| **Implementation evidence** | None. No `cancelPayment` method exists on `SupplierAccountRepository`. |
-| **Test evidence** | None |
-| **Missing behavior** | Payment cancellation with supplier ledger reversal. |
+| **Implementation evidence** | `SupplierAccountRepository.cancelPayment()` creates an immutable cancellation operation, compensating supplier-ledger entry, linked financial-account reversal, and audit trail in one `RepositoryTransaction`. |
+| **Test evidence** | `test/can_005_006_007_financial_reversals_test.dart` |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-002 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | CAN-005/006/007 financial reversals |
+| **Acceptance evidence** | Original payment is retained, reversal links are recorded, duplicate/replay attempts are rejected, and fault-injection rollback is verified. |
 
 ---
 
@@ -660,14 +660,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | NOT IMPLEMENTED |
+| **Status** | IMPLEMENTED |
 | **Source evidence** | Requires ACC-007 financial account model. |
-| **Implementation evidence** | ACC-007 (financial accounts) is implemented. Financial account entry reversals for transfer reversal exist (Phase 76). However, general-purpose collection cancellation (CAN-005) and payment cancellation (CAN-006) against financial accounts are not implemented. |
-| **Test evidence** | None for general-purpose financial account reversal. |
-| **Missing behavior** | Collection cancellation with financial account reversal; payment cancellation with financial account reversal. |
+| **Implementation evidence** | CAN-005 and CAN-006 create compensating financial-account entries with `cancellationReversal`, a new reversal document id, and `reversalOf` linkage to the original collection/payment entry. |
+| **Test evidence** | `test/can_005_006_007_financial_reversals_test.dart` |
+| **Missing behavior** | None |
 | **Dependencies** | ACC-007 ✅, CAN-005, CAN-006 |
-| **Proposed phase** | Deferred |
-| **Acceptance evidence** | N/A |
+| **Proposed phase** | CAN-005/006/007 financial reversals |
+| **Acceptance evidence** | Financial, customer/supplier, and audit state commits or rolls back together. |
 
 ---
 

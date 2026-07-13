@@ -1,4 +1,4 @@
-﻿import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
 class CustomerCollectionRecord {
   const CustomerCollectionRecord({
@@ -12,6 +12,7 @@ class CustomerCollectionRecord {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.cancellation,
   });
 
   final String id;
@@ -24,8 +25,31 @@ class CustomerCollectionRecord {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final CustomerCollectionCancellation? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
+  bool get isCancelled => cancellation != null;
+}
+
+/// Immutable compensating operation for a posted customer collection.
+class CustomerCollectionCancellation {
+  const CustomerCollectionCancellation({
+    required this.id,
+    required this.originalCollectionId,
+    required this.cancelledAt,
+    required this.cancelledByUserId,
+    required this.reason,
+    required this.customerLedgerReversalEntryId,
+    this.financialAccountReversalEntryId,
+  });
+
+  final String id;
+  final String originalCollectionId;
+  final DateTime cancelledAt;
+  final String cancelledByUserId;
+  final String reason;
+  final String customerLedgerReversalEntryId;
+  final String? financialAccountReversalEntryId;
 }
 
 class CustomerCollectionDraft {

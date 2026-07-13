@@ -12,6 +12,7 @@ class SupplierPaymentRecord {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.cancellation,
   });
 
   final String id;
@@ -24,8 +25,31 @@ class SupplierPaymentRecord {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final SupplierPaymentCancellation? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
+  bool get isCancelled => cancellation != null;
+}
+
+/// Immutable compensating operation for a posted supplier payment.
+class SupplierPaymentCancellation {
+  const SupplierPaymentCancellation({
+    required this.id,
+    required this.originalPaymentId,
+    required this.cancelledAt,
+    required this.cancelledByUserId,
+    required this.reason,
+    required this.supplierLedgerReversalEntryId,
+    this.financialAccountReversalEntryId,
+  });
+
+  final String id;
+  final String originalPaymentId;
+  final DateTime cancelledAt;
+  final String cancelledByUserId;
+  final String reason;
+  final String supplierLedgerReversalEntryId;
+  final String? financialAccountReversalEntryId;
 }
 
 class SupplierPaymentDraft {

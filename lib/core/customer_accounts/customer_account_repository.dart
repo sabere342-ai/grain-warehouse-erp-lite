@@ -1,10 +1,13 @@
-﻿import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
 abstract class CustomerAccountRepository {
@@ -24,6 +27,12 @@ abstract class CustomerAccountRepository {
   Future<CustomerCollectionRecord> createCollection(
     CustomerCollectionDraft draft,
   );
+  Future<CustomerCollectionCancellation> cancelCollection({
+    required AppUser user,
+    required String collectionId,
+    required String reason,
+    required String operationRequestId,
+  });
 
   Future<CustomerAccountEntry> createOpeningBalanceEntry({
     required String customerId,
@@ -40,7 +49,8 @@ abstract class CustomerAccountRepository {
   });
 }
 
-class LocalCustomerAccountRepository implements CustomerAccountRepository {
+class LocalCustomerAccountRepository
+    implements CustomerAccountRepository, TransactionSnapshotProvider {
   LocalCustomerAccountRepository({
     required CustomerRepository customerRepository,
     AuditLogRepository? auditLogRepository,
@@ -54,13 +64,14 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
   final FinancialAccountRepository? _financialAccountRepository;
   final List<CustomerAccountEntry> _entries = [];
   final List<CustomerCollectionRecord> _collections = [];
+  final Map<String, String> _cancellationRequestIds = {};
   int _generatedEntryIdCounter = 0;
   int _generatedCollectionIdCounter = 0;
+  int _generatedCancellationIdCounter = 0;
 
   @override
   Future<List<CustomerAccountEntry>> listEntries() async {
-    final sorted = [..._entries]
-      ..sort((a, b) {
+    final sorted = [..._entries]..sort((a, b) {
         final createdAt = a.createdAt.compareTo(b.createdAt);
         if (createdAt != 0) return createdAt;
         return a.id.compareTo(b.id);
@@ -132,7 +143,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       throw StateError('Invalid credit sale for customer ledger.');
     }
     if (_entries.any((entry) =>
-        entry.sourceDocumentType == 'sale' && entry.sourceDocumentId == sale.id)) {
+        entry.sourceDocumentType == 'sale' &&
+        entry.sourceDocumentId == sale.id)) {
       throw StateError('Credit sale ledger entry already exists.');
     }
 
@@ -146,7 +158,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       creditAmountQirsh: 0,
       sourceDocumentType: 'sale',
       sourceDocumentId: sale.id,
-      descriptionAr: '\u0628\u064a\u0639 \u0622\u062c\u0644 \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
+      descriptionAr:
+          '\u0628\u064a\u0639 \u0622\u062c\u0644 \u0644\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
       createdAt: now,
       createdByUserId: sale.createdByUserId,
     );
@@ -178,7 +191,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       throw StateError('Invalid sale for customer ledger.');
     }
     if (_entries.any((entry) =>
-        entry.sourceDocumentType == 'sale' && entry.sourceDocumentId == sale.id)) {
+        entry.sourceDocumentType == 'sale' &&
+        entry.sourceDocumentId == sale.id)) {
       throw StateError('Sale ledger entry already exists.');
     }
 
@@ -253,7 +267,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       creditAmountQirsh: collection.amountQirsh,
       sourceDocumentType: 'customerCollection',
       sourceDocumentId: collection.id,
-      descriptionAr: '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
+      descriptionAr:
+          '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
       createdAt: now,
       createdByUserId: collection.createdByUserId,
     );
@@ -280,13 +295,142 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
         sourceDocumentId: collection.id,
         effectiveDate: collection.date,
         createdByUserId: collection.createdByUserId,
-        reference: '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
-        note: '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${collection.amountQirsh} \u0642\u064a\u0631\u0634',
+        reference:
+            '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
+        note:
+            '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${collection.amountQirsh} \u0642\u064a\u0631\u0634',
         paymentMethod: collection.paymentMethod,
       );
     }
 
     return collection;
+  }
+
+  @override
+  Future<CustomerCollectionCancellation> cancelCollection({
+    required AppUser user,
+    required String collectionId,
+    required String reason,
+    required String operationRequestId,
+  }) async {
+    _requireOwner(user);
+    final id = _normalizedRequiredId(collectionId, 'collectionId');
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final requestId = _normalizedRequiredText(
+      operationRequestId,
+      'operationRequestId',
+    );
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    final financialRepository = _financialAccountRepository;
+    if (financialRepository != null) {
+      if (financialRepository is! TransactionSnapshotProvider) {
+        throw StateError(
+            'Financial account repository does not support atomic transactions.');
+      }
+      snapshots.add(
+        (financialRepository as TransactionSnapshotProvider)
+            .createTransactionSnapshot(),
+      );
+    }
+
+    return RepositoryTransaction.execute(snapshots, () async {
+      if (_cancellationRequestIds.containsKey(requestId)) {
+        throw StateError(
+            'Collection cancellation request was already processed.');
+      }
+      final index =
+          _collections.indexWhere((collection) => collection.id == id);
+      if (index < 0) throw StateError('Customer collection was not found.');
+      final collection = _collections[index];
+      if (collection.isCancelled) {
+        throw StateError('Customer collection was already cancelled.');
+      }
+      final customer = await _requireCustomer(
+        collection.customerId,
+        includeInactive: true,
+      );
+      final now = DateTime.now();
+      final cancellationId = _generateCancellationId(now);
+      final ledgerReversal = CustomerAccountEntry(
+        id: _generateEntryId(now),
+        customerId: collection.customerId,
+        date: now,
+        type: CustomerAccountEntryType.collectionCancellation,
+        debitAmountQirsh: collection.amountQirsh,
+        creditAmountQirsh: 0,
+        sourceDocumentType: 'customerCollectionCancellation',
+        sourceDocumentId: cancellationId,
+        descriptionAr: 'عكس تحصيل العميل ${customer.name}: $cleanReason',
+        createdAt: now,
+        createdByUserId: user.id,
+      );
+      _validateEntry(ledgerReversal);
+      _entries.add(ledgerReversal);
+
+      String? financialReversalEntryId;
+      if (collection.financialAccountId?.trim().isNotEmpty == true) {
+        final statement = await financialRepository!.statementForAccount(
+          collection.financialAccountId!,
+        );
+        FinancialAccountEntry? originalFinancialEntry;
+        for (final line in statement.lines) {
+          if (line.entry.sourceType ==
+                  FinancialAccountEntrySource.customerCollection &&
+              line.entry.sourceDocumentId == collection.id) {
+            originalFinancialEntry = line.entry;
+            break;
+          }
+        }
+        if (originalFinancialEntry == null) {
+          throw StateError(
+              'Financial entry for this collection was not found.');
+        }
+        final financialReversal = await financialRepository.createEntry(
+          accountId: collection.financialAccountId!,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: collection.amountQirsh,
+          sourceType: FinancialAccountEntrySource.cancellationReversal,
+          sourceDocumentId: cancellationId,
+          effectiveDate: now,
+          createdByUserId: user.id,
+          reference: 'عكس التحصيل ${collection.id}',
+          note: cleanReason,
+          reversalOf: originalFinancialEntry.id,
+          paymentMethod: collection.paymentMethod,
+        );
+        financialReversalEntryId = financialReversal.id;
+      }
+
+      final cancellation = CustomerCollectionCancellation(
+        id: cancellationId,
+        originalCollectionId: collection.id,
+        cancelledAt: now,
+        cancelledByUserId: user.id,
+        reason: cleanReason,
+        customerLedgerReversalEntryId: ledgerReversal.id,
+        financialAccountReversalEntryId: financialReversalEntryId,
+      );
+      _collections[index] = CustomerCollectionRecord(
+        id: collection.id,
+        customerId: collection.customerId,
+        date: collection.date,
+        amountQirsh: collection.amountQirsh,
+        createdAt: collection.createdAt,
+        createdByUserId: collection.createdByUserId,
+        createdByUserName: collection.createdByUserName,
+        notes: collection.notes,
+        financialAccountId: collection.financialAccountId,
+        paymentMethod: collection.paymentMethod,
+        cancellation: cancellation,
+      );
+      _cancellationRequestIds[requestId] = cancellationId;
+      await _recordAudit(
+        actionType: 'customer.collection.reversed',
+        descriptionAr: 'تم عكس تحصيل العميل ${customer.name}.',
+        referenceId: cancellationId,
+      );
+      return cancellation;
+    });
   }
 
   @override
@@ -327,7 +471,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       creditAmountQirsh: 0,
       sourceDocumentType: 'customerOpeningBalance',
       sourceDocumentId: 'ob-$id',
-      descriptionAr: '\u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644',
+      descriptionAr:
+          '\u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644',
       createdAt: now,
       createdByUserId: userId,
     );
@@ -335,7 +480,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
     _entries.add(entry);
     await _recordAudit(
       actionType: 'customer.opening-balance.posted',
-      descriptionAr: '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644.',
+      descriptionAr:
+          '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0631\u0635\u064a\u062f \u0627\u0641\u062a\u062a\u0627\u062d\u064a \u0644\u0644\u0639\u0645\u064a\u0644.',
       referenceId: entry.id,
     );
     return entry;
@@ -357,7 +503,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
     required String cancelledByUserId,
     required String cancellationReason,
   }) async {
-    final userId = _normalizedRequiredId(cancelledByUserId, 'cancelledByUserId');
+    final userId =
+        _normalizedRequiredId(cancelledByUserId, 'cancelledByUserId');
     final reason = _normalizedOptionalText(cancellationReason);
     if (reason == null) {
       throw ArgumentError.value(
@@ -437,8 +584,55 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _collections.clear();
+    _cancellationRequestIds.clear();
     _generatedEntryIdCounter = 0;
     _generatedCollectionIdCounter = 0;
+    _generatedCancellationIdCounter = 0;
+  }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    final auditRepository = _auditLogRepository;
+    if (auditRepository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Audit repository does not support atomic transactions.');
+    }
+    return CompositeSnapshot([
+      ObjectStateSnapshot<
+          (
+            List<CustomerAccountEntry>,
+            List<CustomerCollectionRecord>,
+            Map<String, String>,
+            int,
+            int,
+            int
+          )>(
+        captureState: () => (
+          List<CustomerAccountEntry>.from(_entries),
+          List<CustomerCollectionRecord>.from(_collections),
+          Map<String, String>.from(_cancellationRequestIds),
+          _generatedEntryIdCounter,
+          _generatedCollectionIdCounter,
+          _generatedCancellationIdCounter,
+        ),
+        restoreState: (state) {
+          _entries
+            ..clear()
+            ..addAll(state.$1);
+          _collections
+            ..clear()
+            ..addAll(state.$2);
+          _cancellationRequestIds
+            ..clear()
+            ..addAll(state.$3);
+          _generatedEntryIdCounter = state.$4;
+          _generatedCollectionIdCounter = state.$5;
+          _generatedCancellationIdCounter = state.$6;
+        },
+      ),
+      (auditRepository as TransactionSnapshotProvider)
+          .createTransactionSnapshot(),
+    ]);
   }
 
   Future<Customer> _requireCustomer(
@@ -485,7 +679,8 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
       throw StateError('Customer ledger amounts cannot be negative.');
     }
     if (entry.debitAmountQirsh == 0 && entry.creditAmountQirsh == 0) {
-      throw StateError('Customer ledger entry must have a debit or credit amount.');
+      throw StateError(
+          'Customer ledger entry must have a debit or credit amount.');
     }
   }
 
@@ -533,6 +728,21 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
     return normalized;
   }
 
+  String _normalizedRequiredText(String value, String fieldName) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(value, fieldName, '$fieldName is required.');
+    }
+    return normalized;
+  }
+
+  void _requireOwner(AppUser user) {
+    if (!user.canProceed || user.role != UserRole.owner) {
+      throw StateError(
+          'Customer collection cancellation is available to the owner only.');
+    }
+  }
+
   String _generateEntryId(DateTime now) {
     _generatedEntryIdCounter++;
     return 'cle-${now.microsecondsSinceEpoch}-$_generatedEntryIdCounter';
@@ -541,6 +751,11 @@ class LocalCustomerAccountRepository implements CustomerAccountRepository {
   String _generateCollectionId(DateTime now) {
     _generatedCollectionIdCounter++;
     return 'col-${now.microsecondsSinceEpoch}-$_generatedCollectionIdCounter';
+  }
+
+  String _generateCancellationId(DateTime now) {
+    _generatedCancellationIdCounter++;
+    return 'ccr-${now.microsecondsSinceEpoch}-$_generatedCancellationIdCounter';
   }
 
   String? _normalizedOptionalText(String? value) {

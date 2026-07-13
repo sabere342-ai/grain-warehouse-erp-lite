@@ -117,7 +117,8 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
+        const SnackBar(
+            content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
       );
     }
   }
@@ -183,16 +184,19 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final icon = switch (entry.type) {
       SupplierAccountEntryType.purchase => Icons.shopping_cart_rounded,
       SupplierAccountEntryType.payment => Icons.payments_rounded,
+      SupplierAccountEntryType.paymentCancellation => Icons.undo_rounded,
       SupplierAccountEntryType.openingBalance => Icons.account_balance_rounded,
     };
     final label = switch (entry.type) {
       SupplierAccountEntryType.purchase => 'مشتريات',
       SupplierAccountEntryType.payment => 'دفعة للمورد',
+      SupplierAccountEntryType.paymentCancellation => 'عكس دفعة للمورد',
       SupplierAccountEntryType.openingBalance => 'رصيد افتتاحي',
     };
     final amountText = switch (entry.type) {
       SupplierAccountEntryType.purchase ||
-      SupplierAccountEntryType.openingBalance =>
+      SupplierAccountEntryType.openingBalance ||
+      SupplierAccountEntryType.paymentCancellation =>
         MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh),
       SupplierAccountEntryType.payment =>
         MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh),
@@ -235,12 +239,10 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(
-                fontSize: 11, color: AppColors.mutedText)),
+            style: const TextStyle(fontSize: 11, color: AppColors.mutedText)),
         const SizedBox(height: 2),
         Text(value,
-            style: const TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w600)),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       ],
     );
   }

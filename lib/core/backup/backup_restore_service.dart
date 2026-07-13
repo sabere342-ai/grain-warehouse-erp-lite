@@ -425,6 +425,42 @@ class BackupRestoreService {
     );
   }
 
+  CustomerCollectionCancellation? _parseCustomerCollectionCancellation(
+    Object? value,
+  ) {
+    if (value == null) return null;
+    final map = _map(value);
+    return CustomerCollectionCancellation(
+      id: _string(map, 'id'),
+      originalCollectionId: _string(map, 'originalCollectionId'),
+      cancelledAt: _date(map, 'cancelledAt'),
+      cancelledByUserId: _string(map, 'cancelledByUserId'),
+      reason: _string(map, 'reason'),
+      customerLedgerReversalEntryId:
+          _string(map, 'customerLedgerReversalEntryId'),
+      financialAccountReversalEntryId:
+          _optionalString(map, 'financialAccountReversalEntryId'),
+    );
+  }
+
+  SupplierPaymentCancellation? _parseSupplierPaymentCancellation(
+    Object? value,
+  ) {
+    if (value == null) return null;
+    final map = _map(value);
+    return SupplierPaymentCancellation(
+      id: _string(map, 'id'),
+      originalPaymentId: _string(map, 'originalPaymentId'),
+      cancelledAt: _date(map, 'cancelledAt'),
+      cancelledByUserId: _string(map, 'cancelledByUserId'),
+      reason: _string(map, 'reason'),
+      supplierLedgerReversalEntryId:
+          _string(map, 'supplierLedgerReversalEntryId'),
+      financialAccountReversalEntryId:
+          _optionalString(map, 'financialAccountReversalEntryId'),
+    );
+  }
+
   SaleLineItem _parseSaleItem(Object? value) {
     final map = _map(value);
     return SaleLineItem(
@@ -465,6 +501,7 @@ class BackupRestoreService {
       notes: _optionalString(map, 'notes'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      cancellation: _parseCustomerCollectionCancellation(map['cancellation']),
     );
   }
 
@@ -511,6 +548,7 @@ class BackupRestoreService {
       notes: _optionalString(map, 'notes'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      cancellation: _parseSupplierPaymentCancellation(map['cancellation']),
     );
   }
 

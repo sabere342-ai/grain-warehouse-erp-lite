@@ -74,17 +74,40 @@ class LocalReportRepository implements ReportRepository {
       start: start,
       end: end,
     );
-    final creditSales = sales.where((sale) => sale.isCreditSale).toList(growable: false);
-    final customerCollections = (await _customerAccountRepository?.listCollections() ?? const <CustomerCollectionRecord>[])
-        .where((collection) => _isInRange(collection.date, start, end))
+    final creditSales =
+        sales.where((sale) => sale.isCreditSale).toList(growable: false);
+    final customerCollections = (await _customerAccountRepository
+                ?.listCollections() ??
+            const <CustomerCollectionRecord>[])
+        .where((collection) =>
+            !collection.isCancelled && _isInRange(collection.date, start, end))
         .toList(growable: false);
-    final receivablesByCustomer = await _customerAccountRepository?.balancesByCustomerId() ?? const <String, int>{};
-    final totalOutstandingReceivablesQirsh = receivablesByCustomer.values.where((value) => value > 0).fold<int>(0, (total, value) => total + value);
-    final allSupplierEntries = await _supplierAccountRepository?.listEntries() ?? const <SupplierAccountEntry>[];
-    final paymentEntries = allSupplierEntries.where((e) => e.type == SupplierAccountEntryType.payment && _isInRange(e.date, start, end)).toList(growable: false);
-    final totalSupplierPaymentsQirsh = paymentEntries.fold<int>(0, (t, e) => t + e.creditAmountQirsh);
-    final payablesBySupplier = await _supplierAccountRepository?.balancesBySupplierId() ?? const <String, int>{};
-    final totalOutstandingSupplierPayablesQirsh = payablesBySupplier.values.where((value) => value > 0).fold<int>(0, (total, value) => total + value);
+    final receivablesByCustomer =
+        await _customerAccountRepository?.balancesByCustomerId() ??
+            const <String, int>{};
+    final totalOutstandingReceivablesQirsh = receivablesByCustomer.values
+        .where((value) => value > 0)
+        .fold<int>(0, (total, value) => total + value);
+    final supplierPayments =
+        await _supplierAccountRepository?.listPayments() ?? const [];
+    final cancelledSupplierPaymentIds = supplierPayments
+        .where((payment) => payment.isCancelled)
+        .map((payment) => payment.id)
+        .toSet();
+    final supplierEntries = await _supplierAccountRepository?.listEntries() ??
+        const <SupplierAccountEntry>[];
+    final totalSupplierPaymentsQirsh = supplierEntries
+        .where((entry) =>
+            entry.type == SupplierAccountEntryType.payment &&
+            !cancelledSupplierPaymentIds.contains(entry.sourceDocumentId) &&
+            _isInRange(entry.date, start, end))
+        .fold<int>(0, (total, entry) => total + entry.creditAmountQirsh);
+    final payablesBySupplier =
+        await _supplierAccountRepository?.balancesBySupplierId() ??
+            const <String, int>{};
+    final totalOutstandingSupplierPayablesQirsh = payablesBySupplier.values
+        .where((value) => value > 0)
+        .fold<int>(0, (total, value) => total + value);
     final summary = BusinessSummaryCalculator.calculate(
       products: products,
       purchases: purchases,
@@ -134,11 +157,14 @@ class LocalReportRepository implements ReportRepository {
         (total, sale) => total + sale.totalQirsh,
       ),
       totalExpenseAmountQirsh: totalExpensesQirsh,
-      totalCreditSalesAmountQirsh: creditSales.fold<int>(0, (total, sale) => total + sale.totalQirsh),
-      totalCollectionsAmountQirsh: customerCollections.fold<int>(0, (total, collection) => total + collection.amountQirsh),
+      totalCreditSalesAmountQirsh:
+          creditSales.fold<int>(0, (total, sale) => total + sale.totalQirsh),
+      totalCollectionsAmountQirsh: customerCollections.fold<int>(
+          0, (total, collection) => total + collection.amountQirsh),
       totalOutstandingReceivablesQirsh: totalOutstandingReceivablesQirsh,
       totalSupplierPaymentsQirsh: totalSupplierPaymentsQirsh,
-      totalOutstandingSupplierPayablesQirsh: totalOutstandingSupplierPayablesQirsh,
+      totalOutstandingSupplierPayablesQirsh:
+          totalOutstandingSupplierPayablesQirsh,
       estimatedSalesCostQirsh: summary.estimatedSalesCostQirsh,
       estimatedGrossProfitQirsh: summary.estimatedGrossProfitQirsh,
       estimatedStockValueQirsh: summary.estimatedStockValueQirsh,

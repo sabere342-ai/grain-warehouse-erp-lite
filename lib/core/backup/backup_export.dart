@@ -369,6 +369,9 @@ class BackupExportService {
       'notes': collection.notes,
       'financialAccountId': collection.financialAccountId,
       'paymentMethod': collection.paymentMethod?.name,
+      'cancellation': _customerCollectionCancellationToJson(
+        collection.cancellation,
+      ),
     };
   }
 
@@ -400,8 +403,43 @@ class BackupExportService {
       'notes': payment.notes,
       'financialAccountId': payment.financialAccountId,
       'paymentMethod': payment.paymentMethod?.name,
+      'cancellation': _supplierPaymentCancellationToJson(payment.cancellation),
     };
   }
+
+  Map<String, Object?>? _customerCollectionCancellationToJson(
+    CustomerCollectionCancellation? cancellation,
+  ) =>
+      cancellation == null
+          ? null
+          : {
+              'id': cancellation.id,
+              'originalCollectionId': cancellation.originalCollectionId,
+              'cancelledAt': cancellation.cancelledAt.toUtc().toIso8601String(),
+              'cancelledByUserId': cancellation.cancelledByUserId,
+              'reason': cancellation.reason,
+              'customerLedgerReversalEntryId':
+                  cancellation.customerLedgerReversalEntryId,
+              'financialAccountReversalEntryId':
+                  cancellation.financialAccountReversalEntryId,
+            };
+
+  Map<String, Object?>? _supplierPaymentCancellationToJson(
+    SupplierPaymentCancellation? cancellation,
+  ) =>
+      cancellation == null
+          ? null
+          : {
+              'id': cancellation.id,
+              'originalPaymentId': cancellation.originalPaymentId,
+              'cancelledAt': cancellation.cancelledAt.toUtc().toIso8601String(),
+              'cancelledByUserId': cancellation.cancelledByUserId,
+              'reason': cancellation.reason,
+              'supplierLedgerReversalEntryId':
+                  cancellation.supplierLedgerReversalEntryId,
+              'financialAccountReversalEntryId':
+                  cancellation.financialAccountReversalEntryId,
+            };
 
   Map<String, Object?> _customerToJson(Customer customer) {
     return {
