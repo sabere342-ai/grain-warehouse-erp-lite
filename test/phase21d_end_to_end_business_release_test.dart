@@ -144,13 +144,15 @@ void main() {
     testWidgets('normal business UI uses EGP formatting without raw qirsh',
         (tester) async {
       await _setDesktopViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
       await fixture.sales.createSale(
         _saleDraft(fixture.costedProduct.id, quantityKg: 100, price: 900, customerId: _dummyCustomer.id),
       );
       final auth = await _signedInController();
+      addTearDown(auth.dispose);
 
       final reportController = ReportController(repository: fixture.reports);
+      addTearDown(reportController.dispose);
       await reportController.loadDailyActivity(user: _owner);
       await tester.pumpWidget(
         _harness(
@@ -158,11 +160,12 @@ void main() {
           child: ReportsScreen(controller: reportController),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(find.textContaining(_egpMarker), findsWidgets);
       expect(find.textContaining(_rawQirsh), findsNothing);
 
       final productController = ProductController(repository: fixture.products);
+      addTearDown(productController.dispose);
       await productController.loadProducts(_owner);
       await tester.pumpWidget(
         _harness(
@@ -170,7 +173,7 @@ void main() {
           child: ProductsScreen(controller: productController),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(find.textContaining(_egpMarker), findsWidgets);
       expect(find.textContaining(_rawQirsh), findsNothing);
     });
@@ -264,6 +267,14 @@ Future<_Fixture> _seededFixture() async {
     costedProduct: costedProduct,
     noCostProduct: noCostProduct,
   );
+}
+
+Future<_Fixture> _seededWidgetFixture(WidgetTester tester) async {
+  final fixture = await tester.runAsync(_seededFixture);
+  if (fixture == null) {
+    throw StateError('The widget fixture did not initialize.');
+  }
+  return fixture;
 }
 
 final _dummyCustomer = Customer(
@@ -370,6 +381,11 @@ Future<void> _setDesktopViewport(WidgetTester tester) async {
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
   });
+}
+
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 class _Fixture {

@@ -602,13 +602,27 @@ void main() {
     });
 
     testWidgets('owner sees purchase cancellation action', (tester) async {
-      final auth =
-          await _signedInController(phone: '01000000000', password: 'owner123');
-      final fixture = await _fixture();
-      await fixture.purchaseRepository.createPurchaseIntake(
-        _purchaseDraft(fixture),
-      );
-      await fixture.purchaseController.load(_owner);
+      final setup = await tester.runAsync(() async {
+        final auth = await _signedInController(
+          phone: '01000000000',
+          password: 'owner123',
+        );
+        final fixture = await _fixture();
+        await fixture.purchaseRepository.createPurchaseIntake(
+          _purchaseDraft(fixture),
+        );
+        await fixture.purchaseController.load(_owner);
+        return (auth: auth, fixture: fixture);
+      });
+      if (setup == null) {
+        throw StateError('The supplier purchase UI fixture did not initialize.');
+      }
+      final auth = setup.auth;
+      final fixture = setup.fixture;
+      addTearDown(() {
+        fixture.purchaseController.dispose();
+        auth.dispose();
+      });
 
       await tester.pumpWidget(
         _purchaseHarness(auth: auth, controller: fixture.purchaseController),

@@ -135,24 +135,30 @@ void main() {
 
       testWidgets('cancel button shows disabled message when payment exists',
           (tester) async {
-        await accountRepo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id,
-          date: DateTime.now(),
-          amountQirsh: 500000,
-          createdByUserId: 'owner-1',
-        ));
-        await controller.load(_owner);
-
-        final auth = AuthController(repository: LocalAuthRepository.demo());
-        await auth.initialize();
-        await auth.signIn(phone: '01000000000', password: 'owner123');
+        final auth = await tester.runAsync(() async {
+          await accountRepo.createPayment(SupplierPaymentDraft(
+            supplierId: supplier.id,
+            date: DateTime.now(),
+            amountQirsh: 500000,
+            createdByUserId: 'owner-1',
+          ));
+          await controller.load(_owner);
+          return _signedInController(
+            phone: '01000000000',
+            password: 'owner123',
+          );
+        });
+        if (auth == null) {
+          throw StateError('The purchase cancellation fixture did not initialize.');
+        }
+        addTearDown(auth.dispose);
+        addTearDown(controller.dispose);
 
         await tester.pumpWidget(
           _purchaseHarness(auth: auth, controller: controller,
               accountRepo: accountRepo),
         );
-        await tester.pumpAndSettle();
-
+        await _pumpExpectedState(tester);
         expect(
           find.text('لا يمكن الإلغاء بعد تسجيل دفعة للمورد'),
           findsOneWidget,
@@ -165,17 +171,24 @@ void main() {
 
       testWidgets('cancel button shows normal when no payment',
           (tester) async {
-        await controller.load(_owner);
-
-        final auth = AuthController(repository: LocalAuthRepository.demo());
-        await auth.initialize();
-        await auth.signIn(phone: '01000000000', password: 'owner123');
+        final auth = await tester.runAsync(() async {
+          await controller.load(_owner);
+          return _signedInController(
+            phone: '01000000000',
+            password: 'owner123',
+          );
+        });
+        if (auth == null) {
+          throw StateError('The purchase cancellation fixture did not initialize.');
+        }
+        addTearDown(auth.dispose);
+        addTearDown(controller.dispose);
 
         await tester.pumpWidget(
           _purchaseHarness(auth: auth, controller: controller,
               accountRepo: accountRepo),
         );
-        await tester.pumpAndSettle();
+        await _pumpExpectedState(tester);
 
         expect(
           find.text('إلغاء مستند الاستلام'),
@@ -326,6 +339,11 @@ Future<AuthController> _signedInController({
   await controller.initialize();
   await controller.signIn(phone: phone, password: password);
   return controller;
+}
+
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 DashboardService _dashboardService() {
