@@ -1,8 +1,10 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
 class MinimumSalePriceViolation implements Exception {
@@ -29,7 +31,8 @@ abstract class SaleRepository {
   Future<List<SaleRecord>> listSales();
 }
 
-class LocalSaleRepository implements SaleRepository {
+class LocalSaleRepository
+    implements SaleRepository, TransactionSnapshotProvider {
   LocalSaleRepository({
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
@@ -41,11 +44,25 @@ class LocalSaleRepository implements SaleRepository {
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
   final List<SaleRecord> _sales = [];
+  final Map<String, String> _operationRequestIds = {};
   int _generatedIdCounter = 0;
 
   @override
   Future<SaleRecord> createSale(SaleDraft draft) async {
     _validateDraft(draft);
+    final operationRequestId =
+        _normalizedOptionalText(draft.operationRequestId);
+    if (draft.paymentAllocations.isNotEmpty && operationRequestId == null) {
+      throw ArgumentError.value(
+        draft.operationRequestId,
+        'operationRequestId',
+        'Payment allocations require an operation request id.',
+      );
+    }
+    if (operationRequestId != null &&
+        _operationRequestIds.containsKey(operationRequestId)) {
+      throw StateError('Sale request was already processed.');
+    }
 
     final items = _buildItems(draft);
     final totalQirsh = _computeTotal(items);
@@ -84,7 +101,10 @@ class LocalSaleRepository implements SaleRepository {
     }
 
     final paidAmountQirsh = _resolvePaidAmount(draft, totalQirsh);
-
+    final paymentAllocations = _resolvePaymentAllocations(
+      draft,
+      paidAmountQirsh,
+    );
     final sale = SaleRecord(
       id: saleId,
       productId: items.first.productId,
@@ -100,8 +120,14 @@ class LocalSaleRepository implements SaleRepository {
       notes: _normalizedOptionalText(draft.notes),
       items: items,
       paidAmountQirsh: paidAmountQirsh,
-      financialAccountId: draft.financialAccountId,
-      paymentMethod: draft.paymentMethod,
+      financialAccountId: paymentAllocations.length == 1
+          ? paymentAllocations.single.financialAccountId
+          : null,
+      paymentMethod: paymentAllocations.length == 1
+          ? paymentAllocations.single.paymentMethod
+          : null,
+      paymentAllocations: paymentAllocations,
+      operationRequestId: operationRequestId,
     );
 
     if (!sale.hasValidId) {
@@ -112,6 +138,9 @@ class LocalSaleRepository implements SaleRepository {
     }
 
     _sales.add(sale);
+    if (operationRequestId != null) {
+      _operationRequestIds[operationRequestId] = sale.id;
+    }
     return sale;
   }
 
@@ -147,14 +176,16 @@ class LocalSaleRepository implements SaleRepository {
       );
     }
 
-    final items = sale.items.isNotEmpty ? sale.items : [
-      SaleLineItem(
-        productId: sale.productId,
-        quantityKg: sale.quantityKg,
-        salePriceQirshPerKg: sale.salePriceQirshPerKg,
-        lineTotalQirsh: sale.totalQirsh,
-      ),
-    ];
+    final items = sale.items.isNotEmpty
+        ? sale.items
+        : [
+            SaleLineItem(
+              productId: sale.productId,
+              quantityKg: sale.quantityKg,
+              salePriceQirshPerKg: sale.salePriceQirshPerKg,
+              lineTotalQirsh: sale.totalQirsh,
+            ),
+          ];
 
     final reversalIds = <String>[];
     for (final item in items) {
@@ -164,7 +195,8 @@ class LocalSaleRepository implements SaleRepository {
           movementType: StockMovementType.saleCancellation,
           quantityKg: item.quantityKg,
           createdByUserId: userId,
-          note: '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 ${sale.id}: $reason',
+          note:
+              '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 ${sale.id}: $reason',
           reversedMovementId: sale.stockMovementId,
           originalDocumentId: sale.id,
         ),
@@ -195,13 +227,44 @@ class LocalSaleRepository implements SaleRepository {
       throw StateError('Sales repository is not empty.');
     }
     _validateUniqueRestoredSales(sales);
+    final requestIds = <String>{};
+    for (final sale in sales) {
+      final requestId = _normalizedOptionalText(sale.operationRequestId);
+      if (requestId != null && !requestIds.add(requestId)) {
+        throw StateError('Duplicate sale operation request id.');
+      }
+    }
     _sales.addAll(sales);
+    for (final sale in sales) {
+      final requestId = _normalizedOptionalText(sale.operationRequestId);
+      if (requestId != null) _operationRequestIds[requestId] = sale.id;
+    }
   }
 
   Future<void> clearForOwnerDataWipe() async {
     _sales.clear();
+    _operationRequestIds.clear();
     _generatedIdCounter = 0;
   }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() =>
+      ObjectStateSnapshot<(List<SaleRecord>, Map<String, String>, int)>(
+        captureState: () => (
+          List<SaleRecord>.from(_sales),
+          Map<String, String>.from(_operationRequestIds),
+          _generatedIdCounter,
+        ),
+        restoreState: (state) {
+          _sales
+            ..clear()
+            ..addAll(state.$1);
+          _operationRequestIds
+            ..clear()
+            ..addAll(state.$2);
+          _generatedIdCounter = state.$3;
+        },
+      );
 
   List<SaleLineItem> _buildItems(SaleDraft draft) {
     if (draft.items.isNotEmpty) {
@@ -232,15 +295,17 @@ class LocalSaleRepository implements SaleRepository {
           merged[item.productId] = item;
         }
       }
-      return merged.values.map((d) => SaleLineItem(
-        productId: d.productId,
-        quantityKg: d.quantityKg,
-        salePriceQirshPerKg: d.salePriceQirshPerKg,
-        lineTotalQirsh: _safeTotalQirsh(
-          quantityKg: d.quantityKg,
-          salePriceQirshPerKg: d.salePriceQirshPerKg,
-        ),
-      )).toList(growable: false);
+      return merged.values
+          .map((d) => SaleLineItem(
+                productId: d.productId,
+                quantityKg: d.quantityKg,
+                salePriceQirshPerKg: d.salePriceQirshPerKg,
+                lineTotalQirsh: _safeTotalQirsh(
+                  quantityKg: d.quantityKg,
+                  salePriceQirshPerKg: d.salePriceQirshPerKg,
+                ),
+              ))
+          .toList(growable: false);
     }
     return [
       SaleLineItem(
@@ -263,7 +328,7 @@ class LocalSaleRepository implements SaleRepository {
     return total;
   }
 
-  int? _resolvePaidAmount(SaleDraft draft, int totalQirsh) {
+  int _resolvePaidAmount(SaleDraft draft, int totalQirsh) {
     if (draft.paidAmountQirsh != null) {
       final paid = draft.paidAmountQirsh!;
       if (paid < 0 || paid > totalQirsh) {
@@ -286,6 +351,84 @@ class LocalSaleRepository implements SaleRepository {
       );
     }
     return totalQirsh;
+  }
+
+  List<SalePaymentAllocation> _resolvePaymentAllocations(
+    SaleDraft draft,
+    int paidAmountQirsh,
+  ) {
+    final explicit = draft.paymentAllocations;
+    if (explicit.isEmpty) {
+      final accountId = _normalizedOptionalText(draft.financialAccountId);
+      if (accountId == null) return const [];
+      if (draft.paymentMode == SalePaymentMode.credit || paidAmountQirsh <= 0) {
+        return const [];
+      }
+      return [
+        SalePaymentAllocation(
+          financialAccountId: accountId,
+          amountQirsh: paidAmountQirsh,
+          paymentMethod: draft.paymentMethod ?? PaymentMethod.cash,
+        ),
+      ];
+    }
+
+    if (draft.paymentMode == SalePaymentMode.credit) {
+      throw ArgumentError.value(
+        explicit,
+        'paymentAllocations',
+        'Credit sales cannot have payment allocations.',
+      );
+    }
+    if (explicit.length > 5) {
+      throw ArgumentError.value(
+        explicit,
+        'paymentAllocations',
+        'At most five payment allocations are allowed.',
+      );
+    }
+
+    var total = 0;
+    final accountIds = <String>{};
+    final normalized = <SalePaymentAllocation>[];
+    for (final allocation in explicit) {
+      final accountId = allocation.financialAccountId.trim();
+      if (accountId.isEmpty || allocation.amountQirsh <= 0) {
+        throw ArgumentError.value(
+          allocation,
+          'paymentAllocations',
+          'Each payment allocation needs an account and a positive amount.',
+        );
+      }
+      if (!accountIds.add(accountId)) {
+        throw ArgumentError.value(
+          allocation.financialAccountId,
+          'paymentAllocations',
+          'A financial account can appear only once per sale payment.',
+        );
+      }
+      if (total > _maxSafeTotalQirsh - allocation.amountQirsh) {
+        throw ArgumentError.value(
+          allocation.amountQirsh,
+          'paymentAllocations',
+          'Payment allocation total is too large.',
+        );
+      }
+      total += allocation.amountQirsh;
+      normalized.add(SalePaymentAllocation(
+        financialAccountId: accountId,
+        amountQirsh: allocation.amountQirsh,
+        paymentMethod: allocation.paymentMethod,
+      ));
+    }
+    if (total != paidAmountQirsh) {
+      throw ArgumentError.value(
+        explicit,
+        'paymentAllocations',
+        'Payment allocation total must equal the paid invoice amount.',
+      );
+    }
+    return List<SalePaymentAllocation>.unmodifiable(normalized);
   }
 
   Future<Map<String, Product>> _validateAllProducts(
@@ -323,7 +466,8 @@ class LocalSaleRepository implements SaleRepository {
         item.productId,
       );
       if (item.quantityKg > currentStock) {
-        return StateError('\u0643\u0645\u064a\u0629 \u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631\u0629 \u0644\u0623\u062d\u062f \u0627\u0644\u0623\u0635\u0646\u0627\u0641.');
+        return StateError(
+            '\u0643\u0645\u064a\u0629 \u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631\u0629 \u0644\u0623\u062d\u062f \u0627\u0644\u0623\u0635\u0646\u0627\u0641.');
       }
     }
     return null;
@@ -439,6 +583,20 @@ class LocalSaleRepository implements SaleRepository {
         if (sale.totalQirsh != sale.quantityKg * sale.salePriceQirshPerKg) {
           throw StateError('Invalid sale data.');
         }
+      }
+      var allocationTotal = 0;
+      final allocationAccountIds = <String>{};
+      for (final allocation in sale.paymentAllocations) {
+        if (allocation.financialAccountId.trim().isEmpty ||
+            allocation.amountQirsh <= 0 ||
+            !allocationAccountIds.add(allocation.financialAccountId)) {
+          throw StateError('Invalid sale payment allocation.');
+        }
+        allocationTotal += allocation.amountQirsh;
+      }
+      if (allocationTotal != 0 &&
+          allocationTotal != sale.effectivePaidAmountQirsh) {
+        throw StateError('Sale payment allocations do not match paid amount.');
       }
     }
   }

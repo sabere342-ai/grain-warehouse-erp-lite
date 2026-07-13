@@ -404,6 +404,9 @@ class BackupRestoreService {
     );
     final items =
         _optionalList(map, 'items').map(_parseSaleItem).toList(growable: false);
+    final paymentAllocations = _optionalList(map, 'paymentAllocations')
+        .map(_parseSalePaymentAllocation)
+        .toList(growable: false);
     return SaleRecord(
       id: _string(map, 'id'),
       productId: _string(map, 'productId'),
@@ -422,6 +425,17 @@ class BackupRestoreService {
       paidAmountQirsh: _optionalInt(map, 'paidAmountQirsh'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      paymentAllocations: paymentAllocations,
+      operationRequestId: _optionalString(map, 'operationRequestId'),
+    );
+  }
+
+  SalePaymentAllocation _parseSalePaymentAllocation(Object? value) {
+    final map = _map(value);
+    return SalePaymentAllocation(
+      financialAccountId: _string(map, 'financialAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      paymentMethod: PaymentMethod.values.byName(_string(map, 'paymentMethod')),
     );
   }
 
@@ -749,6 +763,20 @@ class BackupRestoreService {
       _validateCancellationReferences(sale.cancellation, movementIds);
       _validateFinancialAccountReference(
           sale.financialAccountId, financialAccountIds);
+      final allocationAccountIds = <String>{};
+      var allocationTotal = 0;
+      for (final allocation in sale.paymentAllocations) {
+        if (!financialAccountIds.contains(allocation.financialAccountId) ||
+            allocation.amountQirsh <= 0 ||
+            !allocationAccountIds.add(allocation.financialAccountId)) {
+          throw StateError('Invalid sale payment allocation relationship.');
+        }
+        allocationTotal += allocation.amountQirsh;
+      }
+      if (allocationTotal != 0 &&
+          allocationTotal != sale.effectivePaidAmountQirsh) {
+        throw StateError('Sale payment allocations do not match paid amount.');
+      }
     }
     for (final collection in data.customerCollections) {
       _validateFinancialAccountReference(

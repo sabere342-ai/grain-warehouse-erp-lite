@@ -305,6 +305,20 @@ class BackupExportService {
       'items': sale.items.map(_saleItemToJson).toList(growable: false),
       'financialAccountId': sale.financialAccountId,
       'paymentMethod': sale.paymentMethod?.name,
+      'paymentAllocations': sale.paymentAllocations
+          .map(_salePaymentAllocationToJson)
+          .toList(growable: false),
+      'operationRequestId': sale.operationRequestId,
+    };
+  }
+
+  Map<String, Object?> _salePaymentAllocationToJson(
+    SalePaymentAllocation allocation,
+  ) {
+    return {
+      'financialAccountId': allocation.financialAccountId,
+      'amountQirsh': allocation.amountQirsh,
+      'paymentMethod': allocation.paymentMethod.name,
     };
   }
 

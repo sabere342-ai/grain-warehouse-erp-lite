@@ -1,4 +1,4 @@
-﻿import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
 enum SalePaymentMode {
@@ -44,6 +44,21 @@ class SaleLineItemDraft {
   final int salePriceQirshPerKg;
 }
 
+/// An immutable portion of the amount paid for one sales invoice.
+///
+/// Amounts are stored in qirsh/minor units so allocation arithmetic is exact.
+class SalePaymentAllocation {
+  const SalePaymentAllocation({
+    required this.financialAccountId,
+    required this.amountQirsh,
+    required this.paymentMethod,
+  });
+
+  final String financialAccountId;
+  final int amountQirsh;
+  final PaymentMethod paymentMethod;
+}
+
 class SaleRecord {
   const SaleRecord({
     required this.id,
@@ -63,6 +78,8 @@ class SaleRecord {
     this.paidAmountQirsh,
     this.financialAccountId,
     this.paymentMethod,
+    this.paymentAllocations = const [],
+    this.operationRequestId,
   });
 
   final String id;
@@ -82,6 +99,8 @@ class SaleRecord {
   final int? paidAmountQirsh;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final List<SalePaymentAllocation> paymentAllocations;
+  final String? operationRequestId;
 
   bool get hasValidId => id.trim().isNotEmpty;
   bool get isCancelled => cancellation != null;
@@ -100,6 +119,7 @@ class SaleRecord {
     CancellationMetadata? cancellation,
     List<SaleLineItem>? items,
     int? paidAmountQirsh,
+    List<SalePaymentAllocation>? paymentAllocations,
   }) {
     return SaleRecord(
       id: id,
@@ -119,6 +139,8 @@ class SaleRecord {
       paidAmountQirsh: paidAmountQirsh ?? this.paidAmountQirsh,
       financialAccountId: financialAccountId,
       paymentMethod: paymentMethod,
+      paymentAllocations: paymentAllocations ?? this.paymentAllocations,
+      operationRequestId: operationRequestId,
     );
   }
 }
@@ -137,6 +159,8 @@ class SaleDraft {
     this.paidAmountQirsh,
     this.financialAccountId,
     this.paymentMethod,
+    this.paymentAllocations = const [],
+    this.operationRequestId,
   });
 
   final String productId;
@@ -151,6 +175,8 @@ class SaleDraft {
   final int? paidAmountQirsh;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final List<SalePaymentAllocation> paymentAllocations;
+  final String? operationRequestId;
 
   bool get isMultiItem => items.length > 1;
 

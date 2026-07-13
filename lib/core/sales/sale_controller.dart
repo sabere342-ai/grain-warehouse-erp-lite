@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -81,6 +82,8 @@ class SaleController extends ChangeNotifier {
     int? paidAmountQirsh,
     String? financialAccountId,
     PaymentMethod? paymentMethod,
+    List<SalePaymentAllocation> paymentAllocations = const [],
+    String? operationRequestId,
   }) async {
     if (!_canCreateSale(user)) {
       return false;
@@ -99,63 +102,56 @@ class SaleController extends ChangeNotifier {
               ),
             ];
 
-      final sale = await _saleRepository.createSale(
-        SaleDraft(
-          productId: productId,
-          quantityKg: quantityKg,
-          salePriceQirshPerKg: salePriceQirshPerKg,
-          createdByUserId: user.id,
-          paymentMode: paymentMode,
-          customerId: selectedCustomer.id,
-          createdByUserName: user.name,
-          notes: notes,
-          items: saleItems,
-          paidAmountQirsh: paidAmountQirsh,
-          financialAccountId: financialAccountId,
-          paymentMethod: paymentMethod,
-        ),
+      if (paymentAllocations.isNotEmpty &&
+          _financialAccountRepository == null) {
+        throw StateError(
+            'Split payments require the financial accounts repository.');
+      }
+
+      await _runWithinAtomicBoundary(
+        // Existing one-account callers may use older adapters that do not
+        // expose snapshots. New allocation-based requests fail closed unless
+        // every participant can join the same rollback boundary.
+        requireAtomic: paymentAllocations.isNotEmpty,
+        operation: () async {
+          final sale = await _saleRepository.createSale(
+            SaleDraft(
+              productId: productId,
+              quantityKg: quantityKg,
+              salePriceQirshPerKg: salePriceQirshPerKg,
+              createdByUserId: user.id,
+              paymentMode: paymentMode,
+              customerId: selectedCustomer.id,
+              createdByUserName: user.name,
+              notes: notes,
+              items: saleItems,
+              paidAmountQirsh: paidAmountQirsh,
+              financialAccountId: financialAccountId,
+              paymentMethod: paymentMethod,
+              paymentAllocations: paymentAllocations,
+              operationRequestId: operationRequestId,
+            ),
+          );
+
+          final accountRepo = _customerAccountRepository;
+          if (accountRepo != null) {
+            if (paymentMode == SalePaymentMode.cash ||
+                paymentMode == SalePaymentMode.partial) {
+              await accountRepo.createCashSaleEntry(
+                sale: sale,
+                customerId: selectedCustomer.id,
+              );
+            } else if (paymentMode == SalePaymentMode.credit) {
+              await accountRepo.createCreditSaleEntry(
+                sale: sale,
+                customerId: selectedCustomer.id,
+              );
+            }
+          }
+
+          await _postSalePaymentAllocations(sale: sale, user: user);
+        },
       );
-
-      final accountRepo = _customerAccountRepository;
-      if (accountRepo != null) {
-        if (paymentMode == SalePaymentMode.cash ||
-            paymentMode == SalePaymentMode.partial) {
-          await accountRepo.createCashSaleEntry(
-            sale: sale,
-            customerId: selectedCustomer.id,
-          );
-        } else if (paymentMode == SalePaymentMode.credit) {
-          await accountRepo.createCreditSaleEntry(
-            sale: sale,
-            customerId: selectedCustomer.id,
-          );
-        }
-      }
-
-      final faRepo = _financialAccountRepository;
-      if (faRepo != null &&
-          financialAccountId != null &&
-          financialAccountId.isNotEmpty &&
-          (paymentMode == SalePaymentMode.cash ||
-              paymentMode == SalePaymentMode.partial)) {
-        final paidAmount = sale.effectivePaidAmountQirsh;
-        if (paidAmount > 0) {
-          await faRepo.createEntry(
-            accountId: financialAccountId,
-            direction: FinancialAccountEntryDirection.inflow,
-            amountQirsh: paidAmount,
-            sourceType: FinancialAccountEntrySource.salePayment,
-            sourceDocumentId: sale.id,
-            effectiveDate: sale.createdAt,
-            createdByUserId: user.id,
-            reference: 'دفعة مبيعات - فاتورة ${sale.id}',
-            note: paymentMode == SalePaymentMode.partial
-                ? 'دفع جزئي للفاتورة'
-                : 'دفعة كاملة للفاتورة',
-            paymentMethod: paymentMethod,
-          );
-        }
-      }
 
       await load(user);
       return true;
@@ -171,49 +167,59 @@ class SaleController extends ChangeNotifier {
     required String saleId,
     required String cancellationReason,
     String? negativeBalanceApprovalId,
+    Map<String, String> negativeBalanceApprovalIdsByAccount = const {},
   }) async {
     if (!_canCancelPostedDocument(user)) {
       return false;
     }
 
     try {
-      final cancelled = await _saleRepository.cancelSale(
-        saleId: saleId,
-        cancelledByUserId: user.id,
-        cancellationReason: cancellationReason,
-      );
-      final accountRepo = _customerAccountRepository;
-      if (accountRepo != null && cancelled.customerId != null) {
-        await accountRepo.reverseSaleEntry(
-          cancelledSale: cancelled,
-          cancelledByUserId: user.id,
-          cancellationReason: cancellationReason,
-        );
-      }
-
-      final faRepo = _financialAccountRepository;
-      if (faRepo != null &&
-          cancelled.financialAccountId != null &&
-          cancelled.financialAccountId!.isNotEmpty &&
-          !cancelled.isCreditSale) {
-        final paidAmount = cancelled.effectivePaidAmountQirsh;
-        if (paidAmount > 0) {
-          await faRepo.createEntry(
-            accountId: cancelled.financialAccountId!,
-            direction: FinancialAccountEntryDirection.outflow,
-            amountQirsh: paidAmount,
-            sourceType: FinancialAccountEntrySource.cancellationReversal,
-            sourceDocumentId: cancelled.id,
-            effectiveDate: DateTime.now(),
-            createdByUserId: user.id,
-            reversalOf: cancelled.id,
-            reference: 'عكس إلغاء فاتورة ${cancelled.id}',
-            note: 'إلغاء فاتورة مبيعات: $cancellationReason',
-            paymentMethod: cancelled.paymentMethod,
-            negativeBalanceApprovalId: negativeBalanceApprovalId,
-          );
+      var requiresAtomicSplitReversal = false;
+      for (final sale in await _saleRepository.listSales()) {
+        if (sale.id == saleId) {
+          requiresAtomicSplitReversal = sale.paymentAllocations.length > 1;
+          break;
         }
       }
+      await _runWithinAtomicBoundary(
+        requireAtomic: requiresAtomicSplitReversal,
+        operation: () async {
+          SaleRecord? existing;
+          for (final sale in await _saleRepository.listSales()) {
+            if (sale.id == saleId) {
+              existing = sale;
+              break;
+            }
+          }
+          if (existing == null) {
+            throw StateError('Sale was not found.');
+          }
+          if (existing.isCancelled) {
+            throw StateError('Sale was already cancelled.');
+          }
+          final cancelled = await _saleRepository.cancelSale(
+            saleId: saleId,
+            cancelledByUserId: user.id,
+            cancellationReason: cancellationReason,
+          );
+          final accountRepo = _customerAccountRepository;
+          if (accountRepo != null && cancelled.customerId != null) {
+            await accountRepo.reverseSaleEntry(
+              cancelledSale: cancelled,
+              cancelledByUserId: user.id,
+              cancellationReason: cancellationReason,
+            );
+          }
+          await _reverseSalePaymentAllocations(
+            cancelledSale: cancelled,
+            user: user,
+            cancellationReason: cancellationReason,
+            legacyNegativeBalanceApprovalId: negativeBalanceApprovalId,
+            negativeBalanceApprovalIdsByAccount:
+                negativeBalanceApprovalIdsByAccount,
+          );
+        },
+      );
 
       await load(user);
       return true;
@@ -222,6 +228,144 @@ class SaleController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<void> _runWithinAtomicBoundary({
+    required bool requireAtomic,
+    required Future<void> Function() operation,
+  }) async {
+    final participants = <Object>[
+      _saleRepository,
+      _inventoryRepository,
+      if (_customerAccountRepository case final repository?) repository,
+      if (_financialAccountRepository case final repository?) repository,
+    ];
+    if (participants.any((value) => value is! TransactionSnapshotProvider)) {
+      if (requireAtomic) {
+        throw StateError(
+          'Sale payment participants do not support atomic transactions.',
+        );
+      }
+      await operation();
+      return;
+    }
+    late final List<SnapshotHolder> snapshots;
+    try {
+      snapshots = participants
+          .cast<TransactionSnapshotProvider>()
+          .map((participant) => participant.createTransactionSnapshot())
+          .toList(growable: false);
+    } on StateError {
+      if (requireAtomic) rethrow;
+      await operation();
+      return;
+    }
+    await RepositoryTransaction.execute(snapshots, operation);
+  }
+
+  Future<void> _postSalePaymentAllocations({
+    required SaleRecord sale,
+    required AppUser user,
+  }) async {
+    final allocations = _paymentAllocationsFor(sale);
+    if (allocations.isEmpty) return;
+    final repository = _financialAccountRepository;
+    if (repository == null) {
+      throw StateError('Financial accounts are required for sale payments.');
+    }
+    for (final allocation in allocations) {
+      final account =
+          await repository.accountById(allocation.financialAccountId);
+      if (!account.isActive) {
+        throw StateError('Inactive financial account cannot receive payment.');
+      }
+      await repository.createEntry(
+        accountId: allocation.financialAccountId,
+        direction: FinancialAccountEntryDirection.inflow,
+        amountQirsh: allocation.amountQirsh,
+        sourceType: FinancialAccountEntrySource.salePayment,
+        sourceDocumentId: sale.id,
+        effectiveDate: sale.createdAt,
+        createdByUserId: user.id,
+        reference: 'دفعة مبيعات - فاتورة ${sale.id}',
+        note: sale.isPartialPayment
+            ? 'جزء من دفع فاتورة مبيعات'
+            : 'دفع فاتورة مبيعات',
+        paymentMethod: allocation.paymentMethod,
+      );
+    }
+  }
+
+  Future<void> _reverseSalePaymentAllocations({
+    required SaleRecord cancelledSale,
+    required AppUser user,
+    required String cancellationReason,
+    required String? legacyNegativeBalanceApprovalId,
+    required Map<String, String> negativeBalanceApprovalIdsByAccount,
+  }) async {
+    final allocations = _paymentAllocationsFor(cancelledSale);
+    if (allocations.isEmpty) return;
+    final repository = _financialAccountRepository;
+    if (repository == null) {
+      throw StateError(
+          'Financial accounts are required to reverse sale payments.');
+    }
+    final now = DateTime.now();
+    for (final allocation in allocations) {
+      final statement = await repository.statementForAccount(
+        allocation.financialAccountId,
+      );
+      final originals = statement.lines
+          .map((line) => line.entry)
+          .where(
+            (entry) =>
+                entry.sourceType == FinancialAccountEntrySource.salePayment &&
+                entry.sourceDocumentId == cancelledSale.id &&
+                entry.amountQirsh == allocation.amountQirsh &&
+                entry.paymentMethod == allocation.paymentMethod &&
+                entry.reversalOf == null,
+          )
+          .toList(growable: false);
+      if (originals.length != 1) {
+        throw StateError(
+            'Original financial entry for sale payment was not found.');
+      }
+      await repository.createEntry(
+        accountId: allocation.financialAccountId,
+        direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: allocation.amountQirsh,
+        sourceType: FinancialAccountEntrySource.cancellationReversal,
+        sourceDocumentId: cancelledSale.id,
+        effectiveDate: now,
+        createdByUserId: user.id,
+        reversalOf: originals.single.id,
+        reference: 'عكس إلغاء فاتورة ${cancelledSale.id}',
+        note: 'إلغاء فاتورة مبيعات: $cancellationReason',
+        paymentMethod: allocation.paymentMethod,
+        negativeBalanceApprovalId: negativeBalanceApprovalIdsByAccount[
+                allocation.financialAccountId] ??
+            legacyNegativeBalanceApprovalId,
+      );
+    }
+  }
+
+  List<SalePaymentAllocation> _paymentAllocationsFor(SaleRecord sale) {
+    if (sale.paymentAllocations.isNotEmpty) {
+      return sale.paymentAllocations;
+    }
+    final accountId = sale.financialAccountId?.trim();
+    if (accountId == null || accountId.isEmpty || sale.isCreditSale) {
+      return const [];
+    }
+    final amount = sale.effectivePaidAmountQirsh;
+    if (amount <= 0) return const [];
+    return [
+      SalePaymentAllocation(
+        financialAccountId: accountId,
+        amountQirsh: amount,
+        paymentMethod: sale.paymentMethod ?? PaymentMethod.cash,
+      ),
+    ];
   }
 
   Future<Customer> _findActiveCustomer(String? customerId) async {

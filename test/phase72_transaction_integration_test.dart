@@ -805,7 +805,14 @@ void main() {
             .entry;
         expect(reversalEntry.direction, FinancialAccountEntryDirection.outflow);
         expect(reversalEntry.amountQirsh, 50000);
-        expect(reversalEntry.reversalOf, saleId);
+        final originalEntry = statement.lines
+            .firstWhere(
+              (line) =>
+                  line.entry.sourceType ==
+                  FinancialAccountEntrySource.salePayment,
+            )
+            .entry;
+        expect(reversalEntry.reversalOf, originalEntry.id);
         expect(reversalEntry.paymentMethod, PaymentMethod.cash);
       });
     });
