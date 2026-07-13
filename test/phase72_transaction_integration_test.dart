@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
@@ -13,6 +15,9 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -67,9 +72,13 @@ void main() {
 
     group('FinancialAccountRepository.createEntry', () {
       late LocalFinancialAccountRepository repo;
+      late _ApprovalHarness approvals;
 
       setUp(() async {
-        repo = LocalFinancialAccountRepository();
+        approvals = _ApprovalHarness();
+        repo = LocalFinancialAccountRepository(
+          negativeBalanceApprovalService: approvals.service,
+        );
         await repo.createAccount(
           const FinancialAccountDraft(
             name: 'خزينة',
@@ -167,27 +176,40 @@ void main() {
       });
 
       test('outflow entry decreases balance', () async {
-        final accountId = (await repo.listAccounts()).first.id;
+        final account = (await repo.listAccounts()).first;
+        final approvalId = await approvals.approve(
+          accounts: repo,
+          account: account,
+          amountQirsh: 3000,
+          operationType: NegativeBalanceOperationType.expense,
+          sourceDocumentId: 'exp-1',
+          sourceDocumentType: FinancialAccountEntrySource.expense.name,
+          requesterUserId: 'user-1',
+        );
         await repo.createEntry(
-          accountId: accountId,
+          accountId: account.id,
           direction: FinancialAccountEntryDirection.outflow,
           amountQirsh: 3000,
           sourceType: FinancialAccountEntrySource.expense,
           sourceDocumentId: 'exp-1',
           effectiveDate: DateTime(2026),
           createdByUserId: 'user-1',
-          approvedByUserId: 'owner',
+          negativeBalanceApprovalId: approvalId,
         );
-        expect(await repo.currentBalanceForAccount(accountId), -3000);
+        expect(await repo.currentBalanceForAccount(account.id), -3000);
       });
     });
 
     group('ExpenseRepository → FinancialAccountEntry', () {
       late LocalExpenseRepository expenseRepo;
       late LocalFinancialAccountRepository faRepo;
+      late _ApprovalHarness approvals;
 
       setUp(() async {
-        faRepo = LocalFinancialAccountRepository();
+        approvals = _ApprovalHarness();
+        faRepo = LocalFinancialAccountRepository(
+          negativeBalanceApprovalService: approvals.service,
+        );
         expenseRepo = LocalExpenseRepository(
           financialAccountRepository: faRepo,
         );
@@ -203,22 +225,33 @@ void main() {
 
       test('creates outflow FA entry when financialAccountId provided',
           () async {
-        final accountId = (await faRepo.listAccounts()).first.id;
+        final account = (await faRepo.listAccounts()).first;
+        const operationRequestId = 'expense-phase72-1';
+        final approvalId = await approvals.approve(
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 2500,
+          operationType: NegativeBalanceOperationType.expense,
+          sourceDocumentId: operationRequestId,
+          sourceDocumentType: FinancialAccountEntrySource.expense.name,
+          requesterUserId: 'system',
+        );
         await expenseRepo.createExpense(
           ExpenseDraft(
             date: DateTime(2026, 1, 15),
             category: 'مصاريف إدارية',
             amountQirsh: 2500,
-            financialAccountId: accountId,
+            financialAccountId: account.id,
             paymentMethod: PaymentMethod.cash,
-            approvedByUserId: 'owner',
+            negativeBalanceApprovalId: approvalId,
+            operationRequestId: operationRequestId,
           ),
         );
 
-        final balance = await faRepo.currentBalanceForAccount(accountId);
+        final balance = await faRepo.currentBalanceForAccount(account.id);
         expect(balance, -2500);
 
-        final statement = await faRepo.statementForAccount(accountId);
+        final statement = await faRepo.statementForAccount(account.id);
         expect(statement.lines.length, 1);
         expect(
           statement.lines.first.entry.sourceType,
@@ -388,9 +421,13 @@ void main() {
       late LocalSupplierAccountRepository supplierAccountRepo;
       late LocalSupplierRepository supplierRepo;
       late LocalFinancialAccountRepository faRepo;
+      late _ApprovalHarness approvals;
 
       setUp(() async {
-        faRepo = LocalFinancialAccountRepository();
+        approvals = _ApprovalHarness();
+        faRepo = LocalFinancialAccountRepository(
+          negativeBalanceApprovalService: approvals.service,
+        );
         supplierRepo = LocalSupplierRepository();
         supplierAccountRepo = LocalSupplierAccountRepository(
           supplierRepository: supplierRepo,
@@ -414,7 +451,7 @@ void main() {
       test('creates outflow FA entry when financialAccountId provided',
           () async {
         final supplier = (await supplierRepo.listSuppliers()).first;
-        final faAccountId = (await faRepo.listAccounts()).first.id;
+        final account = (await faRepo.listAccounts()).first;
 
         await supplierAccountRepo.createPurchaseEntry(
           purchase: PurchaseIntake(
@@ -436,25 +473,37 @@ void main() {
             await supplierAccountRepo.balanceForSupplier(supplier.id);
         expect(balanceBefore, 60000);
 
+        const operationRequestId = 'supplier-payment-phase72-1';
+        final approvalId = await approvals.approve(
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 40000,
+          operationType: NegativeBalanceOperationType.supplierPayment,
+          sourceDocumentId: operationRequestId,
+          sourceDocumentType:
+              FinancialAccountEntrySource.supplierSettlement.name,
+          requesterUserId: 'user-1',
+        );
         final payment = await supplierAccountRepo.createPayment(
           SupplierPaymentDraft(
             supplierId: supplier.id,
             date: DateTime(2026, 2, 1),
             amountQirsh: 40000,
             createdByUserId: 'user-1',
-            financialAccountId: faAccountId,
+            financialAccountId: account.id,
             paymentMethod: PaymentMethod.cash,
-            approvedByUserId: 'owner',
+            negativeBalanceApprovalId: approvalId,
+            operationRequestId: operationRequestId,
           ),
         );
 
-        expect(payment.financialAccountId, faAccountId);
+        expect(payment.financialAccountId, account.id);
         expect(payment.paymentMethod, PaymentMethod.cash);
 
-        final faBalance = await faRepo.currentBalanceForAccount(faAccountId);
+        final faBalance = await faRepo.currentBalanceForAccount(account.id);
         expect(faBalance, -40000);
 
-        final statement = await faRepo.statementForAccount(faAccountId);
+        final statement = await faRepo.statementForAccount(account.id);
         expect(statement.lines.length, 1);
         expect(
           statement.lines.first.entry.sourceType,
@@ -769,13 +818,17 @@ void main() {
       late LocalSupplierAccountRepository supplierAccountRepo;
       late LocalFinancialAccountRepository faRepo;
       late Product product;
+      late _ApprovalHarness approvals;
 
       setUp(() async {
         productRepo = LocalProductRepository();
         supplierRepo = LocalSupplierRepository();
         inventoryRepo =
             LocalInventoryRepository(productRepository: productRepo);
-        faRepo = LocalFinancialAccountRepository();
+        approvals = _ApprovalHarness();
+        faRepo = LocalFinancialAccountRepository(
+          negativeBalanceApprovalService: approvals.service,
+        );
         supplierAccountRepo = LocalSupplierAccountRepository(
           supplierRepository: supplierRepo,
           financialAccountRepository: faRepo,
@@ -811,7 +864,17 @@ void main() {
 
       test('paid purchase creates outflow FA entry', () async {
         final supplier = (await supplierRepo.listSuppliers()).first;
-        final accountId = (await faRepo.listAccounts()).first.id;
+        final account = (await faRepo.listAccounts()).first;
+        const operationRequestId = 'purchase-payment-phase72-paid';
+        final approvalId = await approvals.approve(
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 60000,
+          operationType: NegativeBalanceOperationType.purchasePayment,
+          sourceDocumentId: operationRequestId,
+          sourceDocumentType: FinancialAccountEntrySource.purchasePayment.name,
+          requesterUserId: 'user-1',
+        );
 
         final intake = await purchaseRepo.createPurchaseIntake(
           PurchaseIntakeDraft(
@@ -821,20 +884,21 @@ void main() {
             entryUnit: GrainUnit.kilogram,
             unitPricePiastersPerKg: 300,
             createdByUserId: 'user-1',
-            financialAccountId: accountId,
+            financialAccountId: account.id,
             paymentMethod: PaymentMethod.cash,
             paymentMode: PurchasePaymentMode.paid,
-            approvedByUserId: 'owner',
+            negativeBalanceApprovalId: approvalId,
+            operationRequestId: operationRequestId,
           ),
         );
 
-        expect(intake.financialAccountId, accountId);
+        expect(intake.financialAccountId, account.id);
         expect(intake.paymentMode, PurchasePaymentMode.paid);
 
-        final balance = await faRepo.currentBalanceForAccount(accountId);
+        final balance = await faRepo.currentBalanceForAccount(account.id);
         expect(balance, -60000);
 
-        final statement = await faRepo.statementForAccount(accountId);
+        final statement = await faRepo.statementForAccount(account.id);
         expect(statement.lines.length, 1);
         expect(
           statement.lines.first.entry.sourceType,
@@ -851,7 +915,17 @@ void main() {
       test('partial purchase creates outflow FA entry for paid portion',
           () async {
         final supplier = (await supplierRepo.listSuppliers()).first;
-        final accountId = (await faRepo.listAccounts()).first.id;
+        final account = (await faRepo.listAccounts()).first;
+        const operationRequestId = 'purchase-payment-phase72-partial';
+        final approvalId = await approvals.approve(
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 20000,
+          operationType: NegativeBalanceOperationType.purchasePayment,
+          sourceDocumentId: operationRequestId,
+          sourceDocumentType: FinancialAccountEntrySource.purchasePayment.name,
+          requesterUserId: 'user-1',
+        );
 
         await purchaseRepo.createPurchaseIntake(
           PurchaseIntakeDraft(
@@ -861,18 +935,19 @@ void main() {
             entryUnit: GrainUnit.kilogram,
             unitPricePiastersPerKg: 300,
             createdByUserId: 'user-1',
-            financialAccountId: accountId,
+            financialAccountId: account.id,
             paymentMethod: PaymentMethod.bankTransfer,
             paymentMode: PurchasePaymentMode.partial,
             paidAmountQirsh: 20000,
-            approvedByUserId: 'owner',
+            negativeBalanceApprovalId: approvalId,
+            operationRequestId: operationRequestId,
           ),
         );
 
-        final balance = await faRepo.currentBalanceForAccount(accountId);
+        final balance = await faRepo.currentBalanceForAccount(account.id);
         expect(balance, -20000);
 
-        final statement = await faRepo.statementForAccount(accountId);
+        final statement = await faRepo.statementForAccount(account.id);
         expect(statement.lines.length, 1);
         expect(statement.lines.first.entry.amountQirsh, 20000);
         expect(
@@ -1033,9 +1108,13 @@ void main() {
 
     group('Direction consistency', () {
       late LocalFinancialAccountRepository faRepo;
+      late _ApprovalHarness approvals;
 
       setUp(() async {
-        faRepo = LocalFinancialAccountRepository();
+        approvals = _ApprovalHarness();
+        faRepo = LocalFinancialAccountRepository(
+          negativeBalanceApprovalService: approvals.service,
+        );
         await faRepo.createAccount(
           const FinancialAccountDraft(
             name: 'حساب بنكي',
@@ -1062,9 +1141,19 @@ void main() {
       });
 
       test('cash paid = outflow', () async {
-        final accountId = (await faRepo.listAccounts()).first.id;
+        final account = (await faRepo.listAccounts()).first;
+        final approvalId = await approvals.approve(
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 10000,
+          operationType: NegativeBalanceOperationType.supplierPayment,
+          sourceDocumentId: 'spy-1',
+          sourceDocumentType:
+              FinancialAccountEntrySource.supplierSettlement.name,
+          requesterUserId: 'user-1',
+        );
         final entry = await faRepo.createEntry(
-          accountId: accountId,
+          accountId: account.id,
           direction: FinancialAccountEntryDirection.outflow,
           amountQirsh: 10000,
           sourceType: FinancialAccountEntrySource.supplierSettlement,
@@ -1072,7 +1161,7 @@ void main() {
           effectiveDate: DateTime(2026),
           createdByUserId: 'user-1',
           paymentMethod: PaymentMethod.bankTransfer,
-          approvedByUserId: 'owner',
+          negativeBalanceApprovalId: approvalId,
         );
         expect(entry.signedAmountQirsh, -10000);
       });
@@ -1317,4 +1406,60 @@ void main() {
       });
     });
   });
+}
+
+final _approvalOwner = AppUser(
+  id: 'phase72-owner',
+  name: 'Phase 72 owner',
+  phone: '01000000000',
+  role: UserRole.owner,
+  isActive: true,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+);
+
+class _ApprovalHarness {
+  _ApprovalHarness()
+      : _auth = LocalAuthRepository(
+          seedAccounts: [
+            LocalAuthAccount(user: _approvalOwner, password: 'owner-password'),
+          ],
+        ) {
+    service = NegativeBalanceApprovalService(
+      authRepository: _auth,
+      approvalRepository: LocalNegativeBalanceApprovalRepository(),
+      auditLogRepository: LocalAuditLogRepository(),
+    );
+  }
+
+  final LocalAuthRepository _auth;
+  late final NegativeBalanceApprovalService service;
+
+  Future<String> approve({
+    required FinancialAccountRepository accounts,
+    required FinancialAccount account,
+    required int amountQirsh,
+    required NegativeBalanceOperationType operationType,
+    required String sourceDocumentId,
+    required String sourceDocumentType,
+    required String requesterUserId,
+  }) async {
+    final balanceBefore = await accounts.currentBalanceForAccount(account.id);
+    return service.requestApproval(
+      draft: NegativeBalanceApprovalDraft(
+        requestedByUserId: requesterUserId,
+        approvedByOwnerUserId: _approvalOwner.id,
+        accountId: account.id,
+        amountQirsh: amountQirsh,
+        operationType: operationType,
+        sourceDocumentId: sourceDocumentId,
+        sourceDocumentType: sourceDocumentType,
+        balanceBeforeQirsh: balanceBefore,
+        expectedBalanceAfterQirsh: balanceBefore - amountQirsh,
+        reason: 'Phase 72 approved negative-balance operation.',
+      ),
+      ownerPhone: _approvalOwner.phone,
+      ownerPassword: 'owner-password',
+    );
+  }
 }

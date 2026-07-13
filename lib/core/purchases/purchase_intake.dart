@@ -40,6 +40,7 @@ class PurchaseIntake {
     this.paymentMethod,
     this.paymentMode = PurchasePaymentMode.credit,
     this.paidAmountQirsh,
+    this.negativeBalanceApprovalId,
   });
 
   final String id;
@@ -61,6 +62,7 @@ class PurchaseIntake {
   final PaymentMethod? paymentMethod;
   final PurchasePaymentMode paymentMode;
   final int? paidAmountQirsh;
+  final String? negativeBalanceApprovalId;
 
   int get effectivePaidAmountQirsh {
     if (paidAmountQirsh != null) return paidAmountQirsh!;
@@ -94,6 +96,7 @@ class PurchaseIntake {
       paymentMethod: paymentMethod,
       paymentMode: paymentMode,
       paidAmountQirsh: paidAmountQirsh,
+      negativeBalanceApprovalId: negativeBalanceApprovalId,
     );
   }
 }
@@ -115,6 +118,8 @@ class PurchaseIntakeDraft {
     this.paymentMode = PurchasePaymentMode.credit,
     this.paidAmountQirsh,
     this.approvedByUserId,
+    this.negativeBalanceApprovalId,
+    this.operationRequestId,
   });
 
   final String supplierId;
@@ -132,6 +137,8 @@ class PurchaseIntakeDraft {
   final PurchasePaymentMode paymentMode;
   final int? paidAmountQirsh;
   final String? approvedByUserId;
+  final String? negativeBalanceApprovalId;
+  final String? operationRequestId;
 
   int get totalAmountPiasters => quantityKg * unitPricePiastersPerKg;
 

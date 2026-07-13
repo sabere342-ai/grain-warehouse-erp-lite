@@ -534,6 +534,7 @@ class BackupExportService {
       'reversalOf': entry.reversalOf,
       'correctionGroup': entry.correctionGroup,
       'approvedByUserId': entry.approvedByUserId,
+      'negativeBalanceApprovalId': entry.negativeBalanceApprovalId,
     };
   }
 
@@ -551,6 +552,7 @@ class BackupExportService {
         'sourceEntryId': value.sourceEntryId,
         'destinationEntryId': value.destinationEntryId,
         'note': value.note,
+        'negativeBalanceApprovalId': value.negativeBalanceApprovalId,
         'originalTransferId': value.originalTransferId,
         'reversalTransferId': value.reversalTransferId,
         'reversalReason': value.reversalReason,

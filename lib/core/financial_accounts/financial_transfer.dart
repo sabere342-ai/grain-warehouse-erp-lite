@@ -13,6 +13,7 @@ class FinancialTransfer {
     required this.sourceEntryId,
     required this.destinationEntryId,
     this.note,
+    this.negativeBalanceApprovalId,
     this.originalTransferId,
     this.reversalTransferId,
     this.reversalReason,
@@ -31,6 +32,7 @@ class FinancialTransfer {
   final String sourceEntryId;
   final String destinationEntryId;
   final String? note;
+  final String? negativeBalanceApprovalId;
   final String? originalTransferId;
   final String? reversalTransferId;
   final String? reversalReason;
@@ -49,6 +51,7 @@ class FinancialTransferDraft {
     required this.effectiveDate,
     required this.createdByUserId,
     this.note,
+    this.negativeBalanceApprovalId,
   });
 
   final String clientRequestId;
@@ -59,4 +62,5 @@ class FinancialTransferDraft {
   final DateTime effectiveDate;
   final String createdByUserId;
   final String? note;
+  final String? negativeBalanceApprovalId;
 }

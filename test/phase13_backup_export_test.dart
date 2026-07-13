@@ -29,13 +29,13 @@ void main() {
     testWidgets('dashboard backup entry appears for owner only',
         (tester) async {
       await tester.pumpWidget(_dashboardHarness(user: _owner));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('تصدير نسخة احتياطية'), findsOneWidget);
 
       await tester.pumpWidget(_dashboardHarness(user: _employee));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('النسخ الاحتياطي'), findsNothing);
       expect(find.text('تصدير نسخة احتياطية'), findsNothing);
@@ -43,24 +43,26 @@ void main() {
 
     testWidgets('backup screen contains safety warnings and copy UI',
         (tester) async {
-      final fixture = await _fixture();
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
-          child: BackupExportScreen(service: fixture.service),
+          child: BackupExportScreen(service: fixture!.service),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsOneWidget);
       expect(find.textContaining('للحفظ والاسترجاع الآمن'), findsOneWidget);
-      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'), findsOneWidget);
+      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'),
+          findsOneWidget);
       expect(find.textContaining('لا تشارك النسخة'), findsOneWidget);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('تم إنشاء النسخة الاحتياطية بنجاح.'), findsOneWidget);
       expect(find.text('نسخ بيانات النسخة'), findsOneWidget);
@@ -73,15 +75,16 @@ void main() {
     });
 
     testWidgets('backup screen blocks non-owner users', (tester) async {
-      final fixture = await _fixture();
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _employee,
-          child: BackupExportScreen(service: fixture.service),
+          child: BackupExportScreen(service: fixture!.service),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('النسخ الاحتياطي متاح للمالك فقط.'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsNothing);
@@ -234,6 +237,13 @@ Future<_BackupFixture> _fixture() async {
   );
 }
 
+/// Pumps the two known frames for the auth/export state transition without
+/// waiting for unrelated animations from a previous widget-test tree.
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
+}
+
 Widget _dashboardHarness({required AppUser user}) {
   return _screenHarness(
     user: user,
@@ -263,6 +273,7 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
 }
@@ -316,6 +327,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

@@ -246,7 +246,7 @@ void main() {
         'backup, restore preview, and wipe screens keep Arabic RTL shell',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededBusinessDayFixture();
+      final fixture = await _seededBusinessDayWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -257,7 +257,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(Directionality.of(tester.element(find.text(_backupTitle))),
           TextDirection.rtl);
       expect(find.text(_backupTitle), findsOneWidget);
@@ -270,7 +270,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(find.text(_restorePreviewTitle), findsOneWidget);
 
       await tester.pumpWidget(
@@ -279,7 +279,7 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(find.text(_wipeTitle), findsOneWidget);
       expect(find.text(_dangerLabel), findsOneWidget);
       expect(find.text(_backupFirst), findsOneWidget);
@@ -355,6 +355,16 @@ Future<_BackupFixture> _seededBusinessDayFixture({
     cancelledByUserId: _owner.id,
     cancellationReason: 'qa cancellation',
   );
+  return fixture;
+}
+
+Future<_BackupFixture> _seededBusinessDayWidgetFixture(
+  WidgetTester tester,
+) async {
+  final fixture = await tester.runAsync(_seededBusinessDayFixture);
+  if (fixture == null) {
+    throw StateError('The widget fixture did not initialize.');
+  }
   return fixture;
 }
 
@@ -463,8 +473,14 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
+}
+
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 class _BackupFixture {
@@ -574,6 +590,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

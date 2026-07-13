@@ -1,7 +1,8 @@
-﻿import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class ExpenseRepository {
   Future<List<ExpenseRecord>> listExpenses();
@@ -12,22 +13,22 @@ abstract class ExpenseRepository {
   });
 }
 
-class LocalExpenseRepository implements ExpenseRepository {
+class LocalExpenseRepository
+    implements ExpenseRepository, TransactionSnapshotProvider {
   LocalExpenseRepository({
     AuditLogRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
-  })  : _auditLogRepository = auditLogRepository,
+  })  : _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _financialAccountRepository = financialAccountRepository;
 
-  final AuditLogRepository? _auditLogRepository;
+  final AuditLogRepository _auditLogRepository;
   final FinancialAccountRepository? _financialAccountRepository;
   final List<ExpenseRecord> _expenses = [];
   int _generatedIdCounter = 0;
 
   @override
   Future<List<ExpenseRecord>> listExpenses() async {
-    final sorted = [..._expenses]
-      ..sort((a, b) {
+    final sorted = [..._expenses]..sort((a, b) {
         final byDate = b.date.compareTo(a.date);
         if (byDate != 0) {
           return byDate;
@@ -54,35 +55,48 @@ class LocalExpenseRepository implements ExpenseRepository {
     if (!expense.hasValidId) {
       throw StateError('Expense id is required.');
     }
-    _expenses.add(expense);
-    await _auditLogRepository?.record(
-      AuditLogDraft(
-        actionType: 'expense.created',
-        descriptionAr: 'تم تسجيل مصروف ${expense.category}.',
-        referenceId: expense.id,
-      ),
-    );
-
     final faRepo = _financialAccountRepository;
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
     if (faRepo != null &&
         expense.financialAccountId != null &&
         expense.financialAccountId!.isNotEmpty) {
-      await faRepo.createEntry(
-        accountId: expense.financialAccountId!,
-        direction: FinancialAccountEntryDirection.outflow,
-        amountQirsh: expense.amountQirsh,
-        sourceType: FinancialAccountEntrySource.expense,
-        sourceDocumentId: expense.id,
-        effectiveDate: expense.date,
-        createdByUserId: 'system',
-        reference: 'مصروف: ${expense.category}',
-        note: 'مصروف ${expense.amountQirsh} قيرش - ${expense.category}',
-        paymentMethod: expense.paymentMethod,
-        approvedByUserId: draft.approvedByUserId,
+      if (faRepo is! TransactionSnapshotProvider) {
+        throw StateError('مستودع الحسابات لا يدعم المعاملات الذرية.');
+      }
+      snapshots.add(
+        (faRepo as TransactionSnapshotProvider).createTransactionSnapshot(),
       );
     }
-
-    return expense;
+    return RepositoryTransaction.execute(snapshots, () async {
+      _expenses.add(expense);
+      if (faRepo != null &&
+          expense.financialAccountId != null &&
+          expense.financialAccountId!.isNotEmpty) {
+        await faRepo.createEntry(
+          accountId: expense.financialAccountId!,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: expense.amountQirsh,
+          sourceType: FinancialAccountEntrySource.expense,
+          sourceDocumentId: expense.id,
+          effectiveDate: expense.date,
+          createdByUserId: 'system',
+          reference: 'مصروف: ${expense.category}',
+          note: 'مصروف ${expense.amountQirsh} قيرش - ${expense.category}',
+          paymentMethod: expense.paymentMethod,
+          approvedByUserId: draft.approvedByUserId,
+          negativeBalanceApprovalId: draft.negativeBalanceApprovalId,
+          approvalSourceDocumentId: draft.operationRequestId,
+        );
+      }
+      await _auditLogRepository.record(
+        AuditLogDraft(
+          actionType: 'expense.created',
+          descriptionAr: 'تم تسجيل مصروف ${expense.category}.',
+          referenceId: expense.id,
+        ),
+      );
+      return expense;
+    });
   }
 
   @override
@@ -109,19 +123,45 @@ class LocalExpenseRepository implements ExpenseRepository {
     _generatedIdCounter = 0;
   }
 
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    final ownState = ObjectStateSnapshot<(List<ExpenseRecord>, int)>(
+      captureState: () =>
+          (List<ExpenseRecord>.from(_expenses), _generatedIdCounter),
+      restoreState: (state) {
+        _expenses
+          ..clear()
+          ..addAll(state.$1);
+        _generatedIdCounter = state.$2;
+      },
+    );
+    if (_auditLogRepository is! TransactionSnapshotProvider) {
+      throw StateError('مستودع التدقيق لا يدعم المعاملات الذرية.');
+    }
+    return CompositeSnapshot([
+      ownState,
+      (_auditLogRepository as TransactionSnapshotProvider)
+          .createTransactionSnapshot(),
+    ]);
+  }
+
   void _validateDraft(ExpenseDraft draft) {
     if (draft.category.trim().isEmpty) {
-      throw ArgumentError.value(draft.category, 'category', 'Expense category is required.');
+      throw ArgumentError.value(
+          draft.category, 'category', 'Expense category is required.');
     }
     if (draft.amountQirsh <= 0) {
-      throw ArgumentError.value(draft.amountQirsh, 'amountQirsh', 'Expense amount must be positive.');
+      throw ArgumentError.value(
+          draft.amountQirsh, 'amountQirsh', 'Expense amount must be positive.');
     }
   }
 
   void _validateUniqueRestoredExpenses(List<ExpenseRecord> expenses) {
     final ids = <String>{};
     for (final expense in expenses) {
-      if (!expense.hasValidId || expense.category.trim().isEmpty || expense.amountQirsh <= 0) {
+      if (!expense.hasValidId ||
+          expense.category.trim().isEmpty ||
+          expense.amountQirsh <= 0) {
         throw StateError('Invalid expense backup record.');
       }
       if (!ids.add(expense.id)) {
@@ -143,7 +183,3 @@ class LocalExpenseRepository implements ExpenseRepository {
     return normalized;
   }
 }
-
-
-
-

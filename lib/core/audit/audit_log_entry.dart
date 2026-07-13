@@ -5,6 +5,7 @@
     required this.actionType,
     required this.descriptionAr,
     this.referenceId,
+    this.metadata = const <String, Object?>{},
   });
 
   final String id;
@@ -12,6 +13,7 @@
   final String actionType;
   final String descriptionAr;
   final String? referenceId;
+  final Map<String, Object?> metadata;
 
   bool get hasValidId => id.trim().isNotEmpty;
 }
@@ -22,10 +24,12 @@ class AuditLogDraft {
     required this.descriptionAr,
     this.referenceId,
     this.timestamp,
+    this.metadata = const <String, Object?>{},
   });
 
   final String actionType;
   final String descriptionAr;
   final String? referenceId;
   final DateTime? timestamp;
+  final Map<String, Object?> metadata;
 }

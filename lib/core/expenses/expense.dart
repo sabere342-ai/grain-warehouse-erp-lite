@@ -1,4 +1,4 @@
-﻿import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
 class ExpenseRecord {
   const ExpenseRecord({
@@ -33,6 +33,8 @@ class ExpenseDraft {
     this.financialAccountId,
     this.paymentMethod,
     this.approvedByUserId,
+    this.negativeBalanceApprovalId,
+    this.operationRequestId,
   });
 
   final DateTime date;
@@ -42,4 +44,9 @@ class ExpenseDraft {
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
   final String? approvedByUserId;
+  final String? negativeBalanceApprovalId;
+
+  /// Stable client-side request identity used when an approval is needed
+  /// before the repository generates the final expense id.
+  final String? operationRequestId;
 }

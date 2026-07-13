@@ -28,26 +28,28 @@ void main() {
   group('Phase 14 backup file save and hardening', () {
     testWidgets('backup screen exposes copy and file save actions',
         (tester) async {
-      final fixture = await _fixture();
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
       final writer = _FakeBackupFileWriter();
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
           child: BackupExportScreen(
-            service: fixture.service,
+            service: fixture!.service,
             fileWriter: writer,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('إنشاء نسخة احتياطية'), findsOneWidget);
-      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'), findsOneWidget);
+      expect(find.textContaining('الاسترجاع متاح فقط إلى نظام فارغ'),
+          findsOneWidget);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('نسخ بيانات النسخة'), findsOneWidget);
       expect(find.text('حفظ النسخة في ملف'), findsOneWidget);
@@ -111,29 +113,30 @@ void main() {
     testWidgets('file save writes backup through injected writer',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _fixture();
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
       final writer = _FakeBackupFileWriter();
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
           child: BackupExportScreen(
-            service: fixture.service,
+            service: fixture!.service,
             fileWriter: writer,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       await tester.tap(find.text('إنشاء نسخة احتياطية'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.scrollUntilVisible(
         find.text('حفظ النسخة في ملف'),
         300,
         scrollable: find.byType(Scrollable),
       );
       await tester.tap(find.text('حفظ النسخة في ملف'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(writer.savedFileName, startsWith('grain-warehouse-backup-'));
       expect(writer.savedFileName, endsWith('.json'));
@@ -176,6 +179,13 @@ Future<void> _setTallViewport(WidgetTester tester) async {
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
   });
+}
+
+/// Pumps the two known frames for the auth/export state transition without
+/// waiting for unrelated animations from a previous widget-test tree.
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 Future<_BackupFixture> _fixture() async {
@@ -267,6 +277,7 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
 }
@@ -339,6 +350,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

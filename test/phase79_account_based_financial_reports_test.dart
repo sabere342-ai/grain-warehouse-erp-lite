@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/permissions.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
@@ -8,6 +10,9 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_service.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_file_naming.dart';
 
 void main() {
@@ -23,9 +28,20 @@ void main() {
 
   late LocalFinancialAccountRepository repo;
   late FinancialReportService service;
+  late NegativeBalanceApprovalService approvals;
 
   setUp(() {
-    repo = LocalFinancialAccountRepository();
+    final auth = LocalAuthRepository(
+      seedAccounts: [LocalAuthAccount(user: owner, password: 'owner-password')],
+    );
+    approvals = NegativeBalanceApprovalService(
+      authRepository: auth,
+      approvalRepository: LocalNegativeBalanceApprovalRepository(),
+      auditLogRepository: LocalAuditLogRepository(),
+    );
+    repo = LocalFinancialAccountRepository(
+      negativeBalanceApprovalService: approvals,
+    );
     service = FinancialReportService(repository: repo);
   });
 
@@ -48,6 +64,7 @@ void main() {
     String? reversalOf,
     String? reference,
     String? approvedByUserId,
+    String? negativeBalanceApprovalId,
   }) async {
     await repo.createEntry(
       accountId: accountId,
@@ -61,6 +78,33 @@ void main() {
       reversalOf: reversalOf,
       reference: reference,
       approvedByUserId: approvedByUserId,
+      negativeBalanceApprovalId: negativeBalanceApprovalId,
+    );
+  }
+
+  Future<String> approveNegativeBalance({
+    required FinancialAccount account,
+    required int amountQirsh,
+    required NegativeBalanceOperationType operationType,
+    required String sourceDocumentId,
+    required String sourceDocumentType,
+  }) async {
+    final balanceBefore = await repo.currentBalanceForAccount(account.id);
+    return approvals.requestApproval(
+      draft: NegativeBalanceApprovalDraft(
+        requestedByUserId: owner.id,
+        approvedByOwnerUserId: owner.id,
+        accountId: account.id,
+        amountQirsh: amountQirsh,
+        operationType: operationType,
+        sourceDocumentId: sourceDocumentId,
+        sourceDocumentType: sourceDocumentType,
+        balanceBeforeQirsh: balanceBefore,
+        expectedBalanceAfterQirsh: balanceBefore - amountQirsh,
+        reason: 'Phase 79 approved negative-balance report fixture.',
+      ),
+      ownerPhone: owner.phone,
+      ownerPassword: 'owner-password',
     );
   }
 
@@ -640,13 +684,21 @@ void main() {
           allowNegativeBalance: true,
           updatedByUserId: owner.id,
         );
+        final transferDate = DateTime(2026, 1, 5);
+        final approvalId = await approveNegativeBalance(
+          account: source,
+          amountQirsh: 5000,
+          operationType: NegativeBalanceOperationType.transfer,
+          sourceDocumentId: 'doc-${transferDate.millisecondsSinceEpoch}',
+          sourceDocumentType: FinancialAccountEntrySource.transferOut.name,
+        );
         await addEntry(
           accountId: source.id,
           direction: FinancialAccountEntryDirection.outflow,
           amount: 5000,
           source: FinancialAccountEntrySource.transferOut,
-          date: DateTime(2026, 1, 5),
-          approvedByUserId: owner.id,
+          date: transferDate,
+          negativeBalanceApprovalId: approvalId,
         );
         await addEntry(
           accountId: dest.id,
@@ -1424,14 +1476,22 @@ void main() {
           allowNegativeBalance: true,
           updatedByUserId: owner.id,
         );
+        final expenseDate = DateTime(2026, 1, 5);
+        final approvalId = await approveNegativeBalance(
+          account: acc,
+          amountQirsh: 50000,
+          operationType: NegativeBalanceOperationType.expense,
+          sourceDocumentId: 'doc-${expenseDate.millisecondsSinceEpoch}',
+          sourceDocumentType: FinancialAccountEntrySource.expense.name,
+        );
         await addEntry(
           accountId: acc.id,
           direction: FinancialAccountEntryDirection.outflow,
           amount: 50000,
           source: FinancialAccountEntrySource.expense,
-          date: DateTime(2026, 1, 5),
+          date: expenseDate,
           paymentMethod: PaymentMethod.cash,
-          approvedByUserId: owner.id,
+          negativeBalanceApprovalId: approvalId,
         );
         await addEntry(
           accountId: acc.id,

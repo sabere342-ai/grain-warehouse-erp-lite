@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
@@ -7,6 +8,8 @@ import 'package:grain_warehouse_erp_lite/core/business_identity/business_identit
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -23,11 +26,28 @@ class AppRepositories {
   static final LocalAuditLogRepository auditLogRepository =
       LocalAuditLogRepository();
 
+  /// The application owns exactly one authentication store. Approval checks
+  /// and the visible session must observe the same active/inactive users.
+  static final LocalAuthRepository authRepository = LocalAuthRepository.empty();
+
+  static final LocalNegativeBalanceApprovalRepository
+      negativeBalanceApprovalRepository = LocalNegativeBalanceApprovalRepository();
+
+  static final NegativeBalanceApprovalService negativeBalanceApprovalService =
+      NegativeBalanceApprovalService(
+    authRepository: authRepository,
+    approvalRepository: negativeBalanceApprovalRepository,
+    auditLogRepository: auditLogRepository,
+  );
+
   static final LocalBusinessIdentityRepository businessIdentityRepository =
       LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
 
   static final LocalFinancialAccountRepository financialAccountRepository =
-      LocalFinancialAccountRepository(auditLogRepository: auditLogRepository);
+      LocalFinancialAccountRepository(
+    auditLogRepository: auditLogRepository,
+    negativeBalanceApprovalService: negativeBalanceApprovalService,
+  );
 
   static final LocalCustomerRepository customerRepository =
       LocalCustomerRepository(auditLogRepository: auditLogRepository);

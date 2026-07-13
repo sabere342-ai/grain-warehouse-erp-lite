@@ -5,6 +5,10 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class FinancialAccountRepository {
   Future<List<FinancialAccount>> listAccounts({bool includeInactive = false});
@@ -49,6 +53,8 @@ abstract class FinancialAccountRepository {
     String? correctionGroup,
     PaymentMethod? paymentMethod,
     String? approvedByUserId,
+    String? negativeBalanceApprovalId,
+    String? approvalSourceDocumentId,
   });
   Future<FinancialTransfer> createTransfer(
       {required AppUser user, required FinancialTransferDraft draft});
@@ -67,11 +73,16 @@ abstract class FinancialAccountRepository {
       required String reason});
 }
 
-class LocalFinancialAccountRepository implements FinancialAccountRepository {
-  LocalFinancialAccountRepository({AuditLogRepository? auditLogRepository})
-      : _auditLogRepository = auditLogRepository;
+class LocalFinancialAccountRepository
+    implements FinancialAccountRepository, TransactionSnapshotProvider {
+  LocalFinancialAccountRepository({
+    AuditLogRepository? auditLogRepository,
+    NegativeBalanceApprovalService? negativeBalanceApprovalService,
+  })  : _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
+        _negativeBalanceApprovalService = negativeBalanceApprovalService;
 
-  final AuditLogRepository? _auditLogRepository;
+  final AuditLogRepository _auditLogRepository;
+  final NegativeBalanceApprovalService? _negativeBalanceApprovalService;
   final List<FinancialAccount> _accounts = [];
   final List<FinancialAccountEntry> _entries = [];
   final List<FinancialTransfer> _transfers = [];
@@ -235,7 +246,8 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     final action = allowNegativeBalance ? 'تفعيل' : 'تعطيل';
     await _recordAudit(
       actionType: 'financial_account.negative_balance_policy.updated',
-      descriptionAr: 'تم $action السماح بالرصيد السالب لحساب "${account.name}".',
+      descriptionAr:
+          'تم $action السماح بالرصيد السالب لحساب "${account.name}".',
       referenceId: account.id,
     );
   }
@@ -493,6 +505,51 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     String? correctionGroup,
     PaymentMethod? paymentMethod,
     String? approvedByUserId,
+    String? negativeBalanceApprovalId,
+    String? approvalSourceDocumentId,
+  }) {
+    Future<FinancialAccountEntry> operation() => _createEntry(
+          accountId: accountId,
+          direction: direction,
+          amountQirsh: amountQirsh,
+          sourceType: sourceType,
+          sourceDocumentId: sourceDocumentId,
+          effectiveDate: effectiveDate,
+          createdByUserId: createdByUserId,
+          sourceDocumentNumber: sourceDocumentNumber,
+          reference: reference,
+          note: note,
+          reversalOf: reversalOf,
+          correctionGroup: correctionGroup,
+          paymentMethod: paymentMethod,
+          approvedByUserId: approvedByUserId,
+          negativeBalanceApprovalId: negativeBalanceApprovalId,
+          approvalSourceDocumentId: approvalSourceDocumentId,
+        );
+    if (RepositoryTransaction.isActive) return operation();
+    return RepositoryTransaction.execute(
+      <SnapshotHolder>[createTransactionSnapshot()],
+      operation,
+    );
+  }
+
+  Future<FinancialAccountEntry> _createEntry({
+    required String accountId,
+    required FinancialAccountEntryDirection direction,
+    required int amountQirsh,
+    required FinancialAccountEntrySource sourceType,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    String? sourceDocumentNumber,
+    String? reference,
+    String? note,
+    String? reversalOf,
+    String? correctionGroup,
+    PaymentMethod? paymentMethod,
+    String? approvedByUserId,
+    String? negativeBalanceApprovalId,
+    String? approvalSourceDocumentId,
   }) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
@@ -509,6 +566,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     }
 
     bool negativeBalanceApproved = false;
+    String? negativeApprovalId;
     if (direction == FinancialAccountEntryDirection.outflow) {
       final currentBalance = await currentBalanceForAccount(id);
       final projectedBalance = currentBalance - amountQirsh;
@@ -518,12 +576,13 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
             'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
           );
         }
-        final approver = approvedByUserId?.trim();
+        final approver = negativeBalanceApprovalId?.trim();
         if (approver == null || approver.isEmpty) {
           throw StateError(
             'الرصيد غير كافٍ. تتطلب العملية موافقة المالك المباشرة.',
           );
         }
+        negativeApprovalId = approver;
         negativeBalanceApproved = true;
       }
     }
@@ -545,28 +604,86 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       reversalOf: reversalOf,
       correctionGroup: correctionGroup,
       paymentMethod: paymentMethod,
-      approvedByUserId: negativeBalanceApproved
-          ? _normalizedRequiredId(approvedByUserId!, 'approvedByUserId')
+      // Legacy data only. Authorization above is based exclusively on the
+      // one-time approval id and never on a user id string.
+      approvedByUserId: approvedByUserId?.trim().isEmpty == false
+          ? approvedByUserId!.trim()
           : null,
+      negativeBalanceApprovalId:
+          negativeBalanceApproved ? negativeApprovalId : null,
     );
-    _entries.add(entry);
-
-    await _recordAudit(
-      actionType: 'financial_account.entry.created',
-      descriptionAr:
-          'تم تسجيل حركة مالية ${direction.labelAr} بقيمة $amountQirsh قيرش.',
-      referenceId: entry.id,
-    );
+    NegativeBalanceApprovalConsumption? approvalConsumption;
+    NegativeBalanceApprovalBinding? approvalBinding;
     if (negativeBalanceApproved) {
+      final service = _negativeBalanceApprovalService;
+      if (service == null) {
+        throw StateError('خدمة اعتماد الرصيد السالب غير مهيأة.');
+      }
+      final balanceBefore = await currentBalanceForAccount(id);
+      approvalBinding = NegativeBalanceApprovalBinding(
+        approvalId: negativeApprovalId!,
+        transactionId: entry.id,
+        accountId: id,
+        amountQirsh: amountQirsh,
+        operationType: _operationTypeForSource(sourceType),
+        sourceDocumentId: approvalSourceDocumentId?.trim().isEmpty == false
+            ? approvalSourceDocumentId!.trim()
+            : sourceDocumentId,
+        sourceDocumentType: sourceType.name,
+        requestedByUserId: userId,
+        balanceBeforeQirsh: balanceBefore,
+        expectedBalanceAfterQirsh: balanceBefore - amountQirsh,
+      );
+      await service.verify(approvalBinding);
+    }
+    try {
+      _entries.add(entry);
+
+      if (approvalBinding != null) {
+        approvalConsumption = await _negativeBalanceApprovalService!.consume(
+          approvalBinding,
+        );
+      }
+
       await _recordAudit(
-        actionType: 'financial_account.entry.negative_balance_approved',
+        actionType: 'financial_account.entry.created',
         descriptionAr:
-            'تمت موافقة المالك على حركة تجعل الرصيد سالبًا. '
-            'الحساب: "${account.name}"، المبلغ: $amountQirsh قيرش.',
+            'تم تسجيل حركة مالية ${direction.labelAr} بقيمة $amountQirsh قيرش.',
         referenceId: entry.id,
       );
+      if (negativeBalanceApproved) {
+        await _recordAudit(
+          actionType: 'financial_account.entry.negative_balance_approved',
+          descriptionAr: 'تمت موافقة المالك على حركة تجعل الرصيد سالبًا. '
+              'الحساب: "${account.name}"، المبلغ: $amountQirsh قيرش.',
+          referenceId: entry.id,
+        );
+      }
+      return entry;
+    } catch (_) {
+      _entries.removeWhere((value) => value.id == entry.id);
+      await approvalConsumption?.rollback();
+      rethrow;
     }
-    return entry;
+  }
+
+  NegativeBalanceOperationType _operationTypeForSource(
+    FinancialAccountEntrySource source,
+  ) {
+    switch (source) {
+      case FinancialAccountEntrySource.expense:
+        return NegativeBalanceOperationType.expense;
+      case FinancialAccountEntrySource.supplierSettlement:
+        return NegativeBalanceOperationType.supplierPayment;
+      case FinancialAccountEntrySource.purchasePayment:
+        return NegativeBalanceOperationType.purchasePayment;
+      case FinancialAccountEntrySource.transferOut:
+        return NegativeBalanceOperationType.transfer;
+      case FinancialAccountEntrySource.cancellationReversal:
+        return NegativeBalanceOperationType.cancellationReversal;
+      default:
+        throw StateError('مصدر الحركة لا يدعم اعتماد الرصيد السالب.');
+    }
   }
 
   @override
@@ -678,7 +795,20 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       DateTime(value.year, value.month, value.day);
 
   @override
-  Future<FinancialTransfer> createTransfer(
+  Future<FinancialTransfer> createTransfer({
+    required AppUser user,
+    required FinancialTransferDraft draft,
+  }) {
+    Future<FinancialTransfer> operation() =>
+        _createTransfer(user: user, draft: draft);
+    if (RepositoryTransaction.isActive) return operation();
+    return RepositoryTransaction.execute(
+      <SnapshotHolder>[createTransactionSnapshot()],
+      operation,
+    );
+  }
+
+  Future<FinancialTransfer> _createTransfer(
       {required AppUser user, required FinancialTransferDraft draft}) async {
     _requireTransferOwner(user);
     final sourceId =
@@ -723,6 +853,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       throw StateError('الحساب المعطل لا يستخدم في تحويل جديد.');
     }
     bool transferNegativeBalanceOverride = false;
+    int? sourceBalanceBefore;
     if (!source.allowNegativeBalance) {
       if (await currentBalanceForAccount(sourceId) < draft.amountQirsh) {
         throw StateError('رصيد الحساب المصدر غير كافٍ للتحويل.');
@@ -731,6 +862,10 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
       final currentBalance = await currentBalanceForAccount(sourceId);
       if (currentBalance < draft.amountQirsh) {
         transferNegativeBalanceOverride = true;
+        sourceBalanceBefore = currentBalance;
+        if (draft.negativeBalanceApprovalId?.trim().isEmpty != false) {
+          throw StateError('التحويل يتطلب معرف موافقة رصيد سالب صالح.');
+        }
       }
     }
     final now = DateTime.now();
@@ -774,21 +909,64 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
         createdByUserId: userId,
         sourceEntryId: sourceEntry.id,
         destinationEntryId: destinationEntry.id,
-        note: _normalizedOptionalText(draft.note));
-    _transfers.add(transfer);
-    _entries.addAll([sourceEntry, destinationEntry]);
-    await _recordAudit(
-        actionType: 'financial_transfer.created',
-        descriptionAr: 'تم إنشاء تحويل مالي ${transfer.displayNumber}.',
-        referenceId: transfer.id);
+        note: _normalizedOptionalText(draft.note),
+        negativeBalanceApprovalId: transferNegativeBalanceOverride
+            ? draft.negativeBalanceApprovalId!.trim()
+            : null);
+    NegativeBalanceApprovalConsumption? approvalConsumption;
+    NegativeBalanceApprovalBinding? approvalBinding;
     if (transferNegativeBalanceOverride) {
-      await _recordAudit(
-          actionType: 'financial_transfer.negative_balance_override',
-          descriptionAr:
-              'تم تحويل مالي يجعل رصيد الحساب "${source.name}" سالبًا بموافقة المالك.',
-          referenceId: transfer.id);
+      final service = _negativeBalanceApprovalService;
+      if (service == null) {
+        throw StateError('خدمة اعتماد الرصيد السالب غير مهيأة.');
+      }
+      final balanceBefore = sourceBalanceBefore;
+      if (balanceBefore == null) {
+        throw StateError('تعذر تحديد رصيد الحساب المصدر.');
+      }
+      approvalBinding = NegativeBalanceApprovalBinding(
+        approvalId: draft.negativeBalanceApprovalId!.trim(),
+        transactionId: transfer.id,
+        accountId: sourceId,
+        amountQirsh: draft.amountQirsh,
+        operationType: NegativeBalanceOperationType.transfer,
+        sourceDocumentId: requestId,
+        sourceDocumentType: 'transfer',
+        requestedByUserId: userId,
+        balanceBeforeQirsh: balanceBefore,
+        expectedBalanceAfterQirsh: balanceBefore - draft.amountQirsh,
+      );
+      await service.verify(approvalBinding);
     }
-    return transfer;
+    try {
+      _transfers.add(transfer);
+      _entries.addAll([sourceEntry, destinationEntry]);
+      if (approvalBinding != null) {
+        approvalConsumption = await _negativeBalanceApprovalService!.consume(
+          approvalBinding,
+        );
+      }
+      await _recordAudit(
+          actionType: 'financial_transfer.created',
+          descriptionAr: 'تم إنشاء تحويل مالي ${transfer.displayNumber}.',
+          referenceId: transfer.id);
+      if (transferNegativeBalanceOverride) {
+        await _recordAudit(
+            actionType: 'financial_transfer.negative_balance_override',
+            descriptionAr:
+                'تم تحويل مالي يجعل رصيد الحساب "${source.name}" سالبًا بموافقة المالك.',
+            referenceId: transfer.id);
+      }
+      return transfer;
+    } catch (_) {
+      _transfers.removeWhere((value) => value.id == transfer.id);
+      _entries.removeWhere(
+        (value) =>
+            value.id == sourceEntry.id || value.id == destinationEntry.id,
+      );
+      await approvalConsumption?.rollback();
+      rethrow;
+    }
   }
 
   @override
@@ -940,6 +1118,61 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     _generatedTransferIdCounter = 0;
   }
 
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    final ownState = ObjectStateSnapshot<
+        (
+          List<FinancialAccount>,
+          List<FinancialAccountEntry>,
+          List<FinancialTransfer>,
+          List<FinancialClosing>,
+          int,
+          int,
+          int
+        )>(
+      captureState: () => (
+        List<FinancialAccount>.from(_accounts),
+        List<FinancialAccountEntry>.from(_entries),
+        List<FinancialTransfer>.from(_transfers),
+        List<FinancialClosing>.from(_closings),
+        _generatedAccountIdCounter,
+        _generatedEntryIdCounter,
+        _generatedTransferIdCounter,
+      ),
+      restoreState: (state) {
+        _accounts
+          ..clear()
+          ..addAll(state.$1);
+        _entries
+          ..clear()
+          ..addAll(state.$2);
+        _transfers
+          ..clear()
+          ..addAll(state.$3);
+        _closings
+          ..clear()
+          ..addAll(state.$4);
+        _generatedAccountIdCounter = state.$5;
+        _generatedEntryIdCounter = state.$6;
+        _generatedTransferIdCounter = state.$7;
+      },
+    );
+    final snapshots = <SnapshotHolder>[ownState];
+    if (_auditLogRepository is TransactionSnapshotProvider) {
+      snapshots.add(
+        (_auditLogRepository as TransactionSnapshotProvider)
+            .createTransactionSnapshot(),
+      );
+    } else {
+      throw StateError('مستودع التدقيق لا يدعم المعاملات الذرية.');
+    }
+    final approvalService = _negativeBalanceApprovalService;
+    if (approvalService != null) {
+      snapshots.add(approvalService.createTransactionSnapshot());
+    }
+    return CompositeSnapshot(snapshots);
+  }
+
   void _validateDraft(FinancialAccountDraft draft) {
     _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
     final name = draft.name.trim();
@@ -1062,7 +1295,7 @@ class LocalFinancialAccountRepository implements FinancialAccountRepository {
     required String descriptionAr,
     String? referenceId,
   }) async {
-    await _auditLogRepository?.record(
+    await _auditLogRepository.record(
       AuditLogDraft(
         actionType: actionType,
         descriptionAr: descriptionAr,

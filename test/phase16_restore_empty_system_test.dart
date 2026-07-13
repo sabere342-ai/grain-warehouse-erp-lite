@@ -254,26 +254,28 @@ void main() {
     testWidgets('restore section appears only after valid preview',
         (tester) async {
       await _setTallViewport(tester);
-      final source = await _seededFixture();
-      final target = await _emptyFixture();
+      final source = await tester.runAsync(_seededFixture);
+      final target = await tester.runAsync(_emptyFixture);
+      expect(source, isNotNull);
+      expect(target, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
           child: BackupRestorePreviewScreen(
-            restoreService: target.restoreService,
+            restoreService: target!.restoreService,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('استرجاع إلى نظام فارغ'), findsNothing);
       await tester.enterText(
         find.byType(TextField),
-        (await source.exportService.createBackup()).jsonText,
+        (await source!.exportService.createBackup()).jsonText,
       );
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('استرجاع النسخة إلى نظام فارغ'), findsOneWidget);
       expect(find.text('استرجاع إلى نظام فارغ'), findsOneWidget);
@@ -282,26 +284,28 @@ void main() {
 
     testWidgets('confirmation dialog appears before restore', (tester) async {
       await _setTallViewport(tester);
-      final source = await _seededFixture();
-      final target = await _emptyFixture();
+      final source = await tester.runAsync(_seededFixture);
+      final target = await tester.runAsync(_emptyFixture);
+      expect(source, isNotNull);
+      expect(target, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
           child: BackupRestorePreviewScreen(
-            restoreService: target.restoreService,
+            restoreService: target!.restoreService,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.enterText(
         find.byType(TextField),
-        (await source.exportService.createBackup()).jsonText,
+        (await source!.exportService.createBackup()).jsonText,
       );
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.text('استرجاع إلى نظام فارغ'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('تأكيد الاسترجاع'), findsOneWidget);
       expect(find.text('إلغاء'), findsOneWidget);
@@ -310,45 +314,48 @@ void main() {
 
     testWidgets('successful restore shows success message', (tester) async {
       await _setTallViewport(tester);
-      final source = await _seededFixture();
-      final target = await _emptyFixture();
+      final source = await tester.runAsync(_seededFixture);
+      final target = await tester.runAsync(_emptyFixture);
+      expect(source, isNotNull);
+      expect(target, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
           child: BackupRestorePreviewScreen(
-            restoreService: target.restoreService,
+            restoreService: target!.restoreService,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.enterText(
         find.byType(TextField),
-        (await source.exportService.createBackup()).jsonText,
+        (await source!.exportService.createBackup()).jsonText,
       );
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.text('استرجاع إلى نظام فارغ'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.widgetWithText(FilledButton, 'تأكيد الاسترجاع'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('تم استرجاع النسخة الاحتياطية بنجاح.'), findsOneWidget);
       expect(await target.products.listProducts(), hasLength(1));
     });
 
     testWidgets('non-owner cannot restore', (tester) async {
-      final target = await _emptyFixture();
+      final target = await tester.runAsync(_emptyFixture);
+      expect(target, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _employee,
           child: BackupRestorePreviewScreen(
-            restoreService: target.restoreService,
+            restoreService: target!.restoreService,
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('هذه الأداة متاحة للمالك فقط.'), findsOneWidget);
       expect(find.text('استرجاع إلى نظام فارغ'), findsNothing);
@@ -356,9 +363,11 @@ void main() {
 
     testWidgets('non-empty system shows guard message', (tester) async {
       await _setTallViewport(tester);
-      final source = await _seededFixture();
-      final target = await _emptyFixture();
-      await target.products.createProduct(_productDraft('موجود'));
+      final source = await tester.runAsync(_seededFixture);
+      final target = await tester.runAsync(_emptyFixture);
+      expect(source, isNotNull);
+      expect(target, isNotNull);
+      await target!.products.createProduct(_productDraft('موجود'));
 
       await tester.pumpWidget(
         _screenHarness(
@@ -368,17 +377,17 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.enterText(
         find.byType(TextField),
-        (await source.exportService.createBackup()).jsonText,
+        (await source!.exportService.createBackup()).jsonText,
       );
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.text('استرجاع إلى نظام فارغ'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.widgetWithText(FilledButton, 'تأكيد الاسترجاع'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.textContaining('النظام الحالي ليس فارغا'), findsOneWidget);
     });
@@ -523,8 +532,14 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
+}
+
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 class _BackupFixture {
@@ -580,6 +595,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

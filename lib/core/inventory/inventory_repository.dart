@@ -1,6 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class InventoryRepository {
   Future<StockMovement> createMovement(StockMovementDraft draft);
@@ -17,13 +18,28 @@ abstract class InventoryRepository {
       {bool activeProductsOnly = false});
 }
 
-class LocalInventoryRepository implements InventoryRepository {
+class LocalInventoryRepository
+    implements InventoryRepository, TransactionSnapshotProvider {
   LocalInventoryRepository({required ProductRepository productRepository})
       : _productRepository = productRepository;
 
   final ProductRepository _productRepository;
   final List<StockMovement> _movements = [];
   int _generatedIdCounter = 0;
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    return ObjectStateSnapshot<(List<StockMovement>, int)>(
+      captureState: () =>
+          (List<StockMovement>.from(_movements), _generatedIdCounter),
+      restoreState: (state) {
+        _movements
+          ..clear()
+          ..addAll(state.$1);
+        _generatedIdCounter = state.$2;
+      },
+    );
+  }
 
   @override
   Future<StockMovement> createMovement(StockMovementDraft draft) async {

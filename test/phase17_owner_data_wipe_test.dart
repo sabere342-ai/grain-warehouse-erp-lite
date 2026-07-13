@@ -184,7 +184,7 @@ void main() {
     testWidgets('owner sees dangerous action entry on backup screen',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -192,7 +192,7 @@ void main() {
           child: BackupExportScreen(wipeService: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_dangerSection), findsOneWidget);
       expect(find.text(_dangerLabel), findsOneWidget);
@@ -201,7 +201,7 @@ void main() {
 
     testWidgets('employee does not see dangerous action entry', (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -209,7 +209,7 @@ void main() {
           child: BackupExportScreen(wipeService: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_ownerOnly), findsNothing);
       expect(find.text(_wipeOperatingData), findsNothing);
@@ -218,7 +218,7 @@ void main() {
     testWidgets('data wipe screen explains mandatory backup and owner safety',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -226,7 +226,7 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_dangerLabel), findsOneWidget);
       expect(find.text(_backupFirst), findsOneWidget);
@@ -236,7 +236,7 @@ void main() {
     testWidgets('employee sees owner-only warning on data wipe screen',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -244,7 +244,7 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_ownerOnly), findsOneWidget);
       expect(find.text(_dangerLabel), findsNothing);
@@ -253,7 +253,7 @@ void main() {
     testWidgets('confirmation dialog appears before typed confirmation',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -261,9 +261,9 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await _tapContinue(tester);
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_confirmWipeTitle), findsOneWidget);
       expect(find.text(_cancel), findsOneWidget);
@@ -273,7 +273,7 @@ void main() {
     testWidgets('final wipe button requires exact confirmation phrase',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -281,21 +281,21 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await _tapContinue(tester);
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await _tapDialogContinue(tester);
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_finalWipeButton), findsOneWidget);
       await tester.tap(find.text(_finalWipeButton));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(fixture.fileWriter.saveCalls, 0);
 
       await tester.enterText(find.byType(TextField), 'wrong phrase');
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await tester.tap(find.text(_finalWipeButton));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       expect(fixture.fileWriter.saveCalls, 0);
 
       await tester.enterText(
@@ -310,7 +310,7 @@ void main() {
 
     testWidgets('successful wipe shows success message', (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture();
+      final fixture = await _seededWidgetFixture(tester);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -318,10 +318,10 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await _acceptWarningAndEnterConfirmation(tester);
       await tester.tap(find.text(_finalWipeButton));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text(_wipeSuccess), findsOneWidget);
       await _expectEmptyOperationalData(fixture);
@@ -329,7 +329,7 @@ void main() {
 
     testWidgets('backup failure shows no-deletion message', (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _seededFixture(saveFails: true);
+      final fixture = await _seededWidgetFixture(tester, saveFails: true);
 
       await tester.pumpWidget(
         _screenHarness(
@@ -337,10 +337,10 @@ void main() {
           child: DataWipeScreen(service: fixture.wipeService),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
       await _acceptWarningAndEnterConfirmation(tester);
       await tester.tap(find.text(_finalWipeButton));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.textContaining(_noDeletion), findsOneWidget);
       await _expectSeededOperationalData(fixture);
@@ -374,9 +374,9 @@ Future<void> _setTallViewport(WidgetTester tester) async {
 
 Future<void> _acceptWarningAndEnterConfirmation(WidgetTester tester) async {
   await _tapContinue(tester);
-  await tester.pumpAndSettle();
+  await _pumpExpectedState(tester);
   await _tapDialogContinue(tester);
-  await tester.pumpAndSettle();
+  await _pumpExpectedState(tester);
   await tester.enterText(
     find.byType(TextField),
     BusinessDataWipeService.confirmationPhrase,
@@ -440,6 +440,20 @@ Future<_BackupFixture> _seededFixture({
       customerId: backupCustomer.id,
     ),
   );
+  return fixture;
+}
+
+Future<_BackupFixture> _seededWidgetFixture(
+  WidgetTester tester, {
+  bool exportFails = false,
+  bool saveFails = false,
+}) async {
+  final fixture = await tester.runAsync(
+    () => _seededFixture(exportFails: exportFails, saveFails: saveFails),
+  );
+  if (fixture == null) {
+    throw StateError('The widget fixture did not initialize.');
+  }
   return fixture;
 }
 
@@ -537,8 +551,14 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
+}
+
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 class _BackupFixture {
@@ -644,6 +664,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

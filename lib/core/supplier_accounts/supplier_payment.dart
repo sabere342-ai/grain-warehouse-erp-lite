@@ -39,6 +39,8 @@ class SupplierPaymentDraft {
     this.financialAccountId,
     this.paymentMethod,
     this.approvedByUserId,
+    this.negativeBalanceApprovalId,
+    this.operationRequestId,
   });
 
   final String supplierId;
@@ -50,4 +52,6 @@ class SupplierPaymentDraft {
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
   final String? approvedByUserId;
+  final String? negativeBalanceApprovalId;
+  final String? operationRequestId;
 }

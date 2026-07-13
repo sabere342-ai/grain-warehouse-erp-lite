@@ -99,6 +99,7 @@ class FinancialAccountEntry {
     this.correctionGroup,
     this.paymentMethod,
     this.approvedByUserId,
+    this.negativeBalanceApprovalId,
   });
 
   final String id;
@@ -117,6 +118,7 @@ class FinancialAccountEntry {
   final String? correctionGroup;
   final PaymentMethod? paymentMethod;
   final String? approvedByUserId;
+  final String? negativeBalanceApprovalId;
 
   bool get hasValidId => id.trim().isNotEmpty;
   int get signedAmountQirsh =>

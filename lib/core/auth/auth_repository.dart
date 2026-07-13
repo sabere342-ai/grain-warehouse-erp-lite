@@ -11,6 +11,15 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Authenticates credentials without changing the active application session.
+  ///
+  /// This is intentionally separate from [signIn]: owner re-authentication for
+  /// a privileged operation must not silently switch the cashier's session.
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  });
+
   Future<AppUser> createFirstOwner({
     required String name,
     required String phone,
@@ -18,6 +27,8 @@ abstract class AuthRepository {
   });
 
   Future<void> signOut();
+
+  Future<AppUser?> getUserById(String userId);
 }
 
 class LocalAuthRepository implements AuthRepository {
@@ -111,6 +122,16 @@ class LocalAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async {
+    final account = _accountsByPhone[_normalizePhone(phone)];
+    if (account == null || account.password != password) return null;
+    return account.user;
+  }
+
+  @override
   Future<AppUser> createFirstOwner({
     required String name,
     required String phone,
@@ -147,6 +168,18 @@ class LocalAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     _currentUser = null;
+  }
+
+  @override
+  Future<AppUser?> getUserById(String userId) async {
+    final id = userId.trim();
+    if (id.isEmpty) return null;
+    for (final account in _accountsByPhone.values) {
+      if (account.user.id == id) {
+        return account.user;
+      }
+    }
+    return null;
   }
 
   void _addSeedAccount(LocalAuthAccount account) {

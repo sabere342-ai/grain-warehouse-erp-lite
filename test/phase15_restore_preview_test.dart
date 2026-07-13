@@ -141,15 +141,16 @@ void main() {
 
   group('Phase 15 restore preview UI', () {
     testWidgets('backup screen has preview entry', (tester) async {
-      final fixture = await _fixture();
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
 
       await tester.pumpWidget(
         _screenHarness(
           user: _owner,
-          child: BackupExportScreen(service: fixture.service),
+          child: BackupExportScreen(service: fixture!.service),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('فحص نسخة احتياطية'), findsOneWidget);
     });
@@ -162,7 +163,7 @@ void main() {
           child: const BackupRestorePreviewScreen(),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('فحص نسخة احتياطية'), findsOneWidget);
       expect(find.textContaining('للفحص والمعاينة فقط'), findsOneWidget);
@@ -176,8 +177,9 @@ void main() {
     testWidgets('valid JSON preview shows summary and safety warning',
         (tester) async {
       await _setTallViewport(tester);
-      final fixture = await _fixture();
-      final jsonText = (await fixture.service.createBackup()).jsonText;
+      final fixture = await tester.runAsync(_fixture);
+      expect(fixture, isNotNull);
+      final jsonText = (await fixture!.service.createBackup()).jsonText;
 
       await tester.pumpWidget(
         _screenHarness(
@@ -185,11 +187,11 @@ void main() {
           child: const BackupRestorePreviewScreen(),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       await tester.enterText(find.byType(TextField), jsonText);
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('تم فحص النسخة بنجاح.'), findsOneWidget);
       expect(find.text('الأصناف'), findsOneWidget);
@@ -198,7 +200,8 @@ void main() {
       expect(find.text('المشتريات'), findsOneWidget);
       expect(find.text('المبيعات'), findsOneWidget);
       expect(find.text('سجل المستندات'), findsOneWidget);
-      expect(find.textContaining('يمكن الاسترجاع إلى نظام فارغ فقط'), findsOneWidget);
+      expect(find.textContaining('يمكن الاسترجاع إلى نظام فارغ فقط'),
+          findsOneWidget);
     });
 
     testWidgets('invalid JSON shows friendly error', (tester) async {
@@ -208,11 +211,11 @@ void main() {
           child: const BackupRestorePreviewScreen(),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       await tester.enterText(find.byType(TextField), '{bad-json');
       await tester.tap(find.text('فحص النسخة'));
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('تعذر فحص النسخة الاحتياطية.'), findsOneWidget);
       expect(find.textContaining('JSON غير صالح'), findsOneWidget);
@@ -225,7 +228,7 @@ void main() {
           child: const BackupRestorePreviewScreen(),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpExpectedState(tester);
 
       expect(find.text('هذه الأداة متاحة للمالك فقط.'), findsOneWidget);
       expect(find.text('فحص النسخة'), findsNothing);
@@ -359,8 +362,16 @@ Widget _screenHarness({
 
 AuthController _authControllerFor(AppUser user) {
   final controller = AuthController(repository: _StaticAuthRepository(user));
+  addTearDown(controller.dispose);
   controller.initialize();
   return controller;
+}
+
+/// Pumps the two frames required by auth and preview state transitions without
+/// waiting for unrelated animations from a preceding widget-test tree.
+Future<void> _pumpExpectedState(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
 }
 
 class _BackupFixture {
@@ -412,6 +423,17 @@ class _StaticAuthRepository implements AuthRepository {
   }) async {
     return user;
   }
+
+  @override
+  Future<AppUser?> verifyCredentials({
+    required String phone,
+    required String password,
+  }) async =>
+      null;
+
+  @override
+  Future<AppUser?> getUserById(String userId) async =>
+      user.id == userId.trim() ? user : null;
 
   @override
   Future<void> signOut() async {}

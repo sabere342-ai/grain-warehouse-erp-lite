@@ -1,6 +1,5 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
@@ -171,6 +170,7 @@ class SaleController extends ChangeNotifier {
     required AppUser user,
     required String saleId,
     required String cancellationReason,
+    String? negativeBalanceApprovalId,
   }) async {
     if (!_canCancelPostedDocument(user)) {
       return false;
@@ -210,8 +210,7 @@ class SaleController extends ChangeNotifier {
             reference: 'عكس إلغاء فاتورة ${cancelled.id}',
             note: 'إلغاء فاتورة مبيعات: $cancellationReason',
             paymentMethod: cancelled.paymentMethod,
-            approvedByUserId:
-                user.role == UserRole.owner ? user.id : null,
+            negativeBalanceApprovalId: negativeBalanceApprovalId,
           );
         }
       }
@@ -228,7 +227,8 @@ class SaleController extends ChangeNotifier {
   Future<Customer> _findActiveCustomer(String? customerId) async {
     final id = customerId?.trim();
     if (id == null || id.isEmpty) {
-      throw ArgumentError.value(customerId, 'customerId', '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
+      throw ArgumentError.value(customerId, 'customerId',
+          '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
     }
     final customers = await _customerRepository!.listCustomers(
       includeInactive: true,
@@ -236,12 +236,14 @@ class SaleController extends ChangeNotifier {
     for (final customer in customers) {
       if (customer.id == id) {
         if (!customer.isActive) {
-          throw StateError('\u0627\u0644\u0639\u0645\u064a\u0644 \u063a\u064a\u0631 \u0646\u0634\u0637 \u0648\u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u0628\u064a\u0639 \u0644\u0647.');
+          throw StateError(
+              '\u0627\u0644\u0639\u0645\u064a\u0644 \u063a\u064a\u0631 \u0646\u0634\u0637 \u0648\u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u0628\u064a\u0639 \u0644\u0647.');
         }
         return customer;
       }
     }
-    throw StateError('\u0627\u0644\u0639\u0645\u064a\u0644 \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f.');
+    throw StateError(
+        '\u0627\u0644\u0639\u0645\u064a\u0644 \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f.');
   }
 
   String productName(String productId) {
@@ -268,7 +270,8 @@ class SaleController extends ChangeNotifier {
 
   bool _canCreateSale(AppUser user) {
     if (!user.canProceed) {
-      _errorMessage = '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
+      _errorMessage =
+          '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
       notifyListeners();
       return false;
     }
@@ -276,14 +279,16 @@ class SaleController extends ChangeNotifier {
       return true;
     }
 
-    _errorMessage = '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.';
+    _errorMessage =
+        '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.';
     notifyListeners();
     return false;
   }
 
   bool _canCancelPostedDocument(AppUser user) {
     if (!user.canProceed) {
-      _errorMessage = '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
+      _errorMessage =
+          '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0627\u0644\u062d.';
       notifyListeners();
       return false;
     }
@@ -291,7 +296,8 @@ class SaleController extends ChangeNotifier {
       return true;
     }
 
-    _errorMessage = '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0627\u0644\u0645\u0631\u062d\u0644\u0629.';
+    _errorMessage =
+        '\u0644\u0627 \u064a\u0645\u0644\u0643 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0635\u0644\u0627\u062d\u064a\u0629 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0627\u0644\u0645\u0631\u062d\u0644\u0629.';
     notifyListeners();
     return false;
   }

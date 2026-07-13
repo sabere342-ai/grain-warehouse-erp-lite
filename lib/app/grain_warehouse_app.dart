@@ -3,7 +3,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/app/routes.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
@@ -45,7 +44,7 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
     _ownsBusinessIdentityController =
         widget.businessIdentityController == null;
     _authController = widget.authController ??
-        AuthController(repository: LocalAuthRepository.empty());
+        AuthController(repository: AppRepositories.authRepository);
     _themeController = widget.themeController ??
         ThemeController(
           repository: LocalThemeSettingsRepository(

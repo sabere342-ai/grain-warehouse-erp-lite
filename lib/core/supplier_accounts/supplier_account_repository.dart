@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class SupplierAccountRepository {
   Future<List<SupplierAccountEntry>> listEntries();
@@ -32,27 +33,28 @@ abstract class SupplierAccountRepository {
   Future<bool> hasOpeningBalanceEntry(String supplierId);
 }
 
-class LocalSupplierAccountRepository implements SupplierAccountRepository {
+class LocalSupplierAccountRepository
+    implements SupplierAccountRepository, TransactionSnapshotProvider {
   LocalSupplierAccountRepository({
     required SupplierRepository supplierRepository,
     AuditLogRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
   })  : _supplierRepository = supplierRepository,
-        _auditLogRepository = auditLogRepository,
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _financialAccountRepository = financialAccountRepository;
 
   final SupplierRepository _supplierRepository;
-  final AuditLogRepository? _auditLogRepository;
+  final AuditLogRepository _auditLogRepository;
   final FinancialAccountRepository? _financialAccountRepository;
   final List<SupplierAccountEntry> _entries = [];
   final List<SupplierPaymentRecord> _payments = [];
+  final Map<String, String> _paymentRequestFingerprints = {};
   int _generatedEntryIdCounter = 0;
   int _generatedPaymentIdCounter = 0;
 
   @override
   Future<List<SupplierAccountEntry>> listEntries() async {
-    final sorted = [..._entries]
-      ..sort((a, b) {
+    final sorted = [..._entries]..sort((a, b) {
         final createdAt = a.createdAt.compareTo(b.createdAt);
         if (createdAt != 0) return createdAt;
         return a.id.compareTo(b.id);
@@ -138,8 +140,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
       creditAmountQirsh: 0,
       sourceDocumentType: 'purchase',
       sourceDocumentId: purchase.id,
-      descriptionAr:
-          'مشتريات من المورد ${supplier.name}',
+      descriptionAr: 'مشتريات من المورد ${supplier.name}',
       createdAt: now,
       createdByUserId: purchase.createdByUserId,
     );
@@ -147,8 +148,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
     _entries.add(entry);
     await _recordAudit(
       actionType: 'supplier.purchase.posted',
-      descriptionAr:
-          'تم تسجيل مشتريات من المورد ${supplier.name}.',
+      descriptionAr: 'تم تسجيل مشتريات من المورد ${supplier.name}.',
       referenceId: purchase.id,
     );
     return entry;
@@ -195,42 +195,64 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
       creditAmountQirsh: payment.amountQirsh,
       sourceDocumentType: 'supplierPayment',
       sourceDocumentId: payment.id,
-      descriptionAr:
-          'مدفوع للمورد ${supplier.name}',
+      descriptionAr: 'مدفوع للمورد ${supplier.name}',
       createdAt: now,
       createdByUserId: payment.createdByUserId,
     );
     _validateEntry(entry);
 
-    _payments.add(payment);
-    _entries.add(entry);
-    await _recordAudit(
-      actionType: 'supplier.payment.recorded',
-      descriptionAr:
-          'تم تسجيل دفع للمورد ${supplier.name}.',
-      referenceId: payment.id,
-    );
+    final requestId = _normalizedOptionalText(draft.operationRequestId);
+    final requestFingerprint = _paymentFingerprint(draft);
 
-    final faRepo = _financialAccountRepository;
-    if (faRepo != null &&
-        payment.financialAccountId != null &&
-        payment.financialAccountId!.isNotEmpty) {
-      await faRepo.createEntry(
-        accountId: payment.financialAccountId!,
-        direction: FinancialAccountEntryDirection.outflow,
-        amountQirsh: payment.amountQirsh,
-        sourceType: FinancialAccountEntrySource.supplierSettlement,
-        sourceDocumentId: payment.id,
-        effectiveDate: payment.date,
-        createdByUserId: payment.createdByUserId,
-        reference: 'تسوية مع المورد ${supplier.name}',
-        note: 'دفع للمورد ${payment.amountQirsh} قيرش',
-        paymentMethod: payment.paymentMethod,
-        approvedByUserId: draft.approvedByUserId,
-      );
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    if (_financialAccountRepository is TransactionSnapshotProvider) {
+      snapshots.add((_financialAccountRepository as TransactionSnapshotProvider)
+          .createTransactionSnapshot());
     }
+    return RepositoryTransaction.execute(snapshots, () async {
+      if (requestId != null &&
+          _paymentRequestFingerprints.containsKey(requestId)) {
+        throw StateError('Supplier payment request was already processed.');
+      }
+      final lockedBalance = await balanceForSupplier(supplier.id);
+      if (lockedBalance <= 0 || draft.amountQirsh > lockedBalance) {
+        throw StateError('Payment exceeds supplier balance.');
+      }
+      _payments.add(payment);
+      _entries.add(entry);
+      await _recordAudit(
+        actionType: 'supplier.payment.recorded',
+        descriptionAr: 'تم تسجيل دفع للمورد ${supplier.name}.',
+        referenceId: payment.id,
+      );
 
-    return payment;
+      final faRepo = _financialAccountRepository;
+      if (faRepo != null &&
+          payment.financialAccountId != null &&
+          payment.financialAccountId!.isNotEmpty) {
+        await faRepo.createEntry(
+          accountId: payment.financialAccountId!,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: payment.amountQirsh,
+          sourceType: FinancialAccountEntrySource.supplierSettlement,
+          sourceDocumentId: payment.id,
+          effectiveDate: payment.date,
+          createdByUserId: payment.createdByUserId,
+          reference: 'تسوية مع المورد ${supplier.name}',
+          note: 'دفع للمورد ${payment.amountQirsh} قيرش',
+          paymentMethod: payment.paymentMethod,
+          approvedByUserId: draft.approvedByUserId,
+          negativeBalanceApprovalId: draft.negativeBalanceApprovalId,
+          approvalSourceDocumentId: draft.operationRequestId,
+        );
+      }
+
+      if (requestId != null) {
+        _paymentRequestFingerprints[requestId] = requestFingerprint;
+      }
+
+      return payment;
+    });
   }
 
   @override
@@ -239,7 +261,8 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
     required String cancelledByUserId,
     required String cancellationReason,
   }) async {
-    final userId = _normalizedRequiredId(cancelledByUserId, 'cancelledByUserId');
+    final userId =
+        _normalizedRequiredId(cancelledByUserId, 'cancelledByUserId');
     final reason = _normalizedOptionalText(cancellationReason);
     if (reason == null) {
       throw ArgumentError.value(
@@ -265,7 +288,8 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
     );
 
     final balanceBeforeReversal = await balanceForSupplier(supplier.id);
-    final paymentAmount = originalEntry.debitAmountQirsh - balanceBeforeReversal;
+    final paymentAmount =
+        originalEntry.debitAmountQirsh - balanceBeforeReversal;
     if (paymentAmount > 0) {
       throw StateError(
         'Cannot cancel purchase: supplier has received payments against this purchase.',
@@ -282,8 +306,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
       creditAmountQirsh: originalEntry.debitAmountQirsh,
       sourceDocumentType: 'purchaseCancellation',
       sourceDocumentId: cancelledPurchase.id,
-      descriptionAr:
-          'إلغاء مشتريات من المورد ${supplier.name}: $reason',
+      descriptionAr: 'إلغاء مشتريات من المورد ${supplier.name}: $reason',
       createdAt: now,
       createdByUserId: userId,
     );
@@ -291,8 +314,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
     _entries.add(reversalEntry);
     await _recordAudit(
       actionType: 'supplier.purchase.reversed',
-      descriptionAr:
-          'تم عكس قيد مشتريات المورد ${supplier.name}.',
+      descriptionAr: 'تم عكس قيد مشتريات المورد ${supplier.name}.',
       referenceId: cancelledPurchase.id,
     );
     return reversalEntry;
@@ -369,8 +391,51 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _payments.clear();
+    _paymentRequestFingerprints.clear();
     _generatedEntryIdCounter = 0;
     _generatedPaymentIdCounter = 0;
+  }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    final ownState = ObjectStateSnapshot<
+        (
+          List<SupplierAccountEntry>,
+          List<SupplierPaymentRecord>,
+          Map<String, String>,
+          int,
+          int
+        )>(
+      captureState: () => (
+        List<SupplierAccountEntry>.from(_entries),
+        List<SupplierPaymentRecord>.from(_payments),
+        Map<String, String>.from(_paymentRequestFingerprints),
+        _generatedEntryIdCounter,
+        _generatedPaymentIdCounter,
+      ),
+      restoreState: (state) {
+        _entries
+          ..clear()
+          ..addAll(state.$1);
+        _payments
+          ..clear()
+          ..addAll(state.$2);
+        _paymentRequestFingerprints
+          ..clear()
+          ..addAll(state.$3);
+        _generatedEntryIdCounter = state.$4;
+        _generatedPaymentIdCounter = state.$5;
+      },
+    );
+    if (_auditLogRepository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Ù…Ø³ØªÙˆØ¯Ø¹ Ø§Ù„ØªØ¯Ù‚ÙŠÙ‚ Ù„Ø§ ÙŠØ¯Ø¹Ù… Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª Ø§Ù„Ø°Ø±ÙŠØ©.');
+    }
+    return CompositeSnapshot([
+      ownState,
+      (_auditLogRepository as TransactionSnapshotProvider)
+          .createTransactionSnapshot(),
+    ]);
   }
 
   Future<Supplier> _requireSupplier(
@@ -402,6 +467,18 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
         'Payment amount must be positive.',
       );
     }
+  }
+
+  String _paymentFingerprint(SupplierPaymentDraft draft) {
+    return [
+      draft.supplierId.trim(),
+      draft.date.toUtc().toIso8601String(),
+      draft.amountQirsh,
+      draft.createdByUserId.trim(),
+      draft.financialAccountId?.trim() ?? '',
+      draft.paymentMethod?.name ?? '',
+      draft.negativeBalanceApprovalId?.trim() ?? '',
+    ].join('|');
   }
 
   void _validateEntry(SupplierAccountEntry entry) {
@@ -489,7 +566,7 @@ class LocalSupplierAccountRepository implements SupplierAccountRepository {
     required String descriptionAr,
     String? referenceId,
   }) async {
-    await _auditLogRepository?.record(
+    await _auditLogRepository.record(
       AuditLogDraft(
         actionType: actionType,
         descriptionAr: descriptionAr,

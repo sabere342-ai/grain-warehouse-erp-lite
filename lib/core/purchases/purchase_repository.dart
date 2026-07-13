@@ -9,6 +9,8 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class PurchaseRepository {
   Future<PurchaseIntake> createPurchaseIntake(PurchaseIntakeDraft draft);
@@ -22,25 +24,30 @@ abstract class PurchaseRepository {
   Future<List<PurchaseIntake>> listPurchaseIntakes();
 }
 
-class LocalPurchaseRepository implements PurchaseRepository {
+class LocalPurchaseRepository
+    implements PurchaseRepository, TransactionSnapshotProvider {
   LocalPurchaseRepository({
     required SupplierRepository supplierRepository,
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
     SupplierAccountRepository? supplierAccountRepository,
     FinancialAccountRepository? financialAccountRepository,
+    AuditLogRepository? auditLogRepository,
   })  : _supplierRepository = supplierRepository,
         _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
         _supplierAccountRepository = supplierAccountRepository,
-        _financialAccountRepository = financialAccountRepository;
+        _financialAccountRepository = financialAccountRepository,
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository();
 
   final SupplierRepository _supplierRepository;
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final FinancialAccountRepository? _financialAccountRepository;
+  final AuditLogRepository _auditLogRepository;
   final List<PurchaseIntake> _intakes = [];
+  final Map<String, String> _purchaseRequestFingerprints = {};
   int _generatedIdCounter = 0;
 
   @override
@@ -55,9 +62,12 @@ class LocalPurchaseRepository implements PurchaseRepository {
     final intake = PurchaseIntake(
       id: _generatePurchaseIntakeId(now),
       supplierId: supplier.id,
-      supplierName: _normalizedOptionalText(draft.supplierName ?? supplier.name),
-      supplierPhone: _normalizedOptionalText(draft.supplierPhone ?? supplier.phone),
-      supplierAddress: _normalizedOptionalText(draft.supplierAddress ?? supplier.address),
+      supplierName:
+          _normalizedOptionalText(draft.supplierName ?? supplier.name),
+      supplierPhone:
+          _normalizedOptionalText(draft.supplierPhone ?? supplier.phone),
+      supplierAddress:
+          _normalizedOptionalText(draft.supplierAddress ?? supplier.address),
       productId: product.id,
       quantityKg: draft.quantityKg,
       entryUnit: draft.entryUnit,
@@ -71,54 +81,91 @@ class LocalPurchaseRepository implements PurchaseRepository {
       paymentMethod: draft.paymentMethod,
       paymentMode: draft.paymentMode,
       paidAmountQirsh: draft.paidAmountQirsh,
+      negativeBalanceApprovalId: draft.negativeBalanceApprovalId,
     );
 
     if (!intake.hasValidId) {
       throw StateError('Purchase intake id is required.');
     }
 
-    final movement = await _inventoryRepository.createMovement(
-      StockMovementDraft(
-        productId: intake.productId,
-        movementType: StockMovementType.purchaseIntake,
-        quantityKg: intake.quantityKg,
-        createdByUserId: intake.createdByUserId,
-        note: 'استلام شراء ${intake.id}',
-        originalDocumentId: intake.id,
-      ),
-    );
-
-    final postedIntake = intake.copyWith(stockMovementId: movement.id);
-    _intakes.add(postedIntake);
-    await _supplierAccountRepository
-        ?.createPurchaseEntry(purchase: postedIntake);
-
-    final faRepo = _financialAccountRepository;
-    if (faRepo != null &&
-        postedIntake.financialAccountId != null &&
-        postedIntake.financialAccountId!.isNotEmpty &&
-        postedIntake.paymentMode != PurchasePaymentMode.credit) {
-      final paidAmount = postedIntake.effectivePaidAmountQirsh;
-      if (paidAmount > 0) {
-        await faRepo.createEntry(
-          accountId: postedIntake.financialAccountId!,
-          direction: FinancialAccountEntryDirection.outflow,
-          amountQirsh: paidAmount,
-          sourceType: FinancialAccountEntrySource.purchasePayment,
-          sourceDocumentId: postedIntake.id,
-          effectiveDate: postedIntake.createdAt,
-          createdByUserId: postedIntake.createdByUserId,
-          reference: 'دفعة مشتريات - استلام ${postedIntake.id}',
-          note: postedIntake.paymentMode == PurchasePaymentMode.partial
-              ? 'دفع جزئي'
-              : 'دفعة كاملة',
-          paymentMethod: postedIntake.paymentMethod,
-          approvedByUserId: draft.approvedByUserId,
-        );
-      }
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    snapshots.add(_requiredSnapshot(_inventoryRepository, 'inventory'));
+    if (_supplierAccountRepository != null) {
+      snapshots.add(_requiredSnapshot(_supplierAccountRepository, 'supplier'));
     }
+    if (_financialAccountRepository != null) {
+      snapshots
+          .add(_requiredSnapshot(_financialAccountRepository, 'financial'));
+    }
+    if (_auditLogRepository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Purchase audit repository cannot participate in a transaction.');
+    }
+    snapshots.add((_auditLogRepository as TransactionSnapshotProvider)
+        .createTransactionSnapshot());
 
-    return postedIntake;
+    return RepositoryTransaction.execute(snapshots, () async {
+      final requestId = _normalizedOptionalText(draft.operationRequestId);
+      if (requestId != null &&
+          _purchaseRequestFingerprints.containsKey(requestId)) {
+        throw StateError('Purchase request was already processed.');
+      }
+
+      final movement = await _inventoryRepository.createMovement(
+        StockMovementDraft(
+          productId: intake.productId,
+          movementType: StockMovementType.purchaseIntake,
+          quantityKg: intake.quantityKg,
+          createdByUserId: intake.createdByUserId,
+          note: 'استلام شراء ${intake.id}',
+          originalDocumentId: intake.id,
+        ),
+      );
+
+      final postedIntake = intake.copyWith(stockMovementId: movement.id);
+      _intakes.add(postedIntake);
+      await _supplierAccountRepository?.createPurchaseEntry(
+          purchase: postedIntake);
+
+      final faRepo = _financialAccountRepository;
+      if (faRepo != null &&
+          postedIntake.financialAccountId != null &&
+          postedIntake.financialAccountId!.isNotEmpty &&
+          postedIntake.paymentMode != PurchasePaymentMode.credit) {
+        final paidAmount = postedIntake.effectivePaidAmountQirsh;
+        if (paidAmount > 0) {
+          await faRepo.createEntry(
+            accountId: postedIntake.financialAccountId!,
+            direction: FinancialAccountEntryDirection.outflow,
+            amountQirsh: paidAmount,
+            sourceType: FinancialAccountEntrySource.purchasePayment,
+            sourceDocumentId: postedIntake.id,
+            effectiveDate: postedIntake.createdAt,
+            createdByUserId: postedIntake.createdByUserId,
+            reference: 'دفعة مشتريات - استلام ${postedIntake.id}',
+            note: postedIntake.paymentMode == PurchasePaymentMode.partial
+                ? 'دفع جزئي'
+                : 'دفعة كاملة',
+            paymentMethod: postedIntake.paymentMethod,
+            approvedByUserId: draft.approvedByUserId,
+            negativeBalanceApprovalId: draft.negativeBalanceApprovalId,
+            approvalSourceDocumentId: draft.operationRequestId,
+          );
+        }
+      }
+      await _auditLogRepository.record(
+        AuditLogDraft(
+          actionType: 'purchase.created',
+          descriptionAr: 'ØªÙ… ØªØ³Ø¬ÙŠÙ„ Ø§Ø³ØªÙ„Ø§Ù… Ø´Ø±Ø§Ø¡.',
+          referenceId: postedIntake.id,
+        ),
+      );
+      if (requestId != null) {
+        _purchaseRequestFingerprints[requestId] = _purchaseFingerprint(draft);
+      }
+
+      return postedIntake;
+    });
   }
 
   @override
@@ -237,7 +284,29 @@ class LocalPurchaseRepository implements PurchaseRepository {
 
   Future<void> clearForOwnerDataWipe() async {
     _intakes.clear();
+    _purchaseRequestFingerprints.clear();
     _generatedIdCounter = 0;
+  }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    return ObjectStateSnapshot<
+        (List<PurchaseIntake>, Map<String, String>, int)>(
+      captureState: () => (
+        List<PurchaseIntake>.from(_intakes),
+        Map<String, String>.from(_purchaseRequestFingerprints),
+        _generatedIdCounter,
+      ),
+      restoreState: (state) {
+        _intakes
+          ..clear()
+          ..addAll(state.$1);
+        _purchaseRequestFingerprints
+          ..clear()
+          ..addAll(state.$2);
+        _generatedIdCounter = state.$3;
+      },
+    );
   }
 
   Future<Supplier> _validateSupplier(String supplierId) async {
@@ -333,6 +402,28 @@ class LocalPurchaseRepository implements PurchaseRepository {
   String _generatePurchaseIntakeId(DateTime now) {
     _generatedIdCounter++;
     return 'pin-${now.microsecondsSinceEpoch}-$_generatedIdCounter';
+  }
+
+  SnapshotHolder _requiredSnapshot(Object repository, String name) {
+    if (repository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Purchase $name repository cannot participate in a transaction.');
+    }
+    return repository.createTransactionSnapshot();
+  }
+
+  String _purchaseFingerprint(PurchaseIntakeDraft draft) {
+    return [
+      draft.supplierId.trim(),
+      draft.productId.trim(),
+      draft.quantityKg,
+      draft.unitPricePiastersPerKg,
+      draft.paymentMode.name,
+      draft.effectivePaidAmountQirsh,
+      draft.financialAccountId?.trim() ?? '',
+      draft.negativeBalanceApprovalId?.trim() ?? '',
+      draft.createdByUserId.trim(),
+    ].join('|');
   }
 
   String? _normalizedOptionalText(String? value) {

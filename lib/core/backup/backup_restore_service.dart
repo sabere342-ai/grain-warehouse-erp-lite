@@ -579,6 +579,8 @@ class BackupRestoreService {
       reversalOf: _optionalString(map, 'reversalOf'),
       correctionGroup: _optionalString(map, 'correctionGroup'),
       approvedByUserId: _optionalString(map, 'approvedByUserId'),
+      negativeBalanceApprovalId:
+          _optionalString(map, 'negativeBalanceApprovalId'),
     );
   }
 
@@ -598,6 +600,8 @@ class BackupRestoreService {
       sourceEntryId: _string(map, 'sourceEntryId'),
       destinationEntryId: _string(map, 'destinationEntryId'),
       note: _optionalString(map, 'note'),
+      negativeBalanceApprovalId:
+          _optionalString(map, 'negativeBalanceApprovalId'),
       originalTransferId: _optionalString(map, 'originalTransferId'),
       reversalTransferId: _optionalString(map, 'reversalTransferId'),
       reversalReason: _optionalString(map, 'reversalReason'),
