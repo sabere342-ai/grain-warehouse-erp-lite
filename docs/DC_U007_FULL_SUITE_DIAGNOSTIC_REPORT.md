@@ -1,10 +1,11 @@
 # DC-U007 Full Suite Diagnostic Report
 
-**FINAL RESULT: `PASS_DC_U007_FULL_SUITE_AND_ANALYZER`**
+**CURRENT RESULT: `PASS_WINDOWS_RELEASE_BUILD_VERIFIED_WITH_NON_BLOCKING_DOCTOR_ENVIRONMENT_LIMITATION`**
 
 The blocked and failed classifications retained below are historical diagnostic
-records. They are superseded by the clean owner-runtime verification recorded
-in this closure section.
+records. The earlier clean owner-runtime verification remains historical; the
+latest exact-lockfile repair and Windows-release verification is recorded at
+the end of this report.
 
 ## Final DC-U007 closure verification — 2026-07-13
 
@@ -45,6 +46,43 @@ Flutter/Dart/tester process remained after the guarded runs, and no timeout,
 retry, sleep, skip, assertion weakening, or business-rule bypass was used.
 
 Final classification: `PASS_DC_U007_FULL_SUITE_AND_ANALYZER`.
+
+## Baseline Reconciliation — 2026-07-13
+
+The previously referenced baseline and the current branch tip were both
+verified as valid commits:
+
+```text
+Previous expected HEAD: c1ccf315c81348da9c28d932adcf270703d38205
+Current HEAD:          d342a99d44a460e5b6ed48297c66deb2cf56a401
+Branch:                dc-u007-approval-atomicity-closure
+ANCESTOR_EXIT_CODE=0
+```
+
+`c1cc...` is an ancestor of `d342...`. The complete intervening history is
+one intentional continuation commit:
+
+```text
+d342a99d44a460e5b6ed48297c66deb2cf56a401
+test: close DC-U007 lifecycle stalls and record full-suite pass
+```
+
+That commit changes only:
+
+* `docs/DC_U007_FULL_SUITE_DIAGNOSTIC_REPORT.md`
+* `test/phase21d_end_to_end_business_release_test.dart`
+* `test/phase36g_ui_clarity_cancellation_safety_test.dart`
+* `test/supplier_purchase_test.dart`
+
+The commit contains no production purchase, inventory, accounting, approval,
+supplier-account, or transaction changes, no generated Windows files, and no
+diagnostic markers. Commit-level `git diff --check` passed. The working tree
+was clean at reconciliation; no merge, rebase, cherry-pick, revert, bisect, or
+other incomplete Git operation was active. No reset, clean, stash, branch
+change, push, deploy, or additional commit was performed.
+
+`d342...` is therefore accepted as the reconciled starting point for the
+completed DC-U007 stall-closure verification above.
 
 ## Phase 36G payment-present static root-cause review — 2026-07-13
 
@@ -591,3 +629,303 @@ No application logic, tests, dependencies, commits, tags, pushes, deployments, o
 - The sequential full suite (`flutter test --concurrency=1 --reporter compact`) did not return to the shell before the 12-minute external bound. Its output pipe then closed while the compact reporter was writing progress, so the final active test file/count could not be recovered. The default-concurrency full suite was not run because the sequential gate did not complete normally.
 - `flutter analyze --no-pub` was started but did not complete before the bounded diagnostic wait and was terminated; no analyzer result is available for this pass. `git diff --check` completed successfully (CRLF conversion warnings only).
 - Working tree remains intentionally dirty with pre-existing changes plus `test/phase17_owner_data_wipe_test.dart`, `test/phase18_release_candidate_qa_test.dart`, `test/phase72_transaction_integration_test.dart`, `test/phase78_financial_decisions_compatibility_audit_test.dart`, and `test/phase79_account_based_financial_reports_test.dart`. No skips, retries, timeout inflation, commits, tags, pushes, or deployments were introduced, and `MASTER-PROJECT-EXECUTION-PLAN-AR.md` was not touched.
+
+## Final Verification on Reconciled Baseline — 2026-07-13
+
+This was the first local verification attempt after reconciling the baseline.
+It ran on branch `dc-u007-approval-atomicity-closure` at starting HEAD
+`d342a99d44a460e5b6ed48297c66deb2cf56a401`; the previous expected HEAD
+`c1ccf315c81348da9c28d932adcf270703d38205` is its ancestor. The only file
+modified before this section was this diagnostic report.
+
+### Focused verification
+
+Each focused file was run three times independently with
+`--concurrency=1 --reporter expanded`; every command returned to PowerShell:
+
+| File | Result |
+| --- | --- |
+| `test/supplier_purchase_test.dart` | 34/34 PASS, 3/3 runs |
+| `test/phase21d_end_to_end_business_release_test.dart` | 2/2 PASS, 3/3 runs |
+| `test/phase36g_ui_clarity_cancellation_safety_test.dart` | 6/6 PASS, 3/3 runs |
+
+The order-contamination matrix also returned normally with all tests passing:
+
+| Order | Result |
+| --- | --- |
+| Phase 36G → supplier purchase | 40/40 PASS |
+| Supplier purchase → Phase 36G | 40/40 PASS |
+| Phase 21D → supplier purchase | 36/36 PASS |
+| Supplier purchase → Phase 21D | 36/36 PASS |
+| Phase 36G → Phase 21D → supplier purchase | 42/42 PASS |
+
+### Analyzer and full suites
+
+* `flutter analyze --no-pub`: PASS — `No issues found!`.
+* Sequential `flutter test --concurrency=1 --reporter expanded`: 834/834
+  PASS in 1:58; exit code 0 and returned to shell.
+* Default `flutter test`: 834/834 PASS in 0:57; exit code 0 and returned to
+  shell.
+
+### Windows release build gate
+
+`flutter build windows --release` did not complete within its unchanged
+30-minute command bound and returned exit code 124. No release executable was
+observed before the timeout. This is a build-gate failure, not a test failure;
+therefore the final completion classification cannot be PASS and no commit or
+tag was created.
+
+### Final audit for this attempt
+
+`git diff --check` passed with CRLF line-ending warnings only. The only tracked
+working-tree change remains this report. No diagnostic marker remains, and
+`lib/core/purchases/purchase_repository.dart` has no semantic diff. The
+Windows generated files emitted only line-ending warnings and are not modified
+in Git. `MASTER-PROJECT-EXECUTION-PLAN-AR.md` remains untouched. No reset,
+clean, stash, rebase, amend, destructive Git operation, push, deployment,
+commit, or tag was performed.
+
+That earlier 30-minute timeout is superseded by the verbose 60-minute
+diagnostic result recorded below.
+
+## Windows Release Build Gate Diagnosis — 2026-07-13
+
+The focused tests, order matrix, analyzer, sequential suite, and default suite
+already passed on this same HEAD. No Dart/test source, production logic,
+dependencies, or project configuration changed during this build diagnosis.
+
+### Baseline and prior artifacts
+
+* Branch: `dc-u007-approval-atomicity-closure`.
+* HEAD: `d342a99d44a460e5b6ed48297c66deb2cf56a401`.
+* The only tracked working-tree modification is this report.
+* The previous non-verbose build attempt returned external timeout exit `124`
+  after 30 minutes.
+* Existing `.exe`, `.obj`, `.lib`, and `.dll` files under `build\\windows` are
+  dated 7/7–7/12 and predate the diagnostic attempts; no current-attempt
+  executable or newer build artifact was observed.
+
+### Process, lock, and environment evidence
+
+After the 30-minute attempt and again after the verbose attempt, no Flutter,
+Dart, CMake, Ninja, MSBuild, compiler, linker, or command process remained;
+there is no orphan process to terminate. The Flutter cache lockfile metadata is
+`C:\\src\\flutter\\bin\\cache\\lockfile`, zero bytes, last written during
+this session, and an exclusive read/write open by the current account fails
+with `Access to the path ... is denied` despite the displayed inherited ACL.
+
+`flutter --version` succeeds with Flutter 3.24.5 / Dart 3.5.4. However,
+`flutter doctor -v` timed out after 120 seconds and `flutter config --list`
+timed out after 30 seconds. CMake 4.3.3 is on PATH; Ninja and MSBuild are not
+on PATH. Visual Studio Build Tools 2026 is complete and contains CMake, Ninja,
+MSBuild, and MSVC 14.51; the installed Visual Studio 2022 Build Tools instance
+is incomplete/canceled. Windows SDK 10.0.26100.0 is present. The existing
+CMake cache selects `Visual Studio 18 2026` x64. WMI resource queries are
+denied in this execution sandbox; the available logical processor count is 8,
+and the sandbox filesystem drive reports no usable capacity metrics.
+
+The Windows native plugin graph contains `firebase_core`, `printing`, and
+`url_launcher` native builds. Runner CMake files are unchanged and contain the
+standard Flutter `flutter_assemble` backend command; no custom application
+build step was introduced.
+
+### Verbose build diagnosis
+
+`flutter build windows --release --no-pub -v` was run directly and monitored
+for the full 60-minute diagnostic window. The process was PID 17936, started at
+17:34:34, remained responsive, and its CPU time increased from roughly 15 to
+2,880 seconds. Despite that activity:
+
+* no CMake, Ninja, MSBuild, `cl.exe`, `link.exe`, Dart, or Flutter child tool
+  appeared;
+* no file under `build\\windows` changed after the pre-existing 7/12 20:07:13
+  timestamps;
+* no current-attempt executable was produced; and
+* the command returned external timeout exit `124` when the 60-minute window
+  ended.
+
+Detached logging via `Start-Process` was unavailable because this sandbox
+rejects its duplicated PATH environment key. Equivalent detached `cmd`/Dart
+launches also hung at the Flutter tool gate, so they were not treated as
+compiler evidence. The explicitly time-bounded detached Dart probe was
+terminated after its own timeout; no active build process was killed, no cache
+was deleted, and no toolchain or repository configuration was changed.
+
+### Classification
+
+The absence of child build tools, unchanged build files for more than 15
+minutes, no executable, and the reproducible 60-minute non-return establish a
+build stall at the Flutter/toolchain gate rather than an application compiler
+failure or proven resource exhaustion.
+
+Previous build-gate classification: `BLOCKED_REPRODUCIBLE_WINDOWS_BUILD_STALL`.
+That classification is superseded by the startup-lock ACL evidence below;
+commit and tag creation remain blocked and the required tag does not exist.
+
+## Flutter SDK Startup Lock Root-Cause and Recovery Gate — 2026-07-13
+
+The later permission probes show that the apparent Windows build stall occurs
+before the Windows toolchain is reached. The current account is
+`Islam\\CodexSandboxOffline`; Flutter is resolved from `C:\\src\\flutter`, with
+cache `C:\\src\\flutter\\bin\\cache` and lockfile
+`C:\\src\\flutter\\bin\\cache\\lockfile`.
+
+The cache permission probe could not create, read, or delete a temporary file:
+
+```text
+PROBE_CREATE=False
+PROBE_READ=False
+PROBE_DELETE=False
+```
+
+The lockfile exclusive read/write probe also failed with
+`UnauthorizedAccessException` / access denied. No Flutter, Dart, CMake, Ninja,
+MSBuild, compiler, linker, or build command process was present after the
+diagnostic runs, so no active command was holding the lock and no stale lock
+file was deleted.
+
+The cache ACL displays an inherited deny entry for Authenticated Users despite
+the displayed Modify grants. The minimal proposed repair is to grant Modify
+only to the current account on `C:\\src\\flutter\\bin\\cache`:
+
+```powershell
+$currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+icacls 'C:\\src\\flutter\\bin\\cache' /grant "${currentUser}:(OI)(CI)(M)"
+```
+
+That persistent ACL change was not applied: the sandbox escalation request was
+rejected pending explicit user approval. No ACL, ownership, Flutter SDK, cache,
+repository configuration, or source file was changed. `flutter --version`
+succeeds, while `flutter config --list` and `flutter doctor -v` still time out
+at the startup gate.
+
+The focused tests, order matrix, analyzer, and both 834/834 full-suite results
+remain valid on the unchanged HEAD and were not rerun in this lock-recovery
+pass. Commit and tag creation remain blocked until the user-authorized cache
+permission repair is applied and Flutter commands, then the Windows release
+build, return normally.
+
+Current classification: `BLOCKED_FLUTTER_SANDBOX_EFFECTIVE_ACCESS_DENIED`.
+
+## Sandbox-Identity ACL Verification — 2026-07-13
+
+The explicitly authorized SID repair was applied only to
+`C:\\src\\flutter\\bin\\cache`:
+
+```text
+TARGET_ACCOUNT=Islam\\CodexSandboxOffline
+TARGET_SID=S-1-5-21-2052787611-3211508837-1074070108-1025
+processed file: C:\\src\\flutter\\bin\\cache
+Successfully processed 1 files; Failed processing 0 files
+```
+
+The verification session confirmed the required identity:
+
+```text
+islam\\codexsandboxoffline
+S-1-5-21-2052787611-3211508837-1074070108-1025
+```
+
+The resulting probe values were:
+
+```text
+PROBE_CREATE=True
+PROBE_READ=True
+PROBE_DELETE=True
+LOCK_EXCLUSIVE_OPEN=False
+Access to the path 'C:\\src\\flutter\\bin\\cache\\lockfile' is denied.
+```
+
+Because the lockfile probe remains false, the recovery gate failed. No
+`flutter doctor -v`, `flutter config --list`, or Windows build was run after
+this repair, and no further ACL expansion, inheritance change, lock deletion,
+cache deletion, SDK change, repository change, or production change was made.
+
+Current classification: `BLOCKED_FLUTTER_SANDBOX_EFFECTIVE_ACCESS_DENIED`.
+
+## Flutter Cache ACL Repair Attempt — 2026-07-13
+
+The user explicitly authorized the narrow Modify grant on
+`C:\\src\\flutter\\bin\\cache`. The escalated command returned:
+
+```text
+CURRENT_USER=ISLAM\\saber
+processed file: C:\\src\\flutter\\bin\\cache
+Successfully processed 1 files; Failed processing 0 files
+```
+
+The non-escalated verification session remains
+`Islam\\CodexSandboxOffline`. After the ACL command, `icacls` still showed the
+existing inherited deny entry, and the required probes remained unsuccessful:
+
+```text
+PROBE_CREATE=False
+PROBE_READ=False
+PROBE_DELETE=False
+LOCK_EXCLUSIVE_OPEN=False
+UnauthorizedAccessException: Access to the path ...\\cache\\lockfile is denied
+```
+
+Because access remained denied, the required recovery gate failed. Per the task
+guardrail, execution stopped immediately: `flutter doctor -v`, `flutter config
+--list`, and the Windows release build were not rerun, and no broader ACL,
+ownership, cache, SDK, repository, or production change was attempted.
+
+Current classification: `BLOCKED_FLUTTER_CACHE_ACL_REPAIR_FAILED`.
+
+## Authorized Exact Flutter Lockfile Repair and Windows Build — 2026-07-13
+
+This follow-up used the user's explicit, narrowly scoped authorization for
+`C:\\src\\flutter\\bin\\cache\\lockfile` only, under the sandbox identity
+`Islam\\CodexSandboxOffline`. No Flutter cache directory, unrelated cache
+file, inheritance setting, `DENY` ACE, ownership, or source/configuration file
+was changed.
+
+### Lockfile recovery evidence
+
+* No real Flutter, Dart, `dartaotruntime`, or `gen_snapshot` process was
+  present before either authorized repair operation. The first scripted check
+  initially detected its own PowerShell command line because it contained the
+  Flutter path; it was rerun with an equivalent path expression so that only
+  actual Flutter/Dart activity could match.
+* The exact lockfile had no explicit `DENY` ACE, was not read-only or system,
+  and was a zero-byte archive file. An exact `Modify` grant to the target SID
+  was attempted but returned `Access is denied`; no grant or broader ACL change
+  resulted.
+* The target-account exclusive `ReadWrite` / `FileShare.None` open then failed
+  with access denied. The explicitly authorized fallback moved the old file
+  (without deleting it) to
+  `C:\\src\\flutter\\bin\\cache\\lockfile.stale-20260713-190948`.
+* Under `Islam\\CodexSandboxOffline`, the required new-file probe succeeded:
+  `LOCK_CREATE=True`, `LOCK_EXCLUSIVE_OPEN=True`, and `LOCK_DELETE=True`.
+  The subsequent Flutter build recreated its normal zero-byte `lockfile`; the
+  stale backup remains intact.
+
+### Required Flutter commands
+
+| Command | Timeout | Exit code | Result |
+| --- | ---: | ---: | --- |
+| `flutter doctor -v` | 120 seconds | 1 | Returned in 2.0 seconds. Flutter crashed while its IntelliJ validator attempted to enumerate `C:\\Users\\saber\\*` (`PathAccessException` / access denied), rather than at the SDK lockfile. |
+| `flutter config --list` | 120 seconds | 0 | Returned in 1.0 second. |
+| `flutter build windows --release --no-pub -v` | 900 seconds | 0 | Returned in 100.4 seconds. |
+
+The verbose build executed the actual Windows toolchain: CMake configuration,
+MSBuild, `CL.exe`, and `link.exe` all ran, and Flutter reported
+`Built build\\windows\\x64\\runner\\Release\\grain_warehouse_erp_lite.exe`.
+The release executable is
+`build\\windows\\x64\\runner\\Release\\grain_warehouse_erp_lite.exe`, size
+`784,384` bytes, last modified `2026-07-13 19:12:03` (local time).
+
+No 834/834 suite, analyzer, source/test change, dependency change, commit,
+tag, push, deployment, cache deletion, or broader permission change was made
+in this authorized repair pass. This report is the only tracked repository
+file updated.
+
+Final closure classification:
+`PASS_WINDOWS_RELEASE_BUILD_VERIFIED_WITH_NON_BLOCKING_DOCTOR_ENVIRONMENT_LIMITATION`.
+The former Flutter SDK-lock startup blocker is resolved for the actual build
+path; the remaining `flutter doctor -v` failure is limited to IntelliJ's
+sandbox-restricted user-directory inspection and does not invalidate the
+verified Windows release artifact. The earlier full-suite and analyzer results
+remain valid because repository code did not change after those successful
+runs.
