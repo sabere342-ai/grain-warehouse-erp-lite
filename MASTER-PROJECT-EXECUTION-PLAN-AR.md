@@ -28,7 +28,7 @@
 | DC-U007 | `af56ced` | `dc-u007-windows-release-build-verified` | مغلق ومتكامل |
 | CAN-005/006/007 | `49878f7` | `can-005-006-007-financial-reversals-pass` | مغلق ومتكامل |
 | DC-U002 Core | `839ff78` | `dc-u002-split-payments-pass` | Core مغلق ومتكامل |
-| DC-U002 UI | — | — | غير منفذ |
+| DC-U002 UI | — | — | مغلق ومتكامل |
 | DC-U008 Core | `59d689f` | `dc-u008-overpayments-advances-refunds-pass` | Core مغلق ومتكامل |
 | DC-U008 UI | — | — | غير منفذ |
 | Owner Wipe | `4d8705b` | `owner-wipe-final-pass` | مغلق ومتكامل |
@@ -247,11 +247,11 @@ CAN-005/006 وSplit Payments وOverpayments والـCloud جميعها تعتم�
 
 ---
 
-## Track 4 — DC-U002: Split Payments — Core مكتمل / UI مفتوح
+## Track 4 — DC-U002: Split Payments — مكتمل
 
 ### الحالة
 Core مغلق ومتكامل عبر Commit `839ff78` وتاغ `dc-u002-split-payments-pass`.
-End-User UI: غير منفذ — النطاق التالي بعد إغلاق الوثائق.
+End-User UI: مغلق ومتكامل — تقرير التنفيذ `docs/DC_U002_SPLIT_PAYMENTS_UI_IMPLEMENTATION_REPORT.md`.
 
 ### ما تم تنفيذه (Core)
 - نموذج `PaymentAllocation` مرتبط بالمستند.
@@ -264,10 +264,14 @@ End-User UI: غير منفذ — النطاق التالي بعد إغلاق ا�
 - Backup versioning وتوافق الإصدارات القديمة.
 - Idempotency وFault-injection tests.
 
-### المتبقي (UI)
+### ما تم تنفيذه (UI)
 - مراجعة UI واضحة بالمجموع والمتبقي والتحقق الفوري.
 - منع تجاوز الحد أو الحساب المعطل.
 - لا خلط UI وPersistence في commit واحد.
+- Double-submit protection وdouble-account prevention.
+- Balance indicator ومراجعة RTL وArabic labels.
+
+### ~~المتبقي (UI)~~ ✓ مكتمل
 
 ---
 
@@ -599,12 +603,13 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 - ~~CAN-006 Supplier payment cancellation~~ ✓ Commit `49878f7`
 - ~~CAN-007 General financial reversal~~ ✓ Commit `49878f7`
 - ~~DC-U002 Split Payments Core~~ ✓ Commit `839ff78`
+- ~~DC-U002 Split Payments UI~~ ✓ مكتمل
 - ~~DC-U008 Overpayments/Advances/Refunds Core~~ ✓ Commit `59d689f`
 - ~~Owner Wipe & Transaction-safe Restore~~ ✓ Commit `4d8705b`
 
 ### النطاق التالي المعتمد
 
-1. Split Payments End-User UI.
+1. ~~Split Payments End-User UI.~~ ✓ مكتمل
 2. Advances/Overpayments/Refunds End-User UI.
 3. Durable Persistence Architecture Decision (ADR).
 4. Durable Persistence Implementation.
@@ -731,7 +736,7 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 ### القادم (بعد إغلاق الوثائق)
 
-6. **Split Payments End-User UI.**
+6. ~~**Split Payments End-User UI.**~~ ✓ مكتمل
 7. **Advances/Overpayments/Refunds End-User UI.**
 8. **Durable Persistence Architecture Decision (ADR).**
 9. **Durable Persistence Implementation.**

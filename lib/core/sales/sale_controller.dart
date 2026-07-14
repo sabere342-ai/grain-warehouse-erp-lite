@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
@@ -37,6 +38,7 @@ class SaleController extends ChangeNotifier {
   List<SaleRecord> _sales = const [];
   List<Product> _products = const [];
   List<Customer> _customers = const [];
+  List<FinancialAccount> _financialAccounts = const [];
   Map<String, int> _stockByProductId = const {};
   String? _errorMessage;
   bool _isLoading = false;
@@ -44,6 +46,8 @@ class SaleController extends ChangeNotifier {
   List<SaleRecord> get sales => List<SaleRecord>.unmodifiable(_sales);
   List<Product> get products => List<Product>.unmodifiable(_products);
   List<Customer> get customers => List<Customer>.unmodifiable(_customers);
+  List<FinancialAccount> get financialAccounts =>
+      List<FinancialAccount>.unmodifiable(_financialAccounts);
   Map<String, int> get stockByProductId =>
       Map<String, int>.unmodifiable(_stockByProductId);
   String? get errorMessage => _errorMessage;
@@ -65,6 +69,8 @@ class SaleController extends ChangeNotifier {
           includeInactive: false,
         ) ??
         const [];
+    _financialAccounts =
+        await _financialAccountRepository?.listAccounts() ?? const [];
 
     _isLoading = false;
     notifyListeners();

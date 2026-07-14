@@ -3,6 +3,8 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -35,6 +37,8 @@ class _SalesScreenState extends State<SalesScreen> {
           inventoryRepository: AppRepositories.inventoryRepository,
           customerRepository: AppRepositories.customerRepository,
           customerAccountRepository: AppRepositories.customerAccountRepository,
+          financialAccountRepository:
+              AppRepositories.financialAccountRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -58,7 +62,9 @@ class _SalesScreenState extends State<SalesScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
-      return const PremiumCard(child: Text('\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0644\u0639\u0631\u0636 \u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a.'));
+      return const PremiumCard(
+          child: Text(
+              '\u064a\u062c\u0628 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0644\u0639\u0631\u0636 \u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a.'));
     }
 
     final canCreate = user.permissions.canCreateSale;
@@ -75,7 +81,8 @@ class _SalesScreenState extends State<SalesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a', style: textTheme.headlineMedium),
+                      Text('\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a',
+                          style: textTheme.headlineMedium),
                       const SizedBox(height: 6),
                       Text(
                         '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627\u060c \u0648\u062a\u062f\u0639\u0645 \u0623\u0643\u062b\u0631 \u0645\u0646 \u0635\u0646\u0641 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
@@ -89,7 +96,8 @@ class _SalesScreenState extends State<SalesScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _openHistory(context),
                   icon: const Icon(Icons.manage_search_rounded),
-                  label: const Text('\u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a'),
+                  label: const Text(
+                      '\u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a'),
                 ),
                 const SizedBox(width: 8),
                 if (canCreate)
@@ -99,7 +107,8 @@ class _SalesScreenState extends State<SalesScreen> {
                         ? null
                         : () => _showSaleForm(context, user: user),
                     icon: const Icon(Icons.point_of_sale_rounded),
-                    label: const Text('\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
+                    label: const Text(
+                        '\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
                   ),
               ],
             ),
@@ -191,6 +200,7 @@ class _SalesScreenState extends State<SalesScreen> {
       builder: (context) => _SaleFormDialog(
         products: _controller.products,
         customers: _controller.customers,
+        financialAccounts: _controller.financialAccounts,
         initialProductId: initialProductId,
       ),
     );
@@ -209,6 +219,8 @@ class _SalesScreenState extends State<SalesScreen> {
       customerId: result.customerId,
       items: result.items,
       paidAmountQirsh: result.paidAmountQirsh,
+      paymentAllocations: result.paymentAllocations,
+      operationRequestId: result.operationRequestId,
     );
   }
 
@@ -221,7 +233,8 @@ class _SalesScreenState extends State<SalesScreen> {
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0628\u064a\u0639'),
+        title: const Text(
+            '\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0628\u064a\u0639'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +245,9 @@ class _SalesScreenState extends State<SalesScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: reasonController,
-              decoration: const InputDecoration(labelText: '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
+              decoration: const InputDecoration(
+                  labelText:
+                      '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
               maxLines: 2,
               textDirection: TextDirection.rtl,
             ),
@@ -245,7 +260,8 @@ class _SalesScreenState extends State<SalesScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(reasonController.text),
-            child: const Text('\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
+            child: const Text(
+                '\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
           ),
         ],
       ),
@@ -279,7 +295,8 @@ class _ProductSaleCards extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     if (products.isEmpty) {
       return const PremiumCard(
-        child: Text('\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0643\u0645\u064a\u0629 \u0645\u062e\u0632\u0648\u0646 \u0642\u0628\u0644 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.'),
+        child: Text(
+            '\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0643\u0645\u064a\u0629 \u0645\u062e\u0632\u0648\u0646 \u0642\u0628\u0644 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0628\u064a\u0639.'),
       );
     }
 
@@ -287,7 +304,9 @@ class _ProductSaleCards extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('\u0627\u062e\u062a\u0631 \u0635\u0646\u0641 \u0627\u0644\u0628\u064a\u0639', style: textTheme.titleLarge),
+          Text(
+              '\u0627\u062e\u062a\u0631 \u0635\u0646\u0641 \u0627\u0644\u0628\u064a\u0639',
+              style: textTheme.titleLarge),
           const SizedBox(height: 6),
           Text(
             '\u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0635\u0646\u0641 \u0644\u0641\u062a\u062d \u0646\u0645\u0648\u0630\u062c \u0627\u0644\u0628\u064a\u0639 \u0648\u0625\u0636\u0627\u0641\u0629 \u0623\u0635\u0646\u0627\u0641 \u0645\u062a\u0639\u062f\u062f\u0629 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
@@ -359,7 +378,8 @@ class _ProductSaleCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              Text('\u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u0627\u0644\u062d\u0627\u0644\u064a: $stockKg \u0643\u062c\u0645'),
+              Text(
+                  '\u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u0627\u0644\u062d\u0627\u0644\u064a: $stockKg \u0643\u062c\u0645'),
               const SizedBox(height: 6),
               Text(
                 defaultPrice == null
@@ -378,7 +398,8 @@ class _ProductSaleCard extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onSelect,
                   icon: const Icon(Icons.point_of_sale_rounded),
-                  label: const Text('\u0628\u064a\u0639 \u0647\u0630\u0627 \u0627\u0644\u0635\u0646\u0641'),
+                  label: const Text(
+                      '\u0628\u064a\u0639 \u0647\u0630\u0627 \u0627\u0644\u0635\u0646\u0641'),
                 ),
               ),
             ],
@@ -459,7 +480,8 @@ class _SaleCard extends StatelessWidget {
                   ),
                 ))
           else ...[
-            Text('\u0627\u0644\u0643\u0645\u064a\u0629: ${sale.quantityKg} \u0643\u062c\u0645'),
+            Text(
+                '\u0627\u0644\u0643\u0645\u064a\u0629: ${sale.quantityKg} \u0643\u062c\u0645'),
             Text(
               '\u0627\u0644\u0633\u0639\u0631: ${MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg)} / \u0643\u062c\u0645',
             ),
@@ -472,7 +494,8 @@ class _SaleCard extends StatelessWidget {
               Text(
                 '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a: ${MoneyUtils.formatPiastersAsEgp(sale.totalQirsh)}',
               ),
-              Text('\u0627\u0644\u0648\u0642\u062a: ${_formatDateTime(sale.createdAt)}'),
+              Text(
+                  '\u0627\u0644\u0648\u0642\u062a: ${_formatDateTime(sale.createdAt)}'),
               if (sale.isPartialPayment)
                 Text(
                   '\u0627\u0644\u0645\u062f\u0641\u0648\u0639: ${MoneyUtils.formatPiastersAsEgp(sale.effectivePaidAmountQirsh)}',
@@ -489,7 +512,8 @@ class _SaleCard extends StatelessWidget {
           ],
           if (sale.cancellation != null) ...[
             const SizedBox(height: 8),
-            Text('\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621: ${sale.cancellation!.cancellationReason}'),
+            Text(
+                '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621: ${sale.cancellation!.cancellationReason}'),
           ],
           if (onPreview != null) ...[
             const SizedBox(height: 12),
@@ -498,7 +522,8 @@ class _SaleCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onPreview,
                 icon: const Icon(Icons.preview_rounded),
-                label: const Text('\u0645\u0639\u0627\u064a\u0646\u0629 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
+                label: const Text(
+                    '\u0645\u0639\u0627\u064a\u0646\u0629 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
               ),
             ),
           ],
@@ -509,7 +534,8 @@ class _SaleCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onCancel,
                 icon: const Icon(Icons.cancel_outlined),
-                label: const Text('\u0625\u0644\u063a\u0627\u0621 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639'),
+                label: const Text(
+                    '\u0625\u0644\u063a\u0627\u0621 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639'),
               ),
             ),
           ],
@@ -536,11 +562,13 @@ class _SaleFormDialog extends StatefulWidget {
   const _SaleFormDialog({
     required this.products,
     required this.customers,
+    required this.financialAccounts,
     this.initialProductId,
   });
 
   final List<Product> products;
   final List<Customer> customers;
+  final List<FinancialAccount> financialAccounts;
   final String? initialProductId;
 
   @override
@@ -552,10 +580,14 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   String? _customerId;
   final _notesController = TextEditingController();
   String? _errorMessage;
+  bool _isSubmitting = false;
 
   final List<_LineItemEntry> _lineItems = [];
 
   String? _paidAmountText;
+
+  bool _useSplitPayments = false;
+  final List<_AllocationEntry> _allocationEntries = [];
 
   @override
   void initState() {
@@ -583,6 +615,9 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       item.quantityController.dispose();
       item.priceController.dispose();
     }
+    for (final entry in _allocationEntries) {
+      entry.amountController.dispose();
+    }
     super.dispose();
   }
 
@@ -599,6 +634,53 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
     return total > 0 ? total : null;
   }
 
+  int? _computeAllocatedTotal() {
+    if (!_useSplitPayments || _allocationEntries.isEmpty) return null;
+    var total = 0;
+    for (final entry in _allocationEntries) {
+      final amount = _tryParseAmount(entry.amountController.text);
+      if (amount == null) return null;
+      total += amount;
+    }
+    return total;
+  }
+
+  int? _computeSplitRemaining() {
+    final total = _computeTotal();
+    if (total == null) return null;
+    if (!_useSplitPayments) return null;
+    final allocated = _computeAllocatedTotal();
+    if (allocated == null) return null;
+    final reference = _paymentMode == SalePaymentMode.partial
+        ? (_parsePaidAmount() ?? 0)
+        : total;
+    return reference - allocated;
+  }
+
+  bool _isSplitBalanced() {
+    final total = _computeTotal();
+    if (total == null) return false;
+    if (!_useSplitPayments) return true;
+    final allocated = _computeAllocatedTotal();
+    if (allocated == null) return false;
+    final reference = _paymentMode == SalePaymentMode.partial
+        ? (_parsePaidAmount() ?? 0)
+        : total;
+    return allocated == reference;
+  }
+
+  int? _parsePaidAmount() {
+    if (_paymentMode != SalePaymentMode.partial) return null;
+    try {
+      return MoneyUtils.parseEgpToPiasters(
+        _paidAmountText ?? '',
+        allowZero: false,
+      );
+    } on Object {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final total = _computeTotal();
@@ -610,9 +692,15 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         });
     final customerSelected =
         _customerId != null && _customerId!.trim().isNotEmpty;
+    final canUseSplit = _paymentMode != SalePaymentMode.credit &&
+        widget.financialAccounts.isNotEmpty;
+    final splitValid = !_useSplitPayments || _isSplitBalanced();
+    final canSubmit =
+        customerSelected && hasValidItems && splitValid && !_isSubmitting;
 
     return AlertDialog(
-      title: const Text('\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
+      title: const Text(
+          '\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -628,8 +716,10 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             DropdownButtonFormField<String>(
               value: _customerId,
               decoration: const InputDecoration(
-                labelText: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 *',
-                helperText: '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627.',
+                labelText:
+                    '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 *',
+                helperText:
+                    '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627.',
               ),
               items: [
                 for (final customer in widget.customers)
@@ -659,7 +749,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               child: TextButton.icon(
                 onPressed: widget.products.length > 1 ? _addLineItem : null,
                 icon: const Icon(Icons.add_circle_outline_rounded),
-                label: const Text('\u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 \u0622\u062e\u0631'),
+                label: const Text(
+                    '\u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 \u0622\u062e\u0631'),
               ),
             ),
             const SizedBox(height: 8),
@@ -706,6 +797,9 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                   if (_paymentMode == SalePaymentMode.cash) {
                     _paidAmountText = null;
                   }
+                  if (_paymentMode == SalePaymentMode.credit) {
+                    _useSplitPayments = false;
+                  }
                 });
               },
             ),
@@ -713,12 +807,14 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               const SizedBox(height: 12),
               TextField(
                 decoration: const InputDecoration(
-                  labelText: '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647',
-                  helperText: '\u0623\u062f\u062e\u0644 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0630\u064a \u062f\u0641\u0639\u0647 \u0627\u0644\u0639\u0645\u064a\u0644 \u0646\u0642\u062f\u0627\u060c \u0648\u0627\u0644\u0628\u0627\u0642\u064a \u0633\u064a\u0638\u0644 \u0639\u0644\u064a\u0647.',
+                  labelText:
+                      '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647',
+                  helperText:
+                      '\u0623\u062f\u062e\u0644 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0630\u064a \u062f\u0641\u0639\u0647 \u0627\u0644\u0639\u0645\u064a\u0644 \u0646\u0642\u062f\u0627\u060c \u0648\u0627\u0644\u0628\u0627\u0642\u064a \u0633\u064a\u0638\u0644 \u0639\u0644\u064a\u0647.',
                 ),
                 keyboardType: TextInputType.number,
                 textDirection: TextDirection.ltr,
-                onChanged: (value) => _paidAmountText = value,
+                onChanged: (value) => setState(() => _paidAmountText = value),
               ),
             ],
             if (_paymentMode == SalePaymentMode.credit && total != null) ...[
@@ -745,12 +841,78 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 ),
               ),
             ],
+            if (canUseSplit) ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  '\u062a\u062e\u0635\u064a\u0635 \u0627\u0644\u0645\u062f\u0641\u0648\u0639\u0627\u062a',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  '\u062a\u0642\u0633\u064a\u0645 \u0627\u0644\u062f\u0641\u0639 \u0639\u0644\u0649 \u062d\u0633\u0627\u0628\u0627\u062a \u0645\u062a\u0639\u062f\u062f\u0629',
+                  style: TextStyle(fontSize: 14),
+                ),
+                subtitle: const Text(
+                  '\u0644\u0644\u0645\u0633\u0627\u0639\u062f\u0629 \u062a\u0642\u0633\u064a\u0645 \u0627\u0644\u0645\u0628\u0644\u063a \u0639\u0644\u0649 \u0623\u0643\u062b\u0631 \u0645\u0646 \u062d\u0633\u0627\u0628.',
+                  style: TextStyle(fontSize: 12, color: AppColors.mutedText),
+                ),
+                value: _useSplitPayments,
+                onChanged: (value) {
+                  setState(() {
+                    _useSplitPayments = value;
+                    if (value && _allocationEntries.isEmpty) {
+                      _allocationEntries.add(_AllocationEntry());
+                    }
+                  });
+                },
+              ),
+              if (_useSplitPayments) ...[
+                if (widget.financialAccounts.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      '\u0644\u0627 \u062a\u0648\u062c\u062f \u062d\u0633\u0627\u0628\u0627\u062a \u0645\u0627\u0644\u064a\u0629 \u0645\u062a\u0648\u0641\u0642\u0629. \u062a\u0639\u0631\u0641 \u062d\u0633\u0627\u0628\u0627\u062a \u0645\u0627\u0644\u064a\u0629 \u0623\u0648\u0644\u0627\u064b.',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                  )
+                else ...[
+                  for (int i = 0; i < _allocationEntries.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 8),
+                    _buildAllocationRow(i),
+                  ],
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton.icon(
+                      onPressed: _allocationEntries.length < 5
+                          ? () => setState(() {
+                                _allocationEntries.add(_AllocationEntry());
+                              })
+                          : null,
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      label: const Text(
+                          '\u0625\u0636\u0627\u0641\u0629 \u062a\u062e\u0635\u064a\u0635'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildSplitSummary(),
+                ],
+              ],
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
               decoration: const InputDecoration(
-                labelText: '\u0645\u0644\u0627\u062d\u0638\u0627\u062a \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629',
-                helperText: '\u0645\u062b\u0627\u0644: \u0627\u0633\u0645 \u0627\u0644\u0633\u0627\u0626\u0642 \u0623\u0648 \u0631\u0642\u0645 \u0627\u0644\u0633\u064a\u0627\u0631\u0629.',
+                labelText:
+                    '\u0645\u0644\u0627\u062d\u0638\u0627\u062a \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629',
+                helperText:
+                    '\u0645\u062b\u0627\u0644: \u0627\u0633\u0645 \u0627\u0644\u0633\u0627\u0626\u0642 \u0623\u0648 \u0631\u0642\u0645 \u0627\u0644\u0633\u064a\u0627\u0631\u0629.',
               ),
               maxLines: 2,
               textDirection: TextDirection.rtl,
@@ -767,14 +929,228 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
           child: const Text('\u0625\u0644\u063a\u0627\u0621'),
         ),
         FilledButton(
-          onPressed: !customerSelected || !hasValidItems ? null : _submit,
-          child: const Text('\u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
+          onPressed: canSubmit ? _submit : null,
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text(
+                  '\u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629'),
         ),
       ],
+    );
+  }
+
+  Widget _buildAllocationRow(int index) {
+    final entry = _allocationEntries[index];
+    final activeAccounts = widget.financialAccounts
+        .where((a) => a.isActive)
+        .toList(growable: false);
+    final usedAccountIds = <String>{
+      for (int i = 0; i < _allocationEntries.length; i++)
+        if (i != index) _allocationEntries[i].accountId ?? '',
+    };
+    final availableAccounts = activeAccounts
+        .where((a) => !usedAccountIds.contains(a.id))
+        .toList(growable: false);
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: DropdownButtonFormField<String>(
+                    value: entry.accountId,
+                    decoration: const InputDecoration(
+                      labelText:
+                          '\u0627\u0644\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u064a',
+                      isDense: true,
+                    ),
+                    items: [
+                      for (final account in availableAccounts)
+                        DropdownMenuItem(
+                          value: account.id,
+                          child: Text(account.name,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                    ],
+                    onChanged: (value) {
+                      setState(() => entry.accountId = value);
+                    },
+                  ),
+                ),
+                if (_allocationEntries.length > 1) ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline_rounded,
+                        color: Colors.red, size: 20),
+                    onPressed: () => setState(() {
+                      entry.amountController.dispose();
+                      _allocationEntries.removeAt(index);
+                    }),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: entry.amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText:
+                          '\u0627\u0644\u0645\u0628\u0644\u063a (\u062c.\u0645)',
+                      isDense: true,
+                    ),
+                    textDirection: TextDirection.ltr,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButtonFormField<PaymentMethod>(
+                    value: entry.paymentMethod,
+                    decoration: const InputDecoration(
+                      labelText: '\u0637\u0631\u064a\u0642\u0629',
+                      isDense: true,
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: PaymentMethod.cash,
+                        child: Text('\u0646\u0642\u062f\u064a'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.bankTransfer,
+                        child: Text(
+                            '\u062a\u062d\u0648\u064a\u0644 \u0628\u0646\u0643\u064a'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.mobileWallet,
+                        child: Text(
+                            '\u0645\u062d\u0641\u0638\u0629 \u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.check,
+                        child: Text('\u0634\u064a\u0643'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => entry.paymentMethod = value);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                onPressed: () {
+                  final remaining = _computeSplitRemaining();
+                  if (remaining != null && remaining > 0) {
+                    setState(() {
+                      entry.amountController.text =
+                          MoneyUtils.formatPiastersAsEgpNumber(remaining);
+                    });
+                  }
+                },
+                child: const Text(
+                  '\u0627\u0633\u062a\u062e\u062f\u0627\u0645 \u0627\u0644\u0645\u062a\u0628\u0642\u064a',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSplitSummary() {
+    final total = _computeTotal();
+    final allocated = _computeAllocatedTotal();
+    final remaining = _computeSplitRemaining();
+    final balanced = _isSplitBalanced();
+    final reference = _paymentMode == SalePaymentMode.partial
+        ? (_parsePaidAmount() ?? 0)
+        : (total ?? 0);
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            _summaryRow(
+              '\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629',
+              total != null ? MoneyUtils.formatPiastersAsEgp(total) : '-',
+            ),
+            _summaryRow(
+              '\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u062a\u062e\u0635\u064a\u0635',
+              allocated != null
+                  ? MoneyUtils.formatPiastersAsEgp(allocated)
+                  : '-',
+            ),
+            if (_paymentMode == SalePaymentMode.partial)
+              _summaryRow(
+                '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639',
+                MoneyUtils.formatPiastersAsEgp(reference),
+              ),
+            _summaryRow(
+              '\u0627\u0644\u0645\u062a\u0628\u0642\u064a',
+              remaining != null
+                  ? MoneyUtils.formatPiastersAsEgp(remaining)
+                  : '-',
+            ),
+            const SizedBox(height: 4),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                balanced
+                    ? '\u2713 \u0645\u062a\u0648\u0627\u0641\u0642'
+                    : '\u2717 \u063a\u064a\u0631 \u0645\u062a\u0648\u0627\u0641\u0642',
+                style: TextStyle(
+                  color: balanced ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 13)),
+          Text(value,
+              style:
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 
@@ -796,7 +1172,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                   for (final product in widget.products)
                     DropdownMenuItem(
                       value: product.id,
-                      child: Text(product.name, overflow: TextOverflow.ellipsis),
+                      child:
+                          Text(product.name, overflow: TextOverflow.ellipsis),
                     ),
                 ],
                 onChanged: (value) {
@@ -830,7 +1207,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 controller: item.quantityController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: '\u0627\u0644\u0643\u0645\u064a\u0629 (\u0643\u062c\u0645)',
+                  labelText:
+                      '\u0627\u0644\u0643\u0645\u064a\u0629 (\u0643\u062c\u0645)',
                   isDense: true,
                 ),
                 onChanged: (_) => setState(() {}),
@@ -844,7 +1222,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
-                  labelText: '\u0627\u0644\u0633\u0639\u0631 / \u0643\u062c\u0645',
+                  labelText:
+                      '\u0627\u0644\u0633\u0639\u0631 / \u0643\u062c\u0645',
                   isDense: true,
                 ),
                 onChanged: (_) => setState(() {}),
@@ -876,11 +1255,9 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   }
 
   void _addLineItem() {
-    final usedProductIds =
-        _lineItems.map((item) => item.productId).toSet();
-    final available = widget.products
-        .where((p) => !usedProductIds.contains(p.id))
-        .toList();
+    final usedProductIds = _lineItems.map((item) => item.productId).toSet();
+    final available =
+        widget.products.where((p) => !usedProductIds.contains(p.id)).toList();
     if (available.isEmpty) return;
 
     setState(() {
@@ -892,16 +1269,25 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   }
 
   void _submit() {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
     final customerId = _customerId;
     if (customerId == null || customerId.trim().isEmpty) {
-      setState(() =>
-          _errorMessage = '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
+      setState(() {
+        _errorMessage =
+            '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 \u0642\u0628\u0644 \u062d\u0641\u0638 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.';
+        _isSubmitting = false;
+      });
       return;
     }
 
     if (_lineItems.isEmpty) {
-      setState(() =>
-          _errorMessage = '\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0627\u062d\u062f\u0627 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0644\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
+      setState(() {
+        _errorMessage =
+            '\u0623\u0636\u0641 \u0635\u0646\u0641\u0627 \u0648\u0627\u062d\u062f\u0627 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0644\u0644\u0641\u0627\u062a\u0648\u0631\u0629.';
+        _isSubmitting = false;
+      });
       return;
     }
 
@@ -910,11 +1296,19 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       final qty = int.tryParse(item.quantityController.text.trim());
       final price = _tryParsePrice(item.priceController.text);
       if (qty == null || qty <= 0) {
-        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0643\u0645\u064a\u0629 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u0643\u064a\u0644\u0648\u060c \u0648\u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.');
+        setState(() {
+          _errorMessage =
+              '\u0627\u0643\u062a\u0628 \u0643\u0645\u064a\u0629 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u0643\u064a\u0644\u0648\u060c \u0648\u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.';
+          _isSubmitting = false;
+        });
         return;
       }
       if (price == null || price <= 0) {
-        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.');
+        setState(() {
+          _errorMessage =
+              '\u0627\u0643\u062a\u0628 \u0633\u0639\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0627\u0644\u062c\u0646\u064a\u0647 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.';
+          _isSubmitting = false;
+        });
         return;
       }
       items.add(SaleLineItemDraft(
@@ -926,26 +1320,97 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
 
     int? paidAmountQirsh;
     if (_paymentMode == SalePaymentMode.partial) {
-      final total = _computeTotal();
       try {
         paidAmountQirsh = MoneyUtils.parseEgpToPiasters(
           _paidAmountText ?? '',
           allowZero: false,
         );
       } on Object {
-        setState(() => _errorMessage = '\u0627\u0643\u062a\u0628 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.');
+        setState(() {
+          _errorMessage =
+              '\u0627\u0643\u062a\u0628 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0628\u0634\u0643\u0644 \u0635\u062d\u064a\u062d.';
+          _isSubmitting = false;
+        });
         return;
       }
+      final total = _computeTotal();
       if (total != null && paidAmountQirsh > total) {
-        setState(() => _errorMessage =
-            '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0644\u0627 \u064a\u0645\u0643\u0646 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.');
+        setState(() {
+          _errorMessage =
+              '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u0644\u0627 \u064a\u0645\u0643\u0646 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.';
+          _isSubmitting = false;
+        });
         return;
       }
       if (paidAmountQirsh <= 0) {
-        setState(() => _errorMessage =
-            '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u064a\u062c\u0628 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.');
+        setState(() {
+          _errorMessage =
+              '\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062f\u0641\u0648\u0639 \u064a\u062c\u0628 \u0623\u0646 \u064a\u0643\u0648\u0646 \u0623\u0643\u0628\u0631 \u0645\u0646 \u0635\u0641\u0631.';
+          _isSubmitting = false;
+        });
         return;
       }
+    }
+
+    final saleTotal = _computeTotal() ?? 0;
+    List<SalePaymentAllocation> paymentAllocations = const [];
+    String? operationRequestId;
+
+    if (_useSplitPayments) {
+      final allocations = <SalePaymentAllocation>[];
+      final usedAccountIds = <String>{};
+
+      for (int i = 0; i < _allocationEntries.length; i++) {
+        final entry = _allocationEntries[i];
+        final amount = _tryParseAmount(entry.amountController.text);
+        if (amount == null || amount <= 0) {
+          setState(() {
+            _errorMessage =
+                '\u0645\u0628\u0644\u063a \u0627\u0644\u062a\u062e\u0635\u064a\u0635 ${i + 1} \u063a\u064a\u0631 \u0635\u062d\u064a\u062d. \u0623\u062f\u062e\u0644 \u0645\u0628\u0644\u063a\u0627\u064b \u0635\u062d\u064a\u062d\u0627\u064b.';
+            _isSubmitting = false;
+          });
+          return;
+        }
+        final accountId = entry.accountId;
+        if (accountId == null || accountId.trim().isEmpty) {
+          setState(() {
+            _errorMessage =
+                '\u0627\u062e\u062a\u0631 \u0627\u0644\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u064a \u0644\u0644\u062a\u062e\u0635\u064a\u0635 ${i + 1}.';
+            _isSubmitting = false;
+          });
+          return;
+        }
+        if (!usedAccountIds.add(accountId)) {
+          setState(() {
+            _errorMessage =
+                '\u0627\u0644\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u064a \u0645\u0633\u062a\u062e\u062f\u0645 \u0623\u0643\u062b\u0631 \u0645\u0646 \u0645\u0631\u0629.';
+            _isSubmitting = false;
+          });
+          return;
+        }
+        allocations.add(SalePaymentAllocation(
+          financialAccountId: accountId,
+          amountQirsh: amount,
+          paymentMethod: entry.paymentMethod,
+        ));
+      }
+
+      final reference = _paymentMode == SalePaymentMode.partial
+          ? (paidAmountQirsh ?? 0)
+          : saleTotal;
+      final allocatedTotal =
+          allocations.fold<int>(0, (sum, a) => sum + a.amountQirsh);
+      if (allocatedTotal != reference) {
+        setState(() {
+          _errorMessage =
+              '\u0645\u062c\u0645\u0648\u0639 \u0627\u0644\u062a\u062e\u0635\u064a\u0635\u0627\u062a ($allocatedTotal) \u063a\u064a\u0631 \u0645\u0637\u0627\u0628\u0642 \u0644\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062d\u062f\u062f ($reference).';
+          _isSubmitting = false;
+        });
+        return;
+      }
+
+      paymentAllocations = allocations;
+      operationRequestId = 'sale-ui-${DateTime.now().microsecondsSinceEpoch}';
     }
 
     Navigator.of(context).pop(
@@ -955,6 +1420,8 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         items: items,
         notes: _notesController.text,
         paidAmountQirsh: paidAmountQirsh,
+        paymentAllocations: paymentAllocations,
+        operationRequestId: operationRequestId,
       ),
     );
   }
@@ -968,6 +1435,24 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       return null;
     }
   }
+
+  int? _tryParseAmount(String value) {
+    try {
+      return MoneyUtils.parseEgpToPiasters(value, allowZero: false);
+    } on FormatException {
+      return null;
+    } on ArgumentError {
+      return null;
+    }
+  }
+}
+
+class _AllocationEntry {
+  _AllocationEntry() : amountController = TextEditingController();
+
+  String? accountId;
+  PaymentMethod paymentMethod = PaymentMethod.cash;
+  final TextEditingController amountController;
 }
 
 class _LineItemEntry {
@@ -989,6 +1474,8 @@ class _SaleFormResult {
     required this.items,
     this.notes,
     this.paidAmountQirsh,
+    this.paymentAllocations = const [],
+    this.operationRequestId,
   });
 
   final String customerId;
@@ -996,4 +1483,6 @@ class _SaleFormResult {
   final List<SaleLineItemDraft> items;
   final String? notes;
   final int? paidAmountQirsh;
+  final List<SalePaymentAllocation> paymentAllocations;
+  final String? operationRequestId;
 }
