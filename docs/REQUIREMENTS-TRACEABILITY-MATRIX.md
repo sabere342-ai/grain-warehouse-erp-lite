@@ -1,7 +1,7 @@
 # Requirements Traceability Matrix
 
-> Grain Warehouse ERP Lite — Post-Phase 81 (DC-U007 Negative-Balance Controls)
-> Generated from source code evidence as of DC-U007 implementation.
+> Grain Warehouse ERP Lite — Post-Owner Wipe (Unified Accounting Baseline)
+> Generated from source code evidence as of baseline `4d8705b`.
 
 ---
 
@@ -476,14 +476,14 @@
 
 | Field | Value |
 |---|---|
-| **Status** | PLANNED — SCOPE FROZEN IN PHASE 73 |
-| **Source evidence** | Future requirement — P&L, balance sheet, cash flow. |
-| **Implementation evidence** | None. Current reports are operational, not financial accounting reports. |
-| **Test evidence** | None |
-| **Missing behavior** | Financial report generation from financial account data. |
-| **Dependencies** | ACC-007, ACC-008 |
-| **Proposed phase** | Planning: Phase 73. Implementation phase to be defined after report scope and acceptance criteria are approved. |
-| **Acceptance evidence** | Not implemented. Future reports must be derived from the auditable financial-account ledger and must not store independent or invented balances. |
+| **Status** | PARTIALLY IMPLEMENTED |
+| **Source evidence** | Phase 79 implemented 4 financial reports; additional reports remain planned. |
+| **Implementation evidence** | Phase 79 implemented: Account Balance Report, Account Statement Report, Payment Method Report, Transfer Report. All read-only from financial-account ledger. PDF and CSV export. |
+| **Test evidence** | `test/phase79_account_based_financial_reports_test.dart` — 65 tests |
+| **Missing behavior** | Inflows/outflows report, collection-by-account report, supplier-payment-by-account report, expense-by-account report, fee tracking, reconciliation report. |
+| **Dependencies** | ACC-007 ✅, ACC-008 ✅, ACC-011 ✅ |
+| **Proposed phase** | Planning: Phase 73. Partial implementation: Phase 79. Remaining reports deferred until Split Payments and Advances UI are complete. |
+| **Acceptance evidence** | 4 reports implemented and tested. Remaining reports must be derived from the auditable financial-account ledger. |
 
 ---
 

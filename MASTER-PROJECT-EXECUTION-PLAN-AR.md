@@ -10,31 +10,30 @@
 
 ### 1.1 Git baseline المؤكد
 
-- **HEAD:** `cd3865547e6516b16c5a8e303ecff699dce644df`
-- **Commit:** `Complete DC-U007 transaction-level owner approval`
-- **Tag:** `dc-u007-transaction-level-owner-approval`
-- **الـCommit السابق:** `f100186` — `DC-U007: negative-balance controls — per-account toggle, balance guard, owner-only policy`
-- **آخر Governance baseline قبل DC-U007:** `2690f13947918df329e693271414bfe7d0f1f00c`
-- **آخر Phase مرقمة مغلقة بلا نزاع:** Phase 81
-- **Commit Phase 81:** `841301d23c424d4af4506c38cf3f1bc0cd09a9c4`
+- **HEAD:** `4d8705b2cc76b757294a5ddaed44fd8adc83eaec`
+- **Commit:** `Owner Wipe: snapshot coverage gate + transaction rollback safety`
+- **Tag:** `owner-wipe-final-pass`
+- **Branch:** `transaction-safe-restore-wipe`
+- **السلسلة المتكاملة:** DC-U007 → CAN-005/006/007 → DC-U002 → DC-U008 → Owner Wipe
+- **النتيجة المثبتة:** 862/862 اختبارات ناجحة، flutter analyze: 0 مشاكل، Windows Release Build: PASS
 - **Phase 66:** لم تُنفذ، ولا يوجد لها Tag، ولا يجوز وصفها كمكتملة.
 - **Phase 82:** غير معرفة في المستودع، ولا يجوز اختراعها.
 
-### 1.2 حالة DC-U007 الحالية
+### 1.2 حالة النطاقات المغلقة
 
-رغم وجود Commit وTag وتقارير نجاح للاختبارات والبناء، مراجعة الكود المنقولة أثبتت فجوات مانعة للإغلاق:
+تم التحقق من إغلاق جميع النطاقات التالية عبر سلسلة Git المتكاملة:
 
-- `approvedByUserId` يمكن تمريره كنص غير فارغ دون إثبات أنه مستخدم مالك حقيقي ونشط.
-- لا توجد موافقة غير قابلة لإعادة الاستخدام ومرتبطة بالحساب والمبلغ والمصدر والمستند.
-- مسارات المصروفات ومدفوعات الموردين والمشتريات وإلغاء البيع قد تكتب أجزاءً من العملية قبل فشل القيد المالي.
-- الـAudit الحالي لا يثبت كل حقول الموافقة بصورة منظمة.
-- لا يوجد Workflow UI إنتاجي متكامل للموافقة على العملية السالبة.
+| النطاق | Commit | Tag | الحالة |
+|--------|--------|-----|--------|
+| DC-U007 | `af56ced` | `dc-u007-windows-release-build-verified` | مغلق ومتكامل |
+| CAN-005/006/007 | `49878f7` | `can-005-006-007-financial-reversals-pass` | مغلق ومتكامل |
+| DC-U002 Core | `839ff78` | `dc-u002-split-payments-pass` | Core مغلق ومتكامل |
+| DC-U002 UI | — | — | غير منفذ |
+| DC-U008 Core | `59d689f` | `dc-u008-overpayments-advances-refunds-pass` | Core مغلق ومتكامل |
+| DC-U008 UI | — | — | غير منفذ |
+| Owner Wipe | `4d8705b` | `owner-wipe-final-pass` | مغلق ومتكامل |
 
-**التصنيف الحاكم:**
-
-`DC-U007 — PARTIALLY IMPLEMENTED; CLOSURE BLOCKED`
-
-ولا يبدأ أي نطاق مالي جديد قبل معالجة أصالة الموافقة والذرية.
+**لا يُعاد فتح أي نطاق مغلق إلا عند وجود regression مثبت بالاختبارات.**
 
 ---
 
@@ -160,68 +159,40 @@
 
 ## 4. ترتيب التنفيذ الإلزامي
 
-## Track 0 — Governance Recovery & Baseline Freeze
+## Track 0 — Governance Reconciliation — مكتمل ✓
 
 ### الهدف
-إزالة الانحراف بين الوثائق والكود وتثبيت الحالة الحقيقية قبل التطوير التالي.
+إزالة الانحراف بين الوثائق والكود وتثبيت الحالة الحقيقية بعد Owner Wipe.
 
-### الأعمال
+### الأعمال المنفذة
 
-1. تحديث حالة DC-U007 مؤقتًا إلى `PARTIALLY IMPLEMENTED — CLOSURE BLOCKED` أثناء المعالجة، أو توثيق ذلك في مستند remediation دون تغيير نهائي قبل التنفيذ.
-2. توثيق الفجوات المكتشفة في `cd386554`.
-3. مراجعة تعارض `DC-U006` مع Phase 80:
-   - Phase 80 تقول إن قرار DC-U006 تم اعتماده وتنفيذ الإغلاق.
-   - Decision Register/RTM قد يظلان يقولان OPEN/NOT IMPLEMENTED.
-   - يجب تصحيح المصدر الحاكم وفق Git والكود والاختبارات، دون اختراع نطاق جديد.
-4. مراجعة تناقضات branding:
-   - Phase 68 وRTM تقول إن الشعار يظهر في الفواتير.
-   - أجزاء من Master Roadmap تقول إنه غير ظاهر.
-   - يُحسم من الكود والاختبارات الفعلية.
-5. تحديث Transfer Pack بعد كل Baseline جديد.
+1. تحديث baseline إلى `4d8705b` (Owner Wipe final).
+2. توثيق إغلاق DC-U007 عبر `af56ced`.
+3. توثيق إغلاق CAN-005/006/007 عبر `49878f7`.
+4. توثيق إغلاق DC-U002 Core عبر `839ff78`.
+5. توثيق إغلاق DC-U008 Core عبر `59d689f`.
+6. توثيق إغلاق Owner Wipe عبر `4d8705b`.
+7. تحديث عدد الاختبارات إلى 862/862.
+8. تحديث جميع الوثائق الحاكمة (Roadmap، Decision Register، RTM، Handoff).
 
 ### بوابة الخروج
-لا توجد حالات متعارضة للمتطلبات الحرجة في Roadmap وDecision Register وRTM وHandoff.
+جميع الحالات متسقة: Roadmap وDecision Register وRTM وHandoff تتفق على نفس الحالة.
 
 ---
 
-## Track 1 — DC-U007 Approval Authenticity & Atomicity Remediation — أولوية صفر
+## Track 1 — DC-U007 Negative-Balance Controls — مكتمل ✓
 
-### الهدف
-إغلاق DC-U007 فعليًا وفق Phase 78.
+### الحالة
+مغلق ومتكامل عبر Commit `af56ced` وتاغ `dc-u007-windows-release-build-verified`.
 
-### المطلوب
+### ما تم تنفيذه
+- نموذج `allowNegativeBalance` على FinancialAccount.
+- تحقق من الرصيد على مسارات المصروفات والمدفوعات والتحويلات.
+- موافقة المالك مع Audit trail.
+- اختبارات Fault-injection.
+- Backup/restore للبيانات الجديدة.
 
-1. نموذج/Context موافقة موثوق وأحادي الاستخدام.
-2. إصدار الموافقة فقط من مستخدم Active بدور Owner عبر Auth الحقيقي.
-3. ربط الموافقة بـ:
-   - Financial account.
-   - Amount.
-   - Source type.
-   - Source document أو client request.
-   - Requester.
-   - Balance before/projected after.
-4. منع String/Boolean المزور.
-5. منع replay واختلاف الحساب أو المبلغ أو المستند.
-6. عدم استهلاك الموافقة عند فشل العملية.
-7. Workflow UI فعلي للمصروفات والمدفوعات والمشتريات والتحويلات ورد المبيعات.
-8. Audit منظم وكامل.
-9. Unit of Work أو Preflight+rollback يغطي:
-   - Expenses.
-   - Supplier payments.
-   - Paid/partial purchases.
-   - Internal transfers.
-   - Sale cancellation refund.
-   - أي Outflow path آخر.
-10. Fault-injection tests لكل نقطة فشل.
-11. Backup/restore للبيانات الدائمة الجديدة.
-12. تصحيح وثائق Roadmap وDecision Register وRTM وHandoff بعد النجاح فقط.
-
-### بوابة الخروج
-
-- لا يمكن لمستخدم أو caller تزوير الموافقة.
-- لا يمكن إعادة استخدامها.
-- لا يبقى أي مستند أو قيد أو مخزون جزئي عند الفشل.
-- Full suite وBuild وبقية بوابات الإغلاق ناجحة.
+### لا يُعاد فتح هذا النطاق إلا عند وجود regression مثبت.
 
 ---
 
@@ -244,102 +215,82 @@ CAN-005/006 وSplit Payments وOverpayments والـCloud جميعها تعتم�
 
 ---
 
-## Track 3 — CAN-005 / CAN-006 / CAN-007: إلغاء التحصيل ودفع المورد والعكس المالي
+## Track 3 — CAN-005 / CAN-006 / CAN-007 — مكتمل ✓
 
-### النطاق
+### الحالة
+مغلق ومتكامل عبر Commit `49878f7` وتاغ `can-005-006-007-financial-reversals-pass`.
+
+### ما تم تنفيذه
 
 #### CAN-005 — Customer Collection Cancellation
-
 - الإبقاء على التحصيل الأصلي.
 - إنشاء Cancellation/Reversal مستقل.
 - إعادة مديونية العميل.
 - خفض الحساب المالي الأصلي.
-- تطبيق DC-U007 إذا سيصبح الرصيد سالبًا.
-- عدم تغيير البيع أو المخزون.
 - منع الإلغاء المكرر.
 - Audit وDocument History وBackup وتقارير صحيحة.
 
 #### CAN-006 — Supplier Payment Cancellation
-
 - الإبقاء على الدفع الأصلي.
 - إعادة مستحق المورد.
 - زيادة الحساب المالي الأصلي.
-- عدم تغيير الشراء أو المخزون.
 - منع الإلغاء المكرر.
 - Audit وDocument History وBackup وتقارير صحيحة.
 
 #### CAN-007 — General Financial Account Reversal
-
 - Reversal مشتق من القيد الأصلي.
 - نفس المبلغ والحساب والمصدر.
-- لا إدخال يدوي لقيم العكس.
 - Link بين الأصل والعكس.
+- Atomic rollback عند الفشل.
 
-### قواعد
-
-- لا إلغاء جزئي ما لم يعتمد المالك ذلك صراحة.
-- لا حذف ولا تعديل للمستند الأصلي.
-- احترام Period closing وقواعد Phase 80.
-- Transaction واحدة لكل الإلغاء وآثاره.
+### لا يُعاد فتح هذا النطاق إلا عند وجود regression مثبت.
 
 ---
 
-## Track 4 — DC-U002: Split Payments
+## Track 4 — DC-U002: Split Payments — Core مكتمل / UI مفتوح
 
-### القرار المعتمد
+### الحالة
+Core مغلق ومتكامل عبر Commit `839ff78` وتاغ `dc-u002-split-payments-pass`.
+End-User UI: غير منفذ — النطاق التالي بعد إغلاق الوثائق.
 
-- 3–5 وسائل/حسابات دفع كحد أقصى لكل فاتورة وفق صياغة القرار النهائية.
-- إعداد Owner على مستوى الحسابات المسموح استخدامها.
-- Partial payments مسموحة.
-- لا إنشاء حساب مالي جديد من Dialog الدفع المقسم.
-- Single-account fallback للدفع الكامل.
+### ما تم تنفيذه (Core)
+- نموذج `PaymentAllocation` مرتبط بالمستند.
+- مجموع التخصيصات يساوي المبلغ المدفوع بالضبط.
+- توزيع بين خزنة/بنك/محفظة وفق الحسابات النشطة.
+- إنشاء قيد مستقل لكل Allocation.
+- ذرية كاملة لكل التخصيصات.
+- Cancellation يعكس كل Allocation إلى حسابه الأصلي.
+- تقارير Payment Method وAccount statements لا تكرر الإجماليات.
+- Backup versioning وتوافق الإصدارات القديمة.
+- Idempotency وFault-injection tests.
 
-### المطلوب
-
-1. نموذج `PaymentAllocation` مرتبط بالمستند.
-2. مجموع التخصيصات يساوي المبلغ المدفوع بالضبط.
-3. توزيع بين خزنة/بنك/محفظة/شيك وفق الحسابات النشطة والسياسة.
-4. إنشاء قيد مستقل لكل Allocation مع Group/Transaction ID مشترك.
-5. ذرية كاملة لكل التخصيصات.
-6. دعم:
-   - Sales cash/partial.
-   - Purchases paid/partial.
-   - Customer collections إذا اعتمد ضمن النطاق.
-   - Supplier payments إذا اعتمد ضمن النطاق.
-7. Cancellation يعكس كل Allocation إلى حسابه الأصلي.
-8. تقارير Payment Method وAccount statements لا تكرر الإجماليات.
-9. Backup versioning وتوافق الإصدارات القديمة.
-10. UI review واضح بالمجموع والمتبقي والتحقق الفوري.
-11. منع تجاوز الحد أو الحساب المعطل أو تكرار Allocation غير صالح.
-12. Idempotency وFault-injection tests.
-
-### خارج النطاق حتى Track 5
-Overpayment/advance/refund.
+### المتبقي (UI)
+- مراجعة UI واضحة بالمجموع والمتبقي والتحقق الفوري.
+- منع تجاوز الحد أو الحساب المعطل.
+- لا خلط UI وPersistence في commit واحد.
 
 ---
 
-## Track 5 — DC-U008: Overpayments, Credits, Advances & Refunds
+## Track 5 — DC-U008: Overpayments, Credits, Advances & Refunds — Core مكتمل / UI مفتوح
 
-### القرار المعتمد
+### الحالة
+Core مغلق ومتكامل عبر Commit `59d689f` وتاغ `dc-u008-overpayments-advances-refunds-pass`.
+End-User UI: غير منفذ — النطاق الثاني بعد Split Payments UI.
 
-- موافقة Owner لكل عملية زيادة.
-- الزيادة تسجل كرصيد دائن/عربون للعميل أو المورد.
-- لا تعديل للمستند الأصلي.
-- الاسترداد بحركة تعويضية منفصلة من نفس الحساب.
+### ما تم تنفيذه (Core)
+- Customer credit/advance ledger entries.
+- Supplier credit/advance entries.
+- Owner approval authentic and operation-bound.
+- Refund document مستقل بحركة تعويضية.
+- DC-U007 عند Refund Outflow.
+- Partial consumption للرصيد الدائن مع تاريخ واضح.
+- منع الرصيد المزدوج أو Refund أكبر من المتاح.
+- Backup، reports، statements، cancellation، audit، idempotency.
+- تكامل صحيح مع Split Payments.
 
-### المطلوب
-
-1. Customer credit/advance ledger entries.
-2. Supplier credit/advance entries.
-3. Owner approval authentic and operation-bound.
-4. عدم استخدام مبلغ زائد لسداد دين مختلف دون Allocation صريح.
-5. Refund document مستقل.
-6. Refund من نفس Financial account، أو قرار Owner جديد إذا أريد غير ذلك.
-7. DC-U007 عند Refund Outflow.
-8. Partial consumption للرصيد الدائن مع تاريخ واضح.
-9. منع الرصيد المزدوج أو Refund أكبر من المتاح.
-10. Backup، reports، statements، cancellation، audit، idempotency.
-11. تكامل صحيح مع Split Payments.
+### المتبقي (UI)
+- واجهة مستخدم عربية لعمليات الزائد/الاسترداد/العربون.
+- لا خلط UI وPersistence في commit واحد.
 
 ---
 
@@ -641,31 +592,46 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 ## 5. قائمة المطلوب غير المنفذ أو غير المغلق
 
-### Critical blockers
+### مغلق ✓ (لا يُعاد فتحه)
 
-- DC-U007 approval authenticity.
-- DC-U007 replay protection.
-- DC-U007 transaction atomicity لجميع Outflow paths.
-- Production Owner Approval UI.
-- Governance drift المرتبط بـDC-U007.
+- ~~DC-U007 Negative-Balance Controls~~ ✓ Commit `af56ced`
+- ~~CAN-005 Collection cancellation~~ ✓ Commit `49878f7`
+- ~~CAN-006 Supplier payment cancellation~~ ✓ Commit `49878f7`
+- ~~CAN-007 General financial reversal~~ ✓ Commit `49878f7`
+- ~~DC-U002 Split Payments Core~~ ✓ Commit `839ff78`
+- ~~DC-U008 Overpayments/Advances/Refunds Core~~ ✓ Commit `59d689f`
+- ~~Owner Wipe & Transaction-safe Restore~~ ✓ Commit `4d8705b`
 
-### Financial operations
+### النطاق التالي المعتمد
 
-- CAN-005 Collection cancellation.
-- CAN-006 Supplier payment cancellation.
-- CAN-007 general financial reversal.
-- DC-U002 Split Payments.
-- DC-U008 Overpayments/advances/refunds.
+1. Split Payments End-User UI.
+2. Advances/Overpayments/Refunds End-User UI.
+3. Durable Persistence Architecture Decision (ADR).
+4. Durable Persistence Implementation.
+
+### الحظر التشغيلي
+
+> لا تُستخدم بيانات مالية تشغيلية حقيقية قبل نجاح التخزين الدائم واختبارات crash recovery وBackup/Restore drill.
+
+- لا تخلط UI وPersistence في commit واحد.
+- لا تغيّر Domain APIs المغلقة بلا سبب مثبت.
+- لا تعيد تصميم المحاسبة من الصفر.
+- لا تحذف compatibility مع Backup الحالي.
+
+### Financial operations — مفتوح
+
 - Mixed source operations.
 - Fee tracking/accounting.
+- Daily cash closing (DC-U006 — يعتمد قرار المالك).
 
 ### Data safety
 
-- Transaction-safe restore.
-- Transaction-safe wipe.
-- General Unit of Work/rollback framework.
+- Durable Persistence ADR.
+- Durable Persistence Implementation.
+- Transaction-safe restore (يحتاج persistent storage).
+- Transaction-safe wipe (يحتاج persistent storage).
 
-### Reports
+### Reports — مفتوح
 
 - Inflows.
 - Outflows.
@@ -687,7 +653,8 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 ### Operational readiness
 
-- Actual controlled owner trial execution بدل Phase 66 غير المنفذة.
+- Controlled synthetic-data pilot.
+- Real financial data pilot (محظور قبل durable persistence).
 - Extended real-condition trial.
 - Performance/edge-case hardening.
 - Restore drill on separate machine.
@@ -754,20 +721,30 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 ## 7. الترتيب التنفيذي المختصر المعتمد
 
-1. **DC-U007 Approval Authenticity & Atomicity Remediation.**
-2. **CAN-005/CAN-006/CAN-007 cancellations and reversals.**
-3. **DC-U002 Split Payments.**
-4. **DC-U008 Overpayments/Advances/Refunds.**
-5. **Transaction-safe Restore/Wipe.**
-6. **Remaining financial and settlement reports.**
-7. **Stock-adjustment PDF + UI/branding/navigation audit.**
-8. **Local production hardening and actual owner trial.**
-9. **Resolve cloud/mobile owner decisions.**
-10. **Cloud backend + durable DB + migration.**
-11. **Offline-first sync.**
-12. **Multi-device.**
-13. **Mobile.**
-14. **SaaS/licensing only later.**
+### مكتمل ✓
+
+1. ~~**DC-U007 Negative-Balance Controls.**~~ ✓ Commit `af56ced`
+2. ~~**CAN-005/CAN-006/CAN-007 cancellations and reversals.**~~ ✓ Commit `49878f7`
+3. ~~**DC-U002 Split Payments Core.**~~ ✓ Commit `839ff78`
+4. ~~**DC-U008 Overpayments/Advances/Refunds Core.**~~ ✓ Commit `59d689f`
+5. ~~**Owner Wipe & Transaction-safe Restore.**~~ ✓ Commit `4d8705b`
+
+### القادم (بعد إغلاق الوثائق)
+
+6. **Split Payments End-User UI.**
+7. **Advances/Overpayments/Refunds End-User UI.**
+8. **Durable Persistence Architecture Decision (ADR).**
+9. **Durable Persistence Implementation.**
+10. **Remaining financial and settlement reports.**
+11. **Stock-adjustment PDF + UI/branding/navigation audit.**
+12. **Real Financial Data Pilot (محظور قبل durable persistence).**
+13. **Local production hardening.**
+14. **Resolve cloud/mobile owner decisions.**
+15. **Cloud backend + durable DB + migration.**
+16. **Offline-first sync.**
+17. **Multi-device.**
+18. **Mobile.**
+19. **SaaS/licensing only later.**
 
 أي تغيير في هذا الترتيب يحتاج دليل اعتماديات من Master Roadmap أو قرار مالك موثق، وليس مجرد رغبة في ترقيم مرحلة جديدة.
 
@@ -779,8 +756,10 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 - جميع الصفحات الحالية تعمل دون Placeholder أو إخفاء.
 - كل الحركات المالية والمخزنية ذرية ومدققة وقابلة للعكس.
-- Split Payments وOverpayments والإلغاءات مكتملة.
-- Backup/restore/wipe ذرية ومجربة.
+- ~~Split Payments وOverpayments والإلغاءات مكتملة (Core)~~ ✓ مكتمل.
+- Split Payments UI وAdvances UI مكتملة.
+- Durable persistence منفذة ومجربة.
+- Backup/restore/wipe ذرية ومجربة على persistent storage.
 - التقارير الأساسية والداعمة متسقة مع Ledger.
 - التجربة الحقيقية للمالك مكتملة ومقبولة.
 - حزمة Windows مستقرة وآمنة المصدر.

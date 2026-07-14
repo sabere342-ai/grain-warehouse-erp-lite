@@ -2,9 +2,10 @@
 
 ## خارطة طريق المنتج الرئيسية — نظام مخزن الحبوب ERP Lite
 
-> **Last Updated / آخر تحديث:** DC-U007 — Negative-Balance Controls (Post-Phase 81)
-> **HEAD / الرأس الحالي:** DC-U007 implementation
-> **Tests / الاختبارات:** 814/814 passing
+> **Last Updated / آخر تحديث:** Owner Wipe — Post-Phase 81 Unified Baseline
+> **HEAD / الرأس الحالي:** `4d8705b2cc76b757294a5ddaed44fd8adc83eaec`
+> **Branch:** `transaction-safe-restore-wipe`
+> **Tests / الاختبارات:** 862/862 passing
 > **Flutter Analyze:** No issues
 > **Windows Release Build:** Passing
 
@@ -57,11 +58,15 @@
 
 ## Current Status
 
-**Phase:** Post-Phase 81 — DC-U007 Negative-Balance Controls
-**HEAD:** DC-U007 implementation commit
-**Test Suite:** 814/814 tests passing
+**Phase:** Post-Owner Wipe — Unified Accounting Baseline
+**HEAD:** `4d8705b2cc76b757294a5ddaed44fd8adc83eaec`
+**Branch:** `transaction-safe-restore-wipe`
+**Test Suite:** 862/862 tests passing
 **Static Analysis:** Flutter analyze — no issues
 **Build:** Windows release build — passing
+
+**Integrated Chain:**
+DC-U007 → CAN-005/006/007 → DC-U002 Core → DC-U008 Core → Owner Wipe
 
 The application is in a **production-ready local state** for a single warehouse owner pilot. All core business features are complete, tested, and branded. The system is operating in controlled owner trial.
 
@@ -69,7 +74,7 @@ The application is in a **production-ready local state** for a single warehouse 
 
 ## Implemented
 
-The following features are fully implemented, tested, and passing all 814 tests:
+The following features are fully implemented, tested, and passing all 862 tests:
 
 ### Product Management / إدارة المنتجات
 - [x] Add/edit/list products
@@ -149,7 +154,10 @@ The following features are fully implemented, tested, and passing all 814 tests:
 - [x] Account statement report — per-account entry-level with running balance (Phase 79)
 - [x] Payment method report — aggregated by payment method, excluding transfers (Phase 79)
 - [x] Transfer report — authoritative transfer register with reversal tracking (Phase 79)
-- [x] Negative-balance controls — per-account `allowNegativeBalance` toggle, owner-only policy, balance guard on outflows and transfers (DC-U007)
+- [x] Negative-balance controls — per-account `allowNegativeBalance` toggle, owner-only policy, balance guard on outflows and transfers (DC-U007 — Commit `af56ced`)
+- [x] Atomic financial reversals — collection cancellation, payment cancellation, financial account reversal (CAN-005/006/007 — Commit `49878f7`)
+- [x] Split payment allocations — multi-account per invoice, atomic allocation creation (DC-U002 Core — Commit `839ff78`)
+- [x] Overpayments, advances, refunds — customer/supplier credit tracking, refund documents, owner approval (DC-U008 Core — Commit `59d689f`)
 
 ### Inventory Management / إدارة المخزون
 - [x] Stock movements: opening balance, purchase intake, sale, manual increase/decrease
@@ -187,9 +195,10 @@ The following features are fully implemented, tested, and passing all 814 tests:
 - [x] WhatsApp assisted sharing (opens WhatsApp with prepared message)
 
 ### Backup & Data Safety / النسخ الاحتياطي
-- [x] Backup export (JSON, Version 4 with financial accounts — backward-compatible with v1/v2/v3)
+- [x] Backup export (JSON, Version 6 with transaction financial linkage — backward-compatible with v1–v5)
 - [x] Backup restore
 - [x] Data wipe with pre-wipe backup
+- [x] Snapshot rollback coverage (Owner Wipe — Commit `4d8705b`)
 
 ### Authentication & Security / المصادقة
 - [x] Owner/employee roles
@@ -215,7 +224,8 @@ These features exist in some form but are incomplete or lack key integration:
 
 | Feature | Status | Missing |
 |---------|--------|---------|
-| `SalePaymentMode.partial` | Enum exists | Split payment (multiple accounts per invoice) NOT implemented — DC-U002 closed (owner decisions adopted Phase 78), awaiting implementation phase |
+| Split Payments | Core implemented (DC-U002 — Commit `839ff78`) | End-User UI — Arabic RTL split payment review and confirmation screen |
+| Overpayments/Advances/Refunds | Core implemented (DC-U008 — Commit `59d689f`) | End-User UI — Arabic RTL overpayment/approval/refund workflow screen |
 | PDF stock adjustment report | — | NOT implemented |
 | Invoice logo display | Logo upload exists | Invoices do NOT show logo |
 | Windows app icon from business logo | — | NOT implemented at runtime |
@@ -242,8 +252,8 @@ The following features do not exist in any form:
 
 ### Advanced Operations / العمليات المتقدمة
 - [ ] Mixed source operations
-- [ ] Collection cancellation (CAN-005)
-- [ ] Payment cancellation (CAN-006)
+- [x] Collection cancellation (CAN-005 — Commit `49878f7`)
+- [x] Payment cancellation (CAN-006 — Commit `49878f7`)
 
 ### Cloud & Multi-device / السحابة والأجهزة المتعددة
 - [ ] Cloud sync
@@ -334,7 +344,12 @@ SaaS licensing
 | 78 | Financial owner decisions adoption & compatibility audit | Documentation | ✅ Complete |
 | 79 | Account-based financial reports implementation | Implementation | ✅ Complete |
 | 80 | Period closing / daily closing / financial reconciliation | Implementation | ✅ Complete |
-| 81 | Transaction-level financial Backup/Restore contract remediation | Implementation | ✅ Complete (current) |
+| 81 | Transaction-level financial Backup/Restore contract remediation | Implementation | ✅ Complete |
+| DC-U007 | Negative-balance controls — per-account toggle, balance guard, owner-only policy | Implementation | ✅ Complete |
+| CAN-005/006/007 | Atomic financial reversals — collection cancellation, payment cancellation, financial account reversal | Implementation | ✅ Complete |
+| DC-U002 Core | Atomic split payments — multi-account allocation, atomic creation, cancellation reversal | Implementation | ✅ Complete |
+| DC-U008 Core | Overpayments, advances, refunds — customer/supplier credit, refund documents, owner approval | Implementation | ✅ Complete |
+| Owner Wipe | Snapshot coverage gate + transaction rollback safety | Implementation | ✅ Complete (current) |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 
@@ -370,82 +385,59 @@ The recommended path forward, respecting all dependencies:
 
 ### Financial Accounts & Ledger — COMPLETE
 
-**Phase 71: Financial Accounts Foundation — COMPLETED**
-1. ✅ Define financial account model (treasury, bank, electronic wallet) — `FinancialAccount`, `FinancialAccountType` enum
-2. ✅ Implement financial ledger (account movements table) — `FinancialAccountEntry` with append-only ledger
-3. ✅ Account balance derived from ledger — `currentBalanceForAccount()`, `allAccountBalances()`
-4. ✅ Opening balance support — set once per account, stored on account + ledger entry
-5. ✅ Opening balance corrections — append-only correction entries with reason and audit trail
-6. ✅ Activate/deactivate accounts — owner-only, disabled accounts excluded from active list
-7. ✅ Account statement with date filtering — `statementForAccount()` with running balance
-8. ✅ Backup v4 with financial accounts data — backward-compatible with v1/v2/v3
-9. ✅ Backup restore, preview, and wipe support for financial accounts
-10. ✅ Dashboard navigation — owner-only financial accounts destination
-11. ✅ Comprehensive test coverage (44 new tests, 630 total)
+All core financial features are implemented and tested:
 
-**Phase 72: Transaction Integration (Track B) — COMPLETED**
-1. ✅ Associate sales/purchases/collections/payments/expenses with financial accounts — `financialAccountId` on all transaction models
-2. ✅ Add payment method tracking — `PaymentMethod` enum (cash, bankTransfer, mobileWallet, check)
-3. ✅ FA entry creation for cash/partial sales — inflow `salePayment` entries
-4. ✅ FA entry creation for paid/partial purchases — outflow `purchasePayment` entries
-5. ✅ FA entry creation for customer collections — inflow `customerCollection` entries
-6. ✅ FA entry creation for supplier payments — outflow `supplierSettlement` entries
-7. ✅ FA entry creation for expenses — outflow `expense` entries
-8. ✅ Cancellation reversal entries — outflow/inflow `cancellationReversal` entries
-9. ✅ `PurchasePaymentMode` enum (credit, paid, partial) mirroring `SalePaymentMode`
-10. ✅ Bug fix: `SaleRepository.createSale` now forwards `financialAccountId` and `paymentMethod` from draft
-11. ✅ Comprehensive test coverage (43 new tests, 673 total)
+**Phases 71–81: Foundation through Backup/Restore — COMPLETED**
+1. ✅ Financial account model (treasury, bank, electronic wallet)
+2. ✅ Financial ledger (append-only entries, balance derived from ledger)
+3. ✅ Transaction integration (all transaction types link to financial accounts)
+4. ✅ Internal financial transfers (atomic paired entries)
+5. ✅ Account-based financial reports (balance, statement, payment method, transfer)
+6. ✅ Backup v6 with transaction-level financial linkage
 
-**Phase 73: Financial Reporting & Reconciliation Scope Freeze — COMPLETED**
-1. ✅ Documentation, architecture, and decision-register scope freeze only
-2. ✅ Reconciled the roadmap, traceability matrix, and developer handoff notes
-3. ✅ Confirmed no production feature, schema, backup-version, or UI-page change
-4. ✅ Confirmed internal transfers, daily close, reconciliation, and financial reports remain unimplemented
-5. ✅ Kept `DC-U006` open: no hard close, period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction without an explicit owner decision
-6. ✅ Recorded the dependency order and accounting invariants for future implementation
+**DC-U007: Negative-Balance Controls — COMPLETED**
+1. ✅ Per-account `allowNegativeBalance` toggle
+2. ✅ Balance guard on outflows and transfers
+3. ✅ Owner-only policy with audit trail
 
-**Phase 74: Internal Financial Transfers Scope & Owner Decision Pack — COMPLETED**
-1. ✅ Documentation, architecture, and owner-decision preparation only for `ACC-011`
-2. ✅ No production transfer model, UI, schema, migration, or backup-format change
-3. ✅ Recorded transfer accounting invariants, candidate architecture, atomicity, statement/audit, schema, backup, and UI assessments
-4. ✅ Added open owner decisions required before any internal-transfer implementation
-5. ✅ Confirmed the next implementation phase is not authorized or numbered
+**CAN-005/006/007: Atomic Financial Reversals — COMPLETED**
+1. ✅ Collection cancellation with customer ledger reversal
+2. ✅ Payment cancellation with supplier ledger reversal
+3. ✅ Financial account reversal with compensating entries
 
-**Phase 75: Internal Financial Transfers Owner Decisions Adoption & Implementation Scope — COMPLETED**
-1. ✅ Recorded the owner's official decisions for `DC-U013` through `DC-U024`
-2. ✅ Defined and approved the bounded scope and acceptance criteria for Phase 76 without starting it
-3. ✅ Kept `ACC-011` unimplemented and kept `DC-U006` open
-4. ✅ No production code, UI, schema, migration, or backup-format change
+**DC-U002: Split Payments Core — COMPLETED**
+1. ✅ Multi-account allocation per invoice
+2. ✅ Atomic allocation creation with rollback
+3. ✅ Cancellation reversal per allocation
 
-**Phase 76: Internal Financial Transfers Implementation — COMPLETED**
-1. ✅ Implemented `ACC-011`: a dedicated transfer aggregate with exactly two linked financial-account ledger entries
-2. ✅ Applied Phase 75 owner decisions: no first-release fees; sufficient source balance required; active distinct accounts only; auditable past dates but no future date; owner-only create/reverse; documented paired reversal with mandatory reason and no repeat; client request ID plus unique reference; UUID plus display sequence; optional normal note; full review then one confirmation
-3. ✅ Preserved atomicity, ledger-derived balances, backup/restore integrity, Arabic RTL functional UI, and all existing accounting/inventory/customer/supplier behavior
-4. ✅ Comprehensive test coverage (110 new tests, 676 total)
+**DC-U008: Overpayments/Advances/Refunds Core — COMPLETED**
+1. ✅ Customer/supplier credit tracking
+2. ✅ Refund documents with compensating entries
+3. ✅ Owner approval with authentic binding
 
-### Then: Financial Reporting & Reconciliation — COMPLETE
+### Then: Financial UI — NEXT
 
-**Phase 77: Financial Reporting Scope & Governing Baseline Reconciliation — COMPLETED**
-1. ✅ Reconciled Master Roadmap, Traceability Matrix, and Developer Handoff Notes with actual code state
-2. ✅ Defined financial report scope: Account Balance Report, Financial Account Statement, Payment Method Report, Internal Transfer Report
-3. ✅ Documented accounting rules, date/ordering rules, permissions, filters, export, and backup impact
-4. ✅ Documented acceptance criteria and test plans for future implementation
-5. ✅ Documented open owner decisions (`DC-U002`, `DC-U006`, `DC-U007`, `DC-U008`)
-6. ✅ No production code, UI, schema, or backup-format change
+**Split Payments End-User UI** — Arabic RTL split payment review and confirmation screen
+**Advances/Overpayments/Refunds End-User UI** — Arabic RTL overpayment/approval/refund workflow screen
 
-**Phase 79: Account-Based Financial Reports Implementation — COMPLETED**
-1. ✅ Implemented 4 production-grade financial reports: Account Balance, Account Statement, Payment Method, Transfer
-2. ✅ Permission-gated access with `canViewFinancialReports` and `canExportFinancialReports`
-3. ✅ PDF and CSV export for all 4 reports
-4. ✅ 65 new tests (774 total)
-5. ✅ No schema changes — read-only from existing ledger data
+### Then: Persistence
+
+1. Durable Persistence Architecture Decision (ADR)
+2. Durable Persistence Implementation (SQLite or approved alternative)
+3. Transaction-safe restore
+4. Transaction-safe wipe
+
+> **لا تُستخدم بيانات مالية تشغيلية حقيقية قبل نجاح التخزين الدائم واختبارات crash recovery وBackup/Restore drill.**
 
 ### Then: Production Hardening
-1. ✅ Preserve transaction-level financial-account and payment-method linkage in Backup/Restore (Phase 81)
-2. Complete remaining partial implementations (split payments — DC-U002 closed, awaiting its own implementation phase; invoice-logo status reconciliation; PDF stock adjustment)
-3. Extended owner trial under real conditions
-4. Performance optimization
-5. Edge case hardening
+
+1. Remaining financial and settlement reports
+2. Stock-adjustment PDF + UI/branding/navigation audit
+3. Controlled synthetic-data pilot
+4. Real Financial Data Pilot (blocked by persistence)
+5. Extended owner trial under real conditions
+6. Performance optimization
+7. Edge case hardening
 
 ### Only After Local Model Is Proven: Cloud Readiness
 1. Cloud sync architecture
@@ -476,12 +468,33 @@ The recommended path forward, respecting all dependencies:
 | 1.8 | 2026-07-11 | 78 | Owner decisions adopted (DC-U002, DC-U006, DC-U007, DC-U008); compatibility audit completed; 33 characterization tests added |
 | 1.9 | 2026-07-11 | 79 | Account-based financial reports implemented (balance, statement, payment method, transfer); 65 new tests (774 total) |
 | 2.0 | 2026-07-11 | 81 | Backup v6 preserves transaction-level financial account and payment method links; v1–v5 remain compatible; 784 tests |
+| 2.1 | 2026-07-14 | DC-U007 | Negative-balance controls implemented; 834 tests |
+| 2.2 | 2026-07-14 | CAN-005/006/007 | Atomic financial reversals implemented; 838 tests |
+| 2.3 | 2026-07-14 | DC-U002 Core | Split payments core implemented; 845 tests |
+| 2.4 | 2026-07-14 | DC-U008 Core | Overpayments/advances/refunds core implemented; 858 tests |
+| 2.5 | 2026-07-14 | Owner Wipe | Snapshot coverage gate + transaction rollback safety; 862 tests |
+| 3.0 | 2026-07-14 | Governance | Governing documentation reconciliation with unified accounting baseline |
 
 ---
 
 ## Post-Phase 81 Governance Audit
 
-A governance audit was completed after Phase 81. No "Phase 82" or specific next phase number exists in the repository. The audit identified multiple valid candidates (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering. DC-U007 (negative-balance controls) was recommended as highest priority based on integrity evidence — IMPLEMENTED. Remaining candidates: CAN-005/CAN-006 (cancellations), DC-U002 (split payments), DC-U008 (overpayments/refunds). DC-U014 is CLOSED (Phase 75) and implemented (Phase 76). See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.
+A governance audit was completed after Phase 81. No "Phase 82" or specific next phase number exists in the repository. The audit identified multiple valid candidates (DC-U007, CAN-005/CAN-006, DC-U002, DC-U008) with no explicit ordering.
+
+**All candidates have since been implemented at the Core level:**
+
+- DC-U007 (negative-balance controls) — ✓ Commit `af56ced`, Tag `dc-u007-windows-release-build-verified`
+- CAN-005/006/007 (financial reversals) — ✓ Commit `49878f7`, Tag `can-005-006-007-financial-reversals-pass`
+- DC-U002 (split payments) Core — ✓ Commit `839ff78`, Tag `dc-u002-split-payments-pass`
+- DC-U008 (overpayments/advances/refunds) Core — ✓ Commit `59d689f`, Tag `dc-u008-overpayments-advances-refunds-pass`
+
+**Owner Wipe** completed the unified accounting baseline — ✓ Commit `4d8705b`, Tag `owner-wipe-final-pass`
+
+**Unified baseline:** `4d8705b2cc76b757294a5ddaed44fd8adc83eaec`
+**Test count:** 862/862 passing
+**Next features:** Split Payments UI, then Advances/Overpayments/Refunds UI
+
+See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for the original pre-implementation analysis (historical snapshot).
 
 ---
 

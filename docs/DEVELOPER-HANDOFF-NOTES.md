@@ -1,5 +1,16 @@
 # Developer Handoff Notes — Grain Warehouse ERP Lite
 
+## Current Baseline
+
+| Item | Value |
+|---|---|
+| **Branch** | `transaction-safe-restore-wipe` |
+| **Base commit** | `4d8705b2cc76b757294a5ddaed44fd8adc83eaec` |
+| **Tag** | `owner-wipe-final-pass` |
+| **Tests** | 862/862 passing |
+| **flutter analyze** | 0 issues |
+| **Windows Release Build** | PASS |
+
 ## Delivery Package
 
 | Item | Path |
@@ -33,7 +44,7 @@ flutter build windows --release
 ```
 
 - Analyze: must be 0 errors, 0 warnings
-- Tests: currently 784, all passing
+- Tests: currently 862, all passing
 - Build: must succeed
 
 ## Architecture Notes
@@ -98,15 +109,46 @@ flutter build windows --release
 | `phase-43-whatsapp-assisted-sharing` | 43 | WhatsApp assisted sharing: phone normalization, message templates, فتح واتساب button on 4 doc types (not daily report), url_launcher integration, 28 new tests (439 total) |
 
 ## Backup Version
-- Current: v4 (Phase 71 — financial accounts data)
-- v4 added: `financialAccounts`, `financialAccountEntries`, `financialTransfers` sections
+- Current: v6 (Phase 81 — transaction-level financial account and payment method linkage)
+- v6 added: Transaction-level financial account and payment method preservation in backup/restore
+- v5 added: Internal transfers data (Phase 76)
+- v4 added: `financialAccounts`, `financialAccountEntries`, `financialTransfers` sections (Phase 71)
 - v3 added: business logo as base64 (Phase 68)
 - v2 added: `settings.businessIdentity` with establishment name (Phase 67)
 - v1 → v2: backward-compatible; old backups restore via optional-field fallback
 - Old backups without financial data restore via `_optionalList()` fallback
 
+## Do Not Reopen
+
+The following scopes are closed and integrated. Do not reopen unless a regression is proven by tests:
+
+- DC-U007 (negative-balance controls) — Commit `af56ced`
+- CAN-005/006/007 (financial reversals) — Commit `49878f7`
+- DC-U002 Core (split payments) — Commit `839ff78`
+- DC-U008 Core (overpayments/advances/refunds) — Commit `59d689f`
+- Owner Wipe — Commit `4d8705b`
+
+## Next Implementation Branch
+
+After this documentation reconciliation is merged, the next implementation branch is:
+
+```
+dc-u002-split-payments-ui
+```
+
+Scope: Arabic RTL end-user UI for split payment review and confirmation.
+
+## Hard Restrictions
+
+- لا تستخدم بيانات مالية حقيقية قبل durable persistence.
+- لا تخلط UI وPersistence في commit واحد.
+- لا تغيّر Domain APIs المغلقة بلا سبب مثبت.
+- لا تعيد تصميم المحاسبة من الصفر.
+- لا تحذف compatibility مع Backup الحالي.
+
 ## Next Recommended Phase
-(Phase 77 complete — financial reporting scope defined; next implementation phase pending owner decisions and roadmap update)
+
+Split Payments End-User UI (Track 4 UI layer).
 
 ### Later Roadmap
 - (none confirmed)
@@ -1437,19 +1479,15 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 - Added 5 focused service-level tests; both final full-suite runs passed 784/784, analyzer passed twice, and Windows release build passed.
 - Split Payments, negative-balance controls, overpayments/refunds, cancellations, Cloud Sync, multi-device, mobile, and SaaS remain outside Phase 81.
 
-## Post-Phase 81 Governance Audit
+## Post-Phase 81 Governance Audit — Historical Snapshot
 
 - Governance audit completed after Phase 81 to determine the official next phase.
-- **Finding:** No "Phase 82" reference exists anywhere in the repository. No document assigns a specific phase number or title after Phase 81.
+- **Finding:** No "Phase 82" reference exists anywhere in the repository.
 - **Outcome:** Multiple valid candidates exist with no explicit ordering (Outcome C).
-- **Candidates identified:**
-  1. ~~DC-U007 (Negative-balance controls)~~ — IMPLEMENTED (per-account `allowNegativeBalance`, balance guard, owner-only toggle, backup contract updated)
-  2. CAN-005/CAN-006 (Collection/Payment cancellation) — MEDIUM integrity impact (not implemented per Master Roadmap)
-  3. DC-U002 (Split payments) — LOW integrity, HIGH complexity (adopted by Phase 78, not implemented)
-  4. DC-U008 (Overpayments/refunds) — LOW integrity, HIGH complexity (adopted by Phase 78, not implemented)
-  5. Cloud Sync / Multi-Device / Mobile — deferred, not cancelled
-- **Documentation inconsistency (partially resolved):** DC-U002, DC-U008 still show `REQUIRES OWNER DECISION` despite Phase 78 adoption. DC-U007 updated to `IMPLEMENTED`.
-- **DC-U014:** CLOSED in Decision Register (`OWNER DECISION RECORDED — Phase 75`); implemented in Phase 76.
-- ~~**Recommendation:** DC-U007 (negative-balance controls) as next implementation phase based on integrity evidence.~~ IMPLEMENTED.
-- DC-U007 implemented. Remaining candidates: CAN-005/CAN-006, DC-U002, DC-U008.
-- See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for full analysis.
+- **All candidates have since been implemented at the Core level:**
+  1. ~~DC-U007 (Negative-balance controls)~~ — ✓ IMPLEMENTED (Commit `af56ced`)
+  2. ~~CAN-005/CAN-006/007 (Financial reversals)~~ — ✓ IMPLEMENTED (Commit `49878f7`)
+  3. ~~DC-U002 (Split payments) Core~~ — ✓ IMPLEMENTED (Commit `839ff78`). UI: OPEN.
+  4. ~~DC-U008 (Overpayments/refunds) Core~~ — ✓ IMPLEMENTED (Commit `59d689f`). UI: OPEN.
+  5. ~~Owner Wipe~~ — ✓ IMPLEMENTED (Commit `4d8705b`)
+- See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for the original pre-implementation analysis.

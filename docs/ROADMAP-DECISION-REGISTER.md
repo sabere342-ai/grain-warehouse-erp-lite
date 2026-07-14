@@ -1,7 +1,7 @@
 # Roadmap Decision Register
 
 > **Grain Warehouse ERP Lite**
-> **Last Updated:** 2026-07-10
+> **Last Updated:** 2026-07-14 — Governance Documentation Reconciliation
 > **Purpose:** Single source of truth for all project decisions — confirmed, recommended, and unresolved.
 
 ---
@@ -228,7 +228,7 @@
 | **Impact if A (Unified)** | Simpler codebase. Single transfer mechanism. Easier to extend with new account types. |
 | **Impact if B (Separate)** | More code duplication. Complex transfer logic between different models. More tables to maintain. |
 | **Deadline** | Before Track B (financial modules) begins |
-| **Status** | IMPLEMENTED — Phase 71. `FinancialAccount` model with `FinancialAccountType` enum (treasury/bank/electronicWallet). `lib/core/financial_accounts/financial_account.dart` |
+| **Status** | IMPLEMENTED — Phase 71. `FinancialAccount` model with `FinancialAccountType` enum (treasury/bank/electronicWallet). `lib/core/financial_accounts/financial_account.dart`. Commit merged into baseline `4d8705b`. |
 
 ---
 
@@ -328,7 +328,7 @@
 | **Impact if B (No)** | Simpler UI and ledger. Less flexible. May not match real-world business practices. |
 | **Deadline** | Before Track B begins |
 | **Owner decision** | Max 3–5 payment methods per invoice; per-account owner configuration; partial payments allowed; no new financial-account creation during split payment; single-account fallback for full payments. |
-| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
+| **Status** | IMPLEMENTED Core — Commit `839ff78`, Tag `dc-u002-split-payments-pass`. End-User UI: OPEN. |
 
 ---
 
@@ -390,7 +390,7 @@
 | **Impact if B (Summary)** | Simpler. Shows totals without physical count. Less accurate. |
 | **Impact if C (Not required)** | Simplest. No closing workflow. Risk of unaccounted differences. |
 | **Deadline** | Before Track B begins |
-| **Status** | REQUIRES OWNER DECISION — OPEN. Phase 73 froze scope only; it did not select an alternative. No hard daily close, accounting-period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction shall be implemented until an explicit owner decision is recorded. |
+| **Status** | OWNER DECISION ADOPTED — Phase 78. IMPLEMENTATION PENDING. No hard daily close, accounting-period lock, posting lock, automatic carry-forward, irreversible close, or backdated-entry restriction shall be implemented until the implementation phase is executed. |
 
 ---
 
@@ -407,7 +407,7 @@
 | **Impact if C (With approval)** | Middle ground. Owner must approve credit. Adds workflow step. |
 | **Deadline** | Before Track B begins |
 | **Owner decision** | Per-account Boolean `allowNegativeBalance`; owner-only toggle; owner approval required for each negative-balance operation; non-owner operations blocked when balance insufficient; owner can override with audit trail. |
-| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTED |
+| **Status** | IMPLEMENTED — Commit `af56ced`, Tag `dc-u007-windows-release-build-verified`. |
 
 ---
 
@@ -424,7 +424,7 @@
 | **Impact if C (With approval)** | Middle ground. Owner must approve overpayments. Adds workflow step. |
 | **Deadline** | Before Track B begins |
 | **Owner decision** | Owner approval per overpayment operation; recorded as customer/supplier credit or advance; no editing of original collection/payment document; refund via separate compensating entry from same account. |
-| **Status** | OWNER DECISION ADOPTED — Phase 78; IMPLEMENTATION PENDING |
+| **Status** | IMPLEMENTED Core — Commit `59d689f`, Tag `dc-u008-overpayments-advances-refunds-pass`. End-User UI: OPEN. |
 
 ---
 
@@ -496,7 +496,7 @@
 
 ## Phase 74 — Internal Financial Transfer Decisions
 
-All decisions in this section are linked to Phase 74 and `ACC-011`. They remain open; no production transfer behavior is authorized by recording them.
+All decisions in this section are linked to Phase 74 and `ACC-011`. All have been implemented in Phase 76 (Commit merged into baseline `4d8705b`). See DC-U014 through DC-U024 below.
 
 ### DC-U013: Transfer fees
 
@@ -509,7 +509,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Fees cannot be silently absorbed into the transfer pair. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | No transfer fees in the first release. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U014: Insufficient source balance
 
@@ -522,7 +522,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Determines transfer validation and whether a new balance guard is required. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Block a new transfer when the source account has insufficient balance. This applies to new transfers only and does not automatically change legacy financial-operation rules. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U015: Inactive accounts
 
@@ -535,7 +535,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Affects account selection and repository validation. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | New transfers use active accounts only. Inactive accounts remain visible in historical statements and records. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U016: Transfer date and backdating
 
@@ -548,7 +548,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Affects statement order and future relationship to `DC-U006`. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Allow auditable past effective dates, prohibit future dates, and retain actual creation time separately. Revisit only after `DC-U006` closing policy is decided. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U017: Cancellation and reversal
 
@@ -561,7 +561,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Determines reversal linkage, permissions, and duplicate-reversal prevention. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Support documented paired reversal with mandatory reason. Original transfer is neither deleted nor edited; repeated reversal is prohibited. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U018: Transfer permissions
 
@@ -574,7 +574,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Requires matching UI and repository authorization. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Owner only may create and reverse transfers in the first release. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U019: Transfer idempotency
 
@@ -587,7 +587,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Prevents duplicate paired movements during retry. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Use both client request ID and unique transfer reference to protect retries. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U020: Transfer numbering
 
@@ -600,7 +600,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Defines the shared human-facing reference. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Use stable internal UUID with a clear sequential display number. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U021: Notes and reasons
 
@@ -613,7 +613,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Affects data validation and audit detail. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Normal transfer note is optional; a reversal reason is mandatory. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U022: Allowed account types
 
@@ -626,7 +626,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Defines eligible source/destination combinations. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Allow all active financial accounts, including treasury, bank, wallet, and distinct accounts of the same type. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U023: Edit policy
 
@@ -639,7 +639,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Protects audit history and statement consistency. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Saved transfer is immutable; correction is documented reversal followed by a new transfer. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ### DC-U024: Owner confirmation UX
 
@@ -652,7 +652,7 @@ All decisions in this section are linked to Phase 74 and `ACC-011`. They remain 
 | **Impact** | Affects future Arabic RTL flow and error prevention. |
 | **Deadline** | Before internal-transfer implementation |
 | **Owner decision** | Show full review of source, destination, amount, date, note, and both balances, then one final confirmation. No large-amount threshold is adopted. |
-| **Status** | OWNER DECISION RECORDED — Phase 75 |
+| **Status** | IMPLEMENTED — Phase 76; Commit merged into baseline `4d8705b` |
 
 ---
 
@@ -671,13 +671,13 @@ DC-004 (Mobile app)
 └── DC-U010 (Hosting provider) — mobile needs cloud backend
 
 DC-006 (Treasury/bank/wallets)
-├── DC-R001 (Unified account model) — must decide before Track B
-├── DC-U002 (Split payment) — must decide before Track B
-├── DC-U003 (Multi-currency) — must decide before Track B
-├── DC-U005 (Cash registers) — must decide before Track B
-├── DC-U006 (Daily closing) — must decide before Track B
-├── DC-U007 (Negative balance) — implemented (negative-balance controls)
-└── DC-U008 (Overpayment) — must decide before Track B
+├── DC-R001 (Unified account model) — IMPLEMENTED (Phase 71)
+├── DC-U002 (Split payment) — IMPLEMENTED Core; UI OPEN
+├── DC-U003 (Multi-currency) — REQUIRES OWNER DECISION
+├── DC-U005 (Cash registers) — REQUIRES OWNER DECISION
+├── DC-U006 (Daily closing) — REQUIRES OWNER DECISION — OPEN
+├── DC-U007 (Negative balance) — IMPLEMENTED (Commit `af56ced`)
+└── DC-U008 (Overpayment) — IMPLEMENTED Core; UI OPEN
 
 DC-005 (Multi-device)
 ├── DC-U004 (Branch support) — must decide before Track B
