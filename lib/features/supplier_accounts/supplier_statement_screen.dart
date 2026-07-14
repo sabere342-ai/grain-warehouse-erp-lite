@@ -184,6 +184,9 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final icon = switch (entry.type) {
       SupplierAccountEntryType.purchase => Icons.shopping_cart_rounded,
       SupplierAccountEntryType.payment => Icons.payments_rounded,
+      SupplierAccountEntryType.advanceApplication => Icons.account_balance_wallet_rounded,
+      SupplierAccountEntryType.advanceApplicationReversal => Icons.undo_rounded,
+      SupplierAccountEntryType.advanceRefundReversal => Icons.undo_rounded,
       SupplierAccountEntryType.paymentCancellation => Icons.undo_rounded,
       SupplierAccountEntryType.openingBalance => Icons.account_balance_rounded,
     };
@@ -192,6 +195,9 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       SupplierAccountEntryType.payment => 'دفعة للمورد',
       SupplierAccountEntryType.paymentCancellation => 'عكس دفعة للمورد',
       SupplierAccountEntryType.openingBalance => 'رصيد افتتاحي',
+      SupplierAccountEntryType.advanceApplication => 'Supplier advance application',
+      SupplierAccountEntryType.advanceApplicationReversal => 'Supplier advance application reversal',
+      SupplierAccountEntryType.advanceRefundReversal => 'Supplier advance refund reversal',
     };
     final amountText = switch (entry.type) {
       SupplierAccountEntryType.purchase ||
@@ -199,6 +205,12 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       SupplierAccountEntryType.paymentCancellation =>
         MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh),
       SupplierAccountEntryType.payment =>
+        MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh),
+      SupplierAccountEntryType.advanceApplication =>
+        MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh),
+      SupplierAccountEntryType.advanceApplicationReversal =>
+        MoneyUtils.formatPiastersAsEgp(entry.debitAmountQirsh),
+      SupplierAccountEntryType.advanceRefundReversal =>
         MoneyUtils.formatPiastersAsEgp(entry.creditAmountQirsh),
     };
     return PremiumCard(

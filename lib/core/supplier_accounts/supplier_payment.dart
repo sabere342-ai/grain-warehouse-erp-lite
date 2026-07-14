@@ -12,6 +12,8 @@ class SupplierPaymentRecord {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.settledAmountQirsh,
+    this.advanceAmountQirsh = 0,
     this.cancellation,
   });
 
@@ -25,6 +27,8 @@ class SupplierPaymentRecord {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final int? settledAmountQirsh;
+  final int advanceAmountQirsh;
   final SupplierPaymentCancellation? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
@@ -65,6 +69,7 @@ class SupplierPaymentDraft {
     this.approvedByUserId,
     this.negativeBalanceApprovalId,
     this.operationRequestId,
+    this.overpaymentApprovalId,
   });
 
   final String supplierId;
@@ -78,4 +83,5 @@ class SupplierPaymentDraft {
   final String? approvedByUserId;
   final String? negativeBalanceApprovalId;
   final String? operationRequestId;
+  final String? overpaymentApprovalId;
 }

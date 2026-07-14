@@ -23,7 +23,9 @@ enum NegativeBalanceOperationType {
   supplierPayment,
   purchasePayment,
   transfer,
-  cancellationReversal;
+  cancellationReversal,
+  customerOverpayment,
+  supplierOverpayment;
 
   String get labelAr {
     switch (this) {
@@ -37,8 +39,20 @@ enum NegativeBalanceOperationType {
         return 'تحويل مالي';
       case NegativeBalanceOperationType.cancellationReversal:
         return 'عكس إلغاء';
+      case NegativeBalanceOperationType.customerOverpayment:
+        return 'Customer overpayment';
+      case NegativeBalanceOperationType.supplierOverpayment:
+        return 'Supplier overpayment';
     }
   }
+}
+
+extension NegativeBalanceOperationTypePolicy on NegativeBalanceOperationType {
+  bool get requiresNegativeBalance => switch (this) {
+        NegativeBalanceOperationType.customerOverpayment ||
+        NegativeBalanceOperationType.supplierOverpayment => false,
+        _ => true,
+      };
 }
 
 class NegativeBalanceApproval {

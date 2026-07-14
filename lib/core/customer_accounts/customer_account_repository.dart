@@ -3,10 +3,14 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
@@ -27,6 +31,16 @@ abstract class CustomerAccountRepository {
   Future<CustomerCollectionRecord> createCollection(
     CustomerCollectionDraft draft,
   );
+  Future<List<CustomerAdvance>> listAdvances();
+  Future<List<CustomerAdvanceApplication>> listAdvanceApplications();
+  Future<List<CustomerAdvanceRefund>> listAdvanceRefunds();
+  Future<int> remainingAdvanceQirsh(String advanceId);
+  Future<CustomerAdvanceApplication> applyAdvance(
+    CustomerAdvanceApplicationDraft draft,
+  );
+  Future<CustomerAdvanceRefund> refundAdvance(CustomerAdvanceRefundDraft draft);
+  Future<CustomerAdvanceApplication> reverseAdvanceApplication({required AppUser user, required String applicationId, required String reason, required String operationRequestId});
+  Future<CustomerAdvanceRefund> reverseAdvanceRefund({required AppUser user, required String refundId, required String reason, required String operationRequestId, String? overpaymentApprovalId});
   Future<CustomerCollectionCancellation> cancelCollection({
     required AppUser user,
     required String collectionId,
@@ -55,19 +69,29 @@ class LocalCustomerAccountRepository
     required CustomerRepository customerRepository,
     AuditLogRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
+    NegativeBalanceApprovalService? negativeBalanceApprovalService,
   })  : _customerRepository = customerRepository,
-        _auditLogRepository = auditLogRepository,
-        _financialAccountRepository = financialAccountRepository;
+        _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
+        _financialAccountRepository = financialAccountRepository,
+        _negativeBalanceApprovalService = negativeBalanceApprovalService;
 
   final CustomerRepository _customerRepository;
-  final AuditLogRepository? _auditLogRepository;
+  final AuditLogRepository _auditLogRepository;
   final FinancialAccountRepository? _financialAccountRepository;
+  final NegativeBalanceApprovalService? _negativeBalanceApprovalService;
   final List<CustomerAccountEntry> _entries = [];
   final List<CustomerCollectionRecord> _collections = [];
+  final List<CustomerAdvance> _advances = [];
+  final List<CustomerAdvanceApplication> _advanceApplications = [];
+  final List<CustomerAdvanceRefund> _advanceRefunds = [];
+  final Map<String, String> _advanceRequestFingerprints = {};
   final Map<String, String> _cancellationRequestIds = {};
   int _generatedEntryIdCounter = 0;
   int _generatedCollectionIdCounter = 0;
   int _generatedCancellationIdCounter = 0;
+  int _generatedAdvanceIdCounter = 0;
+  int _generatedAdvanceApplicationIdCounter = 0;
+  int _generatedAdvanceRefundIdCounter = 0;
 
   @override
   Future<List<CustomerAccountEntry>> listEntries() async {
@@ -236,11 +260,21 @@ class LocalCustomerAccountRepository
     );
     _validateCollectionDraft(draft);
     final balance = await balanceForCustomer(customer.id);
-    if (balance <= 0) {
-      throw StateError('Customer has no outstanding balance.');
-    }
-    if (draft.amountQirsh > balance) {
-      throw StateError('Collection exceeds customer balance.');
+    final settledAmountQirsh = balance <= 0
+        ? 0
+        : draft.amountQirsh < balance
+            ? draft.amountQirsh
+            : balance;
+    final advanceAmountQirsh = draft.amountQirsh - settledAmountQirsh;
+    if (advanceAmountQirsh > 0) {
+      if (_normalizedOptionalText(draft.financialAccountId) == null ||
+          _normalizedOptionalText(draft.operationRequestId) == null ||
+          _normalizedOptionalText(draft.overpaymentApprovalId) == null) {
+        throw StateError('Customer overpayment requires account, request id, and owner approval.');
+      }
+      if (_negativeBalanceApprovalService == null) {
+        throw StateError('Customer advance approval service is not configured.');
+      }
     }
 
     final now = DateTime.now();
@@ -255,55 +289,337 @@ class LocalCustomerAccountRepository
       notes: _normalizedOptionalText(draft.notes),
       financialAccountId: draft.financialAccountId,
       paymentMethod: draft.paymentMethod,
+      settledAmountQirsh: settledAmountQirsh,
+      advanceAmountQirsh: advanceAmountQirsh,
     );
     _validateCollection(collection);
 
-    final entry = CustomerAccountEntry(
-      id: _generateEntryId(now),
-      customerId: customer.id,
-      date: collection.date,
-      type: CustomerAccountEntryType.collection,
-      debitAmountQirsh: 0,
-      creditAmountQirsh: collection.amountQirsh,
-      sourceDocumentType: 'customerCollection',
-      sourceDocumentId: collection.id,
-      descriptionAr:
-          '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
-      createdAt: now,
-      createdByUserId: collection.createdByUserId,
-    );
-    _validateEntry(entry);
+    final entry = settledAmountQirsh == 0
+        ? null
+        : CustomerAccountEntry(
+            id: _generateEntryId(now),
+            customerId: customer.id,
+            date: collection.date,
+            type: CustomerAccountEntryType.collection,
+            debitAmountQirsh: 0,
+            creditAmountQirsh: settledAmountQirsh,
+            sourceDocumentType: 'customerCollection',
+            sourceDocumentId: collection.id,
+            descriptionAr: 'Collection from ${customer.name}',
+            createdAt: now,
+            createdByUserId: collection.createdByUserId,
+          );
+    if (entry != null) _validateEntry(entry);
+    final advance = advanceAmountQirsh == 0
+        ? null
+        : CustomerAdvance(
+            id: _generateAdvanceId(now),
+            customerId: customer.id,
+            sourceCollectionId: collection.id,
+            financialAccountId: collection.financialAccountId!.trim(),
+            amountQirsh: advanceAmountQirsh,
+            createdAt: now,
+            createdByUserId: collection.createdByUserId,
+            ownerApprovalId: draft.overpaymentApprovalId!.trim(),
+            operationRequestId: draft.operationRequestId!.trim(),
+            paymentMethod: collection.paymentMethod,
+          );
 
-    _collections.add(collection);
-    _entries.add(entry);
-    await _recordAudit(
-      actionType: 'customer.collection.recorded',
-      descriptionAr:
-          '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}.',
-      referenceId: collection.id,
-    );
-
-    final faRepo = _financialAccountRepository;
-    if (faRepo != null &&
-        collection.financialAccountId != null &&
-        collection.financialAccountId!.isNotEmpty) {
-      await faRepo.createEntry(
-        accountId: collection.financialAccountId!,
-        direction: FinancialAccountEntryDirection.inflow,
-        amountQirsh: collection.amountQirsh,
-        sourceType: FinancialAccountEntrySource.customerCollection,
-        sourceDocumentId: collection.id,
-        effectiveDate: collection.date,
-        createdByUserId: collection.createdByUserId,
-        reference:
-            '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${customer.name}',
-        note:
-            '\u062a\u062d\u0635\u064a\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 ${collection.amountQirsh} \u0642\u064a\u0631\u0634',
-        paymentMethod: collection.paymentMethod,
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    final financialRepository = _financialAccountRepository;
+    if (financialRepository is TransactionSnapshotProvider) {
+      snapshots.add(
+        (financialRepository as TransactionSnapshotProvider)
+            .createTransactionSnapshot(),
       );
+    } else if (collection.financialAccountId?.trim().isNotEmpty == true) {
+      throw StateError('Financial account repository is not transaction-safe.');
     }
+    final approvalService = _negativeBalanceApprovalService;
+    if (advance != null) snapshots.add(approvalService!.createTransactionSnapshot());
+    return RepositoryTransaction.execute(snapshots, () async {
+      NegativeBalanceApprovalBinding? advanceApprovalBinding;
+      final requestId = _normalizedOptionalText(draft.operationRequestId);
+      final fingerprint = _collectionFingerprint(draft);
+      if (requestId != null && _advanceRequestFingerprints.containsKey(requestId)) {
+        throw StateError('Customer collection request was already processed.');
+      }
+      final lockedBalance = await balanceForCustomer(customer.id);
+      final lockedSettled = lockedBalance <= 0
+          ? 0
+          : draft.amountQirsh < lockedBalance ? draft.amountQirsh : lockedBalance;
+      if (lockedSettled != settledAmountQirsh) {
+        throw StateError('Customer balance changed; retry the collection.');
+      }
+      if (advance != null) {
+        final activeApprovalService = approvalService!;
+        final accountBalance = await financialRepository!.currentBalanceForAccount(advance.financialAccountId);
+        advanceApprovalBinding = NegativeBalanceApprovalBinding(
+          approvalId: advance.ownerApprovalId,
+          transactionId: collection.id,
+          accountId: advance.financialAccountId,
+          amountQirsh: advance.amountQirsh,
+          operationType: NegativeBalanceOperationType.customerOverpayment,
+          sourceDocumentId: requestId!,
+          sourceDocumentType: 'customerOverpayment',
+          requestedByUserId: collection.createdByUserId,
+          balanceBeforeQirsh: accountBalance,
+          expectedBalanceAfterQirsh: accountBalance + collection.amountQirsh,
+        );
+        await activeApprovalService.verify(advanceApprovalBinding);
+      }
+      _collections.add(collection);
+      if (entry != null) _entries.add(entry);
+      if (advance != null) _advances.add(advance);
+      if (financialRepository != null && collection.financialAccountId?.trim().isNotEmpty == true) {
+        await financialRepository.createEntry(
+          accountId: collection.financialAccountId!,
+          direction: FinancialAccountEntryDirection.inflow,
+          amountQirsh: collection.amountQirsh,
+          sourceType: FinancialAccountEntrySource.customerCollection,
+          sourceDocumentId: collection.id,
+          effectiveDate: collection.date,
+          createdByUserId: collection.createdByUserId,
+          reference: 'Customer collection ${customer.name}',
+          note: 'Collection ${collection.amountQirsh} qirsh',
+          paymentMethod: collection.paymentMethod,
+        );
+      }
+      if (advance != null) {
+        await approvalService!.consume(advanceApprovalBinding!);
+      }
+      if (requestId != null) _advanceRequestFingerprints[requestId] = fingerprint;
+      await _recordAudit(
+        actionType: advance == null ? 'customer.collection.recorded' : 'customer.advance.created',
+        descriptionAr: 'Customer collection recorded.',
+        referenceId: advance?.id ?? collection.id,
+      );
+      return collection;
+    });
+  }
 
-    return collection;
+  @override
+  Future<List<CustomerAdvance>> listAdvances() async =>
+      List<CustomerAdvance>.unmodifiable(_advances);
+
+  @override
+  Future<List<CustomerAdvanceApplication>> listAdvanceApplications() async =>
+      List<CustomerAdvanceApplication>.unmodifiable(_advanceApplications);
+
+  @override
+  Future<List<CustomerAdvanceRefund>> listAdvanceRefunds() async =>
+      List<CustomerAdvanceRefund>.unmodifiable(_advanceRefunds);
+
+  @override
+  Future<int> remainingAdvanceQirsh(String advanceId) async {
+    final id = _normalizedRequiredId(advanceId, 'advanceId');
+    final advance = _advanceById(id);
+    if (advance.isReversed) return 0;
+    final applied = _advanceApplications
+        .where((value) => value.advanceId == id && !value.isReversed)
+        .fold<int>(0, (total, value) => total + value.amountQirsh);
+    final refunded = _advanceRefunds
+        .where((value) => value.advanceId == id && !value.isReversed)
+        .fold<int>(0, (total, value) => total + value.amountQirsh);
+    return advance.amountQirsh - applied - refunded;
+  }
+
+  @override
+  Future<CustomerAdvanceApplication> applyAdvance(
+    CustomerAdvanceApplicationDraft draft,
+  ) async {
+    final advance = _advanceById(_normalizedRequiredId(draft.advanceId, 'advanceId'));
+    final customerId = _normalizedRequiredId(draft.customerId, 'customerId');
+    final requestId = _normalizedRequiredId(draft.operationRequestId, 'operationRequestId');
+    _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
+    if (draft.amountQirsh <= 0) throw ArgumentError.value(draft.amountQirsh, 'amountQirsh');
+    if (advance.customerId != customerId || advance.isReversed) {
+      throw StateError('Advance does not belong to the active customer.');
+    }
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    return RepositoryTransaction.execute(snapshots, () async {
+      final fingerprint = 'apply|${draft.advanceId}|$customerId|${draft.amountQirsh}|${draft.date.toUtc().toIso8601String()}';
+      final replay = _advanceRequestFingerprints[requestId];
+      if (replay != null) {
+        if (replay != fingerprint) throw StateError('Request id payload mismatch.');
+        return _advanceApplications.firstWhere((value) => value.operationRequestId == requestId);
+      }
+      final receivable = await balanceForCustomer(customerId);
+      final remaining = await remainingAdvanceQirsh(advance.id);
+      if (receivable < draft.amountQirsh || remaining < draft.amountQirsh) {
+        throw StateError('Advance application exceeds its available amount or customer receivable.');
+      }
+      final now = DateTime.now();
+      final entry = CustomerAccountEntry(
+        id: _generateEntryId(now), customerId: customerId, date: draft.date,
+        type: CustomerAccountEntryType.advanceApplication,
+        debitAmountQirsh: 0, creditAmountQirsh: draft.amountQirsh,
+        sourceDocumentType: 'customerAdvanceApplication', sourceDocumentId: requestId,
+        descriptionAr: 'Customer advance application', createdAt: now,
+        createdByUserId: draft.createdByUserId.trim(),
+      );
+      _validateEntry(entry);
+      final application = CustomerAdvanceApplication(
+        id: _generateAdvanceApplicationId(now), advanceId: advance.id,
+        customerId: customerId, amountQirsh: draft.amountQirsh, appliedAt: now,
+        createdByUserId: draft.createdByUserId.trim(), operationRequestId: requestId,
+        customerLedgerEntryId: entry.id,
+      );
+      _entries.add(entry);
+      _advanceApplications.add(application);
+      _advanceRequestFingerprints[requestId] = fingerprint;
+      await _recordAudit(actionType: 'customer.advance.applied', descriptionAr: 'Customer advance applied.', referenceId: application.id);
+      return application;
+    });
+  }
+
+  @override
+  Future<CustomerAdvanceRefund> refundAdvance(CustomerAdvanceRefundDraft draft) async {
+    final advance = _advanceById(_normalizedRequiredId(draft.advanceId, 'advanceId'));
+    final requestId = _normalizedRequiredId(draft.operationRequestId, 'operationRequestId');
+    _normalizedRequiredId(draft.createdByUserId, 'createdByUserId');
+    if (draft.amountQirsh <= 0) throw ArgumentError.value(draft.amountQirsh, 'amountQirsh');
+    final accountId = _normalizedOptionalText(draft.financialAccountId) ?? advance.financialAccountId;
+    if (accountId != advance.financialAccountId) throw StateError('Refund must use the original financial account.');
+    final financialRepository = _financialAccountRepository ??
+        (throw StateError('Financial account repository is required and must be transaction-safe.'));
+    if (financialRepository is! TransactionSnapshotProvider) throw StateError('Financial account repository is required and must be transaction-safe.');
+    final financialSnapshotProvider = financialRepository as TransactionSnapshotProvider;
+    return RepositoryTransaction.execute(<SnapshotHolder>[createTransactionSnapshot(), financialSnapshotProvider.createTransactionSnapshot()], () async {
+      final fingerprint = 'refund|${draft.advanceId}|${draft.amountQirsh}|$accountId|${draft.date.toUtc().toIso8601String()}';
+      final replay = _advanceRequestFingerprints[requestId];
+      if (replay != null) {
+        if (replay != fingerprint) throw StateError('Request id payload mismatch.');
+        return _advanceRefunds.firstWhere((value) => value.operationRequestId == requestId);
+      }
+      if (advance.isReversed || await remainingAdvanceQirsh(advance.id) < draft.amountQirsh) {
+        throw StateError('Refund exceeds available customer advance.');
+      }
+      final now = DateTime.now();
+      final financialEntry = await financialRepository.createEntry(
+        accountId: accountId, direction: FinancialAccountEntryDirection.outflow,
+        amountQirsh: draft.amountQirsh, sourceType: FinancialAccountEntrySource.customerAdvanceRefund,
+        sourceDocumentId: requestId, effectiveDate: draft.date,
+        createdByUserId: draft.createdByUserId.trim(), paymentMethod: draft.paymentMethod ?? advance.paymentMethod,
+        negativeBalanceApprovalId: draft.negativeBalanceApprovalId, approvalSourceDocumentId: requestId,
+        reference: 'Customer advance refund',
+      );
+      final refund = CustomerAdvanceRefund(
+        id: _generateAdvanceRefundId(now), advanceId: advance.id, customerId: advance.customerId,
+        financialAccountId: accountId, amountQirsh: draft.amountQirsh, refundedAt: now,
+        createdByUserId: draft.createdByUserId.trim(), operationRequestId: requestId,
+        financialEntryId: financialEntry.id,
+      );
+      _advanceRefunds.add(refund);
+      _advanceRequestFingerprints[requestId] = fingerprint;
+      await _recordAudit(actionType: 'customer.advance.refunded', descriptionAr: 'Customer advance refunded.', referenceId: refund.id);
+      return refund;
+    });
+  }
+
+  @override
+  Future<CustomerAdvanceApplication> reverseAdvanceApplication({required AppUser user, required String applicationId, required String reason, required String operationRequestId}) async {
+    _requireOwner(user);
+    final id = _normalizedRequiredId(applicationId, 'applicationId');
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final requestId = _normalizedRequiredId(operationRequestId, 'operationRequestId');
+    return RepositoryTransaction.execute(<SnapshotHolder>[createTransactionSnapshot()], () async {
+      final applicationIndex = _advanceApplications.indexWhere((value) => value.id == id);
+      if (applicationIndex < 0) throw StateError('Customer advance application was not found.');
+      final application = _advanceApplications[applicationIndex];
+      final fingerprint = 'customer|reverse-application|$id|$cleanReason';
+      final replay = _advanceRequestFingerprints[requestId];
+      if (replay != null) {
+        if (replay != fingerprint) throw StateError('Request id payload mismatch.');
+        return _advanceApplications[applicationIndex];
+      }
+      final advance = _advanceById(application.advanceId);
+      if (advance.isReversed) throw StateError('Customer advance source is reversed.');
+      if (application.isReversed) throw StateError('Customer advance application was already reversed.');
+      final now = DateTime.now();
+      final entry = CustomerAccountEntry(
+        id: _generateEntryId(now), customerId: application.customerId, date: now,
+        type: CustomerAccountEntryType.advanceApplicationReversal,
+        debitAmountQirsh: application.amountQirsh, creditAmountQirsh: 0,
+        sourceDocumentType: 'customerAdvanceApplicationReversal', sourceDocumentId: application.id,
+        descriptionAr: 'Customer advance application reversal: $cleanReason',
+        createdAt: now, createdByUserId: user.id,
+      );
+      _validateEntry(entry);
+      _entries.add(entry);
+      _advanceApplications[applicationIndex] = CustomerAdvanceApplication(
+        id: application.id, advanceId: application.advanceId, customerId: application.customerId,
+        amountQirsh: application.amountQirsh, appliedAt: application.appliedAt,
+        createdByUserId: application.createdByUserId, operationRequestId: application.operationRequestId,
+        customerLedgerEntryId: application.customerLedgerEntryId, reversedAt: now,
+        reversedByUserId: user.id, reversalReason: cleanReason, reversalLedgerEntryId: entry.id,
+      );
+      _advanceRequestFingerprints[requestId] = fingerprint;
+      await _recordAudit(actionType: 'customer.advance.application.reversed', descriptionAr: 'Customer advance application reversed.', referenceId: application.id);
+      return _advanceApplications[applicationIndex];
+    });
+  }
+
+  @override
+  Future<CustomerAdvanceRefund> reverseAdvanceRefund({required AppUser user, required String refundId, required String reason, required String operationRequestId, String? overpaymentApprovalId}) async {
+    _requireOwner(user);
+    final id = _normalizedRequiredId(refundId, 'refundId');
+    final cleanReason = _normalizedRequiredText(reason, 'reason');
+    final requestId = _normalizedRequiredId(operationRequestId, 'operationRequestId');
+    final financialRepository = _financialAccountRepository ??
+        (throw StateError('Financial account repository is required.'));
+    if (financialRepository is! TransactionSnapshotProvider) throw StateError('Financial account repository must be transaction-safe.');
+    final financialSnapshotProvider = financialRepository as TransactionSnapshotProvider;
+    return RepositoryTransaction.execute(<SnapshotHolder>[createTransactionSnapshot(), financialSnapshotProvider.createTransactionSnapshot()], () async {
+      final refundIndex = _advanceRefunds.indexWhere((value) => value.id == id);
+      if (refundIndex < 0) throw StateError('Customer advance refund was not found.');
+      final refund = _advanceRefunds[refundIndex];
+      final fingerprint = 'customer|reverse-refund|$id|$cleanReason';
+      final replay = _advanceRequestFingerprints[requestId];
+      if (replay != null) {
+        if (replay != fingerprint) throw StateError('Request id payload mismatch.');
+        return _advanceRefunds[refundIndex];
+      }
+      if (refund.isReversed) throw StateError('Customer advance refund was already reversed.');
+      final advance = _advanceById(refund.advanceId);
+      if (advance.isReversed) throw StateError('Customer advance source is reversed.');
+      final originalFinancialEntry = await financialRepository.statementForAccount(refund.financialAccountId);
+      FinancialAccountEntry? originalEntry;
+      for (final line in originalFinancialEntry.lines) {
+        if (line.entry.sourceDocumentId == refund.operationRequestId &&
+            line.entry.sourceType == FinancialAccountEntrySource.customerAdvanceRefund) {
+          originalEntry = line.entry;
+          break;
+        }
+      }
+      if (originalEntry == null) throw StateError('Financial entry for this refund was not found.');
+      final now = DateTime.now();
+      final reversalEntry = await financialRepository.createEntry(
+        accountId: refund.financialAccountId,
+        direction: FinancialAccountEntryDirection.inflow,
+        amountQirsh: refund.amountQirsh,
+        sourceType: FinancialAccountEntrySource.customerAdvanceRefundReversal,
+        sourceDocumentId: refund.id,
+        effectiveDate: now,
+        createdByUserId: user.id,
+        reversalOf: originalEntry.id,
+        reference: 'Customer advance refund reversal',
+        note: cleanReason,
+        negativeBalanceApprovalId: overpaymentApprovalId,
+        approvalSourceDocumentId: requestId,
+      );
+      _advanceRefunds[refundIndex] = CustomerAdvanceRefund(
+        id: refund.id, advanceId: refund.advanceId, customerId: refund.customerId,
+        financialAccountId: refund.financialAccountId, amountQirsh: refund.amountQirsh,
+        refundedAt: refund.refundedAt, createdByUserId: refund.createdByUserId,
+        operationRequestId: refund.operationRequestId, financialEntryId: refund.financialEntryId,
+        reversedAt: now, reversedByUserId: user.id, reversalReason: cleanReason,
+        reversalFinancialEntryId: reversalEntry.id,
+      );
+      _advanceRequestFingerprints[requestId] = fingerprint;
+      await _recordAudit(actionType: 'customer.advance.refund.reversed', descriptionAr: 'Customer advance refund reversed.', referenceId: refund.id);
+      return _advanceRefunds[refundIndex];
+    });
   }
 
   @override
@@ -345,6 +661,32 @@ class LocalCustomerAccountRepository
       if (collection.isCancelled) {
         throw StateError('Customer collection was already cancelled.');
       }
+      final sourceAdvanceIndex = _advances.indexWhere(
+        (advance) => advance.sourceCollectionId == collection.id,
+      );
+      if (sourceAdvanceIndex >= 0) {
+        final advance = _advances[sourceAdvanceIndex];
+        final hasActiveDependents = _advanceApplications.any(
+              (value) => value.advanceId == advance.id && !value.isReversed,
+            ) ||
+            _advanceRefunds.any(
+              (value) => value.advanceId == advance.id && !value.isReversed,
+            );
+        if (hasActiveDependents) {
+          throw StateError('Customer advance source cannot be reversed while active applications or refunds exist.');
+        }
+        _advances[sourceAdvanceIndex] = CustomerAdvance(
+          id: advance.id, customerId: advance.customerId,
+          sourceCollectionId: advance.sourceCollectionId,
+          financialAccountId: advance.financialAccountId,
+          amountQirsh: advance.amountQirsh, createdAt: advance.createdAt,
+          createdByUserId: advance.createdByUserId,
+          ownerApprovalId: advance.ownerApprovalId,
+          operationRequestId: advance.operationRequestId,
+          paymentMethod: advance.paymentMethod, reversedAt: DateTime.now(),
+          reversedByUserId: user.id,
+        );
+      }
       final customer = await _requireCustomer(
         collection.customerId,
         includeInactive: true,
@@ -356,7 +698,7 @@ class LocalCustomerAccountRepository
         customerId: collection.customerId,
         date: now,
         type: CustomerAccountEntryType.collectionCancellation,
-        debitAmountQirsh: collection.amountQirsh,
+        debitAmountQirsh: collection.settledAmountQirsh ?? collection.amountQirsh,
         creditAmountQirsh: 0,
         sourceDocumentType: 'customerCollectionCancellation',
         sourceDocumentId: cancellationId,
@@ -571,23 +913,41 @@ class LocalCustomerAccountRepository
   Future<void> restoreCustomerAccountsIntoEmpty({
     required List<CustomerAccountEntry> entries,
     required List<CustomerCollectionRecord> collections,
+    List<CustomerAdvance> advances = const [],
+    List<CustomerAdvanceApplication> applications = const [],
+    List<CustomerAdvanceRefund> refunds = const [],
   }) async {
-    if (_entries.isNotEmpty || _collections.isNotEmpty) {
+    if (_entries.isNotEmpty || _collections.isNotEmpty || _advances.isNotEmpty ||
+        _advanceApplications.isNotEmpty || _advanceRefunds.isNotEmpty) {
       throw StateError('Customer account repository is not empty.');
     }
     _validateUniqueRestoredEntries(entries);
     _validateUniqueRestoredCollections(collections);
     _entries.addAll(entries);
     _collections.addAll(collections);
+    _validateRestoredAdvances(advances, applications, refunds);
+    _advances.addAll(advances);
+    _advanceApplications.addAll(applications);
+    _advanceRefunds.addAll(refunds);
+    for (final value in [...advances.map((v) => v.operationRequestId), ...applications.map((v) => v.operationRequestId), ...refunds.map((v) => v.operationRequestId)]) {
+      _advanceRequestFingerprints[value] = 'restored:$value';
+    }
   }
 
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _collections.clear();
+    _advances.clear();
+    _advanceApplications.clear();
+    _advanceRefunds.clear();
     _cancellationRequestIds.clear();
+    _advanceRequestFingerprints.clear();
     _generatedEntryIdCounter = 0;
     _generatedCollectionIdCounter = 0;
     _generatedCancellationIdCounter = 0;
+    _generatedAdvanceIdCounter = 0;
+    _generatedAdvanceApplicationIdCounter = 0;
+    _generatedAdvanceRefundIdCounter = 0;
   }
 
   @override
@@ -598,36 +958,50 @@ class LocalCustomerAccountRepository
           'Audit repository does not support atomic transactions.');
     }
     return CompositeSnapshot([
-      ObjectStateSnapshot<
-          (
-            List<CustomerAccountEntry>,
-            List<CustomerCollectionRecord>,
-            Map<String, String>,
-            int,
-            int,
-            int
-          )>(
-        captureState: () => (
-          List<CustomerAccountEntry>.from(_entries),
-          List<CustomerCollectionRecord>.from(_collections),
-          Map<String, String>.from(_cancellationRequestIds),
-          _generatedEntryIdCounter,
-          _generatedCollectionIdCounter,
-          _generatedCancellationIdCounter,
+      ObjectStateSnapshot<_CustomerAccountState>(
+        captureState: () => _CustomerAccountState(
+          entries: List<CustomerAccountEntry>.from(_entries),
+          collections: List<CustomerCollectionRecord>.from(_collections),
+          advances: List<CustomerAdvance>.from(_advances),
+          applications: List<CustomerAdvanceApplication>.from(_advanceApplications),
+          refunds: List<CustomerAdvanceRefund>.from(_advanceRefunds),
+          cancellationRequestIds: Map<String, String>.from(_cancellationRequestIds),
+          advanceRequestFingerprints: Map<String, String>.from(_advanceRequestFingerprints),
+          entryCounter: _generatedEntryIdCounter,
+          collectionCounter: _generatedCollectionIdCounter,
+          cancellationCounter: _generatedCancellationIdCounter,
+          advanceCounter: _generatedAdvanceIdCounter,
+          applicationCounter: _generatedAdvanceApplicationIdCounter,
+          refundCounter: _generatedAdvanceRefundIdCounter,
         ),
         restoreState: (state) {
           _entries
             ..clear()
-            ..addAll(state.$1);
+            ..addAll(state.entries);
           _collections
             ..clear()
-            ..addAll(state.$2);
+            ..addAll(state.collections);
+          _advances
+            ..clear()
+            ..addAll(state.advances);
+          _advanceApplications
+            ..clear()
+            ..addAll(state.applications);
+          _advanceRefunds
+            ..clear()
+            ..addAll(state.refunds);
           _cancellationRequestIds
             ..clear()
-            ..addAll(state.$3);
-          _generatedEntryIdCounter = state.$4;
-          _generatedCollectionIdCounter = state.$5;
-          _generatedCancellationIdCounter = state.$6;
+            ..addAll(state.cancellationRequestIds);
+          _advanceRequestFingerprints
+            ..clear()
+            ..addAll(state.advanceRequestFingerprints);
+          _generatedEntryIdCounter = state.entryCounter;
+          _generatedCollectionIdCounter = state.collectionCounter;
+          _generatedCancellationIdCounter = state.cancellationCounter;
+          _generatedAdvanceIdCounter = state.advanceCounter;
+          _generatedAdvanceApplicationIdCounter = state.applicationCounter;
+          _generatedAdvanceRefundIdCounter = state.refundCounter;
         },
       ),
       (auditRepository as TransactionSnapshotProvider)
@@ -758,6 +1132,59 @@ class LocalCustomerAccountRepository
     return 'ccr-${now.microsecondsSinceEpoch}-$_generatedCancellationIdCounter';
   }
 
+  void _validateRestoredAdvances(
+    List<CustomerAdvance> advances,
+    List<CustomerAdvanceApplication> applications,
+    List<CustomerAdvanceRefund> refunds,
+  ) {
+    final ids = <String>{};
+    for (final value in advances) {
+      if (!value.hasValidId || value.amountQirsh <= 0 || !ids.add(value.id)) {
+        throw StateError('Invalid or duplicate customer advance.');
+      }
+    }
+    final sourceIds = advances.map((value) => value.id).toSet();
+    for (final value in applications) {
+      if (!value.hasValidId || value.amountQirsh <= 0 || !sourceIds.contains(value.advanceId)) {
+        throw StateError('Orphan or invalid customer advance operation.');
+      }
+    }
+    for (final value in refunds) {
+      if (!value.hasValidId || value.amountQirsh <= 0 || !sourceIds.contains(value.advanceId)) {
+        throw StateError('Orphan or invalid customer advance operation.');
+      }
+    }
+  }
+
+  String _generateAdvanceId(DateTime now) {
+    _generatedAdvanceIdCounter++;
+    return 'cad-${now.microsecondsSinceEpoch}-$_generatedAdvanceIdCounter';
+  }
+
+  String _generateAdvanceApplicationId(DateTime now) {
+    _generatedAdvanceApplicationIdCounter++;
+    return 'caa-${now.microsecondsSinceEpoch}-$_generatedAdvanceApplicationIdCounter';
+  }
+
+  String _generateAdvanceRefundId(DateTime now) {
+    _generatedAdvanceRefundIdCounter++;
+    return 'car-${now.microsecondsSinceEpoch}-$_generatedAdvanceRefundIdCounter';
+  }
+
+  CustomerAdvance _advanceById(String id) {
+    for (final advance in _advances) {
+      if (advance.id == id) return advance;
+    }
+    throw StateError('Customer advance was not found.');
+  }
+
+  String _collectionFingerprint(CustomerCollectionDraft draft) => [
+        'collection', draft.customerId.trim(), draft.date.toUtc().toIso8601String(),
+        draft.amountQirsh, draft.createdByUserId.trim(),
+        draft.financialAccountId?.trim() ?? '', draft.paymentMethod?.name ?? '',
+        draft.overpaymentApprovalId?.trim() ?? '',
+      ].join('|');
+
   String? _normalizedOptionalText(String? value) {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {
@@ -771,7 +1198,7 @@ class LocalCustomerAccountRepository
     required String descriptionAr,
     String? referenceId,
   }) async {
-    await _auditLogRepository?.record(
+    await _auditLogRepository.record(
       AuditLogDraft(
         actionType: actionType,
         descriptionAr: descriptionAr,
@@ -779,4 +1206,28 @@ class LocalCustomerAccountRepository
       ),
     );
   }
+}
+
+class _CustomerAccountState {
+  const _CustomerAccountState({
+    required this.entries, required this.collections, required this.advances,
+    required this.applications, required this.refunds,
+    required this.cancellationRequestIds, required this.advanceRequestFingerprints,
+    required this.entryCounter, required this.collectionCounter,
+    required this.cancellationCounter, required this.advanceCounter,
+    required this.applicationCounter, required this.refundCounter,
+  });
+  final List<CustomerAccountEntry> entries;
+  final List<CustomerCollectionRecord> collections;
+  final List<CustomerAdvance> advances;
+  final List<CustomerAdvanceApplication> applications;
+  final List<CustomerAdvanceRefund> refunds;
+  final Map<String, String> cancellationRequestIds;
+  final Map<String, String> advanceRequestFingerprints;
+  final int entryCounter;
+  final int collectionCounter;
+  final int cancellationCounter;
+  final int advanceCounter;
+  final int applicationCounter;
+  final int refundCounter;
 }

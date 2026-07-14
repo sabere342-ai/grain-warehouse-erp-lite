@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/business_identity/business_identit
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
@@ -34,6 +35,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
@@ -136,10 +138,16 @@ class BackupRestoreService {
       await _customerAccountRepository.restoreCustomerAccountsIntoEmpty(
         entries: restored.customerAccountEntries,
         collections: restored.customerCollections,
+        advances: restored.customerAdvances,
+        applications: restored.customerAdvanceApplications,
+        refunds: restored.customerAdvanceRefunds,
       );
       await _supplierAccountRepository.restoreSupplierAccountsIntoEmpty(
         entries: restored.supplierAccountEntries,
         payments: restored.supplierPayments,
+        advances: restored.supplierAdvances,
+        applications: restored.supplierAdvanceApplications,
+        refunds: restored.supplierAdvanceRefunds,
       );
       await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
       await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
@@ -235,12 +243,18 @@ class BackupRestoreService {
     final customerCollections = _optionalList(data, 'customerCollections')
         .map(_parseCustomerCollection)
         .toList();
+    final customerAdvances = _optionalList(data, 'customerAdvances').map(_parseCustomerAdvance).toList();
+    final customerAdvanceApplications = _optionalList(data, 'customerAdvanceApplications').map(_parseCustomerAdvanceApplication).toList();
+    final customerAdvanceRefunds = _optionalList(data, 'customerAdvanceRefunds').map(_parseCustomerAdvanceRefund).toList();
     final supplierAccountEntries = _optionalList(data, 'supplierAccountEntries')
         .map(_parseSupplierAccountEntry)
         .toList();
     final supplierPayments = _optionalList(data, 'supplierPayments')
         .map(_parseSupplierPayment)
         .toList();
+    final supplierAdvances = _optionalList(data, 'supplierAdvances').map(_parseSupplierAdvance).toList();
+    final supplierAdvanceApplications = _optionalList(data, 'supplierAdvanceApplications').map(_parseSupplierAdvanceApplication).toList();
+    final supplierAdvanceRefunds = _optionalList(data, 'supplierAdvanceRefunds').map(_parseSupplierAdvanceRefund).toList();
     final expenses =
         _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs =
@@ -290,8 +304,14 @@ class BackupRestoreService {
       customers: customers,
       customerAccountEntries: customerAccountEntries,
       customerCollections: customerCollections,
+      customerAdvances: customerAdvances,
+      customerAdvanceApplications: customerAdvanceApplications,
+      customerAdvanceRefunds: customerAdvanceRefunds,
       supplierAccountEntries: supplierAccountEntries,
       supplierPayments: supplierPayments,
+      supplierAdvances: supplierAdvances,
+      supplierAdvanceApplications: supplierAdvanceApplications,
+      supplierAdvanceRefunds: supplierAdvanceRefunds,
       expenses: expenses,
       auditLogs: auditLogs,
       financialAccounts: financialAccounts,
@@ -515,6 +535,8 @@ class BackupRestoreService {
       notes: _optionalString(map, 'notes'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      settledAmountQirsh: _optionalInt(map, 'settledAmountQirsh'),
+      advanceAmountQirsh: _optionalInt(map, 'advanceAmountQirsh') ?? 0,
       cancellation: _parseCustomerCollectionCancellation(map['cancellation']),
     );
   }
@@ -529,6 +551,48 @@ class BackupRestoreService {
       isActive: _bool(map, 'isActive'),
       createdAt: _date(map, 'createdAt'),
       updatedAt: _date(map, 'updatedAt'),
+    );
+  }
+
+  CustomerAdvance _parseCustomerAdvance(Object? value) {
+    final map = _map(value);
+    return CustomerAdvance(
+      id: _string(map, 'id'), customerId: _string(map, 'customerId'),
+      sourceCollectionId: _string(map, 'sourceCollectionId'),
+      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'), createdByUserId: _string(map, 'createdByUserId'),
+      ownerApprovalId: _string(map, 'ownerApprovalId'), operationRequestId: _string(map, 'operationRequestId'),
+      paymentMethod: _optionalPaymentMethod(map),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+    );
+  }
+
+  CustomerAdvanceApplication _parseCustomerAdvanceApplication(Object? value) {
+    final map = _map(value);
+    return CustomerAdvanceApplication(
+      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), customerId: _string(map, 'customerId'),
+      amountQirsh: _int(map, 'amountQirsh'), appliedAt: _date(map, 'appliedAt'),
+      createdByUserId: _string(map, 'createdByUserId'), operationRequestId: _string(map, 'operationRequestId'),
+      customerLedgerEntryId: _string(map, 'customerLedgerEntryId'),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+      reversalReason: _optionalString(map, 'reversalReason'),
+      reversalLedgerEntryId: _optionalString(map, 'reversalLedgerEntryId'),
+    );
+  }
+
+  CustomerAdvanceRefund _parseCustomerAdvanceRefund(Object? value) {
+    final map = _map(value);
+    return CustomerAdvanceRefund(
+      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), customerId: _string(map, 'customerId'),
+      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
+      refundedAt: _date(map, 'refundedAt'), createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'), financialEntryId: _string(map, 'financialEntryId'),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+      reversalReason: _optionalString(map, 'reversalReason'),
+      reversalFinancialEntryId: _optionalString(map, 'reversalFinancialEntryId'),
     );
   }
 
@@ -562,7 +626,50 @@ class BackupRestoreService {
       notes: _optionalString(map, 'notes'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      settledAmountQirsh: _optionalInt(map, 'settledAmountQirsh'),
+      advanceAmountQirsh: _optionalInt(map, 'advanceAmountQirsh') ?? 0,
       cancellation: _parseSupplierPaymentCancellation(map['cancellation']),
+    );
+  }
+
+  SupplierAdvance _parseSupplierAdvance(Object? value) {
+    final map = _map(value);
+    return SupplierAdvance(
+      id: _string(map, 'id'), supplierId: _string(map, 'supplierId'), sourcePaymentId: _string(map, 'sourcePaymentId'),
+      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'), createdByUserId: _string(map, 'createdByUserId'),
+      ownerApprovalId: _string(map, 'ownerApprovalId'), operationRequestId: _string(map, 'operationRequestId'),
+      paymentMethod: _optionalPaymentMethod(map),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+    );
+  }
+
+  SupplierAdvanceApplication _parseSupplierAdvanceApplication(Object? value) {
+    final map = _map(value);
+    return SupplierAdvanceApplication(
+      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), supplierId: _string(map, 'supplierId'),
+      amountQirsh: _int(map, 'amountQirsh'), appliedAt: _date(map, 'appliedAt'),
+      createdByUserId: _string(map, 'createdByUserId'), operationRequestId: _string(map, 'operationRequestId'),
+      supplierLedgerEntryId: _string(map, 'supplierLedgerEntryId'),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+      reversalReason: _optionalString(map, 'reversalReason'),
+      reversalLedgerEntryId: _optionalString(map, 'reversalLedgerEntryId'),
+    );
+  }
+
+  SupplierAdvanceRefund _parseSupplierAdvanceRefund(Object? value) {
+    final map = _map(value);
+    return SupplierAdvanceRefund(
+      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), supplierId: _string(map, 'supplierId'),
+      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
+      refundedAt: _date(map, 'refundedAt'), createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'), financialEntryId: _string(map, 'financialEntryId'),
+      reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
+      reversedByUserId: _optionalString(map, 'reversedByUserId'),
+      reversalReason: _optionalString(map, 'reversalReason'),
+      reversalFinancialEntryId: _optionalString(map, 'reversalFinancialEntryId'),
     );
   }
 
@@ -1059,8 +1166,14 @@ class _RestoredBackupData {
     required this.customers,
     required this.customerAccountEntries,
     required this.customerCollections,
+    required this.customerAdvances,
+    required this.customerAdvanceApplications,
+    required this.customerAdvanceRefunds,
     required this.supplierAccountEntries,
     required this.supplierPayments,
+    required this.supplierAdvances,
+    required this.supplierAdvanceApplications,
+    required this.supplierAdvanceRefunds,
     required this.expenses,
     required this.auditLogs,
     required this.financialAccounts,
@@ -1080,8 +1193,14 @@ class _RestoredBackupData {
   final List<Customer> customers;
   final List<CustomerAccountEntry> customerAccountEntries;
   final List<CustomerCollectionRecord> customerCollections;
+  final List<CustomerAdvance> customerAdvances;
+  final List<CustomerAdvanceApplication> customerAdvanceApplications;
+  final List<CustomerAdvanceRefund> customerAdvanceRefunds;
   final List<SupplierAccountEntry> supplierAccountEntries;
   final List<SupplierPaymentRecord> supplierPayments;
+  final List<SupplierAdvance> supplierAdvances;
+  final List<SupplierAdvanceApplication> supplierAdvanceApplications;
+  final List<SupplierAdvanceRefund> supplierAdvanceRefunds;
   final List<ExpenseRecord> expenses;
   final List<AuditLogEntry> auditLogs;
   final List<FinancialAccount> financialAccounts;

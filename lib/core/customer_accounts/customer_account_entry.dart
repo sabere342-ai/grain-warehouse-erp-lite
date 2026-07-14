@@ -4,7 +4,10 @@ enum CustomerAccountEntryType {
   collection,
   openingBalance,
   saleCancellation,
-  collectionCancellation;
+  collectionCancellation,
+  advanceApplication,
+  advanceApplicationReversal,
+  advanceRefundReversal;
 
   String get labelAr {
     switch (this) {
@@ -20,6 +23,12 @@ enum CustomerAccountEntryType {
         return '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639';
       case CustomerAccountEntryType.collectionCancellation:
         return '\u0639\u0643\u0633 \u062a\u062d\u0635\u064a\u0644';
+      case CustomerAccountEntryType.advanceApplication:
+        return 'Customer advance application';
+      case CustomerAccountEntryType.advanceApplicationReversal:
+        return 'Customer advance application reversal';
+      case CustomerAccountEntryType.advanceRefundReversal:
+        return 'Customer advance refund reversal';
     }
   }
 }

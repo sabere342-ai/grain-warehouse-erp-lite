@@ -44,7 +44,8 @@ class NegativeBalanceApprovalService {
     required String ownerPhone,
     required String ownerPassword,
   }) async {
-    if (draft.expectedBalanceAfterQirsh >= 0) {
+    if (draft.operationType.requiresNegativeBalance &&
+        draft.expectedBalanceAfterQirsh >= 0) {
       throw StateError('لا يلزم اعتماد رصيد سالب لهذه العملية.');
     }
     final owner = await _authRepository.verifyCredentials(
@@ -105,8 +106,7 @@ class NegativeBalanceApprovalService {
         current.sourceDocumentType != binding.sourceDocumentType ||
         current.requestedByUserId != binding.requestedByUserId ||
         current.balanceBeforeQirsh != binding.balanceBeforeQirsh ||
-        current.expectedBalanceAfterQirsh !=
-            binding.expectedBalanceAfterQirsh) {
+        current.expectedBalanceAfterQirsh != binding.expectedBalanceAfterQirsh) {
       throw StateError('بيانات الموافقة لا تطابق العملية.');
     }
   }

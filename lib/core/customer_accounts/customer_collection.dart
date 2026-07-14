@@ -12,6 +12,8 @@ class CustomerCollectionRecord {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.settledAmountQirsh,
+    this.advanceAmountQirsh = 0,
     this.cancellation,
   });
 
@@ -25,6 +27,10 @@ class CustomerCollectionRecord {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  /// Portion applied to the customer's receivable. The remainder is a
+  /// separately tracked customer advance and never becomes a negative debt.
+  final int? settledAmountQirsh;
+  final int advanceAmountQirsh;
   final CustomerCollectionCancellation? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
@@ -62,6 +68,8 @@ class CustomerCollectionDraft {
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.operationRequestId,
+    this.overpaymentApprovalId,
   });
 
   final String customerId;
@@ -72,4 +80,6 @@ class CustomerCollectionDraft {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final String? operationRequestId;
+  final String? overpaymentApprovalId;
 }

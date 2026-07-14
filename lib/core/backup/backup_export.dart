@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
@@ -29,6 +30,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
@@ -100,11 +102,27 @@ class BackupExportService {
     final customerCollections =
         await _customerAccountRepository?.listCollections() ??
             const <CustomerCollectionRecord>[];
+    final customerAdvances = await _customerAccountRepository?.listAdvances() ??
+        const <CustomerAdvance>[];
+    final customerAdvanceApplications =
+        await _customerAccountRepository?.listAdvanceApplications() ??
+            const <CustomerAdvanceApplication>[];
+    final customerAdvanceRefunds =
+        await _customerAccountRepository?.listAdvanceRefunds() ??
+            const <CustomerAdvanceRefund>[];
     final supplierAccountEntries =
         await _supplierAccountRepository?.listEntries() ??
             const <SupplierAccountEntry>[];
     final supplierPayments = await _supplierAccountRepository?.listPayments() ??
         const <SupplierPaymentRecord>[];
+    final supplierAdvances = await _supplierAccountRepository?.listAdvances() ??
+        const <SupplierAdvance>[];
+    final supplierAdvanceApplications =
+        await _supplierAccountRepository?.listAdvanceApplications() ??
+            const <SupplierAdvanceApplication>[];
+    final supplierAdvanceRefunds =
+        await _supplierAccountRepository?.listAdvanceRefunds() ??
+            const <SupplierAdvanceRefund>[];
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
     final financialAccounts = await _financialAccountRepository?.listAccounts(
@@ -169,12 +187,18 @@ class BackupExportService {
         'customerCollections': customerCollections
             .map(_customerCollectionToJson)
             .toList(growable: false),
+        'customerAdvances': customerAdvances.map(_customerAdvanceToJson).toList(growable: false),
+        'customerAdvanceApplications': customerAdvanceApplications.map(_customerAdvanceApplicationToJson).toList(growable: false),
+        'customerAdvanceRefunds': customerAdvanceRefunds.map(_customerAdvanceRefundToJson).toList(growable: false),
         'supplierAccountEntries': supplierAccountEntries
             .map(_supplierAccountEntryToJson)
             .toList(growable: false),
         'supplierPayments': supplierPayments
             .map(_supplierPaymentToJson)
             .toList(growable: false),
+        'supplierAdvances': supplierAdvances.map(_supplierAdvanceToJson).toList(growable: false),
+        'supplierAdvanceApplications': supplierAdvanceApplications.map(_supplierAdvanceApplicationToJson).toList(growable: false),
+        'supplierAdvanceRefunds': supplierAdvanceRefunds.map(_supplierAdvanceRefundToJson).toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
         'financialAccounts': financialAccounts
@@ -383,6 +407,8 @@ class BackupExportService {
       'notes': collection.notes,
       'financialAccountId': collection.financialAccountId,
       'paymentMethod': collection.paymentMethod?.name,
+      'settledAmountQirsh': collection.settledAmountQirsh,
+      'advanceAmountQirsh': collection.advanceAmountQirsh,
       'cancellation': _customerCollectionCancellationToJson(
         collection.cancellation,
       ),
@@ -417,9 +443,76 @@ class BackupExportService {
       'notes': payment.notes,
       'financialAccountId': payment.financialAccountId,
       'paymentMethod': payment.paymentMethod?.name,
+      'settledAmountQirsh': payment.settledAmountQirsh,
+      'advanceAmountQirsh': payment.advanceAmountQirsh,
       'cancellation': _supplierPaymentCancellationToJson(payment.cancellation),
     };
   }
+
+  Map<String, Object?> _customerAdvanceToJson(CustomerAdvance value) => {
+        'id': value.id, 'customerId': value.customerId,
+        'sourceCollectionId': value.sourceCollectionId,
+        'financialAccountId': value.financialAccountId,
+        'amountQirsh': value.amountQirsh,
+        'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'ownerApprovalId': value.ownerApprovalId,
+        'operationRequestId': value.operationRequestId,
+        'paymentMethod': value.paymentMethod?.name,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
+      };
+
+  Map<String, Object?> _customerAdvanceApplicationToJson(CustomerAdvanceApplication value) => {
+        'id': value.id, 'advanceId': value.advanceId, 'customerId': value.customerId,
+        'amountQirsh': value.amountQirsh, 'appliedAt': value.appliedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'customerLedgerEntryId': value.customerLedgerEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason,
+        'reversalLedgerEntryId': value.reversalLedgerEntryId,
+      };
+
+  Map<String, Object?> _customerAdvanceRefundToJson(CustomerAdvanceRefund value) => {
+        'id': value.id, 'advanceId': value.advanceId, 'customerId': value.customerId,
+        'financialAccountId': value.financialAccountId, 'amountQirsh': value.amountQirsh,
+        'refundedAt': value.refundedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'financialEntryId': value.financialEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason,
+        'reversalFinancialEntryId': value.reversalFinancialEntryId,
+      };
+
+  Map<String, Object?> _supplierAdvanceToJson(SupplierAdvance value) => {
+        'id': value.id, 'supplierId': value.supplierId,
+        'sourcePaymentId': value.sourcePaymentId, 'financialAccountId': value.financialAccountId,
+        'amountQirsh': value.amountQirsh, 'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId, 'ownerApprovalId': value.ownerApprovalId,
+        'operationRequestId': value.operationRequestId, 'paymentMethod': value.paymentMethod?.name,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
+      };
+
+  Map<String, Object?> _supplierAdvanceApplicationToJson(SupplierAdvanceApplication value) => {
+        'id': value.id, 'advanceId': value.advanceId, 'supplierId': value.supplierId,
+        'amountQirsh': value.amountQirsh, 'appliedAt': value.appliedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'supplierLedgerEntryId': value.supplierLedgerEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason, 'reversalLedgerEntryId': value.reversalLedgerEntryId,
+      };
+
+  Map<String, Object?> _supplierAdvanceRefundToJson(SupplierAdvanceRefund value) => {
+        'id': value.id, 'advanceId': value.advanceId, 'supplierId': value.supplierId,
+        'financialAccountId': value.financialAccountId, 'amountQirsh': value.amountQirsh,
+        'refundedAt': value.refundedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'financialEntryId': value.financialEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason, 'reversalFinancialEntryId': value.reversalFinancialEntryId,
+      };
 
   Map<String, Object?>? _customerCollectionCancellationToJson(
     CustomerCollectionCancellation? cancellation,

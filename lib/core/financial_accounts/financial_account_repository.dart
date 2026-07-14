@@ -681,8 +681,12 @@ class LocalFinancialAccountRepository
         return NegativeBalanceOperationType.transfer;
       case FinancialAccountEntrySource.cancellationReversal:
         return NegativeBalanceOperationType.cancellationReversal;
+      case FinancialAccountEntrySource.supplierAdvanceRefundReversal:
+        return NegativeBalanceOperationType.supplierOverpayment;
+      case FinancialAccountEntrySource.customerAdvanceRefundReversal:
+        return NegativeBalanceOperationType.customerOverpayment;
       default:
-        throw StateError('مصدر الحركة لا يدعم اعتماد الرصيد السالب.');
+        throw StateError('مصدر الحركة لا يدعم اعماد الرصيد السالب.');
     }
   }
 

@@ -22,6 +22,10 @@ enum FinancialAccountEntrySource {
   purchasePayment,
   customerCollection,
   supplierSettlement,
+  customerAdvanceRefund,
+  customerAdvanceRefundReversal,
+  supplierAdvanceRefund,
+  supplierAdvanceRefundReversal,
   expense,
   cancellationReversal,
   transferOut,
@@ -45,6 +49,14 @@ enum FinancialAccountEntrySource {
         return 'تحصيل من عميل';
       case FinancialAccountEntrySource.supplierSettlement:
         return 'تسوية مع مورد';
+      case FinancialAccountEntrySource.customerAdvanceRefund:
+        return 'Customer advance refund';
+      case FinancialAccountEntrySource.customerAdvanceRefundReversal:
+        return 'Customer advance refund reversal';
+      case FinancialAccountEntrySource.supplierAdvanceRefund:
+        return 'Supplier advance refund';
+      case FinancialAccountEntrySource.supplierAdvanceRefundReversal:
+        return 'Supplier advance refund reversal';
       case FinancialAccountEntrySource.expense:
         return 'مصروف';
       case FinancialAccountEntrySource.cancellationReversal:

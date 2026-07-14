@@ -57,6 +57,7 @@ class AppRepositories {
     customerRepository: customerRepository,
     auditLogRepository: auditLogRepository,
     financialAccountRepository: financialAccountRepository,
+    negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
   static final LocalExpenseRepository expenseRepository =
@@ -79,6 +80,7 @@ class AppRepositories {
     supplierRepository: supplierRepository,
     auditLogRepository: auditLogRepository,
     financialAccountRepository: financialAccountRepository,
+    negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
   static final LocalPurchaseRepository purchaseRepository =

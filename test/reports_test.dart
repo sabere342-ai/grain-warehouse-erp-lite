@@ -17,6 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
@@ -629,6 +630,43 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
   Future<SupplierPaymentRecord> createPayment(SupplierPaymentDraft draft) {
     throw UnsupportedError('Reports test fake is read-only.');
   }
+
+  @override
+  Future<List<SupplierAdvance>> listAdvances() async => const [];
+
+  @override
+  Future<List<SupplierAdvanceApplication>> listAdvanceApplications() async => const [];
+
+  @override
+  Future<List<SupplierAdvanceRefund>> listAdvanceRefunds() async => const [];
+
+  @override
+  Future<int> remainingAdvanceQirsh(String advanceId) async => 0;
+
+  @override
+  Future<SupplierAdvanceApplication> applyAdvance(SupplierAdvanceApplicationDraft draft) =>
+      throw UnsupportedError('Reports test fake is read-only.');
+
+  @override
+  Future<SupplierAdvanceApplication> reverseAdvanceApplication({
+    required dynamic user,
+    required String applicationId,
+    required String reason,
+    required String operationRequestId,
+  }) => throw UnsupportedError('Reports test fake is read-only.');
+
+  @override
+  Future<SupplierAdvanceRefund> refundAdvance(SupplierAdvanceRefundDraft draft) =>
+      throw UnsupportedError('Reports test fake is read-only.');
+
+  @override
+  Future<SupplierAdvanceRefund> reverseAdvanceRefund({
+    required dynamic user,
+    required String refundId,
+    required String reason,
+    required String operationRequestId,
+    String? overpaymentApprovalId,
+  }) => throw UnsupportedError('Reports test fake is read-only.');
 
   @override
   Future<SupplierPaymentCancellation> cancelPayment({
