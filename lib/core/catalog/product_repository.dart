@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class ProductRepository {
   Future<List<Product>> listProducts({bool includeInactive = true});
@@ -16,7 +17,8 @@ abstract class ProductRepository {
   });
 }
 
-class LocalProductRepository implements ProductRepository {
+class LocalProductRepository
+    implements ProductRepository, TransactionSnapshotProvider {
   final List<Product> _products = [];
   int _generatedIdCounter = 0;
 
@@ -109,6 +111,22 @@ class LocalProductRepository implements ProductRepository {
   Future<void> clearForOwnerDataWipe() async {
     _products.clear();
     _generatedIdCounter = 0;
+  }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    return ObjectStateSnapshot<(List<Product>, int)>(
+      captureState: () => (
+        List<Product>.from(_products),
+        _generatedIdCounter,
+      ),
+      restoreState: (state) {
+        _products
+          ..clear()
+          ..addAll(state.$1);
+        _generatedIdCounter = state.$2;
+      },
+    );
   }
 
   void _validateDraft(ProductDraft draft) {

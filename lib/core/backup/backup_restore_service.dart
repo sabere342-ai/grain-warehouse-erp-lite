@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
@@ -124,44 +125,58 @@ class BackupRestoreService {
         );
       }
 
-      // The current in-memory repositories do not expose transactions.
-      // All data is fully parsed and validated before this point, and the
-      // empty-system guard is checked immediately before these writes.
-      await _productRepository.restoreProductsIntoEmpty(restored.products);
-      await _supplierRepository.restoreSuppliersIntoEmpty(restored.suppliers);
-      await _inventoryRepository.restoreMovementsIntoEmpty(restored.movements);
-      await _purchaseRepository.restorePurchaseIntakesIntoEmpty(
-        restored.purchases,
-      );
-      await _saleRepository.restoreSalesIntoEmpty(restored.sales);
-      await _customerRepository.restoreCustomersIntoEmpty(restored.customers);
-      await _customerAccountRepository.restoreCustomerAccountsIntoEmpty(
-        entries: restored.customerAccountEntries,
-        collections: restored.customerCollections,
-        advances: restored.customerAdvances,
-        applications: restored.customerAdvanceApplications,
-        refunds: restored.customerAdvanceRefunds,
-      );
-      await _supplierAccountRepository.restoreSupplierAccountsIntoEmpty(
-        entries: restored.supplierAccountEntries,
-        payments: restored.supplierPayments,
-        advances: restored.supplierAdvances,
-        applications: restored.supplierAdvanceApplications,
-        refunds: restored.supplierAdvanceRefunds,
-      );
-      await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
-      await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
-      await _financialAccountRepository.restoreFinancialAccountsIntoEmpty(
-        accounts: restored.financialAccounts,
-        entries: restored.financialAccountEntries,
-        transfers: restored.financialTransfers,
-        closings: restored.financialClosings,
-      );
-      if (_businessIdentityRepository != null) {
-        await _businessIdentityRepository.saveIdentity(
-          restored.businessIdentity,
+      final snapshots = <SnapshotHolder>[
+        _productRepository.createTransactionSnapshot(),
+        _supplierRepository.createTransactionSnapshot(),
+        _inventoryRepository.createTransactionSnapshot(),
+        _purchaseRepository.createTransactionSnapshot(),
+        _saleRepository.createTransactionSnapshot(),
+        _customerRepository.createTransactionSnapshot(),
+        _customerAccountRepository.createTransactionSnapshot(),
+        _supplierAccountRepository.createTransactionSnapshot(),
+        _expenseRepository.createTransactionSnapshot(),
+        _auditLogRepository.createTransactionSnapshot(),
+        _financialAccountRepository.createTransactionSnapshot(),
+      ];
+
+      await RepositoryTransaction.execute(snapshots, () async {
+        await _productRepository.restoreProductsIntoEmpty(restored.products);
+        await _supplierRepository.restoreSuppliersIntoEmpty(restored.suppliers);
+        await _inventoryRepository
+            .restoreMovementsIntoEmpty(restored.movements);
+        await _purchaseRepository.restorePurchaseIntakesIntoEmpty(
+          restored.purchases,
         );
-      }
+        await _saleRepository.restoreSalesIntoEmpty(restored.sales);
+        await _customerRepository.restoreCustomersIntoEmpty(restored.customers);
+        await _customerAccountRepository.restoreCustomerAccountsIntoEmpty(
+          entries: restored.customerAccountEntries,
+          collections: restored.customerCollections,
+          advances: restored.customerAdvances,
+          applications: restored.customerAdvanceApplications,
+          refunds: restored.customerAdvanceRefunds,
+        );
+        await _supplierAccountRepository.restoreSupplierAccountsIntoEmpty(
+          entries: restored.supplierAccountEntries,
+          payments: restored.supplierPayments,
+          advances: restored.supplierAdvances,
+          applications: restored.supplierAdvanceApplications,
+          refunds: restored.supplierAdvanceRefunds,
+        );
+        await _expenseRepository.restoreExpensesIntoEmpty(restored.expenses);
+        await _auditLogRepository.restoreAuditLogsIntoEmpty(restored.auditLogs);
+        await _financialAccountRepository.restoreFinancialAccountsIntoEmpty(
+          accounts: restored.financialAccounts,
+          entries: restored.financialAccountEntries,
+          transfers: restored.financialTransfers,
+          closings: restored.financialClosings,
+        );
+        if (_businessIdentityRepository != null) {
+          await _businessIdentityRepository.saveIdentity(
+            restored.businessIdentity,
+          );
+        }
+      });
 
       final warnings = <String>[
         'تم الاسترجاع إلى نظام كان فارغا فقط.',
@@ -243,18 +258,32 @@ class BackupRestoreService {
     final customerCollections = _optionalList(data, 'customerCollections')
         .map(_parseCustomerCollection)
         .toList();
-    final customerAdvances = _optionalList(data, 'customerAdvances').map(_parseCustomerAdvance).toList();
-    final customerAdvanceApplications = _optionalList(data, 'customerAdvanceApplications').map(_parseCustomerAdvanceApplication).toList();
-    final customerAdvanceRefunds = _optionalList(data, 'customerAdvanceRefunds').map(_parseCustomerAdvanceRefund).toList();
+    final customerAdvances = _optionalList(data, 'customerAdvances')
+        .map(_parseCustomerAdvance)
+        .toList();
+    final customerAdvanceApplications =
+        _optionalList(data, 'customerAdvanceApplications')
+            .map(_parseCustomerAdvanceApplication)
+            .toList();
+    final customerAdvanceRefunds = _optionalList(data, 'customerAdvanceRefunds')
+        .map(_parseCustomerAdvanceRefund)
+        .toList();
     final supplierAccountEntries = _optionalList(data, 'supplierAccountEntries')
         .map(_parseSupplierAccountEntry)
         .toList();
     final supplierPayments = _optionalList(data, 'supplierPayments')
         .map(_parseSupplierPayment)
         .toList();
-    final supplierAdvances = _optionalList(data, 'supplierAdvances').map(_parseSupplierAdvance).toList();
-    final supplierAdvanceApplications = _optionalList(data, 'supplierAdvanceApplications').map(_parseSupplierAdvanceApplication).toList();
-    final supplierAdvanceRefunds = _optionalList(data, 'supplierAdvanceRefunds').map(_parseSupplierAdvanceRefund).toList();
+    final supplierAdvances = _optionalList(data, 'supplierAdvances')
+        .map(_parseSupplierAdvance)
+        .toList();
+    final supplierAdvanceApplications =
+        _optionalList(data, 'supplierAdvanceApplications')
+            .map(_parseSupplierAdvanceApplication)
+            .toList();
+    final supplierAdvanceRefunds = _optionalList(data, 'supplierAdvanceRefunds')
+        .map(_parseSupplierAdvanceRefund)
+        .toList();
     final expenses =
         _optionalList(data, 'expenses').map(_parseExpense).toList();
     final auditLogs =
@@ -557,11 +586,15 @@ class BackupRestoreService {
   CustomerAdvance _parseCustomerAdvance(Object? value) {
     final map = _map(value);
     return CustomerAdvance(
-      id: _string(map, 'id'), customerId: _string(map, 'customerId'),
+      id: _string(map, 'id'),
+      customerId: _string(map, 'customerId'),
       sourceCollectionId: _string(map, 'sourceCollectionId'),
-      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
-      createdAt: _date(map, 'createdAt'), createdByUserId: _string(map, 'createdByUserId'),
-      ownerApprovalId: _string(map, 'ownerApprovalId'), operationRequestId: _string(map, 'operationRequestId'),
+      financialAccountId: _string(map, 'financialAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      ownerApprovalId: _string(map, 'ownerApprovalId'),
+      operationRequestId: _string(map, 'operationRequestId'),
       paymentMethod: _optionalPaymentMethod(map),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
@@ -571,9 +604,13 @@ class BackupRestoreService {
   CustomerAdvanceApplication _parseCustomerAdvanceApplication(Object? value) {
     final map = _map(value);
     return CustomerAdvanceApplication(
-      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), customerId: _string(map, 'customerId'),
-      amountQirsh: _int(map, 'amountQirsh'), appliedAt: _date(map, 'appliedAt'),
-      createdByUserId: _string(map, 'createdByUserId'), operationRequestId: _string(map, 'operationRequestId'),
+      id: _string(map, 'id'),
+      advanceId: _string(map, 'advanceId'),
+      customerId: _string(map, 'customerId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      appliedAt: _date(map, 'appliedAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'),
       customerLedgerEntryId: _string(map, 'customerLedgerEntryId'),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
@@ -585,14 +622,20 @@ class BackupRestoreService {
   CustomerAdvanceRefund _parseCustomerAdvanceRefund(Object? value) {
     final map = _map(value);
     return CustomerAdvanceRefund(
-      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), customerId: _string(map, 'customerId'),
-      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
-      refundedAt: _date(map, 'refundedAt'), createdByUserId: _string(map, 'createdByUserId'),
-      operationRequestId: _string(map, 'operationRequestId'), financialEntryId: _string(map, 'financialEntryId'),
+      id: _string(map, 'id'),
+      advanceId: _string(map, 'advanceId'),
+      customerId: _string(map, 'customerId'),
+      financialAccountId: _string(map, 'financialAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      refundedAt: _date(map, 'refundedAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'),
+      financialEntryId: _string(map, 'financialEntryId'),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
       reversalReason: _optionalString(map, 'reversalReason'),
-      reversalFinancialEntryId: _optionalString(map, 'reversalFinancialEntryId'),
+      reversalFinancialEntryId:
+          _optionalString(map, 'reversalFinancialEntryId'),
     );
   }
 
@@ -635,10 +678,15 @@ class BackupRestoreService {
   SupplierAdvance _parseSupplierAdvance(Object? value) {
     final map = _map(value);
     return SupplierAdvance(
-      id: _string(map, 'id'), supplierId: _string(map, 'supplierId'), sourcePaymentId: _string(map, 'sourcePaymentId'),
-      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
-      createdAt: _date(map, 'createdAt'), createdByUserId: _string(map, 'createdByUserId'),
-      ownerApprovalId: _string(map, 'ownerApprovalId'), operationRequestId: _string(map, 'operationRequestId'),
+      id: _string(map, 'id'),
+      supplierId: _string(map, 'supplierId'),
+      sourcePaymentId: _string(map, 'sourcePaymentId'),
+      financialAccountId: _string(map, 'financialAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      ownerApprovalId: _string(map, 'ownerApprovalId'),
+      operationRequestId: _string(map, 'operationRequestId'),
       paymentMethod: _optionalPaymentMethod(map),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
@@ -648,9 +696,13 @@ class BackupRestoreService {
   SupplierAdvanceApplication _parseSupplierAdvanceApplication(Object? value) {
     final map = _map(value);
     return SupplierAdvanceApplication(
-      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), supplierId: _string(map, 'supplierId'),
-      amountQirsh: _int(map, 'amountQirsh'), appliedAt: _date(map, 'appliedAt'),
-      createdByUserId: _string(map, 'createdByUserId'), operationRequestId: _string(map, 'operationRequestId'),
+      id: _string(map, 'id'),
+      advanceId: _string(map, 'advanceId'),
+      supplierId: _string(map, 'supplierId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      appliedAt: _date(map, 'appliedAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'),
       supplierLedgerEntryId: _string(map, 'supplierLedgerEntryId'),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
@@ -662,14 +714,20 @@ class BackupRestoreService {
   SupplierAdvanceRefund _parseSupplierAdvanceRefund(Object? value) {
     final map = _map(value);
     return SupplierAdvanceRefund(
-      id: _string(map, 'id'), advanceId: _string(map, 'advanceId'), supplierId: _string(map, 'supplierId'),
-      financialAccountId: _string(map, 'financialAccountId'), amountQirsh: _int(map, 'amountQirsh'),
-      refundedAt: _date(map, 'refundedAt'), createdByUserId: _string(map, 'createdByUserId'),
-      operationRequestId: _string(map, 'operationRequestId'), financialEntryId: _string(map, 'financialEntryId'),
+      id: _string(map, 'id'),
+      advanceId: _string(map, 'advanceId'),
+      supplierId: _string(map, 'supplierId'),
+      financialAccountId: _string(map, 'financialAccountId'),
+      amountQirsh: _int(map, 'amountQirsh'),
+      refundedAt: _date(map, 'refundedAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      operationRequestId: _string(map, 'operationRequestId'),
+      financialEntryId: _string(map, 'financialEntryId'),
       reversedAt: map['reversedAt'] == null ? null : _date(map, 'reversedAt'),
       reversedByUserId: _optionalString(map, 'reversedByUserId'),
       reversalReason: _optionalString(map, 'reversalReason'),
-      reversalFinancialEntryId: _optionalString(map, 'reversalFinancialEntryId'),
+      reversalFinancialEntryId:
+          _optionalString(map, 'reversalFinancialEntryId'),
     );
   }
 
@@ -896,6 +954,55 @@ class BackupRestoreService {
     for (final expense in data.expenses) {
       _validateFinancialAccountReference(
           expense.financialAccountId, financialAccountIds);
+    }
+    final advanceIds = <String>{};
+    for (final advance in data.customerAdvances) {
+      if (!advanceIds.add(advance.id)) {
+        throw StateError('Duplicate customer advance id.');
+      }
+      _validateFinancialAccountReference(
+          advance.financialAccountId, financialAccountIds);
+      if (!data.customerCollections
+          .any((c) => c.id == advance.sourceCollectionId)) {
+        throw StateError('Customer advance references missing collection.');
+      }
+    }
+    for (final application in data.customerAdvanceApplications) {
+      if (!advanceIds.contains(application.advanceId)) {
+        throw StateError(
+            'Customer advance application references missing advance.');
+      }
+    }
+    for (final refund in data.customerAdvanceRefunds) {
+      if (!advanceIds.contains(refund.advanceId)) {
+        throw StateError('Customer advance refund references missing advance.');
+      }
+      _validateFinancialAccountReference(
+          refund.financialAccountId, financialAccountIds);
+    }
+    final supplierAdvanceIds = <String>{};
+    for (final advance in data.supplierAdvances) {
+      if (!supplierAdvanceIds.add(advance.id)) {
+        throw StateError('Duplicate supplier advance id.');
+      }
+      _validateFinancialAccountReference(
+          advance.financialAccountId, financialAccountIds);
+      if (!data.supplierPayments.any((p) => p.id == advance.sourcePaymentId)) {
+        throw StateError('Supplier advance references missing payment.');
+      }
+    }
+    for (final application in data.supplierAdvanceApplications) {
+      if (!supplierAdvanceIds.contains(application.advanceId)) {
+        throw StateError(
+            'Supplier advance application references missing advance.');
+      }
+    }
+    for (final refund in data.supplierAdvanceRefunds) {
+      if (!supplierAdvanceIds.contains(refund.advanceId)) {
+        throw StateError('Supplier advance refund references missing advance.');
+      }
+      _validateFinancialAccountReference(
+          refund.financialAccountId, financialAccountIds);
     }
     if (data.documentHistoryCount !=
         data.purchases.length + data.sales.length) {

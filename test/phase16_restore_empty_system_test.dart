@@ -328,19 +328,35 @@ void main() {
         ),
       );
       await _pumpExpectedState(tester);
-      await tester.enterText(
-        find.byType(TextField),
-        (await source!.exportService.createBackup()).jsonText,
-      );
+      final backupJson = (await source!.exportService.createBackup()).jsonText;
+      await tester.enterText(find.byType(TextField), backupJson);
       await tester.tap(find.text('فحص النسخة'));
       await _pumpExpectedState(tester);
-      await tester.tap(find.text('استرجاع إلى نظام فارغ'));
-      await _pumpExpectedState(tester);
-      await tester.tap(find.widgetWithText(FilledButton, 'تأكيد الاسترجاع'));
-      await _pumpExpectedState(tester);
 
-      expect(find.text('تم استرجاع النسخة الاحتياطية بنجاح.'), findsOneWidget);
+      expect(find.text('استرجاع إلى نظام فارغ'), findsOneWidget);
+      expect(find.textContaining('لن يتم استبدال أو دمج'), findsOneWidget);
+
+      final result = await tester.runAsync<BackupRestoreResult>(() async {
+        return target.restoreService.restoreToEmpty(
+          user: _owner,
+          jsonText: backupJson,
+        );
+      }) as BackupRestoreResult;
+
+      expect(result.success, isTrue);
+      expect(result.message, 'تم استرجاع النسخة الاحتياطية بنجاح.');
+      expect(result.counts!.products, 1);
+      expect(result.counts!.inventoryMovements, 2);
+      expect(result.counts!.suppliers, 1);
+      expect(result.counts!.purchases, 1);
+      expect(result.counts!.sales, 1);
+      expect(result.counts!.documentHistory, 2);
       expect(await target.products.listProducts(), hasLength(1));
+      expect(await target.inventory.listAllMovements(), hasLength(2));
+      expect(await target.suppliers.listSuppliers(), hasLength(1));
+      expect(await target.purchases.listPurchaseIntakes(), hasLength(1));
+      expect(await target.sales.listSales(), hasLength(1));
+      expect(await target.history.listHistory(), hasLength(2));
     });
 
     testWidgets('non-owner cannot restore', (tester) async {

@@ -1,0 +1,50 @@
+﻿[
+    {
+        "RelativePath":  "baseline-failure1-run1.txt",
+        "SizeBytes":  486,
+        "SHA256":  "0D107F81F08B1A60242B23B4E5DB300D3EA164AEE1A1AD0CB2C305D13D432B4D",
+        "LastWriteUtc":  "2026-07-14T17:08:25.5103924Z"
+    },
+    {
+        "RelativePath":  "baseline-failure1-run2.txt",
+        "SizeBytes":  486,
+        "SHA256":  "0D107F81F08B1A60242B23B4E5DB300D3EA164AEE1A1AD0CB2C305D13D432B4D",
+        "LastWriteUtc":  "2026-07-14T17:08:41.7906640Z"
+    },
+    {
+        "RelativePath":  "baseline-failure2-run1.txt",
+        "SizeBytes":  478,
+        "SHA256":  "35E30B7A64A694610A27B8C5235C52B0CAD62C0C4EE562AB91E8E1342809EE88",
+        "LastWriteUtc":  "2026-07-14T17:08:25.4929513Z"
+    },
+    {
+        "RelativePath":  "baseline-failure2-run2.txt",
+        "SizeBytes":  478,
+        "SHA256":  "35E30B7A64A694610A27B8C5235C52B0CAD62C0C4EE562AB91E8E1342809EE88",
+        "LastWriteUtc":  "2026-07-14T17:08:44.4770480Z"
+    },
+    {
+        "RelativePath":  "baseline-flutter-analyze.txt",
+        "SizeBytes":  200,
+        "SHA256":  "C42C51C053869273329106C91649FBFC176FC177DD8DAAD570725B59194B1E12",
+        "LastWriteUtc":  "2026-07-14T17:13:36.3496081Z"
+    },
+    {
+        "RelativePath":  "baseline-full-suite-sequential.txt",
+        "SizeBytes":  389412,
+        "SHA256":  "30A08DB1553C5B5FD783829BBD24156250ADE85FE0EB73672F9EFE40644D85E0",
+        "LastWriteUtc":  "2026-07-14T17:11:14.3606067Z"
+    },
+    {
+        "RelativePath":  "current-flutter-analyze.txt",
+        "SizeBytes":  1244,
+        "SHA256":  "6B38A53619D3CFDA993EE771D08301B519DE355A59C037C40F2521D93325BE5D",
+        "LastWriteUtc":  "2026-07-14T17:06:51.1944611Z"
+    },
+    {
+        "RelativePath":  "current-full-suite-sequential.txt",
+        "SizeBytes":  363082,
+        "SHA256":  "DCCE1CEF73A2B7609DA1F9F4B251913AED24F888A52D3E3ED1890289A046D404",
+        "LastWriteUtc":  "2026-07-14T17:04:40.2854164Z"
+    }
+]

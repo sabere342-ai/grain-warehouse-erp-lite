@@ -1,3 +1,4 @@
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 
 abstract class SupplierRepository {
@@ -16,7 +17,8 @@ abstract class SupplierRepository {
   });
 }
 
-class LocalSupplierRepository implements SupplierRepository {
+class LocalSupplierRepository
+    implements SupplierRepository, TransactionSnapshotProvider {
   final List<Supplier> _suppliers = [];
   int _generatedIdCounter = 0;
 
@@ -107,6 +109,22 @@ class LocalSupplierRepository implements SupplierRepository {
   Future<void> clearForOwnerDataWipe() async {
     _suppliers.clear();
     _generatedIdCounter = 0;
+  }
+
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    return ObjectStateSnapshot<(List<Supplier>, int)>(
+      captureState: () => (
+        List<Supplier>.from(_suppliers),
+        _generatedIdCounter,
+      ),
+      restoreState: (state) {
+        _suppliers
+          ..clear()
+          ..addAll(state.$1);
+        _generatedIdCounter = state.$2;
+      },
+    );
   }
 
   void _validateDraft(SupplierDraft draft) {

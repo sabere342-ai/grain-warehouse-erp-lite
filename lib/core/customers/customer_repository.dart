@@ -1,5 +1,6 @@
-﻿import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class CustomerRepository {
   Future<List<Customer>> listCustomers({bool includeInactive = true});
@@ -14,7 +15,8 @@ abstract class CustomerRepository {
   });
 }
 
-class LocalCustomerRepository implements CustomerRepository {
+class LocalCustomerRepository
+    implements CustomerRepository, TransactionSnapshotProvider {
   LocalCustomerRepository({AuditLogRepository? auditLogRepository})
       : _auditLogRepository = auditLogRepository;
 
@@ -123,9 +125,26 @@ class LocalCustomerRepository implements CustomerRepository {
     _generatedIdCounter = 0;
   }
 
+  @override
+  SnapshotHolder createTransactionSnapshot() {
+    return ObjectStateSnapshot<(List<Customer>, int)>(
+      captureState: () => (
+        List<Customer>.from(_customers),
+        _generatedIdCounter,
+      ),
+      restoreState: (state) {
+        _customers
+          ..clear()
+          ..addAll(state.$1);
+        _generatedIdCounter = state.$2;
+      },
+    );
+  }
+
   void _validateDraft(CustomerDraft draft) {
     if (draft.name.trim().isEmpty) {
-      throw ArgumentError.value(draft.name, 'name', 'Customer name is required.');
+      throw ArgumentError.value(
+          draft.name, 'name', 'Customer name is required.');
     }
   }
 
@@ -179,7 +198,8 @@ class LocalCustomerRepository implements CustomerRepository {
   }
 
   int _indexById(String customerId) {
-    final index = _customers.indexWhere((customer) => customer.id == customerId);
+    final index =
+        _customers.indexWhere((customer) => customer.id == customerId);
     if (index == -1) {
       throw StateError('Customer was not found.');
     }
