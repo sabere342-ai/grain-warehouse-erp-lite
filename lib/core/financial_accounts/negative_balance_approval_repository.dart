@@ -379,11 +379,17 @@ class LocalNegativeBalanceApprovalRepository
     if (draft.operationType ==
             NegativeBalanceOperationType.customerAdvanceRefund &&
         (draft.authorizationContext == null ||
-            draft.authorizationContext!.customerId.trim().isEmpty ||
+            draft.authorizationContext!.customerId?.trim().isEmpty != false ||
             draft.authorizationContext!.advanceId.trim().isEmpty ||
             draft.authorizationContext!.financialDirection !=
                 NegativeBalanceFinancialDirection.outflow)) {
       throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
+    }
+    if (draft.operationType ==
+            NegativeBalanceOperationType.supplierAdvanceRefundReversal &&
+        !_validSupplierRefundContext(draft.authorizationContext)) {
+      throw ArgumentError(
+          'Supplier refund reversal approval binding is required.');
     }
   }
 
@@ -445,11 +451,24 @@ class NegativeBalanceApprovalBinding {
     }
     if (operationType == NegativeBalanceOperationType.customerAdvanceRefund &&
         (authorizationContext == null ||
-            authorizationContext!.customerId.trim().isEmpty ||
+            authorizationContext!.customerId?.trim().isEmpty != false ||
             authorizationContext!.advanceId.trim().isEmpty ||
             authorizationContext!.financialDirection !=
                 NegativeBalanceFinancialDirection.outflow)) {
       throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
     }
+    if (operationType ==
+            NegativeBalanceOperationType.supplierAdvanceRefundReversal &&
+        !_validSupplierRefundContext(authorizationContext)) {
+      throw ArgumentError(
+          'Supplier refund reversal approval binding is required.');
+    }
   }
 }
+
+bool _validSupplierRefundContext(NegativeBalanceApprovalContext? context) =>
+    context != null &&
+    context.supplierId?.trim().isNotEmpty == true &&
+    context.advanceId.trim().isNotEmpty &&
+    context.refundId?.trim().isNotEmpty == true &&
+    context.financialDirection == NegativeBalanceFinancialDirection.outflow;

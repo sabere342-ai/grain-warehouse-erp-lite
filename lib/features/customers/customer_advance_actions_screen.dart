@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
@@ -178,10 +180,31 @@ class _CustomerAdvanceActionsScreenState
                 isBusy: _activeAdvanceId == summary.advance.id,
                 onApply: () => _openApplication(summary),
                 onRefund: () => _openRefund(summary),
+                onReverseRefund: (refund) => _openRefundReversal(refund),
+                canReverseRefund: widget.user.role == UserRole.owner,
               ),
             ),
         ],
       ),
+    );
+  }
+
+  Future<void> _openRefundReversal(CustomerAdvanceRefund refund) async {
+    final success = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _CustomerRefundReversalDialog(
+        customer: widget.customer,
+        user: widget.user,
+        controller: widget.controller,
+        refund: refund,
+      ),
+    );
+    if (success != true || !mounted) return;
+    await _loadAdvances();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تم عكس استرداد سلفة العميل بنجاح')),
     );
   }
 
@@ -293,6 +316,8 @@ class _AdvanceCard extends StatelessWidget {
     required this.isBusy,
     required this.onApply,
     required this.onRefund,
+    required this.onReverseRefund,
+    required this.canReverseRefund,
   });
 
   final CustomerAdvanceSummary summary;
@@ -300,6 +325,8 @@ class _AdvanceCard extends StatelessWidget {
   final bool isBusy;
   final VoidCallback onApply;
   final VoidCallback onRefund;
+  final ValueChanged<CustomerAdvanceRefund> onReverseRefund;
+  final bool canReverseRefund;
 
   @override
   Widget build(BuildContext context) {
@@ -363,9 +390,119 @@ class _AdvanceCard extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: 12),
+          const Text('سجل الاستردادات',
+              style: TextStyle(fontWeight: FontWeight.w800)),
+          if (summary.refunds.isEmpty)
+            const Text('لا توجد استردادات مسجلة.')
+          else
+            for (final refund in summary.refunds)
+              ListTile(
+                key: Key('customer-refund-${refund.id}'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(MoneyUtils.formatPiastersAsEgp(refund.amountQirsh)),
+                subtitle: Text(
+                  '${_formatDate(refund.refundedAt)} • ${refund.financialAccountId}\n'
+                  '${refund.isReversed ? 'معكوس — ${refund.reversalReason ?? ''}' : 'نشط'}',
+                ),
+                trailing: canReverseRefund && !refund.isReversed
+                    ? TextButton(
+                        key: Key('reverse-customer-refund-${refund.id}'),
+                        onPressed: () => onReverseRefund(refund),
+                        child: const Text('عكس الاسترداد'),
+                      )
+                    : null,
+              ),
         ],
       ),
     );
+  }
+}
+
+class _CustomerRefundReversalDialog extends StatefulWidget {
+  const _CustomerRefundReversalDialog({
+    required this.customer,
+    required this.user,
+    required this.controller,
+    required this.refund,
+  });
+  final Customer customer;
+  final AppUser user;
+  final CustomerController controller;
+  final CustomerAdvanceRefund refund;
+  @override
+  State<_CustomerRefundReversalDialog> createState() =>
+      _CustomerRefundReversalDialogState();
+}
+
+class _CustomerRefundReversalDialogState
+    extends State<_CustomerRefundReversalDialog> {
+  final _reason = TextEditingController();
+  late final String _requestId = _newRequestId('customer-reverse-refund');
+  bool _submitting = false;
+  String? _error;
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: Text('عكس استرداد سلفة العميل - ${widget.customer.name}'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+              'المبلغ الأصلي: ${MoneyUtils.formatPiastersAsEgp(widget.refund.amountQirsh)}'),
+          Text('الحساب المالي الأصلي: ${widget.refund.financialAccountId}'),
+          Text('تاريخ الاسترداد: ${_formatDate(widget.refund.refundedAt)}'),
+          const Text(
+              'سيعاد المبلغ إلى الحساب المالي المرتبط بالاسترداد، وسيعود إلى الرصيد المتاح من سلفة العميل.'),
+          TextField(
+            key: const Key('customer-refund-reversal-reason'),
+            controller: _reason,
+            enabled: !_submitting,
+            decoration: const InputDecoration(labelText: 'سبب العكس *'),
+          ),
+          if (_error != null)
+            Text(_error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+        ]),
+        actions: [
+          TextButton(
+              onPressed:
+                  _submitting ? null : () => Navigator.pop(context, false),
+              child: const Text('إلغاء')),
+          FilledButton(
+              key: const Key('customer-refund-reversal-submit'),
+              onPressed: _submitting ? null : _submit,
+              child: const Text('تأكيد العكس')),
+        ],
+      );
+  Future<void> _submit() async {
+    final reason = _reason.text.trim();
+    if (reason.isEmpty) {
+      setState(() => _error = 'سبب العكس مطلوب.');
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    final result = await widget.controller.reverseCustomerAdvanceRefund(
+      user: widget.user,
+      refund: widget.refund,
+      reason: reason,
+      operationRequestId: _requestId,
+    );
+    if (!mounted) return;
+    if (result.isSuccess) {
+      Navigator.pop(context, true);
+      return;
+    }
+    setState(() {
+      _submitting = false;
+      _error = result.message;
+    });
   }
 }
 

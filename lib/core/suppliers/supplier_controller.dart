@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
@@ -188,9 +189,50 @@ class SupplierController extends ChangeNotifier {
         appliedQirsh: appliedQirsh,
         refundedQirsh: refundedQirsh,
         remainingQirsh: await repository.remainingAdvanceQirsh(advance.id),
+        refunds: refunds
+            .where((value) => value.advanceId == advance.id)
+            .toList(growable: false),
       ));
     }
     return List<SupplierAdvanceSummary>.unmodifiable(result);
+  }
+
+  Future<SupplierAdvanceActionResult> reverseSupplierAdvanceRefund({
+    required AppUser user,
+    required SupplierAdvanceRefund refund,
+    required String reason,
+    required String operationRequestId,
+    String? approvalId,
+  }) async {
+    if (!user.canProceed || user.role != UserRole.owner) {
+      return const SupplierAdvanceActionResult.failure(
+        'هذه العملية متاحة للمالك فقط.',
+      );
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      return const SupplierAdvanceActionResult.failure(
+          'سجل سلف الموردين غير متاح.');
+    }
+    try {
+      await repository.reverseAdvanceRefund(
+        user: user,
+        refundId: refund.id,
+        reason: reason,
+        operationRequestId: operationRequestId,
+        overpaymentApprovalId: approvalId,
+      );
+      return const SupplierAdvanceActionResult.success();
+    } on StateError catch (error) {
+      if (error.message == 'SUPPLIER_REFUND_REVERSAL_APPROVAL_REQUIRED') {
+        return const SupplierAdvanceActionResult.approvalRequired();
+      }
+      return SupplierAdvanceActionResult.failure(error.message);
+    } on Object {
+      return const SupplierAdvanceActionResult.failure(
+        'تعذر عكس استرداد سلفة المورد.',
+      );
+    }
   }
 
   Future<SupplierAdvanceActionResult> applySupplierAdvance({
@@ -298,7 +340,8 @@ class SupplierController extends ChangeNotifier {
       if (msg.contains('balance changed')) {
         return 'تغيّر رصيد المورد أثناء الدفع. أعد المحاولة.';
       }
-      if (msg.contains('overpayment requires') || msg.contains('approval') ||
+      if (msg.contains('overpayment requires') ||
+          msg.contains('approval') ||
           msg.contains('بيانات الموافقة')) {
         return 'الرصيد غير كافٍ. تحقق من رصيد الحساب المالي.';
       }
@@ -328,12 +371,14 @@ class SupplierAdvanceSummary {
     required this.appliedQirsh,
     required this.refundedQirsh,
     required this.remainingQirsh,
+    this.refunds = const [],
   });
 
   final SupplierAdvance advance;
   final int appliedQirsh;
   final int refundedQirsh;
   final int remainingQirsh;
+  final List<SupplierAdvanceRefund> refunds;
 
   bool get canAct => !advance.isReversed && remainingQirsh > 0;
 
@@ -349,11 +394,15 @@ class SupplierAdvanceSummary {
 }
 
 class SupplierAdvanceActionResult {
-  const SupplierAdvanceActionResult._(this.isSuccess, this.message);
-  const SupplierAdvanceActionResult.success() : this._(true, null);
+  const SupplierAdvanceActionResult._(
+      this.isSuccess, this.requiresApproval, this.message);
+  const SupplierAdvanceActionResult.success() : this._(true, false, null);
+  const SupplierAdvanceActionResult.approvalRequired()
+      : this._(false, true, null);
   const SupplierAdvanceActionResult.failure(String message)
-      : this._(false, message);
+      : this._(false, false, message);
 
   final bool isSuccess;
+  final bool requiresApproval;
   final String? message;
 }

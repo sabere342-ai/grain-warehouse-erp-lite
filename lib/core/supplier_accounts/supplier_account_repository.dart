@@ -674,6 +674,12 @@ class LocalSupplierAccountRepository
       if (originalEntry == null) {
         throw StateError('Financial entry for this refund was not found.');
       }
+      final currentBalance = await financialRepository
+          .currentBalanceForAccount(refund.financialAccountId);
+      if (currentBalance - refund.amountQirsh < 0 &&
+          overpaymentApprovalId?.trim().isNotEmpty != true) {
+        throw StateError('SUPPLIER_REFUND_REVERSAL_APPROVAL_REQUIRED');
+      }
       final now = DateTime.now();
       final reversalEntry = await financialRepository.createEntry(
         accountId: refund.financialAccountId,
@@ -688,6 +694,12 @@ class LocalSupplierAccountRepository
         note: cleanReason,
         negativeBalanceApprovalId: overpaymentApprovalId,
         approvalSourceDocumentId: requestId,
+        approvalAuthorizationContext:
+            NegativeBalanceApprovalContext.supplierAdvanceRefundReversal(
+          supplierId: refund.supplierId,
+          advanceId: refund.advanceId,
+          refundId: refund.id,
+        ),
       );
       _advanceRefunds[refundIndex] = SupplierAdvanceRefund(
         id: refund.id,

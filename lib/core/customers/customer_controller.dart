@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
@@ -97,10 +98,45 @@ class CustomerController extends ChangeNotifier {
           appliedQirsh: appliedQirsh,
           refundedQirsh: refundedQirsh,
           remainingQirsh: await repository.remainingAdvanceQirsh(advance.id),
+          refunds: refunds
+              .where((value) => value.advanceId == advance.id)
+              .toList(growable: false),
         ),
       );
     }
     return List<CustomerAdvanceSummary>.unmodifiable(result);
+  }
+
+  Future<CustomerAdvanceActionResult> reverseCustomerAdvanceRefund({
+    required AppUser user,
+    required CustomerAdvanceRefund refund,
+    required String reason,
+    required String operationRequestId,
+  }) async {
+    if (!user.canProceed || user.role != UserRole.owner) {
+      return const CustomerAdvanceActionResult.failure(
+        'هذه العملية متاحة للمالك فقط.',
+      );
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      return const CustomerAdvanceActionResult.failure(
+          'سجل سلف العملاء غير متاح.');
+    }
+    try {
+      await repository.reverseAdvanceRefund(
+        user: user,
+        refundId: refund.id,
+        reason: reason,
+        operationRequestId: operationRequestId,
+      );
+      await loadCustomers(user);
+      return const CustomerAdvanceActionResult.success();
+    } on Object catch (error) {
+      return CustomerAdvanceActionResult.failure(
+        error is StateError ? error.message : 'تعذر عكس استرداد سلفة العميل.',
+      );
+    }
   }
 
   Future<CustomerAdvanceActionResult> applyCustomerAdvance({
@@ -442,12 +478,14 @@ class CustomerAdvanceSummary {
     required this.appliedQirsh,
     required this.refundedQirsh,
     required this.remainingQirsh,
+    this.refunds = const [],
   });
 
   final CustomerAdvance advance;
   final int appliedQirsh;
   final int refundedQirsh;
   final int remainingQirsh;
+  final List<CustomerAdvanceRefund> refunds;
 
   bool get canAct => !advance.isReversed && remainingQirsh > 0;
 

@@ -55,6 +55,7 @@ abstract class FinancialAccountRepository {
     String? approvedByUserId,
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
+    NegativeBalanceApprovalContext? approvalAuthorizationContext,
   });
   Future<FinancialAccountEntry> createSupplierOverpaymentEntry({
     required String accountId,
@@ -530,6 +531,7 @@ class LocalFinancialAccountRepository
     String? approvedByUserId,
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
+    NegativeBalanceApprovalContext? approvalAuthorizationContext,
   }) {
     Future<FinancialAccountEntry> operation() => _createEntry(
           accountId: accountId,
@@ -548,6 +550,7 @@ class LocalFinancialAccountRepository
           approvedByUserId: approvedByUserId,
           negativeBalanceApprovalId: negativeBalanceApprovalId,
           approvalSourceDocumentId: approvalSourceDocumentId,
+          approvalAuthorizationContext: approvalAuthorizationContext,
         );
     if (RepositoryTransaction.isActive) return operation();
     return RepositoryTransaction.execute(
@@ -573,6 +576,7 @@ class LocalFinancialAccountRepository
     String? approvedByUserId,
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
+    NegativeBalanceApprovalContext? approvalAuthorizationContext,
     bool authorizedSupplierOverpayment = false,
     bool authorizedCustomerAdvanceRefund = false,
     String? authorizedApprovalId,
@@ -664,6 +668,7 @@ class LocalFinancialAccountRepository
         requestedByUserId: userId,
         balanceBeforeQirsh: balanceBefore,
         expectedBalanceAfterQirsh: balanceBefore - amountQirsh,
+        authorizationContext: approvalAuthorizationContext,
       );
       await service.verify(approvalBinding);
     }
@@ -792,7 +797,7 @@ class LocalFinancialAccountRepository
       case FinancialAccountEntrySource.cancellationReversal:
         return NegativeBalanceOperationType.cancellationReversal;
       case FinancialAccountEntrySource.supplierAdvanceRefundReversal:
-        return NegativeBalanceOperationType.supplierOverpayment;
+        return NegativeBalanceOperationType.supplierAdvanceRefundReversal;
       case FinancialAccountEntrySource.customerAdvanceRefundReversal:
         return NegativeBalanceOperationType.customerOverpayment;
       case FinancialAccountEntrySource.customerAdvanceRefund:

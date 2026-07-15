@@ -26,6 +26,7 @@ enum NegativeBalanceOperationType {
   cancellationReversal,
   customerOverpayment,
   supplierOverpayment,
+  supplierAdvanceRefundReversal,
   customerAdvanceRefund;
 
   String get labelAr {
@@ -44,6 +45,8 @@ enum NegativeBalanceOperationType {
         return '\u0632\u064a\u0627\u062f\u0629 \u0639\u0645\u064a\u0644';
       case NegativeBalanceOperationType.supplierOverpayment:
         return '\u0632\u064a\u0627\u062f\u0629 \u0645\u0648\u0631\u062f';
+      case NegativeBalanceOperationType.supplierAdvanceRefundReversal:
+        return '\u0639\u0643\u0633 \u0627\u0633\u062a\u0631\u062f\u0627\u062f \u0633\u0644\u0641\u0629 \u0627\u0644\u0645\u0648\u0631\u062f';
       case NegativeBalanceOperationType.customerAdvanceRefund:
         return '\u0631\u062f \u0633\u0644\u0641\u0629 \u0639\u0645\u064a\u0644';
     }
@@ -54,24 +57,39 @@ enum NegativeBalanceFinancialDirection { inflow, outflow }
 
 class NegativeBalanceApprovalContext {
   const NegativeBalanceApprovalContext({
-    required this.customerId,
+    this.customerId,
+    this.supplierId,
     required this.advanceId,
+    this.refundId,
     required this.financialDirection,
   });
 
   const NegativeBalanceApprovalContext.customerAdvanceRefund({
     required this.customerId,
     required this.advanceId,
-  }) : financialDirection = NegativeBalanceFinancialDirection.outflow;
+  })  : supplierId = null,
+        refundId = null,
+        financialDirection = NegativeBalanceFinancialDirection.outflow;
 
-  final String customerId;
+  const NegativeBalanceApprovalContext.supplierAdvanceRefundReversal({
+    required this.supplierId,
+    required this.advanceId,
+    required this.refundId,
+  })  : customerId = null,
+        financialDirection = NegativeBalanceFinancialDirection.outflow;
+
+  final String? customerId;
+  final String? supplierId;
   final String advanceId;
+  final String? refundId;
   final NegativeBalanceFinancialDirection financialDirection;
 
   bool matches(NegativeBalanceApprovalContext? other) =>
       other != null &&
       customerId == other.customerId &&
+      supplierId == other.supplierId &&
       advanceId == other.advanceId &&
+      refundId == other.refundId &&
       financialDirection == other.financialDirection;
 }
 
@@ -119,11 +137,17 @@ class NegativeBalanceApproval {
     }
     if (operationType == NegativeBalanceOperationType.customerAdvanceRefund &&
         (authorizationContext == null ||
-            authorizationContext!.customerId.trim().isEmpty ||
+            authorizationContext!.customerId?.trim().isEmpty != false ||
             authorizationContext!.advanceId.trim().isEmpty ||
             authorizationContext!.financialDirection !=
                 NegativeBalanceFinancialDirection.outflow)) {
       throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
+    }
+    if (operationType ==
+            NegativeBalanceOperationType.supplierAdvanceRefundReversal &&
+        !_isValidSupplierRefundReversalContext(authorizationContext)) {
+      throw ArgumentError(
+          'Supplier refund reversal approval binding is required.');
     }
     if (!expiresAt.isAfter(createdAt)) {
       throw ArgumentError('Approval expiry must be after creation.');
@@ -227,6 +251,15 @@ class NegativeBalanceApproval {
     );
   }
 }
+
+bool _isValidSupplierRefundReversalContext(
+  NegativeBalanceApprovalContext? context,
+) =>
+    context != null &&
+    context.supplierId?.trim().isNotEmpty == true &&
+    context.advanceId.trim().isNotEmpty &&
+    context.refundId?.trim().isNotEmpty == true &&
+    context.financialDirection == NegativeBalanceFinancialDirection.outflow;
 
 class NegativeBalanceApprovalDraft {
   const NegativeBalanceApprovalDraft({

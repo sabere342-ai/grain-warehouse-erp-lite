@@ -152,7 +152,9 @@ class NegativeBalanceApprovalService {
         'sourceDocumentType': approval.sourceDocumentType,
         'reason': approval.reason,
         'customerId': approval.authorizationContext?.customerId,
+        'supplierId': approval.authorizationContext?.supplierId,
         'advanceId': approval.authorizationContext?.advanceId,
+        'refundId': approval.authorizationContext?.refundId,
         'financialDirection':
             approval.authorizationContext?.financialDirection.name,
         'timestamp': DateTime.now().toIso8601String(),
@@ -174,6 +176,7 @@ class NegativeBalanceApprovalConsumption {
   final NegativeBalanceApprovalBinding _binding;
   bool _supplierEntryClaimed = false;
   bool _customerRefundEntryClaimed = false;
+  bool _supplierRefundReversalEntryClaimed = false;
 
   void claimSupplierOverpaymentEntry({
     required String accountId,
@@ -192,6 +195,38 @@ class NegativeBalanceApprovalConsumption {
           'Supplier overpayment authorization does not match the financial entry.');
     }
     _supplierEntryClaimed = true;
+  }
+
+  void claimSupplierAdvanceRefundReversalEntry({
+    required String accountId,
+    required String supplierId,
+    required String advanceId,
+    required String refundId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required String createdByUserId,
+  }) {
+    final context = _binding.authorizationContext;
+    if (_supplierRefundReversalEntryClaimed ||
+        _binding.operationType !=
+            NegativeBalanceOperationType.supplierAdvanceRefundReversal ||
+        _binding.sourceDocumentType != 'supplierAdvanceRefundReversal' ||
+        _binding.sourceDocumentId != sourceDocumentId.trim() ||
+        _binding.accountId != accountId.trim() ||
+        _binding.requestedByUserId != createdByUserId.trim() ||
+        _binding.amountQirsh != amountQirsh ||
+        _binding.balanceBeforeQirsh - _binding.expectedBalanceAfterQirsh !=
+            amountQirsh ||
+        context == null ||
+        context.supplierId != supplierId.trim() ||
+        context.advanceId != advanceId.trim() ||
+        context.refundId != refundId.trim() ||
+        context.financialDirection !=
+            NegativeBalanceFinancialDirection.outflow) {
+      throw StateError(
+          'Supplier advance refund reversal authorization does not match the financial entry.');
+    }
+    _supplierRefundReversalEntryClaimed = true;
   }
 
   void claimCustomerAdvanceRefundEntry({
