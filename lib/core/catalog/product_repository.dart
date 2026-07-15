@@ -17,8 +17,14 @@ abstract class ProductRepository {
   });
 }
 
-class LocalProductRepository
+abstract class ProductDataRepository
     implements ProductRepository, TransactionSnapshotProvider {
+  Future<void> restoreProductsIntoEmpty(List<Product> products);
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalProductRepository
+    implements ProductDataRepository {
   final List<Product> _products = [];
   int _generatedIdCounter = 0;
 
@@ -100,6 +106,7 @@ class LocalProductRepository
     return updated;
   }
 
+  @override
   Future<void> restoreProductsIntoEmpty(List<Product> products) async {
     if (_products.isNotEmpty) {
       throw StateError('Products repository is not empty.');
@@ -108,6 +115,7 @@ class LocalProductRepository
     _products.addAll(products);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _products.clear();
     _generatedIdCounter = 0;

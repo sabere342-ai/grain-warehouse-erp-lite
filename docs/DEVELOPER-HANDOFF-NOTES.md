@@ -1517,3 +1517,6 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
   4. ~~DC-U008 (Overpayments/refunds) Core~~ — ✓ IMPLEMENTED (Commit `59d689f`). UI: OPEN.
   5. ~~Owner Wipe~~ — ✓ IMPLEMENTED (Commit `4d8705b`)
 - See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for the original pre-implementation analysis.
+# Phase 8B handoff
+
+Production startup now awaits the shared `FoundationDatabase` and wires `DriftProductRepository`. Schema version 2 adds `products` and `repository_sequences`; v1 upgrades preserve `foundation_probes`. Other repositories remain unmigrated and Phase 8C has not started.

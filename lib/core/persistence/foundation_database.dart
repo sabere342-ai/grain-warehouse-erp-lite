@@ -13,12 +13,39 @@ class FoundationProbes extends Table {
   Set<Column<Object>> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [FoundationProbes])
+class Products extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get normalizedName => text().unique()();
+  TextColumn get code => text().nullable()();
+  TextColumn get normalizedCode => text().nullable().unique()();
+  TextColumn get unit => text()();
+  BoolColumn get isActive => boolean()();
+  IntColumn get defaultSalePricePiastersPerKg => integer().nullable()();
+  IntColumn get minimumSalePricePiastersPerKg => integer().nullable()();
+  IntColumn get referenceCostPricePiastersPerKg => integer().nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class RepositorySequences extends Table {
+  TextColumn get repository => text()();
+  IntColumn get nextValue => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {repository};
+}
+
+@DriftDatabase(tables: [FoundationProbes, Products, RepositorySequences])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

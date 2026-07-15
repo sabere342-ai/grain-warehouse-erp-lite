@@ -193,16 +193,920 @@ class FoundationProbesCompanion extends UpdateCompanion<FoundationProbe> {
   }
 }
 
+class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _normalizedNameMeta =
+      const VerificationMeta('normalizedName');
+  @override
+  late final GeneratedColumn<String> normalizedName = GeneratedColumn<String>(
+      'normalized_name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+      'code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _normalizedCodeMeta =
+      const VerificationMeta('normalizedCode');
+  @override
+  late final GeneratedColumn<String> normalizedCode = GeneratedColumn<String>(
+      'normalized_code', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+      'unit', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'));
+  static const VerificationMeta _defaultSalePricePiastersPerKgMeta =
+      const VerificationMeta('defaultSalePricePiastersPerKg');
+  @override
+  late final GeneratedColumn<int> defaultSalePricePiastersPerKg =
+      GeneratedColumn<int>(
+          'default_sale_price_piasters_per_kg', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _minimumSalePricePiastersPerKgMeta =
+      const VerificationMeta('minimumSalePricePiastersPerKg');
+  @override
+  late final GeneratedColumn<int> minimumSalePricePiastersPerKg =
+      GeneratedColumn<int>(
+          'minimum_sale_price_piasters_per_kg', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _referenceCostPricePiastersPerKgMeta =
+      const VerificationMeta('referenceCostPricePiastersPerKg');
+  @override
+  late final GeneratedColumn<int> referenceCostPricePiastersPerKg =
+      GeneratedColumn<int>(
+          'reference_cost_price_piasters_per_kg', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        normalizedName,
+        code,
+        normalizedCode,
+        unit,
+        isActive,
+        defaultSalePricePiastersPerKg,
+        minimumSalePricePiastersPerKg,
+        referenceCostPricePiastersPerKg,
+        notes,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'products';
+  @override
+  VerificationContext validateIntegrity(Insertable<Product> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('normalized_name')) {
+      context.handle(
+          _normalizedNameMeta,
+          normalizedName.isAcceptableOrUnknown(
+              data['normalized_name']!, _normalizedNameMeta));
+    } else if (isInserting) {
+      context.missing(_normalizedNameMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+          _codeMeta, code.isAcceptableOrUnknown(data['code']!, _codeMeta));
+    }
+    if (data.containsKey('normalized_code')) {
+      context.handle(
+          _normalizedCodeMeta,
+          normalizedCode.isAcceptableOrUnknown(
+              data['normalized_code']!, _normalizedCodeMeta));
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+          _unitMeta, unit.isAcceptableOrUnknown(data['unit']!, _unitMeta));
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    if (data.containsKey('default_sale_price_piasters_per_kg')) {
+      context.handle(
+          _defaultSalePricePiastersPerKgMeta,
+          defaultSalePricePiastersPerKg.isAcceptableOrUnknown(
+              data['default_sale_price_piasters_per_kg']!,
+              _defaultSalePricePiastersPerKgMeta));
+    }
+    if (data.containsKey('minimum_sale_price_piasters_per_kg')) {
+      context.handle(
+          _minimumSalePricePiastersPerKgMeta,
+          minimumSalePricePiastersPerKg.isAcceptableOrUnknown(
+              data['minimum_sale_price_piasters_per_kg']!,
+              _minimumSalePricePiastersPerKgMeta));
+    }
+    if (data.containsKey('reference_cost_price_piasters_per_kg')) {
+      context.handle(
+          _referenceCostPricePiastersPerKgMeta,
+          referenceCostPricePiastersPerKg.isAcceptableOrUnknown(
+              data['reference_cost_price_piasters_per_kg']!,
+              _referenceCostPricePiastersPerKgMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Product map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Product(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      normalizedName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}normalized_name'])!,
+      code: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}code']),
+      normalizedCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}normalized_code']),
+      unit: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}unit'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      defaultSalePricePiastersPerKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}default_sale_price_piasters_per_kg']),
+      minimumSalePricePiastersPerKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}minimum_sale_price_piasters_per_kg']),
+      referenceCostPricePiastersPerKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}reference_cost_price_piasters_per_kg']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ProductsTable createAlias(String alias) {
+    return $ProductsTable(attachedDatabase, alias);
+  }
+}
+
+class Product extends DataClass implements Insertable<Product> {
+  final String id;
+  final String name;
+  final String normalizedName;
+  final String? code;
+  final String? normalizedCode;
+  final String unit;
+  final bool isActive;
+  final int? defaultSalePricePiastersPerKg;
+  final int? minimumSalePricePiastersPerKg;
+  final int? referenceCostPricePiastersPerKg;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Product(
+      {required this.id,
+      required this.name,
+      required this.normalizedName,
+      this.code,
+      this.normalizedCode,
+      required this.unit,
+      required this.isActive,
+      this.defaultSalePricePiastersPerKg,
+      this.minimumSalePricePiastersPerKg,
+      this.referenceCostPricePiastersPerKg,
+      this.notes,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['normalized_name'] = Variable<String>(normalizedName);
+    if (!nullToAbsent || code != null) {
+      map['code'] = Variable<String>(code);
+    }
+    if (!nullToAbsent || normalizedCode != null) {
+      map['normalized_code'] = Variable<String>(normalizedCode);
+    }
+    map['unit'] = Variable<String>(unit);
+    map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || defaultSalePricePiastersPerKg != null) {
+      map['default_sale_price_piasters_per_kg'] =
+          Variable<int>(defaultSalePricePiastersPerKg);
+    }
+    if (!nullToAbsent || minimumSalePricePiastersPerKg != null) {
+      map['minimum_sale_price_piasters_per_kg'] =
+          Variable<int>(minimumSalePricePiastersPerKg);
+    }
+    if (!nullToAbsent || referenceCostPricePiastersPerKg != null) {
+      map['reference_cost_price_piasters_per_kg'] =
+          Variable<int>(referenceCostPricePiastersPerKg);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ProductsCompanion toCompanion(bool nullToAbsent) {
+    return ProductsCompanion(
+      id: Value(id),
+      name: Value(name),
+      normalizedName: Value(normalizedName),
+      code: code == null && nullToAbsent ? const Value.absent() : Value(code),
+      normalizedCode: normalizedCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(normalizedCode),
+      unit: Value(unit),
+      isActive: Value(isActive),
+      defaultSalePricePiastersPerKg:
+          defaultSalePricePiastersPerKg == null && nullToAbsent
+              ? const Value.absent()
+              : Value(defaultSalePricePiastersPerKg),
+      minimumSalePricePiastersPerKg:
+          minimumSalePricePiastersPerKg == null && nullToAbsent
+              ? const Value.absent()
+              : Value(minimumSalePricePiastersPerKg),
+      referenceCostPricePiastersPerKg:
+          referenceCostPricePiastersPerKg == null && nullToAbsent
+              ? const Value.absent()
+              : Value(referenceCostPricePiastersPerKg),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Product.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Product(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      normalizedName: serializer.fromJson<String>(json['normalizedName']),
+      code: serializer.fromJson<String?>(json['code']),
+      normalizedCode: serializer.fromJson<String?>(json['normalizedCode']),
+      unit: serializer.fromJson<String>(json['unit']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      defaultSalePricePiastersPerKg:
+          serializer.fromJson<int?>(json['defaultSalePricePiastersPerKg']),
+      minimumSalePricePiastersPerKg:
+          serializer.fromJson<int?>(json['minimumSalePricePiastersPerKg']),
+      referenceCostPricePiastersPerKg:
+          serializer.fromJson<int?>(json['referenceCostPricePiastersPerKg']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'normalizedName': serializer.toJson<String>(normalizedName),
+      'code': serializer.toJson<String?>(code),
+      'normalizedCode': serializer.toJson<String?>(normalizedCode),
+      'unit': serializer.toJson<String>(unit),
+      'isActive': serializer.toJson<bool>(isActive),
+      'defaultSalePricePiastersPerKg':
+          serializer.toJson<int?>(defaultSalePricePiastersPerKg),
+      'minimumSalePricePiastersPerKg':
+          serializer.toJson<int?>(minimumSalePricePiastersPerKg),
+      'referenceCostPricePiastersPerKg':
+          serializer.toJson<int?>(referenceCostPricePiastersPerKg),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Product copyWith(
+          {String? id,
+          String? name,
+          String? normalizedName,
+          Value<String?> code = const Value.absent(),
+          Value<String?> normalizedCode = const Value.absent(),
+          String? unit,
+          bool? isActive,
+          Value<int?> defaultSalePricePiastersPerKg = const Value.absent(),
+          Value<int?> minimumSalePricePiastersPerKg = const Value.absent(),
+          Value<int?> referenceCostPricePiastersPerKg = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      Product(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        normalizedName: normalizedName ?? this.normalizedName,
+        code: code.present ? code.value : this.code,
+        normalizedCode:
+            normalizedCode.present ? normalizedCode.value : this.normalizedCode,
+        unit: unit ?? this.unit,
+        isActive: isActive ?? this.isActive,
+        defaultSalePricePiastersPerKg: defaultSalePricePiastersPerKg.present
+            ? defaultSalePricePiastersPerKg.value
+            : this.defaultSalePricePiastersPerKg,
+        minimumSalePricePiastersPerKg: minimumSalePricePiastersPerKg.present
+            ? minimumSalePricePiastersPerKg.value
+            : this.minimumSalePricePiastersPerKg,
+        referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg.present
+            ? referenceCostPricePiastersPerKg.value
+            : this.referenceCostPricePiastersPerKg,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  Product copyWithCompanion(ProductsCompanion data) {
+    return Product(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      normalizedName: data.normalizedName.present
+          ? data.normalizedName.value
+          : this.normalizedName,
+      code: data.code.present ? data.code.value : this.code,
+      normalizedCode: data.normalizedCode.present
+          ? data.normalizedCode.value
+          : this.normalizedCode,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      defaultSalePricePiastersPerKg: data.defaultSalePricePiastersPerKg.present
+          ? data.defaultSalePricePiastersPerKg.value
+          : this.defaultSalePricePiastersPerKg,
+      minimumSalePricePiastersPerKg: data.minimumSalePricePiastersPerKg.present
+          ? data.minimumSalePricePiastersPerKg.value
+          : this.minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg:
+          data.referenceCostPricePiastersPerKg.present
+              ? data.referenceCostPricePiastersPerKg.value
+              : this.referenceCostPricePiastersPerKg,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Product(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('normalizedName: $normalizedName, ')
+          ..write('code: $code, ')
+          ..write('normalizedCode: $normalizedCode, ')
+          ..write('unit: $unit, ')
+          ..write('isActive: $isActive, ')
+          ..write(
+              'defaultSalePricePiastersPerKg: $defaultSalePricePiastersPerKg, ')
+          ..write(
+              'minimumSalePricePiastersPerKg: $minimumSalePricePiastersPerKg, ')
+          ..write(
+              'referenceCostPricePiastersPerKg: $referenceCostPricePiastersPerKg, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      name,
+      normalizedName,
+      code,
+      normalizedCode,
+      unit,
+      isActive,
+      defaultSalePricePiastersPerKg,
+      minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg,
+      notes,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Product &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.normalizedName == this.normalizedName &&
+          other.code == this.code &&
+          other.normalizedCode == this.normalizedCode &&
+          other.unit == this.unit &&
+          other.isActive == this.isActive &&
+          other.defaultSalePricePiastersPerKg ==
+              this.defaultSalePricePiastersPerKg &&
+          other.minimumSalePricePiastersPerKg ==
+              this.minimumSalePricePiastersPerKg &&
+          other.referenceCostPricePiastersPerKg ==
+              this.referenceCostPricePiastersPerKg &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ProductsCompanion extends UpdateCompanion<Product> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> normalizedName;
+  final Value<String?> code;
+  final Value<String?> normalizedCode;
+  final Value<String> unit;
+  final Value<bool> isActive;
+  final Value<int?> defaultSalePricePiastersPerKg;
+  final Value<int?> minimumSalePricePiastersPerKg;
+  final Value<int?> referenceCostPricePiastersPerKg;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ProductsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.normalizedName = const Value.absent(),
+    this.code = const Value.absent(),
+    this.normalizedCode = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.defaultSalePricePiastersPerKg = const Value.absent(),
+    this.minimumSalePricePiastersPerKg = const Value.absent(),
+    this.referenceCostPricePiastersPerKg = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProductsCompanion.insert({
+    required String id,
+    required String name,
+    required String normalizedName,
+    this.code = const Value.absent(),
+    this.normalizedCode = const Value.absent(),
+    required String unit,
+    required bool isActive,
+    this.defaultSalePricePiastersPerKg = const Value.absent(),
+    this.minimumSalePricePiastersPerKg = const Value.absent(),
+    this.referenceCostPricePiastersPerKg = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name),
+        normalizedName = Value(normalizedName),
+        unit = Value(unit),
+        isActive = Value(isActive),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<Product> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? normalizedName,
+    Expression<String>? code,
+    Expression<String>? normalizedCode,
+    Expression<String>? unit,
+    Expression<bool>? isActive,
+    Expression<int>? defaultSalePricePiastersPerKg,
+    Expression<int>? minimumSalePricePiastersPerKg,
+    Expression<int>? referenceCostPricePiastersPerKg,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (normalizedName != null) 'normalized_name': normalizedName,
+      if (code != null) 'code': code,
+      if (normalizedCode != null) 'normalized_code': normalizedCode,
+      if (unit != null) 'unit': unit,
+      if (isActive != null) 'is_active': isActive,
+      if (defaultSalePricePiastersPerKg != null)
+        'default_sale_price_piasters_per_kg': defaultSalePricePiastersPerKg,
+      if (minimumSalePricePiastersPerKg != null)
+        'minimum_sale_price_piasters_per_kg': minimumSalePricePiastersPerKg,
+      if (referenceCostPricePiastersPerKg != null)
+        'reference_cost_price_piasters_per_kg': referenceCostPricePiastersPerKg,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProductsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? name,
+      Value<String>? normalizedName,
+      Value<String?>? code,
+      Value<String?>? normalizedCode,
+      Value<String>? unit,
+      Value<bool>? isActive,
+      Value<int?>? defaultSalePricePiastersPerKg,
+      Value<int?>? minimumSalePricePiastersPerKg,
+      Value<int?>? referenceCostPricePiastersPerKg,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
+    return ProductsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      normalizedName: normalizedName ?? this.normalizedName,
+      code: code ?? this.code,
+      normalizedCode: normalizedCode ?? this.normalizedCode,
+      unit: unit ?? this.unit,
+      isActive: isActive ?? this.isActive,
+      defaultSalePricePiastersPerKg:
+          defaultSalePricePiastersPerKg ?? this.defaultSalePricePiastersPerKg,
+      minimumSalePricePiastersPerKg:
+          minimumSalePricePiastersPerKg ?? this.minimumSalePricePiastersPerKg,
+      referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg ??
+          this.referenceCostPricePiastersPerKg,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (normalizedName.present) {
+      map['normalized_name'] = Variable<String>(normalizedName.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (normalizedCode.present) {
+      map['normalized_code'] = Variable<String>(normalizedCode.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (defaultSalePricePiastersPerKg.present) {
+      map['default_sale_price_piasters_per_kg'] =
+          Variable<int>(defaultSalePricePiastersPerKg.value);
+    }
+    if (minimumSalePricePiastersPerKg.present) {
+      map['minimum_sale_price_piasters_per_kg'] =
+          Variable<int>(minimumSalePricePiastersPerKg.value);
+    }
+    if (referenceCostPricePiastersPerKg.present) {
+      map['reference_cost_price_piasters_per_kg'] =
+          Variable<int>(referenceCostPricePiastersPerKg.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('normalizedName: $normalizedName, ')
+          ..write('code: $code, ')
+          ..write('normalizedCode: $normalizedCode, ')
+          ..write('unit: $unit, ')
+          ..write('isActive: $isActive, ')
+          ..write(
+              'defaultSalePricePiastersPerKg: $defaultSalePricePiastersPerKg, ')
+          ..write(
+              'minimumSalePricePiastersPerKg: $minimumSalePricePiastersPerKg, ')
+          ..write(
+              'referenceCostPricePiastersPerKg: $referenceCostPricePiastersPerKg, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RepositorySequencesTable extends RepositorySequences
+    with TableInfo<$RepositorySequencesTable, RepositorySequence> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RepositorySequencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _repositoryMeta =
+      const VerificationMeta('repository');
+  @override
+  late final GeneratedColumn<String> repository = GeneratedColumn<String>(
+      'repository', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nextValueMeta =
+      const VerificationMeta('nextValue');
+  @override
+  late final GeneratedColumn<int> nextValue = GeneratedColumn<int>(
+      'next_value', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [repository, nextValue];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'repository_sequences';
+  @override
+  VerificationContext validateIntegrity(Insertable<RepositorySequence> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('repository')) {
+      context.handle(
+          _repositoryMeta,
+          repository.isAcceptableOrUnknown(
+              data['repository']!, _repositoryMeta));
+    } else if (isInserting) {
+      context.missing(_repositoryMeta);
+    }
+    if (data.containsKey('next_value')) {
+      context.handle(_nextValueMeta,
+          nextValue.isAcceptableOrUnknown(data['next_value']!, _nextValueMeta));
+    } else if (isInserting) {
+      context.missing(_nextValueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {repository};
+  @override
+  RepositorySequence map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RepositorySequence(
+      repository: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}repository'])!,
+      nextValue: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}next_value'])!,
+    );
+  }
+
+  @override
+  $RepositorySequencesTable createAlias(String alias) {
+    return $RepositorySequencesTable(attachedDatabase, alias);
+  }
+}
+
+class RepositorySequence extends DataClass
+    implements Insertable<RepositorySequence> {
+  final String repository;
+  final int nextValue;
+  const RepositorySequence({required this.repository, required this.nextValue});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['repository'] = Variable<String>(repository);
+    map['next_value'] = Variable<int>(nextValue);
+    return map;
+  }
+
+  RepositorySequencesCompanion toCompanion(bool nullToAbsent) {
+    return RepositorySequencesCompanion(
+      repository: Value(repository),
+      nextValue: Value(nextValue),
+    );
+  }
+
+  factory RepositorySequence.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RepositorySequence(
+      repository: serializer.fromJson<String>(json['repository']),
+      nextValue: serializer.fromJson<int>(json['nextValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'repository': serializer.toJson<String>(repository),
+      'nextValue': serializer.toJson<int>(nextValue),
+    };
+  }
+
+  RepositorySequence copyWith({String? repository, int? nextValue}) =>
+      RepositorySequence(
+        repository: repository ?? this.repository,
+        nextValue: nextValue ?? this.nextValue,
+      );
+  RepositorySequence copyWithCompanion(RepositorySequencesCompanion data) {
+    return RepositorySequence(
+      repository:
+          data.repository.present ? data.repository.value : this.repository,
+      nextValue: data.nextValue.present ? data.nextValue.value : this.nextValue,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RepositorySequence(')
+          ..write('repository: $repository, ')
+          ..write('nextValue: $nextValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(repository, nextValue);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RepositorySequence &&
+          other.repository == this.repository &&
+          other.nextValue == this.nextValue);
+}
+
+class RepositorySequencesCompanion extends UpdateCompanion<RepositorySequence> {
+  final Value<String> repository;
+  final Value<int> nextValue;
+  final Value<int> rowid;
+  const RepositorySequencesCompanion({
+    this.repository = const Value.absent(),
+    this.nextValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RepositorySequencesCompanion.insert({
+    required String repository,
+    required int nextValue,
+    this.rowid = const Value.absent(),
+  })  : repository = Value(repository),
+        nextValue = Value(nextValue);
+  static Insertable<RepositorySequence> custom({
+    Expression<String>? repository,
+    Expression<int>? nextValue,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (repository != null) 'repository': repository,
+      if (nextValue != null) 'next_value': nextValue,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RepositorySequencesCompanion copyWith(
+      {Value<String>? repository, Value<int>? nextValue, Value<int>? rowid}) {
+    return RepositorySequencesCompanion(
+      repository: repository ?? this.repository,
+      nextValue: nextValue ?? this.nextValue,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (repository.present) {
+      map['repository'] = Variable<String>(repository.value);
+    }
+    if (nextValue.present) {
+      map['next_value'] = Variable<int>(nextValue.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RepositorySequencesCompanion(')
+          ..write('repository: $repository, ')
+          ..write('nextValue: $nextValue, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
   late final $FoundationProbesTable foundationProbes =
       $FoundationProbesTable(this);
+  late final $ProductsTable products = $ProductsTable(this);
+  late final $RepositorySequencesTable repositorySequences =
+      $RepositorySequencesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [foundationProbes];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [foundationProbes, products, repositorySequences];
 }
 
 typedef $$FoundationProbesTableCreateCompanionBuilder
@@ -336,10 +1240,447 @@ typedef $$FoundationProbesTableProcessedTableManager = ProcessedTableManager<
     ),
     FoundationProbe,
     PrefetchHooks Function()>;
+typedef $$ProductsTableCreateCompanionBuilder = ProductsCompanion Function({
+  required String id,
+  required String name,
+  required String normalizedName,
+  Value<String?> code,
+  Value<String?> normalizedCode,
+  required String unit,
+  required bool isActive,
+  Value<int?> defaultSalePricePiastersPerKg,
+  Value<int?> minimumSalePricePiastersPerKg,
+  Value<int?> referenceCostPricePiastersPerKg,
+  Value<String?> notes,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$ProductsTableUpdateCompanionBuilder = ProductsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> normalizedName,
+  Value<String?> code,
+  Value<String?> normalizedCode,
+  Value<String> unit,
+  Value<bool> isActive,
+  Value<int?> defaultSalePricePiastersPerKg,
+  Value<int?> minimumSalePricePiastersPerKg,
+  Value<int?> referenceCostPricePiastersPerKg,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$ProductsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $ProductsTable> {
+  $$ProductsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get normalizedName => $composableBuilder(
+      column: $table.normalizedName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get normalizedCode => $composableBuilder(
+      column: $table.normalizedCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get defaultSalePricePiastersPerKg => $composableBuilder(
+      column: $table.defaultSalePricePiastersPerKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get minimumSalePricePiastersPerKg => $composableBuilder(
+      column: $table.minimumSalePricePiastersPerKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get referenceCostPricePiastersPerKg => $composableBuilder(
+      column: $table.referenceCostPricePiastersPerKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProductsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $ProductsTable> {
+  $$ProductsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get normalizedName => $composableBuilder(
+      column: $table.normalizedName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get normalizedCode => $composableBuilder(
+      column: $table.normalizedCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get defaultSalePricePiastersPerKg => $composableBuilder(
+      column: $table.defaultSalePricePiastersPerKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get minimumSalePricePiastersPerKg => $composableBuilder(
+      column: $table.minimumSalePricePiastersPerKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get referenceCostPricePiastersPerKg =>
+      $composableBuilder(
+          column: $table.referenceCostPricePiastersPerKg,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProductsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $ProductsTable> {
+  $$ProductsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get normalizedName => $composableBuilder(
+      column: $table.normalizedName, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get normalizedCode => $composableBuilder(
+      column: $table.normalizedCode, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<int> get defaultSalePricePiastersPerKg => $composableBuilder(
+      column: $table.defaultSalePricePiastersPerKg,
+      builder: (column) => column);
+
+  GeneratedColumn<int> get minimumSalePricePiastersPerKg => $composableBuilder(
+      column: $table.minimumSalePricePiastersPerKg,
+      builder: (column) => column);
+
+  GeneratedColumn<int> get referenceCostPricePiastersPerKg =>
+      $composableBuilder(
+          column: $table.referenceCostPricePiastersPerKg,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ProductsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $ProductsTable,
+    Product,
+    $$ProductsTableFilterComposer,
+    $$ProductsTableOrderingComposer,
+    $$ProductsTableAnnotationComposer,
+    $$ProductsTableCreateCompanionBuilder,
+    $$ProductsTableUpdateCompanionBuilder,
+    (Product, BaseReferences<_$FoundationDatabase, $ProductsTable, Product>),
+    Product,
+    PrefetchHooks Function()> {
+  $$ProductsTableTableManager(_$FoundationDatabase db, $ProductsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProductsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> normalizedName = const Value.absent(),
+            Value<String?> code = const Value.absent(),
+            Value<String?> normalizedCode = const Value.absent(),
+            Value<String> unit = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<int?> defaultSalePricePiastersPerKg = const Value.absent(),
+            Value<int?> minimumSalePricePiastersPerKg = const Value.absent(),
+            Value<int?> referenceCostPricePiastersPerKg = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductsCompanion(
+            id: id,
+            name: name,
+            normalizedName: normalizedName,
+            code: code,
+            normalizedCode: normalizedCode,
+            unit: unit,
+            isActive: isActive,
+            defaultSalePricePiastersPerKg: defaultSalePricePiastersPerKg,
+            minimumSalePricePiastersPerKg: minimumSalePricePiastersPerKg,
+            referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String name,
+            required String normalizedName,
+            Value<String?> code = const Value.absent(),
+            Value<String?> normalizedCode = const Value.absent(),
+            required String unit,
+            required bool isActive,
+            Value<int?> defaultSalePricePiastersPerKg = const Value.absent(),
+            Value<int?> minimumSalePricePiastersPerKg = const Value.absent(),
+            Value<int?> referenceCostPricePiastersPerKg = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductsCompanion.insert(
+            id: id,
+            name: name,
+            normalizedName: normalizedName,
+            code: code,
+            normalizedCode: normalizedCode,
+            unit: unit,
+            isActive: isActive,
+            defaultSalePricePiastersPerKg: defaultSalePricePiastersPerKg,
+            minimumSalePricePiastersPerKg: minimumSalePricePiastersPerKg,
+            referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProductsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $ProductsTable,
+    Product,
+    $$ProductsTableFilterComposer,
+    $$ProductsTableOrderingComposer,
+    $$ProductsTableAnnotationComposer,
+    $$ProductsTableCreateCompanionBuilder,
+    $$ProductsTableUpdateCompanionBuilder,
+    (Product, BaseReferences<_$FoundationDatabase, $ProductsTable, Product>),
+    Product,
+    PrefetchHooks Function()>;
+typedef $$RepositorySequencesTableCreateCompanionBuilder
+    = RepositorySequencesCompanion Function({
+  required String repository,
+  required int nextValue,
+  Value<int> rowid,
+});
+typedef $$RepositorySequencesTableUpdateCompanionBuilder
+    = RepositorySequencesCompanion Function({
+  Value<String> repository,
+  Value<int> nextValue,
+  Value<int> rowid,
+});
+
+class $$RepositorySequencesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $RepositorySequencesTable> {
+  $$RepositorySequencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get repository => $composableBuilder(
+      column: $table.repository, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get nextValue => $composableBuilder(
+      column: $table.nextValue, builder: (column) => ColumnFilters(column));
+}
+
+class $$RepositorySequencesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $RepositorySequencesTable> {
+  $$RepositorySequencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get repository => $composableBuilder(
+      column: $table.repository, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get nextValue => $composableBuilder(
+      column: $table.nextValue, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RepositorySequencesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $RepositorySequencesTable> {
+  $$RepositorySequencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get repository => $composableBuilder(
+      column: $table.repository, builder: (column) => column);
+
+  GeneratedColumn<int> get nextValue =>
+      $composableBuilder(column: $table.nextValue, builder: (column) => column);
+}
+
+class $$RepositorySequencesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $RepositorySequencesTable,
+    RepositorySequence,
+    $$RepositorySequencesTableFilterComposer,
+    $$RepositorySequencesTableOrderingComposer,
+    $$RepositorySequencesTableAnnotationComposer,
+    $$RepositorySequencesTableCreateCompanionBuilder,
+    $$RepositorySequencesTableUpdateCompanionBuilder,
+    (
+      RepositorySequence,
+      BaseReferences<_$FoundationDatabase, $RepositorySequencesTable,
+          RepositorySequence>
+    ),
+    RepositorySequence,
+    PrefetchHooks Function()> {
+  $$RepositorySequencesTableTableManager(
+      _$FoundationDatabase db, $RepositorySequencesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RepositorySequencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RepositorySequencesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RepositorySequencesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> repository = const Value.absent(),
+            Value<int> nextValue = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RepositorySequencesCompanion(
+            repository: repository,
+            nextValue: nextValue,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String repository,
+            required int nextValue,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              RepositorySequencesCompanion.insert(
+            repository: repository,
+            nextValue: nextValue,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RepositorySequencesTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $RepositorySequencesTable,
+    RepositorySequence,
+    $$RepositorySequencesTableFilterComposer,
+    $$RepositorySequencesTableOrderingComposer,
+    $$RepositorySequencesTableAnnotationComposer,
+    $$RepositorySequencesTableCreateCompanionBuilder,
+    $$RepositorySequencesTableUpdateCompanionBuilder,
+    (
+      RepositorySequence,
+      BaseReferences<_$FoundationDatabase, $RepositorySequencesTable,
+          RepositorySequence>
+    ),
+    RepositorySequence,
+    PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
   $FoundationDatabaseManager(this._db);
   $$FoundationProbesTableTableManager get foundationProbes =>
       $$FoundationProbesTableTableManager(_db, _db.foundationProbes);
+  $$ProductsTableTableManager get products =>
+      $$ProductsTableTableManager(_db, _db.products);
+  $$RepositorySequencesTableTableManager get repositorySequences =>
+      $$RepositorySequencesTableTableManager(_db, _db.repositorySequences);
 }

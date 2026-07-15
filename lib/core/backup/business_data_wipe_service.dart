@@ -19,7 +19,7 @@ class BusinessDataWipeService {
   BusinessDataWipeService({
     required BackupExportService backupExportService,
     required BackupFileWriter backupFileWriter,
-    required LocalProductRepository productRepository,
+    required ProductDataRepository productRepository,
     required LocalInventoryRepository inventoryRepository,
     required LocalSupplierRepository supplierRepository,
     required LocalPurchaseRepository purchaseRepository,
@@ -54,7 +54,7 @@ class BusinessDataWipeService {
 
   final BackupExportService _backupExportService;
   final BackupFileWriter _backupFileWriter;
-  final LocalProductRepository _productRepository;
+  final ProductDataRepository _productRepository;
   final LocalInventoryRepository _inventoryRepository;
   final LocalSupplierRepository _supplierRepository;
   final LocalPurchaseRepository _purchaseRepository;

@@ -709,3 +709,6 @@ DC-005 (Multi-device)
 | Before Track H begins | DC-U001, DC-U009, DC-U012 |
 | Before cloud implementation | DC-U010, DC-R002, DC-R003, DC-R004 |
 | Deferred | DC-U011 (after cloud is built) |
+# Phase 8B decision
+
+Adopt a Drift-backed production `ProductRepository` as the first business vertical slice, using schema version 2 and a transactional durable sequence. Preserve in-memory injection for tests. Do not migrate other repositories or begin Phase 8C.

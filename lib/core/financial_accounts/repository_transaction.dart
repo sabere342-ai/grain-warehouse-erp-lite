@@ -34,14 +34,14 @@ class RepositoryTransaction {
     Future<T> Function() operation,
   ) async {
     for (final snapshot in snapshots) {
-      snapshot.capture();
+      await snapshot.capture();
     }
     try {
       return await operation();
     } catch (error) {
       for (final snapshot in snapshots.reversed) {
         try {
-          snapshot.rollback();
+          await snapshot.rollback();
         } catch (_) {
           // Preserve the original operation error. Rollback targets are
           // independent and remaining targets must still restore.
@@ -53,8 +53,8 @@ class RepositoryTransaction {
 }
 
 abstract class SnapshotHolder {
-  void capture();
-  void rollback();
+  FutureOr<void> capture();
+  FutureOr<void> rollback();
 }
 
 class ListSnapshot<T> extends SnapshotHolder {
@@ -109,16 +109,16 @@ class CompositeSnapshot extends SnapshotHolder {
   final List<SnapshotHolder> _snapshots;
 
   @override
-  void capture() {
+  Future<void> capture() async {
     for (final snapshot in _snapshots) {
-      snapshot.capture();
+      await snapshot.capture();
     }
   }
 
   @override
-  void rollback() {
+  Future<void> rollback() async {
     for (final snapshot in _snapshots.reversed) {
-      snapshot.rollback();
+      await snapshot.rollback();
     }
   }
 }

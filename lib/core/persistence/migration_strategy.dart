@@ -7,7 +7,7 @@ MigrationStrategy foundationMigrationStrategy(FoundationDatabase database) {
     onCreate: (migrator) => migrator.createAll(),
     onUpgrade: (migrator, from, to) async {
       for (var version = from + 1; version <= to; version++) {
-        final step = _migrationSteps[version];
+        final step = _migrationSteps(database)[version];
         if (step == null) {
           throw StateError(
             'No durable migration is registered for schema version $version.',
@@ -24,5 +24,9 @@ MigrationStrategy foundationMigrationStrategy(FoundationDatabase database) {
 
 typedef _MigrationStep = Future<void> Function(Migrator migrator);
 
-/// Version 1 uses onCreate. Future phases add one reviewed step per version.
-const Map<int, _MigrationStep> _migrationSteps = {};
+Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
+      2: (migrator) async {
+        await migrator.createTable(database.products);
+        await migrator.createTable(database.repositorySequences);
+      },
+    };

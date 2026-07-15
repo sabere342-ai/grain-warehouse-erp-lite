@@ -6,6 +6,9 @@ import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
+import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
@@ -66,8 +69,16 @@ class AppRepositories {
     financialAccountRepository: financialAccountRepository,
   );
 
-  static final LocalProductRepository productRepository =
-      LocalProductRepository();
+  static late final FoundationDatabase database;
+  static ProductDataRepository _productRepository = LocalProductRepository();
+  static ProductDataRepository get productRepository => _productRepository;
+
+  static Future<void> initializeProduction() async {
+    database = await openProductionDatabase();
+    _productRepository = DriftProductRepository(database);
+  }
+
+  static Future<void> close() => database.close();
 
   static final LocalInventoryRepository inventoryRepository =
       LocalInventoryRepository(productRepository: productRepository);

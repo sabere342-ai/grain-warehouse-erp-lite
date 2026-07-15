@@ -506,3 +506,6 @@ See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for the original pre-implementation
 ---
 
 *This document is the single source of truth for product direction. All planning decisions should reference this file.*
+# Phase 8B status
+
+Phase 8A is locked. Phase 8B is limited to durable `ProductRepository` persistence on schema version 2. Remaining repositories are still in-memory unless separately documented; Phase 8C has not started.

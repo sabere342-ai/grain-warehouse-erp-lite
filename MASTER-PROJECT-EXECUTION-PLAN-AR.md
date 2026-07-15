@@ -772,3 +772,6 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 - Cloud sync وMulti-device والموبايل مكتملة إذا ظل هذا هو نطاق المنتج النهائي المعتمد.
 - لا توجد قرارات Owner مفتوحة تؤثر في خصائص تم الإعلان عنها كجاهزة.
 - جميع بوابات Git/QA/Build/Documentation مغلقة.
+# Phase 8B update
+
+Phase 8A is locked. Phase 8B migrates only `ProductRepository` to the production Drift database and raises the schema to version 2. All other repositories remain on their documented in-memory production implementations. Phase 8C has not started.
