@@ -1,7 +1,7 @@
 # Roadmap Decision Register
 
 > **Grain Warehouse ERP Lite**
-> **Last Updated:** 2026-07-14 — Governance Documentation Reconciliation
+> **Last Updated:** 2026-07-15 — Phase 7 Durable Persistence Architecture Decision
 > **Purpose:** Single source of truth for all project decisions — confirmed, recommended, and unresolved.
 
 ---
@@ -18,6 +18,21 @@
 ---
 
 ## Confirmed Decisions
+
+### DC-025: Durable local persistence technology
+
+| Field | Detail |
+|-------|--------|
+| **Decision ID** | DC-025 |
+| **Question** | Which technology will provide the application's durable local source of truth? |
+| **Alternatives** | A) SQLite with Drift, B) direct SQLite bindings, C) JSON live store, D) object store, E) cloud/server-first |
+| **Decision** | SQLite with Drift behind existing repository interfaces |
+| **Rationale** | Embedded ACID transactions, relational constraints, typed Dart access, versioned migrations, Windows/offline fit, and low operational burden best match the financial and inventory integrity contract. See `docs/ADR-001-DURABLE-PERSISTENCE.md`. |
+| **Impact** | Phase 8 will introduce the schema and persistent repositories incrementally with one shared SQL transaction per logical command. JSON remains backup/export; cloud sync remains deferred. |
+| **Deadline** | Accepted in Phase 7; implementation is Phase 8 |
+| **Status** | CONFIRMED — architecture only; Phase 8 NOT STARTED |
+
+---
 
 ### DC-001: Windows local app is the primary platform
 

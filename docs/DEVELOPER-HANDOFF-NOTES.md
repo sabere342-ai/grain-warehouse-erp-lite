@@ -1,5 +1,19 @@
 # Developer Handoff Notes — Grain Warehouse ERP Lite
 
+## Phase 7 — Durable Persistence Architecture Decision
+
+- Status: accepted; documentation/architecture only.
+- ADR: `docs/ADR-001-DURABLE-PERSISTENCE.md`.
+- Decision: SQLite with Drift behind the existing repository interfaces.
+- Phase 7 adds no dependency, schema, migration, generated code, persistence
+  implementation, or repository cutover.
+- Phase 8 is Durable Persistence Implementation and is not started.
+- Phase 8 must preserve integer qirsh/grams, immutable history, approval binding,
+  replay namespaces, atomic compound operations, JSON backup compatibility, and
+  transaction-safe restore/wipe.
+- Real financial data remains prohibited until Phase 8 crash-recovery and
+  backup/restore drill criteria pass.
+
 ## Current Baseline
 
 | Item | Value |

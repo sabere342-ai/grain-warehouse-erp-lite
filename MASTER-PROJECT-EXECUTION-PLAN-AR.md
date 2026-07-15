@@ -610,8 +610,8 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 ### النطاق التالي المعتمد
 
 1. ~~Split Payments End-User UI.~~ ✓ مكتمل
-2. Advances/Overpayments/Refunds End-User UI.
-3. Durable Persistence Architecture Decision (ADR).
+2. ~~Advances/Overpayments/Refunds End-User UI.~~ ✓ مكتمل
+3. ~~Durable Persistence Architecture Decision (ADR).~~ ✓ Phase 7 — `docs/ADR-001-DURABLE-PERSISTENCE.md`
 4. Durable Persistence Implementation.
 
 ### الحظر التشغيلي
@@ -737,9 +737,9 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 ### القادم (بعد إغلاق الوثائق)
 
 6. ~~**Split Payments End-User UI.**~~ ✓ مكتمل
-7. **Advances/Overpayments/Refunds End-User UI.**
-8. **Durable Persistence Architecture Decision (ADR).**
-9. **Durable Persistence Implementation.**
+7. ~~**Advances/Overpayments/Refunds End-User UI.**~~ ✓ مكتمل
+8. ~~**Durable Persistence Architecture Decision (ADR).**~~ ✓ Phase 7
+9. **Durable Persistence Implementation — Phase 8.**
 10. **Remaining financial and settlement reports.**
 11. **Stock-adjustment PDF + UI/branding/navigation audit.**
 12. **Real Financial Data Pilot (محظور قبل durable persistence).**
@@ -771,4 +771,3 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 - Cloud sync وMulti-device والموبايل مكتملة إذا ظل هذا هو نطاق المنتج النهائي المعتمد.
 - لا توجد قرارات Owner مفتوحة تؤثر في خصائص تم الإعلان عنها كجاهزة.
 - جميع بوابات Git/QA/Build/Documentation مغلقة.
-

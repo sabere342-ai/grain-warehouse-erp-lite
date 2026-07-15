@@ -422,10 +422,15 @@ All core financial features are implemented and tested:
 
 ### Then: Persistence
 
-1. Durable Persistence Architecture Decision (ADR)
-2. Durable Persistence Implementation (SQLite or approved alternative)
+1. ✅ Phase 7 — Durable Persistence Architecture Decision (`ADR-001`): SQLite with Drift selected
+2. Phase 8 — Durable Persistence Implementation (not started)
 3. Transaction-safe restore
 4. Transaction-safe wipe
+
+Phase 7 is documentation and architecture only. It adds no persistence package,
+schema, migration, generated code, or production repository implementation.
+Phase 8 must satisfy the transition and acceptance gates in
+`docs/ADR-001-DURABLE-PERSISTENCE.md`.
 
 > **لا تُستخدم بيانات مالية تشغيلية حقيقية قبل نجاح التخزين الدائم واختبارات crash recovery وBackup/Restore drill.**
 
