@@ -40,9 +40,9 @@ enum NegativeBalanceOperationType {
       case NegativeBalanceOperationType.cancellationReversal:
         return 'عكس إلغاء';
       case NegativeBalanceOperationType.customerOverpayment:
-        return 'Customer overpayment';
+        return '\u0632\u064a\u0627\u062f\u0629 \u0639\u0645\u064a\u0644';
       case NegativeBalanceOperationType.supplierOverpayment:
-        return 'Supplier overpayment';
+        return '\u0632\u064a\u0627\u062f\u0629 \u0645\u0648\u0631\u062f';
     }
   }
 }

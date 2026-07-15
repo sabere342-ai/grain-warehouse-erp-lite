@@ -77,18 +77,36 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     required Supplier supplier,
   }) async {
     final balance = _balances[supplier.id] ?? 0;
-    if (balance <= 0) return;
 
-    final draft = await showDialog<SupplierPaymentDraft>(
+    final financialAccounts =
+        await AppRepositories.financialAccountRepository.listAccounts();
+    if (!mounted) return;
+
+    // ignore: use_build_context_synchronously
+    final result = await showDialog<SupplierPaymentResult>(
+      // ignore: use_build_context_synchronously
       context: context,
-      builder: (context) => SupplierPaymentDialog(
+      builder: (_) => SupplierPaymentDialog(
         supplier: supplier,
         balanceQirsh: balance,
         userId: user.id,
+        financialAccounts: financialAccounts,
       ),
     );
 
-    if (draft == null) return;
+    if (result == null) return;
+
+    final draft = SupplierPaymentDraft(
+      supplierId: supplier.id,
+      date: result.date,
+      amountQirsh: result.amountQirsh,
+      createdByUserId: user.id,
+      notes: result.notes,
+      financialAccountId: result.financialAccountId,
+      paymentMethod: result.paymentMethod,
+      operationRequestId: result.operationRequestId,
+      overpaymentApprovalId: result.overpaymentApprovalId,
+    );
 
     try {
       await _accountRepo.createPayment(draft);

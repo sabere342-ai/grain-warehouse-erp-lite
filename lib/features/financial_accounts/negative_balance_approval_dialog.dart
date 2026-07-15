@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 
@@ -12,6 +14,8 @@ class NegativeBalanceApprovalDialog extends StatefulWidget {
     required this.currentBalanceQirsh,
     required this.requestedAmountQirsh,
     required this.operationDescription,
+    this.approvalService,
+    this.approvalDraft,
   });
 
   final AuthRepository authRepository;
@@ -19,6 +23,8 @@ class NegativeBalanceApprovalDialog extends StatefulWidget {
   final int currentBalanceQirsh;
   final int requestedAmountQirsh;
   final String operationDescription;
+  final NegativeBalanceApprovalService? approvalService;
+  final NegativeBalanceApprovalDraft? approvalDraft;
 
   static Future<String?> show({
     required BuildContext context,
@@ -27,6 +33,8 @@ class NegativeBalanceApprovalDialog extends StatefulWidget {
     required int currentBalanceQirsh,
     required int requestedAmountQirsh,
     required String operationDescription,
+    NegativeBalanceApprovalService? approvalService,
+    NegativeBalanceApprovalDraft? approvalDraft,
   }) {
     return showDialog<String>(
       context: context,
@@ -37,6 +45,8 @@ class NegativeBalanceApprovalDialog extends StatefulWidget {
         currentBalanceQirsh: currentBalanceQirsh,
         requestedAmountQirsh: requestedAmountQirsh,
         operationDescription: operationDescription,
+        approvalService: approvalService,
+        approvalDraft: approvalDraft,
       ),
     );
   }
@@ -303,8 +313,32 @@ class _NegativeBalanceApprovalDialogState
         return;
       }
 
-      if (mounted) {
-        Navigator.of(context).pop(user.id);
+      final service = widget.approvalService;
+      final draft = widget.approvalDraft;
+      if (service != null && draft != null) {
+        final approvalId = await service.requestApproval(
+          draft: NegativeBalanceApprovalDraft(
+            requestedByUserId: draft.requestedByUserId,
+            approvedByOwnerUserId: user.id,
+            accountId: draft.accountId,
+            amountQirsh: draft.amountQirsh,
+            operationType: draft.operationType,
+            sourceDocumentId: draft.sourceDocumentId,
+            sourceDocumentType: draft.sourceDocumentType,
+            balanceBeforeQirsh: draft.balanceBeforeQirsh,
+            expectedBalanceAfterQirsh: draft.expectedBalanceAfterQirsh,
+            reason: draft.reason,
+          ),
+          ownerPhone: phone,
+          ownerPassword: password,
+        );
+        if (mounted) {
+          Navigator.of(context).pop(approvalId);
+        }
+      } else {
+        if (mounted) {
+          Navigator.of(context).pop(user.id);
+        }
       }
     } catch (e) {
       setState(() {

@@ -56,6 +56,17 @@ abstract class FinancialAccountRepository {
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
   });
+  Future<FinancialAccountEntry> createSupplierOverpaymentEntry({
+    required String accountId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    required NegativeBalanceApprovalConsumption authorization,
+    String? reference,
+    String? note,
+    PaymentMethod? paymentMethod,
+  });
   Future<FinancialTransfer> createTransfer(
       {required AppUser user, required FinancialTransferDraft draft});
   Future<FinancialTransfer> reverseTransfer({
@@ -550,6 +561,7 @@ class LocalFinancialAccountRepository
     String? approvedByUserId,
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
+    bool authorizedSupplierOverpayment = false,
   }) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
@@ -570,7 +582,7 @@ class LocalFinancialAccountRepository
     if (direction == FinancialAccountEntryDirection.outflow) {
       final currentBalance = await currentBalanceForAccount(id);
       final projectedBalance = currentBalance - amountQirsh;
-      if (projectedBalance < 0) {
+      if (projectedBalance < 0 && !authorizedSupplierOverpayment) {
         if (!account.allowNegativeBalance) {
           throw StateError(
             'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
@@ -665,6 +677,43 @@ class LocalFinancialAccountRepository
       await approvalConsumption?.rollback();
       rethrow;
     }
+  }
+
+  @override
+  Future<FinancialAccountEntry> createSupplierOverpaymentEntry({
+    required String accountId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    required NegativeBalanceApprovalConsumption authorization,
+    String? reference,
+    String? note,
+    PaymentMethod? paymentMethod,
+  }) {
+    authorization.claimSupplierOverpaymentEntry(
+      accountId: accountId,
+      amountQirsh: amountQirsh,
+      createdByUserId: createdByUserId,
+    );
+    Future<FinancialAccountEntry> operation() => _createEntry(
+          accountId: accountId,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: amountQirsh,
+          sourceType: FinancialAccountEntrySource.supplierSettlement,
+          sourceDocumentId: sourceDocumentId,
+          effectiveDate: effectiveDate,
+          createdByUserId: createdByUserId,
+          reference: reference,
+          note: note,
+          paymentMethod: paymentMethod,
+          authorizedSupplierOverpayment: true,
+        );
+    if (RepositoryTransaction.isActive) return operation();
+    return RepositoryTransaction.execute(
+      <SnapshotHolder>[createTransactionSnapshot()],
+      operation,
+    );
   }
 
   NegativeBalanceOperationType _operationTypeForSource(

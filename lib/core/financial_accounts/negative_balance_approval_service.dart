@@ -106,7 +106,8 @@ class NegativeBalanceApprovalService {
         current.sourceDocumentType != binding.sourceDocumentType ||
         current.requestedByUserId != binding.requestedByUserId ||
         current.balanceBeforeQirsh != binding.balanceBeforeQirsh ||
-        current.expectedBalanceAfterQirsh != binding.expectedBalanceAfterQirsh) {
+        current.expectedBalanceAfterQirsh !=
+            binding.expectedBalanceAfterQirsh) {
       throw StateError('بيانات الموافقة لا تطابق العملية.');
     }
   }
@@ -126,10 +127,11 @@ class NegativeBalanceApprovalService {
         'result': 'consumed',
       },
     ));
-    return NegativeBalanceApprovalConsumption(
+    return NegativeBalanceApprovalConsumption._(
       approvalRepository: _approvalRepository,
       approvalId: consumed.id,
       transactionId: binding.transactionId,
+      binding: binding,
     );
   }
 
@@ -151,15 +153,38 @@ class NegativeBalanceApprovalService {
 }
 
 class NegativeBalanceApprovalConsumption {
-  NegativeBalanceApprovalConsumption({
+  NegativeBalanceApprovalConsumption._({
     required NegativeBalanceApprovalRepository approvalRepository,
     required this.approvalId,
     required this.transactionId,
-  }) : _approvalRepository = approvalRepository;
+    required NegativeBalanceApprovalBinding binding,
+  })  : _approvalRepository = approvalRepository,
+        _binding = binding;
 
   final NegativeBalanceApprovalRepository _approvalRepository;
   final String approvalId;
   final String transactionId;
+  final NegativeBalanceApprovalBinding _binding;
+  bool _supplierEntryClaimed = false;
+
+  void claimSupplierOverpaymentEntry({
+    required String accountId,
+    required int amountQirsh,
+    required String createdByUserId,
+  }) {
+    if (_supplierEntryClaimed ||
+        _binding.operationType !=
+            NegativeBalanceOperationType.supplierOverpayment ||
+        _binding.sourceDocumentType != 'supplierOverpayment' ||
+        _binding.accountId != accountId.trim() ||
+        _binding.requestedByUserId != createdByUserId.trim() ||
+        _binding.balanceBeforeQirsh - _binding.expectedBalanceAfterQirsh !=
+            amountQirsh) {
+      throw StateError(
+          'Supplier overpayment authorization does not match the financial entry.');
+    }
+    _supplierEntryClaimed = true;
+  }
 
   Future<void> rollback() => _approvalRepository.restorePendingApproval(
         approvalId: approvalId,

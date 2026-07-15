@@ -34,11 +34,11 @@ class PrintableCustomerStatementView extends StatelessWidget {
       case CustomerAccountEntryType.collection:
         return 'تحصيل من العميل — ${entry.descriptionAr}';
       case CustomerAccountEntryType.advanceApplication:
-        return 'Customer advance application — ${entry.descriptionAr}';
+        return '\u062a\u0637\u0628\u064a\u0642 \u0633\u0644\u0641\u0629 \u0639\u0645\u064a\u0644 \u2014 ${entry.descriptionAr}';
       case CustomerAccountEntryType.advanceApplicationReversal:
-        return 'Customer advance application reversal â€" ${entry.descriptionAr}';
+        return '\u0639\u0643\u0633 \u062a\u0637\u0628\u064a\u0642 \u0633\u0644\u0641\u0629 \u0639\u0645\u064a\u0644 \u2014 ${entry.descriptionAr}';
       case CustomerAccountEntryType.advanceRefundReversal:
-        return 'Customer advance refund reversal — ${entry.descriptionAr}';
+        return '\u0639\u0643\u0633 \u0627\u0633\u062a\u0631\u0627\u062f \u0633\u0644\u0641\u0629 \u0639\u0645\u064a\u0644 \u2014 ${entry.descriptionAr}';
       case CustomerAccountEntryType.openingBalance:
         return entry.descriptionAr;
       case CustomerAccountEntryType.saleCancellation:

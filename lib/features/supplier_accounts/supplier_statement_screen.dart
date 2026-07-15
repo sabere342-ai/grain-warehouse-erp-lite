@@ -98,27 +98,55 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final user = AuthScope.of(context).state.user;
     if (user == null) return;
     final balance = _statement?.finalBalanceQirsh ?? 0;
-    if (balance <= 0) return;
 
-    final draft = await showDialog<SupplierPaymentDraft>(
+    final financialAccounts =
+        await AppRepositories.financialAccountRepository.listAccounts();
+    if (!mounted) return;
+
+    final result = await showDialog<SupplierPaymentResult>(
       context: context,
-      builder: (context) => SupplierPaymentDialog(
+      builder: (_) => SupplierPaymentDialog(
         supplier: widget.supplier,
         balanceQirsh: balance,
         userId: user.id,
+        financialAccounts: financialAccounts,
       ),
     );
 
-    if (draft == null) return;
+    if (result == null) return;
+
+    final draft = SupplierPaymentDraft(
+      supplierId: widget.supplier.id,
+      date: result.date,
+      amountQirsh: result.amountQirsh,
+      createdByUserId: user.id,
+      createdByUserName: user.name,
+      notes: result.notes,
+      financialAccountId: result.financialAccountId,
+      paymentMethod: result.paymentMethod,
+      operationRequestId: result.operationRequestId,
+      overpaymentApprovalId: result.overpaymentApprovalId,
+    );
 
     try {
       await _repository.createPayment(draft);
       await _load();
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      String message = 'تعذر تسجيل الدفع. تأكد من صحة البيانات.';
+      if (e is StateError) {
+        final msg = e.message;
+        if (msg.contains('balance changed')) {
+          message = 'تغيّر رصيد المورد أثناء الدفع. أعد المحاولة.';
+        } else if (msg.contains('overpayment requires') ||
+            msg.contains('approval')) {
+          message = 'يجب اختيار حساب مالي وموافقة المالك لتسجيل السلفة.';
+        } else if (msg.contains('already processed')) {
+          message = 'تم تسجيل هذا الدفع مسبقاً.';
+        }
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
+        SnackBar(content: Text(message)),
       );
     }
   }
@@ -143,12 +171,11 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
                         style: textTheme.titleMedium,
                       ),
                     ),
-                    if (statement.finalBalanceQirsh > 0)
-                      FilledButton.icon(
-                        onPressed: _recordPayment,
-                        icon: const Icon(Icons.payments_rounded),
-                        label: const Text('تسجيل دفعة'),
-                      ),
+                    FilledButton.icon(
+                      onPressed: _recordPayment,
+                      icon: const Icon(Icons.payments_rounded),
+                      label: const Text('تسجيل دفعة'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -184,7 +211,8 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final icon = switch (entry.type) {
       SupplierAccountEntryType.purchase => Icons.shopping_cart_rounded,
       SupplierAccountEntryType.payment => Icons.payments_rounded,
-      SupplierAccountEntryType.advanceApplication => Icons.account_balance_wallet_rounded,
+      SupplierAccountEntryType.advanceApplication =>
+        Icons.account_balance_wallet_rounded,
       SupplierAccountEntryType.advanceApplicationReversal => Icons.undo_rounded,
       SupplierAccountEntryType.advanceRefundReversal => Icons.undo_rounded,
       SupplierAccountEntryType.paymentCancellation => Icons.undo_rounded,
@@ -195,9 +223,12 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       SupplierAccountEntryType.payment => 'دفعة للمورد',
       SupplierAccountEntryType.paymentCancellation => 'عكس دفعة للمورد',
       SupplierAccountEntryType.openingBalance => 'رصيد افتتاحي',
-      SupplierAccountEntryType.advanceApplication => 'Supplier advance application',
-      SupplierAccountEntryType.advanceApplicationReversal => 'Supplier advance application reversal',
-      SupplierAccountEntryType.advanceRefundReversal => 'Supplier advance refund reversal',
+      SupplierAccountEntryType.advanceApplication =>
+        'Supplier advance application',
+      SupplierAccountEntryType.advanceApplicationReversal =>
+        'Supplier advance application reversal',
+      SupplierAccountEntryType.advanceRefundReversal =>
+        'Supplier advance refund reversal',
     };
     final amountText = switch (entry.type) {
       SupplierAccountEntryType.purchase ||

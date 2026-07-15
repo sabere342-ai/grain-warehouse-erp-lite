@@ -5,8 +5,12 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -178,11 +182,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
     required Customer customer,
     required int balanceQirsh,
   }) async {
+    final financialAccounts =
+        await AppRepositories.financialAccountRepository.listAccounts();
+    if (!mounted) return;
+    // ignore: use_build_context_synchronously
     final result = await showDialog<_CollectionFormResult>(
-      context: context,
-      builder: (context) => _CollectionFormDialog(
+      context: this.context,
+      builder: (_) => _CollectionFormDialog(
         customer: customer,
         balanceQirsh: balanceQirsh,
+        financialAccounts: financialAccounts,
       ),
     );
     if (result == null) {
@@ -194,6 +203,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
       date: result.date,
       amountQirsh: result.amountQirsh,
       notes: result.notes,
+      financialAccountId: result.financialAccountId,
+      paymentMethod: result.paymentMethod,
+      operationRequestId: result.operationRequestId,
+      overpaymentApprovalId: result.overpaymentApprovalId,
     );
   }
 
@@ -372,10 +385,12 @@ class _CollectionFormDialog extends StatefulWidget {
   const _CollectionFormDialog({
     required this.customer,
     required this.balanceQirsh,
+    required this.financialAccounts,
   });
 
   final Customer customer;
   final int balanceQirsh;
+  final List<FinancialAccount> financialAccounts;
 
   @override
   State<_CollectionFormDialog> createState() => _CollectionFormDialogState();
@@ -386,6 +401,21 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
   final _notesController = TextEditingController();
   DateTime _date = DateTime.now();
   String? _errorMessage;
+  bool _isLoading = false;
+
+  String? _selectedAccountId;
+  PaymentMethod? _selectedPaymentMethod;
+
+  int? _tryParseAmount() {
+    try {
+      return MoneyUtils.parseEgpToPiasters(
+        _amountController.text,
+        allowZero: false,
+      );
+    } on Object {
+      return null;
+    }
+  }
 
   @override
   void dispose() {
@@ -396,59 +426,170 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final amount = _tryParseAmount();
+    final isOverpayment =
+        amount != null && amount > widget.balanceQirsh;
+    final settled = isOverpayment ? widget.balanceQirsh : (amount ?? 0);
+    final advance = isOverpayment ? amount - widget.balanceQirsh : 0;
+
     return AlertDialog(
       title: Text('تسجيل تحصيل - ${widget.customer.name}'),
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-                'الرصيد المستحق: ${MoneyUtils.formatPiastersAsEgp(widget.balanceQirsh)}'),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _pickDate,
-              icon: const Icon(Icons.calendar_month_rounded),
-              label: Text('تاريخ التحصيل: ${_formatDate(_date)}'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'مبلغ التحصيل بالجنيه',
-                helperText: 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق.',
-              ),
-              textDirection: TextDirection.ltr,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
-              maxLines: 2,
-              textDirection: TextDirection.rtl,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-          ],
+        child: StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    'الرصيد المستحق: ${MoneyUtils.formatPiastersAsEgp(widget.balanceQirsh)}'),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _pickDate,
+                  icon: const Icon(Icons.calendar_month_rounded),
+                  label: Text('تاريخ التحصيل: ${_formatDate(_date)}'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _amountController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'مبلغ التحصيل بالجنيه',
+                    helperText:
+                        'يمكن تسجيل تحصيل أكبر من الرصيد — سيُنشأ سلفة للعميل.',
+                  ),
+                  textDirection: TextDirection.ltr,
+                  onChanged: (_) => setDialogState(() {}),
+                ),
+                if (isOverpayment) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'تفاصيل السلفة',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        _summaryRow('المسوى من المستحق',
+                            MoneyUtils.formatPiastersAsEgp(settled)),
+                        _summaryRow('السلفة الجديدة',
+                            MoneyUtils.formatPiastersAsEgp(advance)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _selectedAccountId,
+                    decoration: const InputDecoration(
+                      labelText: 'الحساب المالي للسلفة *',
+                    ),
+                    items: widget.financialAccounts
+                        .where((a) => a.isActive)
+                        .map((a) => DropdownMenuItem(
+                              value: a.id,
+                              child: Text(
+                                  '${a.type.iconEmoji} ${a.name} (${a.type.labelAr})'),
+                            ))
+                        .toList(),
+                    onChanged: (v) =>
+                        setDialogState(() => _selectedAccountId = v),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<PaymentMethod>(
+                    value: _selectedPaymentMethod,
+                    decoration: const InputDecoration(
+                      labelText: 'طريقة الدفع (اختياري)',
+                    ),
+                    items: PaymentMethod.values
+                        .map((m) => DropdownMenuItem(
+                              value: m,
+                              child: Text(m.labelAr),
+                            ))
+                        .toList(),
+                    onChanged: (v) =>
+                        setDialogState(() => _selectedPaymentMethod = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          size: 16, color: colorScheme.primary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'يجب موافقة المالك لتسجيل السلفة.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _notesController,
+                  decoration:
+                      const InputDecoration(labelText: 'ملاحظات اختيارية'),
+                  maxLines: 2,
+                  textDirection: TextDirection.rtl,
+                ),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
           child: const Text('إلغاء'),
         ),
         FilledButton(
-          onPressed: _submit,
-          child: const Text('حفظ التحصيل'),
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('حفظ التحصيل'),
         ),
       ],
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          Text(value,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 
@@ -465,7 +606,7 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     int amount;
     try {
       amount = MoneyUtils.parseEgpToPiasters(
@@ -476,18 +617,92 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
       setState(() => _errorMessage = 'اكتب مبلغ التحصيل بشكل صحيح.');
       return;
     }
-    if (amount > widget.balanceQirsh) {
-      setState(
-          () => _errorMessage = 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق.');
-      return;
-    }
-    Navigator.of(context).pop(
-      _CollectionFormResult(
+
+    final isOverpayment = amount > widget.balanceQirsh;
+
+    if (isOverpayment) {
+      if (_selectedAccountId == null) {
+        setState(
+            () => _errorMessage = 'اختر الحساب المالي الذي ستُودع فيه السلفة.');
+        return;
+      }
+      final approved = await _requestApproval(amount);
+      if (approved == null || !mounted) return;
+      Navigator.of(context).pop(_CollectionFormResult(
         date: _date,
         amountQirsh: amount,
         notes: _notesController.text,
-      ),
-    );
+        financialAccountId: _selectedAccountId,
+        paymentMethod: _selectedPaymentMethod,
+        operationRequestId: approved.requestId,
+        overpaymentApprovalId: approved.approvalId,
+      ));
+    } else {
+      Navigator.of(context).pop(_CollectionFormResult(
+        date: _date,
+        amountQirsh: amount,
+        notes: _notesController.text,
+      ));
+    }
+  }
+
+  Future<_ApprovalResult?> _requestApproval(int amount) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final account =
+          widget.financialAccounts.firstWhere((a) => a.id == _selectedAccountId);
+      final accountBalance = await AppRepositories
+          .financialAccountRepository
+          .currentBalanceForAccount(account.id);
+      if (!mounted) return null;
+      final requestId =
+          DateTime.now().millisecondsSinceEpoch.toString();
+
+      final approvalId = await NegativeBalanceApprovalDialog.show(
+        context: context,
+        authRepository: AppRepositories.authRepository,
+        accountName: account.name,
+        currentBalanceQirsh: accountBalance,
+        requestedAmountQirsh: amount,
+        operationDescription: 'تسجيل سلفة للعميل ${widget.customer.name}',
+        approvalService:
+            AppRepositories.negativeBalanceApprovalService,
+        approvalDraft: NegativeBalanceApprovalDraft(
+          requestedByUserId: '',
+          approvedByOwnerUserId: '',
+          accountId: account.id,
+          amountQirsh: amount - widget.balanceQirsh,
+          operationType:
+              NegativeBalanceOperationType.customerOverpayment,
+          sourceDocumentId: requestId,
+          sourceDocumentType: 'customerOverpayment',
+          balanceBeforeQirsh: accountBalance,
+          expectedBalanceAfterQirsh: accountBalance + amount,
+          reason: 'تحصيل يتجاوز الرصيد المستحق',
+        ),
+      );
+
+      if (approvalId == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'تم إلغاء الموافقة.';
+        });
+        return null;
+      }
+
+      setState(() => _isLoading = false);
+      return _ApprovalResult(requestId: requestId, approvalId: approvalId);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'حدث خطأ أثناء طلب الموافقة.';
+      });
+      return null;
+    }
   }
 
   String _formatDate(DateTime value) {
@@ -497,16 +712,30 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
   String _twoDigits(int value) => value.toString().padLeft(2, '0');
 }
 
+class _ApprovalResult {
+  const _ApprovalResult({required this.requestId, required this.approvalId});
+  final String requestId;
+  final String approvalId;
+}
+
 class _CollectionFormResult {
   const _CollectionFormResult({
     required this.date,
     required this.amountQirsh,
     this.notes,
+    this.financialAccountId,
+    this.paymentMethod,
+    this.operationRequestId,
+    this.overpaymentApprovalId,
   });
 
   final DateTime date;
   final int amountQirsh;
   final String? notes;
+  final String? financialAccountId;
+  final PaymentMethod? paymentMethod;
+  final String? operationRequestId;
+  final String? overpaymentApprovalId;
 }
 
 class _CustomerStatementScreen extends StatelessWidget {

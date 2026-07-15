@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
 class CustomerController extends ChangeNotifier {
   CustomerController({
@@ -68,6 +69,10 @@ class CustomerController extends ChangeNotifier {
     required DateTime date,
     required int amountQirsh,
     String? notes,
+    String? financialAccountId,
+    PaymentMethod? paymentMethod,
+    String? operationRequestId,
+    String? overpaymentApprovalId,
   }) async {
     if (!_canManage(user)) {
       return false;
@@ -87,6 +92,10 @@ class CustomerController extends ChangeNotifier {
           createdByUserId: user.id,
           createdByUserName: user.name,
           notes: notes,
+          financialAccountId: financialAccountId,
+          paymentMethod: paymentMethod,
+          operationRequestId: operationRequestId,
+          overpaymentApprovalId: overpaymentApprovalId,
         ),
       );
       await loadCustomers(user);
@@ -229,7 +238,15 @@ class CustomerController extends ChangeNotifier {
       return 'اكتب مبلغ التحصيل بشكل صحيح ويجب أن يكون أكبر من صفر.';
     }
     if (error is StateError) {
-      return 'لا يمكن تسجيل تحصيل أكبر من الرصيد المستحق على العميل.';
+      final msg = error.message;
+      if (msg.contains('balance changed')) {
+        return 'تغيّر رصيد العميل أثناء التحصيل. أعد المحاولة.';
+      }
+      if (msg.contains('overpayment requires') ||
+          msg.contains('approval')) {
+        return 'يجب اختيار حساب مالي وموافقة المالك لتسجيل السلفة.';
+      }
+      return 'لا يمكن تسجيل هذا التحصيل بالبيانات المدخلة.';
     }
     return 'تعذر تسجيل التحصيل.';
   }

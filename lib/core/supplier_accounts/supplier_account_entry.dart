@@ -14,13 +14,13 @@ enum SupplierAccountEntryType {
       case SupplierAccountEntryType.payment:
         return 'مدفوع';
       case SupplierAccountEntryType.paymentCancellation:
-        return 'Reversed payment';
+        return '\u0639\u0643\u0633 \u062f\u0641\u0639\u0629';
       case SupplierAccountEntryType.advanceApplication:
-        return 'Supplier advance application';
+        return '\u062a\u0637\u0628\u064a\u0642 \u0633\u0644\u0641\u0629 \u0645\u0648\u0631\u062f';
       case SupplierAccountEntryType.advanceApplicationReversal:
-        return 'Supplier advance application reversal';
+        return '\u0639\u0643\u0633 \u062a\u0637\u0628\u064a\u0642 \u0633\u0644\u0641\u0629 \u0645\u0648\u0631\u062f';
       case SupplierAccountEntryType.advanceRefundReversal:
-        return 'Supplier advance refund reversal';
+        return '\u0639\u0643\u0633 \u0627\u0633\u062a\u0631\u0627\u062f \u0633\u0644\u0641\u0629 \u0645\u0648\u0631\u062f';
       case SupplierAccountEntryType.openingBalance:
         return 'رصيد افتتاحي';
     }
