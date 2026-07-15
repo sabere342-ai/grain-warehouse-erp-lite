@@ -67,6 +67,18 @@ abstract class FinancialAccountRepository {
     String? note,
     PaymentMethod? paymentMethod,
   });
+  Future<FinancialAccountEntry> createCustomerAdvanceRefundEntry({
+    required String accountId,
+    required String customerId,
+    required String advanceId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    required NegativeBalanceApprovalConsumption authorization,
+    String? reference,
+    PaymentMethod? paymentMethod,
+  });
   Future<FinancialTransfer> createTransfer(
       {required AppUser user, required FinancialTransferDraft draft});
   Future<FinancialTransfer> reverseTransfer({
@@ -562,6 +574,8 @@ class LocalFinancialAccountRepository
     String? negativeBalanceApprovalId,
     String? approvalSourceDocumentId,
     bool authorizedSupplierOverpayment = false,
+    bool authorizedCustomerAdvanceRefund = false,
+    String? authorizedApprovalId,
   }) async {
     final id = _normalizedRequiredId(accountId, 'accountId');
     final userId = _normalizedRequiredId(createdByUserId, 'createdByUserId');
@@ -582,13 +596,16 @@ class LocalFinancialAccountRepository
     if (direction == FinancialAccountEntryDirection.outflow) {
       final currentBalance = await currentBalanceForAccount(id);
       final projectedBalance = currentBalance - amountQirsh;
-      if (projectedBalance < 0 && !authorizedSupplierOverpayment) {
+      if (projectedBalance < 0) {
         if (!account.allowNegativeBalance) {
           throw StateError(
             'الرصيد غير كافٍ. يجب تفعيل السماح بالرصيد السالب من قبل المالك.',
           );
         }
-        final approver = negativeBalanceApprovalId?.trim();
+        final approver =
+            authorizedCustomerAdvanceRefund || authorizedSupplierOverpayment
+                ? authorizedApprovalId?.trim()
+                : negativeBalanceApprovalId?.trim();
         if (approver == null || approver.isEmpty) {
           throw StateError(
             'الرصيد غير كافٍ. تتطلب العملية موافقة المالك المباشرة.',
@@ -626,7 +643,9 @@ class LocalFinancialAccountRepository
     );
     NegativeBalanceApprovalConsumption? approvalConsumption;
     NegativeBalanceApprovalBinding? approvalBinding;
-    if (negativeBalanceApproved) {
+    if (negativeBalanceApproved &&
+        !authorizedSupplierOverpayment &&
+        !authorizedCustomerAdvanceRefund) {
       final service = _negativeBalanceApprovalService;
       if (service == null) {
         throw StateError('خدمة اعتماد الرصيد السالب غير مهيأة.');
@@ -708,6 +727,48 @@ class LocalFinancialAccountRepository
           note: note,
           paymentMethod: paymentMethod,
           authorizedSupplierOverpayment: true,
+          authorizedApprovalId: authorization.approvalId,
+        );
+    if (RepositoryTransaction.isActive) return operation();
+    return RepositoryTransaction.execute(
+      <SnapshotHolder>[createTransactionSnapshot()],
+      operation,
+    );
+  }
+
+  @override
+  Future<FinancialAccountEntry> createCustomerAdvanceRefundEntry({
+    required String accountId,
+    required String customerId,
+    required String advanceId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required String createdByUserId,
+    required NegativeBalanceApprovalConsumption authorization,
+    String? reference,
+    PaymentMethod? paymentMethod,
+  }) {
+    authorization.claimCustomerAdvanceRefundEntry(
+      accountId: accountId,
+      customerId: customerId,
+      advanceId: advanceId,
+      amountQirsh: amountQirsh,
+      sourceDocumentId: sourceDocumentId,
+      createdByUserId: createdByUserId,
+    );
+    Future<FinancialAccountEntry> operation() => _createEntry(
+          accountId: accountId,
+          direction: FinancialAccountEntryDirection.outflow,
+          amountQirsh: amountQirsh,
+          sourceType: FinancialAccountEntrySource.customerAdvanceRefund,
+          sourceDocumentId: sourceDocumentId,
+          effectiveDate: effectiveDate,
+          createdByUserId: createdByUserId,
+          reference: reference,
+          paymentMethod: paymentMethod,
+          authorizedCustomerAdvanceRefund: true,
+          authorizedApprovalId: authorization.approvalId,
         );
     if (RepositoryTransaction.isActive) return operation();
     return RepositoryTransaction.execute(
@@ -734,6 +795,8 @@ class LocalFinancialAccountRepository
         return NegativeBalanceOperationType.supplierOverpayment;
       case FinancialAccountEntrySource.customerAdvanceRefundReversal:
         return NegativeBalanceOperationType.customerOverpayment;
+      case FinancialAccountEntrySource.customerAdvanceRefund:
+        return NegativeBalanceOperationType.customerAdvanceRefund;
       default:
         throw StateError('مصدر الحركة لا يدعم اعماد الرصيد السالب.');
     }

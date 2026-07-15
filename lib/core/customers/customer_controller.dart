@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -61,6 +62,132 @@ class CustomerController extends ChangeNotifier {
       );
     }
     return repository.statementForCustomer(customerId);
+  }
+
+  Future<List<CustomerAdvanceSummary>> advancesForCustomer(
+    String customerId,
+  ) async {
+    final repository = _accountRepository;
+    if (repository == null) {
+      throw StateError('سجل سلف العملاء غير متاح.');
+    }
+    final advances = await repository.listAdvances();
+    final applications = await repository.listAdvanceApplications();
+    final refunds = await repository.listAdvanceRefunds();
+    final customerAdvances = advances
+        .where((advance) => advance.customerId == customerId)
+        .toList(growable: false)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final result = <CustomerAdvanceSummary>[];
+    for (final advance in customerAdvances) {
+      final appliedQirsh = applications
+          .where(
+            (application) =>
+                application.advanceId == advance.id && !application.isReversed,
+          )
+          .fold<int>(0, (total, value) => total + value.amountQirsh);
+      final refundedQirsh = refunds
+          .where(
+            (refund) => refund.advanceId == advance.id && !refund.isReversed,
+          )
+          .fold<int>(0, (total, value) => total + value.amountQirsh);
+      result.add(
+        CustomerAdvanceSummary(
+          advance: advance,
+          appliedQirsh: appliedQirsh,
+          refundedQirsh: refundedQirsh,
+          remainingQirsh: await repository.remainingAdvanceQirsh(advance.id),
+        ),
+      );
+    }
+    return List<CustomerAdvanceSummary>.unmodifiable(result);
+  }
+
+  Future<CustomerAdvanceActionResult> applyCustomerAdvance({
+    required AppUser user,
+    required CustomerAdvance advance,
+    required int amountQirsh,
+    required DateTime date,
+    required String operationRequestId,
+  }) async {
+    if (!_canManage(user)) {
+      return CustomerAdvanceActionResult.failure(
+        _errorMessage ?? 'لا يملك هذا المستخدم صلاحية تنفيذ العملية.',
+      );
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      return const CustomerAdvanceActionResult.failure(
+        'سجل سلف العملاء غير متاح.',
+      );
+    }
+    try {
+      await repository.applyAdvance(
+        CustomerAdvanceApplicationDraft(
+          advanceId: advance.id,
+          customerId: advance.customerId,
+          amountQirsh: amountQirsh,
+          date: date,
+          createdByUserId: user.id,
+          operationRequestId: operationRequestId,
+        ),
+      );
+      await loadCustomers(user);
+      return const CustomerAdvanceActionResult.success();
+    } catch (error) {
+      final message = _advanceApplicationMessageForError(error);
+      _errorMessage = message;
+      notifyListeners();
+      return CustomerAdvanceActionResult.failure(message);
+    }
+  }
+
+  Future<CustomerAdvanceActionResult> refundCustomerAdvance({
+    required AppUser user,
+    required CustomerAdvance advance,
+    required int amountQirsh,
+    required DateTime date,
+    required String operationRequestId,
+    required String financialAccountId,
+    PaymentMethod? paymentMethod,
+    String? negativeBalanceApprovalId,
+  }) async {
+    if (!_canManage(user)) {
+      return CustomerAdvanceActionResult.failure(
+        _errorMessage ?? 'لا يملك هذا المستخدم صلاحية تنفيذ العملية.',
+      );
+    }
+    final repository = _accountRepository;
+    if (repository == null) {
+      return const CustomerAdvanceActionResult.failure(
+        'سجل سلف العملاء غير متاح.',
+      );
+    }
+    try {
+      await repository.refundAdvance(
+        CustomerAdvanceRefundDraft(
+          advanceId: advance.id,
+          amountQirsh: amountQirsh,
+          date: date,
+          createdByUserId: user.id,
+          operationRequestId: operationRequestId,
+          financialAccountId: financialAccountId,
+          paymentMethod: paymentMethod,
+          negativeBalanceApprovalId: negativeBalanceApprovalId,
+        ),
+      );
+      await loadCustomers(user);
+      return const CustomerAdvanceActionResult.success();
+    } catch (error) {
+      if (error is StateError &&
+          error.message.contains('يتطلب موافقة المالك على الرصيد السالب')) {
+        return const CustomerAdvanceActionResult.approvalRequired();
+      }
+      final message = _advanceRefundMessageForError(error);
+      _errorMessage = message;
+      notifyListeners();
+      return CustomerAdvanceActionResult.failure(message);
+    }
   }
 
   Future<bool> recordCollection({
@@ -242,8 +369,7 @@ class CustomerController extends ChangeNotifier {
       if (msg.contains('balance changed')) {
         return 'تغيّر رصيد العميل أثناء التحصيل. أعد المحاولة.';
       }
-      if (msg.contains('overpayment requires') ||
-          msg.contains('approval')) {
+      if (msg.contains('overpayment requires') || msg.contains('approval')) {
         return 'يجب اختيار حساب مالي وموافقة المالك لتسجيل السلفة.';
       }
       return 'لا يمكن تسجيل هذا التحصيل بالبيانات المدخلة.';
@@ -266,4 +392,94 @@ class CustomerController extends ChangeNotifier {
     }
     return 'تعذر تسجيل الرصيد الافتتاحي.';
   }
+
+  String _advanceApplicationMessageForError(Object error) {
+    if (error is ArgumentError) {
+      return 'المبلغ غير صالح ويجب أن يكون أكبر من صفر.';
+    }
+    if (error is StateError) {
+      final message = error.message;
+      if (message.contains('exceeds')) {
+        return 'المبلغ يتجاوز الرصيد المتاح أو ذمة العميل الحالية.';
+      }
+      if (message.contains('does not belong') ||
+          message.contains('not found')) {
+        return 'السلفة غير متاحة لهذا العميل.';
+      }
+      if (message.contains('payload mismatch')) {
+        return 'تغيّرت بيانات المحاولة. أغلق النافذة وابدأ محاولة جديدة.';
+      }
+    }
+    return 'تعذر تطبيق السلفة. راجع البيانات وحاول مرة أخرى.';
+  }
+
+  String _advanceRefundMessageForError(Object error) {
+    if (error is ArgumentError) {
+      return 'المبلغ غير صالح ويجب أن يكون أكبر من صفر.';
+    }
+    if (error is StateError) {
+      final message = error.message;
+      if (message.contains('exceeds')) {
+        return 'المبلغ يتجاوز الرصيد المتاح من السلفة.';
+      }
+      if (message.contains('original financial account')) {
+        return 'يجب رد السلفة من الحساب المالي الأصلي.';
+      }
+      if (message.contains('الموافقة') || message.contains('تفويض')) {
+        return 'تعذر اعتماد رد السلفة. اطلب اعتمادًا جديدًا وحاول مرة أخرى.';
+      }
+      if (message.contains('payload mismatch')) {
+        return 'تغيّرت بيانات المحاولة. أغلق النافذة وابدأ محاولة جديدة.';
+      }
+    }
+    return 'تعذر رد السلفة. راجع البيانات وحاول مرة أخرى.';
+  }
+}
+
+class CustomerAdvanceSummary {
+  const CustomerAdvanceSummary({
+    required this.advance,
+    required this.appliedQirsh,
+    required this.refundedQirsh,
+    required this.remainingQirsh,
+  });
+
+  final CustomerAdvance advance;
+  final int appliedQirsh;
+  final int refundedQirsh;
+  final int remainingQirsh;
+
+  bool get canAct => !advance.isReversed && remainingQirsh > 0;
+
+  String get statusLabelAr {
+    if (advance.isReversed) return 'معكوسة';
+    if (remainingQirsh == 0 && refundedQirsh == advance.amountQirsh) {
+      return 'مردودة';
+    }
+    if (remainingQirsh == 0) return 'مستهلكة';
+    if (remainingQirsh < advance.amountQirsh) return 'مستخدمة جزئيًا';
+    return 'متاحة';
+  }
+}
+
+enum CustomerAdvanceActionStatus { success, approvalRequired, failure }
+
+class CustomerAdvanceActionResult {
+  const CustomerAdvanceActionResult._(this.status, this.message);
+
+  const CustomerAdvanceActionResult.success()
+      : this._(CustomerAdvanceActionStatus.success, null);
+
+  const CustomerAdvanceActionResult.approvalRequired()
+      : this._(CustomerAdvanceActionStatus.approvalRequired, null);
+
+  const CustomerAdvanceActionResult.failure(String message)
+      : this._(CustomerAdvanceActionStatus.failure, message);
+
+  final CustomerAdvanceActionStatus status;
+  final String? message;
+
+  bool get isSuccess => status == CustomerAdvanceActionStatus.success;
+  bool get requiresApproval =>
+      status == CustomerAdvanceActionStatus.approvalRequired;
 }

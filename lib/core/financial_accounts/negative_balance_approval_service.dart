@@ -70,6 +70,7 @@ class NegativeBalanceApprovalService {
         expectedBalanceAfterQirsh: draft.expectedBalanceAfterQirsh,
         reason: draft.reason,
         duration: draft.duration,
+        authorizationContext: draft.authorizationContext,
       ),
     );
     await _auditLogRepository.record(AuditLogDraft(
@@ -107,7 +108,9 @@ class NegativeBalanceApprovalService {
         current.requestedByUserId != binding.requestedByUserId ||
         current.balanceBeforeQirsh != binding.balanceBeforeQirsh ||
         current.expectedBalanceAfterQirsh !=
-            binding.expectedBalanceAfterQirsh) {
+            binding.expectedBalanceAfterQirsh ||
+        !(current.authorizationContext?.matches(binding.authorizationContext) ??
+            binding.authorizationContext == null)) {
       throw StateError('بيانات الموافقة لا تطابق العملية.');
     }
   }
@@ -148,6 +151,10 @@ class NegativeBalanceApprovalService {
         'sourceDocumentId': approval.sourceDocumentId,
         'sourceDocumentType': approval.sourceDocumentType,
         'reason': approval.reason,
+        'customerId': approval.authorizationContext?.customerId,
+        'advanceId': approval.authorizationContext?.advanceId,
+        'financialDirection':
+            approval.authorizationContext?.financialDirection.name,
         'timestamp': DateTime.now().toIso8601String(),
       };
 }
@@ -166,6 +173,7 @@ class NegativeBalanceApprovalConsumption {
   final String transactionId;
   final NegativeBalanceApprovalBinding _binding;
   bool _supplierEntryClaimed = false;
+  bool _customerRefundEntryClaimed = false;
 
   void claimSupplierOverpaymentEntry({
     required String accountId,
@@ -184,6 +192,35 @@ class NegativeBalanceApprovalConsumption {
           'Supplier overpayment authorization does not match the financial entry.');
     }
     _supplierEntryClaimed = true;
+  }
+
+  void claimCustomerAdvanceRefundEntry({
+    required String accountId,
+    required String customerId,
+    required String advanceId,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required String createdByUserId,
+  }) {
+    final context = _binding.authorizationContext;
+    if (_customerRefundEntryClaimed ||
+        _binding.operationType !=
+            NegativeBalanceOperationType.customerAdvanceRefund ||
+        _binding.sourceDocumentType != 'customerAdvanceRefund' ||
+        _binding.sourceDocumentId != sourceDocumentId.trim() ||
+        _binding.accountId != accountId.trim() ||
+        _binding.requestedByUserId != createdByUserId.trim() ||
+        _binding.amountQirsh != amountQirsh ||
+        _binding.balanceBeforeQirsh - _binding.expectedBalanceAfterQirsh !=
+            amountQirsh ||
+        context == null ||
+        context.customerId != customerId.trim() ||
+        context.advanceId != advanceId.trim() ||
+        context.financialDirection !=
+            NegativeBalanceFinancialDirection.outflow) {
+      throw StateError('تفويض رد سلفة العميل لا يطابق الحركة المالية.');
+    }
+    _customerRefundEntryClaimed = true;
   }
 
   Future<void> rollback() => _approvalRepository.restorePendingApproval(

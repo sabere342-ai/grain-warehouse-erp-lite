@@ -25,7 +25,8 @@ enum NegativeBalanceOperationType {
   transfer,
   cancellationReversal,
   customerOverpayment,
-  supplierOverpayment;
+  supplierOverpayment,
+  customerAdvanceRefund;
 
   String get labelAr {
     switch (this) {
@@ -43,14 +44,42 @@ enum NegativeBalanceOperationType {
         return '\u0632\u064a\u0627\u062f\u0629 \u0639\u0645\u064a\u0644';
       case NegativeBalanceOperationType.supplierOverpayment:
         return '\u0632\u064a\u0627\u062f\u0629 \u0645\u0648\u0631\u062f';
+      case NegativeBalanceOperationType.customerAdvanceRefund:
+        return '\u0631\u062f \u0633\u0644\u0641\u0629 \u0639\u0645\u064a\u0644';
     }
   }
+}
+
+enum NegativeBalanceFinancialDirection { inflow, outflow }
+
+class NegativeBalanceApprovalContext {
+  const NegativeBalanceApprovalContext({
+    required this.customerId,
+    required this.advanceId,
+    required this.financialDirection,
+  });
+
+  const NegativeBalanceApprovalContext.customerAdvanceRefund({
+    required this.customerId,
+    required this.advanceId,
+  }) : financialDirection = NegativeBalanceFinancialDirection.outflow;
+
+  final String customerId;
+  final String advanceId;
+  final NegativeBalanceFinancialDirection financialDirection;
+
+  bool matches(NegativeBalanceApprovalContext? other) =>
+      other != null &&
+      customerId == other.customerId &&
+      advanceId == other.advanceId &&
+      financialDirection == other.financialDirection;
 }
 
 extension NegativeBalanceOperationTypePolicy on NegativeBalanceOperationType {
   bool get requiresNegativeBalance => switch (this) {
         NegativeBalanceOperationType.customerOverpayment ||
-        NegativeBalanceOperationType.supplierOverpayment => false,
+        NegativeBalanceOperationType.supplierOverpayment =>
+          false,
         _ => true,
       };
 }
@@ -71,6 +100,7 @@ class NegativeBalanceApproval {
     required this.expiresAt,
     required this.status,
     required this.reason,
+    this.authorizationContext,
     this.consumedAt,
     this.consumedByTransactionId,
     this.revokedAt,
@@ -86,6 +116,14 @@ class NegativeBalanceApproval {
     }
     if (amountQirsh <= 0 || reason.trim().isEmpty) {
       throw ArgumentError('Positive amount and reason are required.');
+    }
+    if (operationType == NegativeBalanceOperationType.customerAdvanceRefund &&
+        (authorizationContext == null ||
+            authorizationContext!.customerId.trim().isEmpty ||
+            authorizationContext!.advanceId.trim().isEmpty ||
+            authorizationContext!.financialDirection !=
+                NegativeBalanceFinancialDirection.outflow)) {
+      throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
     }
     if (!expiresAt.isAfter(createdAt)) {
       throw ArgumentError('Approval expiry must be after creation.');
@@ -128,6 +166,7 @@ class NegativeBalanceApproval {
   final DateTime expiresAt;
   final NegativeBalanceApprovalStatus status;
   final String reason;
+  final NegativeBalanceApprovalContext? authorizationContext;
   final DateTime? consumedAt;
   final String? consumedByTransactionId;
   final DateTime? revokedAt;
@@ -156,6 +195,7 @@ class NegativeBalanceApproval {
     DateTime? expiresAt,
     NegativeBalanceApprovalStatus? status,
     String? reason,
+    NegativeBalanceApprovalContext? authorizationContext,
     DateTime? consumedAt,
     String? consumedByTransactionId,
     DateTime? revokedAt,
@@ -178,6 +218,7 @@ class NegativeBalanceApproval {
       expiresAt: expiresAt ?? this.expiresAt,
       status: status ?? this.status,
       reason: reason ?? this.reason,
+      authorizationContext: authorizationContext ?? this.authorizationContext,
       consumedAt: consumedAt ?? this.consumedAt,
       consumedByTransactionId:
           consumedByTransactionId ?? this.consumedByTransactionId,
@@ -200,6 +241,7 @@ class NegativeBalanceApprovalDraft {
     required this.expectedBalanceAfterQirsh,
     required this.reason,
     this.duration = const Duration(hours: 24),
+    this.authorizationContext,
   });
 
   final String requestedByUserId;
@@ -213,4 +255,5 @@ class NegativeBalanceApprovalDraft {
   final int expectedBalanceAfterQirsh;
   final String reason;
   final Duration duration;
+  final NegativeBalanceApprovalContext? authorizationContext;
 }

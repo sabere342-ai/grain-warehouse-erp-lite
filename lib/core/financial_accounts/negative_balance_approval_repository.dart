@@ -84,6 +84,7 @@ class LocalNegativeBalanceApprovalRepository
       expiresAt: now.add(draft.duration),
       status: NegativeBalanceApprovalStatus.pending,
       reason: draft.reason,
+      authorizationContext: draft.authorizationContext,
     );
     _approvals.add(approval);
     return approval;
@@ -163,7 +164,10 @@ class LocalNegativeBalanceApprovalRepository
         approval.requestedByUserId != binding.requestedByUserId ||
         approval.balanceBeforeQirsh != binding.balanceBeforeQirsh ||
         approval.expectedBalanceAfterQirsh !=
-            binding.expectedBalanceAfterQirsh) {
+            binding.expectedBalanceAfterQirsh ||
+        !(approval.authorizationContext
+                ?.matches(binding.authorizationContext) ??
+            binding.authorizationContext == null)) {
       throw StateError('بيانات الموافقة لا تطابق العملية.');
     }
     return consumeApproval(
@@ -200,6 +204,7 @@ class LocalNegativeBalanceApprovalRepository
       expiresAt: approval.expiresAt,
       status: NegativeBalanceApprovalStatus.pending,
       reason: approval.reason,
+      authorizationContext: approval.authorizationContext,
     );
   }
 
@@ -311,6 +316,7 @@ class LocalNegativeBalanceApprovalRepository
         balanceBeforeQirsh: value.balanceBeforeQirsh,
         expectedBalanceAfterQirsh: value.expectedBalanceAfterQirsh,
         reason: value.reason,
+        authorizationContext: value.authorizationContext,
         createdAt: value.createdAt,
         expiresAt: value.expiresAt,
         status: value.status,
@@ -370,6 +376,15 @@ class LocalNegativeBalanceApprovalRepository
       throw ArgumentError.value(
           draft.duration, 'duration', 'Duration must be positive.');
     }
+    if (draft.operationType ==
+            NegativeBalanceOperationType.customerAdvanceRefund &&
+        (draft.authorizationContext == null ||
+            draft.authorizationContext!.customerId.trim().isEmpty ||
+            draft.authorizationContext!.advanceId.trim().isEmpty ||
+            draft.authorizationContext!.financialDirection !=
+                NegativeBalanceFinancialDirection.outflow)) {
+      throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
+    }
   }
 
   void _validateUniqueRestoredApprovals(
@@ -403,6 +418,7 @@ class NegativeBalanceApprovalBinding {
     required this.requestedByUserId,
     required this.balanceBeforeQirsh,
     required this.expectedBalanceAfterQirsh,
+    this.authorizationContext,
   });
 
   final String approvalId;
@@ -415,6 +431,7 @@ class NegativeBalanceApprovalBinding {
   final String requestedByUserId;
   final int balanceBeforeQirsh;
   final int expectedBalanceAfterQirsh;
+  final NegativeBalanceApprovalContext? authorizationContext;
 
   void validate() {
     if (approvalId.trim().isEmpty ||
@@ -425,6 +442,14 @@ class NegativeBalanceApprovalBinding {
         requestedByUserId.trim().isEmpty ||
         amountQirsh <= 0) {
       throw ArgumentError('A complete approval binding is required.');
+    }
+    if (operationType == NegativeBalanceOperationType.customerAdvanceRefund &&
+        (authorizationContext == null ||
+            authorizationContext!.customerId.trim().isEmpty ||
+            authorizationContext!.advanceId.trim().isEmpty ||
+            authorizationContext!.financialDirection !=
+                NegativeBalanceFinancialDirection.outflow)) {
+      throw ArgumentError('بيانات ربط موافقة رد سلفة العميل مطلوبة.');
     }
   }
 }

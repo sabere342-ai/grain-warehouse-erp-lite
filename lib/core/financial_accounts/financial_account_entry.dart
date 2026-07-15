@@ -50,9 +50,9 @@ enum FinancialAccountEntrySource {
       case FinancialAccountEntrySource.supplierSettlement:
         return 'تسوية مع مورد';
       case FinancialAccountEntrySource.customerAdvanceRefund:
-        return 'Customer advance refund';
+        return 'رد سلفة عميل';
       case FinancialAccountEntrySource.customerAdvanceRefundReversal:
-        return 'Customer advance refund reversal';
+        return 'عكس رد سلفة عميل';
       case FinancialAccountEntrySource.supplierAdvanceRefund:
         return 'Supplier advance refund';
       case FinancialAccountEntrySource.supplierAdvanceRefundReversal:

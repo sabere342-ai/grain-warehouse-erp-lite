@@ -284,7 +284,7 @@ class _NegativeBalanceApprovalDialogState
     });
 
     try {
-      final user = await widget.authRepository.signIn(
+      final user = await widget.authRepository.verifyCredentials(
         phone: phone,
         password: password,
       );
@@ -328,6 +328,8 @@ class _NegativeBalanceApprovalDialogState
             balanceBeforeQirsh: draft.balanceBeforeQirsh,
             expectedBalanceAfterQirsh: draft.expectedBalanceAfterQirsh,
             reason: draft.reason,
+            duration: draft.duration,
+            authorizationContext: draft.authorizationContext,
           ),
           ownerPhone: phone,
           ownerPassword: password,
@@ -340,7 +342,8 @@ class _NegativeBalanceApprovalDialogState
           Navigator.of(context).pop(user.id);
         }
       }
-    } catch (e) {
+    } on Object {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _errorMessage = 'حدث خطأ أثناء التحقق.';

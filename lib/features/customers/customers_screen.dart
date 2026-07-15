@@ -10,6 +10,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/features/customers/customer_advance_actions_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
@@ -131,6 +132,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       isActive: !customer.isActive,
                     ),
                     onStatement: () => _showStatement(context, customer),
+                    onAdvances: () => _showAdvances(
+                      context,
+                      user: user,
+                      customer: customer,
+                    ),
                     onPreviewStatement: () =>
                         _showStatementPreview(context, customer),
                     onCollection: () => _showCollectionForm(
@@ -224,6 +230,24 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
+  Future<void> _showAdvances(
+    BuildContext context, {
+    required AppUser user,
+    required Customer customer,
+  }) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CustomerAdvanceActionsScreen(
+          customer: customer,
+          user: user,
+          controller: _controller,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _controller.loadCustomers(user);
+  }
+
   Future<void> _showStatementPreview(
       BuildContext context, Customer customer) async {
     final navigator = Navigator.of(context);
@@ -282,6 +306,7 @@ class _CustomerCard extends StatelessWidget {
     required this.onEdit,
     required this.onToggleActive,
     required this.onStatement,
+    required this.onAdvances,
     required this.onCollection,
     this.onOpeningBalance,
     this.onPreviewStatement,
@@ -294,6 +319,7 @@ class _CustomerCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onStatement;
+  final VoidCallback onAdvances;
   final VoidCallback onCollection;
   final VoidCallback? onOpeningBalance;
   final VoidCallback? onPreviewStatement;
@@ -340,6 +366,12 @@ class _CustomerCard extends StatelessWidget {
                 onPressed: onStatement,
                 icon: const Icon(Icons.receipt_long_rounded),
                 label: const Text('كشف الحساب'),
+              ),
+              OutlinedButton.icon(
+                key: const Key('customer-advances-entry'),
+                onPressed: onAdvances,
+                icon: const Icon(Icons.account_balance_wallet_rounded),
+                label: const Text('سلف العميل'),
               ),
               if (onPreviewStatement != null)
                 OutlinedButton.icon(
@@ -428,8 +460,7 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final amount = _tryParseAmount();
-    final isOverpayment =
-        amount != null && amount > widget.balanceQirsh;
+    final isOverpayment = amount != null && amount > widget.balanceQirsh;
     final settled = isOverpayment ? widget.balanceQirsh : (amount ?? 0);
     final advance = isOverpayment ? amount - widget.balanceQirsh : 0;
 
@@ -476,9 +507,10 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
                       children: [
                         Text(
                           'تفاصيل السلفة',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                         ),
                         const SizedBox(height: 8),
                         _summaryRow('المسوى من المستحق',
@@ -529,9 +561,10 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
                       Expanded(
                         child: Text(
                           'يجب موافقة المالك لتسجيل السلفة.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.primary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.primary,
+                                  ),
                         ),
                       ),
                     ],
@@ -653,14 +686,12 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
     });
 
     try {
-      final account =
-          widget.financialAccounts.firstWhere((a) => a.id == _selectedAccountId);
-      final accountBalance = await AppRepositories
-          .financialAccountRepository
+      final account = widget.financialAccounts
+          .firstWhere((a) => a.id == _selectedAccountId);
+      final accountBalance = await AppRepositories.financialAccountRepository
           .currentBalanceForAccount(account.id);
       if (!mounted) return null;
-      final requestId =
-          DateTime.now().millisecondsSinceEpoch.toString();
+      final requestId = DateTime.now().millisecondsSinceEpoch.toString();
 
       final approvalId = await NegativeBalanceApprovalDialog.show(
         context: context,
@@ -669,15 +700,13 @@ class _CollectionFormDialogState extends State<_CollectionFormDialog> {
         currentBalanceQirsh: accountBalance,
         requestedAmountQirsh: amount,
         operationDescription: 'تسجيل سلفة للعميل ${widget.customer.name}',
-        approvalService:
-            AppRepositories.negativeBalanceApprovalService,
+        approvalService: AppRepositories.negativeBalanceApprovalService,
         approvalDraft: NegativeBalanceApprovalDraft(
           requestedByUserId: '',
           approvedByOwnerUserId: '',
           accountId: account.id,
           amountQirsh: amount - widget.balanceQirsh,
-          operationType:
-              NegativeBalanceOperationType.customerOverpayment,
+          operationType: NegativeBalanceOperationType.customerOverpayment,
           sourceDocumentId: requestId,
           sourceDocumentType: 'customerOverpayment',
           balanceBeforeQirsh: accountBalance,
