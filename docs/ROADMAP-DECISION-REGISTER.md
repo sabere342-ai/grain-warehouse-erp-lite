@@ -30,7 +30,7 @@
 | **Rationale** | Embedded ACID transactions, relational constraints, typed Dart access, versioned migrations, Windows/offline fit, and low operational burden best match the financial and inventory integrity contract. See `docs/ADR-001-DURABLE-PERSISTENCE.md`. |
 | **Impact** | Phase 8 will introduce the schema and persistent repositories incrementally with one shared SQL transaction per logical command. JSON remains backup/export; cloud sync remains deferred. |
 | **Deadline** | Accepted in Phase 7; implementation is Phase 8 |
-| **Status** | CONFIRMED — architecture only; Phase 8 NOT STARTED |
+| **Status** | CONFIRMED — Phase 8A foundation implemented; repository and business schema migration not started |
 
 ---
 

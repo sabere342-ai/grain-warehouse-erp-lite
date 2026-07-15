@@ -1,5 +1,17 @@
 # Developer Handoff Notes — Grain Warehouse ERP Lite
 
+## Phase 8A — Durable Persistence Foundation
+
+- Drift/SQLite foundation is implemented at schema version 1 behind
+  `lib/core/persistence/`; generated code is committed and reproducible.
+- Production opening targets `grain_warehouse_erp.sqlite3` in application
+  support. Tests use isolated memory databases or unique temporary files.
+- Transactions, full rollback, close/reopen durability, isolation, and
+  serialized concurrent writes have focused coverage.
+- The only schema table is technical `foundation_probes`. Existing repositories
+  remain in-memory, app startup is unchanged, and Phase 8B has not started.
+- See `docs/PHASE-8A-DURABLE-PERSISTENCE-FOUNDATION-REPORT.md`.
+
 ## Phase 7 — Durable Persistence Architecture Decision
 
 - Status: accepted; documentation/architecture only.

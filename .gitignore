@@ -1,6 +1,11 @@
 # Flutter/Dart
 .dart_tool/
 build/
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 .flutter-plugins
 .flutter-plugins-dependencies
 

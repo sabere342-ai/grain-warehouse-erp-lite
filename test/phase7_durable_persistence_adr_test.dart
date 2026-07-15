@@ -42,7 +42,7 @@ void main() {
       expect(adr, contains('integer grams'));
     });
 
-    test('governing documents record Phase 7 and keep Phase 8 unstarted', () {
+    test('governing documents preserve Phase 7 and record Phase 8A', () {
       for (final document in <String>[
         executionPlan,
         roadmap,
@@ -53,16 +53,17 @@ void main() {
         expect(document, contains('Phase 8'));
       }
       expect(decisionRegister, contains('DC-025'));
-      expect(decisionRegister, contains('Phase 8 NOT STARTED'));
+      expect(decisionRegister, contains('Phase 8A foundation implemented'));
       expect(
           handoff, contains('Phase 8 is Durable Persistence Implementation'));
+      expect(handoff, contains('Phase 8A — Durable Persistence Foundation'));
     });
 
-    test('Phase 7 introduces no persistence dependency or production file', () {
+    test('Phase 8A adds the selected foundation without business schemas', () {
       final pubspec = File('pubspec.yaml').readAsStringSync().toLowerCase();
-      expect(pubspec, isNot(contains('drift:')));
+      expect(pubspec, contains('drift:'));
       expect(pubspec, isNot(contains('sqlite3:')));
-      expect(pubspec, isNot(contains('sqlite3_flutter_libs:')));
+      expect(pubspec, contains('sqlite3_flutter_libs:'));
 
       final productionFiles = Directory('lib')
           .listSync(recursive: true)
@@ -73,6 +74,10 @@ void main() {
       expect(
           productionFiles.where((path) => path.endsWith('.sqlite')), isEmpty);
       expect(productionFiles.where((path) => path.endsWith('.db')), isEmpty);
+      expect(
+        productionFiles,
+        contains('lib/core/persistence/foundation_database.dart'),
+      );
     });
   });
 }

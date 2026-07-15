@@ -612,7 +612,8 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 1. ~~Split Payments End-User UI.~~ ✓ مكتمل
 2. ~~Advances/Overpayments/Refunds End-User UI.~~ ✓ مكتمل
 3. ~~Durable Persistence Architecture Decision (ADR).~~ ✓ Phase 7 — `docs/ADR-001-DURABLE-PERSISTENCE.md`
-4. Durable Persistence Implementation.
+4. Durable Persistence Implementation — Phase 8A foundation complete; business
+   repository/schema migration remains for later separately authorized phases.
 
 ### الحظر التشغيلي
 
