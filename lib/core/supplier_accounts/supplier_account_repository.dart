@@ -442,7 +442,7 @@ class LocalSupplierAccountRepository
         creditAmountQirsh: draft.amountQirsh,
         sourceDocumentType: 'supplierAdvanceApplication',
         sourceDocumentId: requestId,
-        descriptionAr: 'Supplier advance application',
+        descriptionAr: 'تطبيق سلفة المورد',
         createdAt: now,
         createdByUserId: draft.createdByUserId.trim(),
       );
@@ -462,7 +462,7 @@ class LocalSupplierAccountRepository
       _advanceRequestFingerprints[requestId] = fingerprint;
       await _recordAudit(
           actionType: 'supplier.advance.applied',
-          descriptionAr: 'Supplier advance applied.',
+          descriptionAr: 'تم تطبيق سلفة المورد.',
           referenceId: application.id);
       return application;
     });
@@ -521,7 +521,7 @@ class LocalSupplierAccountRepository
         effectiveDate: draft.date,
         createdByUserId: draft.createdByUserId.trim(),
         paymentMethod: draft.paymentMethod ?? advance.paymentMethod,
-        reference: 'Supplier advance refund',
+        reference: 'استرداد سلفة من المورد',
       );
       final refund = SupplierAdvanceRefund(
         id: _generateAdvanceRefundId(now),
@@ -538,7 +538,7 @@ class LocalSupplierAccountRepository
       _advanceRequestFingerprints[requestId] = fingerprint;
       await _recordAudit(
           actionType: 'supplier.advance.refunded',
-          descriptionAr: 'Supplier advance refunded.',
+          descriptionAr: 'تم استرداد سلفة من المورد.',
           referenceId: refund.id);
       return refund;
     });

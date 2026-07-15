@@ -224,11 +224,11 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       SupplierAccountEntryType.paymentCancellation => 'عكس دفعة للمورد',
       SupplierAccountEntryType.openingBalance => 'رصيد افتتاحي',
       SupplierAccountEntryType.advanceApplication =>
-        'Supplier advance application',
+        'تطبيق سلفة المورد',
       SupplierAccountEntryType.advanceApplicationReversal =>
-        'Supplier advance application reversal',
+        'عكس تطبيق سلفة المورد',
       SupplierAccountEntryType.advanceRefundReversal =>
-        'Supplier advance refund reversal',
+        'عكس استرداد سلفة من المورد',
     };
     final amountText = switch (entry.type) {
       SupplierAccountEntryType.purchase ||

@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/supplier_purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_statement_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/suppliers/supplier_advance_actions_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SuppliersScreen extends StatefulWidget {
@@ -34,7 +35,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     super.initState();
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
-        SupplierController(repository: AppRepositories.supplierRepository);
+        SupplierController(
+          repository: AppRepositories.supplierRepository,
+          accountRepository: AppRepositories.supplierAccountRepository,
+        );
     _accountRepo = AppRepositories.supplierAccountRepository;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -235,6 +239,18 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                         _recordPayment(context, user: user, supplier: supplier),
                     onOpeningBalance: () => _recordOpeningBalance(context,
                         user: user, supplier: supplier),
+                    onAdvances: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SupplierAdvanceActionsScreen(
+                            supplier: supplier,
+                            user: user,
+                            controller: _controller,
+                          ),
+                        ),
+                      );
+                      if (mounted) await _loadBalances();
+                    },
                   ),
                 ),
               ),
@@ -280,6 +296,7 @@ class _SupplierCard extends StatelessWidget {
     required this.onToggleActive,
     this.onPayment,
     this.onOpeningBalance,
+    required this.onAdvances,
   });
 
   final Supplier supplier;
@@ -290,6 +307,7 @@ class _SupplierCard extends StatelessWidget {
   final VoidCallback onToggleActive;
   final VoidCallback? onPayment;
   final VoidCallback? onOpeningBalance;
+  final VoidCallback onAdvances;
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +388,16 @@ class _SupplierCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              key: Key('supplier-advances-${supplier.id}'),
+              onPressed: onAdvances,
+              icon: const Icon(Icons.account_balance_wallet_rounded),
+              label: const Text('سلف المورد'),
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
