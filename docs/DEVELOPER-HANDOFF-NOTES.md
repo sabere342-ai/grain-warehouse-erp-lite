@@ -1520,3 +1520,7 @@ Internal financial transfers are implemented as `ACC-011`. Future work must pres
 # Phase 8B handoff
 
 Production startup now awaits the shared `FoundationDatabase` and wires `DriftProductRepository`. Schema version 2 adds `products` and `repository_sequences`; v1 upgrades preserve `foundation_probes`. Other repositories remain unmigrated and Phase 8C has not started.
+
+# Phase 8C handoff
+
+Production startup now also wires `DriftCustomerRepository`. Schema version 3 adds only `customers`; the existing namespaced `repository_sequences` table allocates durable customer IDs independently from products. The v2 upgrade preserves probes, products, and all existing sequences. Customer ledgers, collections, advances/refunds, sales, reports, and the remaining repositories were not migrated. Phase 8D has not started and no deployment was performed.

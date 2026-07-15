@@ -711,4 +711,8 @@ DC-005 (Multi-device)
 | Deferred | DC-U011 (after cloud is built) |
 # Phase 8B decision
 
+# Phase 8C decision
+
+Adopt schema version 3 and `DriftCustomerRepository` for the production customer profile store only. Reuse `repository_sequences` with the independent `customers` namespace. Preserve customer-ID references from sales, collections, ledgers, advances/refunds, and reports without migrating those repositories or storing derived balances in `customers`. Phase 8A and 8B remain locked; Phase 8D and deployment are not started.
+
 Adopt a Drift-backed production `ProductRepository` as the first business vertical slice, using schema version 2 and a transactional durable sequence. Preserve in-memory injection for tests. Do not migrate other repositories or begin Phase 8C.

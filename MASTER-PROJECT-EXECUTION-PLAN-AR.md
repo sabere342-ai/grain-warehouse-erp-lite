@@ -775,3 +775,7 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 # Phase 8B update
 
 Phase 8A is locked. Phase 8B migrates only `ProductRepository` to the production Drift database and raises the schema to version 2. All other repositories remain on their documented in-memory production implementations. Phase 8C has not started.
+
+# Phase 8C update
+
+Phase 8A and Phase 8B remain locked. Phase 8C migrates only `CustomerRepository` to the shared production Drift database and raises the schema to version 3. Products and customers are durable; customer financial ledgers and every other business repository remain on their existing implementations. Phase 8D has not started and no deployment is included.

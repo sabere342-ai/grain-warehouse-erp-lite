@@ -49,7 +49,7 @@ class BackupRestoreService {
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     BusinessIdentityRepository? businessIdentityRepository,
-    LocalCustomerRepository? customerRepository,
+    CustomerDataRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
@@ -85,7 +85,7 @@ class BackupRestoreService {
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final BusinessIdentityRepository? _businessIdentityRepository;
-  final LocalCustomerRepository _customerRepository;
+  final CustomerDataRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;

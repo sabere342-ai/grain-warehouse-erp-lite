@@ -15,8 +15,13 @@ abstract class CustomerRepository {
   });
 }
 
-class LocalCustomerRepository
+abstract class CustomerDataRepository
     implements CustomerRepository, TransactionSnapshotProvider {
+  Future<void> restoreCustomersIntoEmpty(List<Customer> customers);
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalCustomerRepository implements CustomerDataRepository {
   LocalCustomerRepository({AuditLogRepository? auditLogRepository})
       : _auditLogRepository = auditLogRepository;
 
@@ -112,6 +117,7 @@ class LocalCustomerRepository
     return updated;
   }
 
+  @override
   Future<void> restoreCustomersIntoEmpty(List<Customer> customers) async {
     if (_customers.isNotEmpty) {
       throw StateError('Customers repository is not empty.');
@@ -120,6 +126,7 @@ class LocalCustomerRepository
     _customers.addAll(customers);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _customers.clear();
     _generatedIdCounter = 0;

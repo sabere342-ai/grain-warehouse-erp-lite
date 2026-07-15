@@ -29,4 +29,5 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.products);
         await migrator.createTable(database.repositorySequences);
       },
+      3: (migrator) => migrator.createTable(database.customers),
     };

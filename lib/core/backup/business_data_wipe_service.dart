@@ -25,7 +25,7 @@ class BusinessDataWipeService {
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
-    LocalCustomerRepository? customerRepository,
+    CustomerDataRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
@@ -42,11 +42,17 @@ class BusinessDataWipeService {
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
-        _customerAccountRepository = customerAccountRepository ?? LocalCustomerAccountRepository(customerRepository: customerRepository ?? LocalCustomerRepository()),
-        _supplierAccountRepository = supplierAccountRepository ?? LocalSupplierAccountRepository(supplierRepository: supplierRepository),
+        _customerAccountRepository = customerAccountRepository ??
+            LocalCustomerAccountRepository(
+                customerRepository:
+                    customerRepository ?? LocalCustomerRepository()),
+        _supplierAccountRepository = supplierAccountRepository ??
+            LocalSupplierAccountRepository(
+                supplierRepository: supplierRepository),
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
-        _financialAccountRepository = financialAccountRepository ?? LocalFinancialAccountRepository(),
+        _financialAccountRepository =
+            financialAccountRepository ?? LocalFinancialAccountRepository(),
         _previewService = previewService;
 
   static const confirmationPhrase =
@@ -60,7 +66,7 @@ class BusinessDataWipeService {
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
-  final LocalCustomerRepository _customerRepository;
+  final CustomerDataRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
@@ -146,7 +152,8 @@ class BusinessDataWipeService {
     final purchases = await _purchaseRepository.listPurchaseIntakes();
     final sales = await _saleRepository.listSales();
     final history = await _documentHistoryRepository.listHistory();
-    final customers = await _customerRepository.listCustomers(includeInactive: true);
+    final customers =
+        await _customerRepository.listCustomers(includeInactive: true);
     final expenses = await _expenseRepository.listExpenses();
     final auditLogs = await _auditLogRepository.listLogs();
 

@@ -509,3 +509,7 @@ See `docs/POST-PHASE-81-GOVERNANCE-AUDIT.md` for the original pre-implementation
 # Phase 8B status
 
 Phase 8A is locked. Phase 8B is limited to durable `ProductRepository` persistence on schema version 2. Remaining repositories are still in-memory unless separately documented; Phase 8C has not started.
+
+# Phase 8C status
+
+Phase 8A and Phase 8B are locked. Phase 8C is limited to durable `CustomerRepository` persistence on schema version 3. Products and customers are durable; customer financial repositories and all other repositories remain unmigrated. Phase 8D has not started and deployment is excluded.

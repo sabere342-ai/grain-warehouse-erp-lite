@@ -7,7 +7,7 @@ void main() {
   test('fresh database opens with current schema version', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 2);
+    expect(database.schemaVersion, 3);
     expect(await database.probeCount(), 0);
   });
 
@@ -82,8 +82,7 @@ void main() {
     expect(file.absolute.path, isNot(contains(Directory.current.path)));
   });
 
-  test('foundation schema remains alongside the Phase 8B product tables',
-      () async {
+  test('foundation schema remains alongside Phase 8B and 8C tables', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
     final rows = await database
@@ -93,7 +92,8 @@ void main() {
         .get();
     final tables = rows.map((row) => row.read<String>('name')).toSet();
     expect(tables, contains('foundation_probes'));
-    expect(tables, containsAll(['products', 'repository_sequences']));
-    expect(tables.intersection({'customers', 'suppliers', 'sales'}), isEmpty);
+    expect(
+        tables, containsAll(['products', 'customers', 'repository_sequences']));
+    expect(tables.intersection({'suppliers', 'sales'}), isEmpty);
   });
 }

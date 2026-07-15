@@ -14,6 +14,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customers/drift_customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -34,7 +35,8 @@ class AppRepositories {
   static final LocalAuthRepository authRepository = LocalAuthRepository.empty();
 
   static final LocalNegativeBalanceApprovalRepository
-      negativeBalanceApprovalRepository = LocalNegativeBalanceApprovalRepository();
+      negativeBalanceApprovalRepository =
+      LocalNegativeBalanceApprovalRepository();
 
   static final NegativeBalanceApprovalService negativeBalanceApprovalService =
       NegativeBalanceApprovalService(
@@ -52,8 +54,9 @@ class AppRepositories {
     negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
-  static final LocalCustomerRepository customerRepository =
+  static CustomerDataRepository _customerRepository =
       LocalCustomerRepository(auditLogRepository: auditLogRepository);
+  static CustomerDataRepository get customerRepository => _customerRepository;
 
   static final LocalCustomerAccountRepository customerAccountRepository =
       LocalCustomerAccountRepository(
@@ -73,9 +76,15 @@ class AppRepositories {
   static ProductDataRepository _productRepository = LocalProductRepository();
   static ProductDataRepository get productRepository => _productRepository;
 
-  static Future<void> initializeProduction() async {
-    database = await openProductionDatabase();
+  static Future<void> initializeProduction({
+    Future<FoundationDatabase> Function()? databaseFactory,
+  }) async {
+    database = await (databaseFactory?.call() ?? openProductionDatabase());
     _productRepository = DriftProductRepository(database);
+    _customerRepository = DriftCustomerRepository(
+      database,
+      auditLogRepository: auditLogRepository,
+    );
   }
 
   static Future<void> close() => database.close();
