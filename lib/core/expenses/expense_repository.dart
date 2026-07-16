@@ -13,8 +13,13 @@ abstract class ExpenseRepository {
   });
 }
 
-class LocalExpenseRepository
+abstract class DurableExpenseRepository
     implements ExpenseRepository, TransactionSnapshotProvider {
+  Future<void> restoreExpensesIntoEmpty(List<ExpenseRecord> expenses);
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalExpenseRepository implements DurableExpenseRepository {
   LocalExpenseRepository({
     AuditLogRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
@@ -110,6 +115,7 @@ class LocalExpenseRepository
         .fold<int>(0, (total, expense) => total + expense.amountQirsh);
   }
 
+  @override
   Future<void> restoreExpensesIntoEmpty(List<ExpenseRecord> expenses) async {
     if (_expenses.isNotEmpty) {
       throw StateError('Expenses repository is not empty.');
@@ -118,6 +124,7 @@ class LocalExpenseRepository
     _expenses.addAll(expenses);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _expenses.clear();
     _generatedIdCounter = 0;

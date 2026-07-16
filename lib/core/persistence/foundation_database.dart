@@ -265,6 +265,25 @@ class AuditLogs extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('ExpenseRow')
+@TableIndex(
+  name: 'expenses_date_created_at_idx',
+  columns: {#date, #createdAt, #id},
+)
+class Expenses extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get category => text()();
+  IntColumn get amountQirsh => integer()();
+  TextColumn get notes => text().nullable()();
+  IntColumn get createdAt => integer()();
+  TextColumn get financialAccountId => text().nullable()();
+  TextColumn get paymentMethod => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -279,12 +298,13 @@ class AuditLogs extends Table {
   FinancialTransfers,
   FinancialClosings,
   AuditLogs,
+  Expenses,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

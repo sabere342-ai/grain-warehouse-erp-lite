@@ -52,7 +52,7 @@ class BackupRestoreService {
     CustomerDataRepository? customerRepository,
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
-    LocalExpenseRepository? expenseRepository,
+    DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
     BackupRestorePreviewService previewService =
@@ -88,7 +88,7 @@ class BackupRestoreService {
   final CustomerDataRepository _customerRepository;
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
-  final LocalExpenseRepository _expenseRepository;
+  final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
   final BackupRestorePreviewService _previewService;

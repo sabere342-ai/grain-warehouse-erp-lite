@@ -41,4 +41,5 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.financialClosings);
       },
       9: (migrator) => migrator.createTable(database.auditLogs),
+      10: (migrator) => migrator.createTable(database.expenses),
     };

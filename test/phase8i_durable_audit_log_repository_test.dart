@@ -13,7 +13,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
-  test('fresh v9 stores and reopens every audit field in newest-first order',
+  test('fresh v10 stores and reopens every audit field in newest-first order',
       () async {
     final directory = await Directory.systemTemp.createTemp('phase8i-reopen-');
     final file = File('${directory.path}${Platform.pathSeparator}data.sqlite3');
@@ -22,7 +22,7 @@ void main() {
     });
     var database = openDatabaseFile(file);
     var repository = DriftAuditLogRepository(database);
-    expect(database.schemaVersion, 9);
+    expect(database.schemaVersion, 10);
     expect(await repository.listLogs(), isEmpty);
     final older = await repository.record(AuditLogDraft(
       actionType: ' sale.created ',

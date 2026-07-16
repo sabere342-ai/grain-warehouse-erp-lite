@@ -19,6 +19,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart
 import 'package:grain_warehouse_erp_lite/core/customers/drift_customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/drift_inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
@@ -79,7 +80,7 @@ class AppRepositories {
     negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
-  static LocalExpenseRepository expenseRepository = LocalExpenseRepository(
+  static DurableExpenseRepository expenseRepository = LocalExpenseRepository(
     auditLogRepository: auditLogRepository,
     financialAccountRepository: financialAccountRepository,
   );
@@ -117,7 +118,8 @@ class AppRepositories {
       financialAccountRepository: financialAccountRepository,
       negativeBalanceApprovalService: negativeBalanceApprovalService,
     );
-    expenseRepository = LocalExpenseRepository(
+    expenseRepository = DriftExpenseRepository(
+      database,
       auditLogRepository: auditLogRepository,
       financialAccountRepository: financialAccountRepository,
     );
