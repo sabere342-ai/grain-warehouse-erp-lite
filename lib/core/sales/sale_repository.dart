@@ -31,8 +31,15 @@ abstract class SaleRepository {
   Future<List<SaleRecord>> listSales();
 }
 
-class LocalSaleRepository
+abstract class DurableSaleRepository
     implements SaleRepository, TransactionSnapshotProvider {
+  Future<void> restoreSalesIntoEmpty(List<SaleRecord> sales);
+
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalSaleRepository
+    implements DurableSaleRepository {
   LocalSaleRepository({
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
@@ -222,6 +229,7 @@ class LocalSaleRepository
     return List<SaleRecord>.unmodifiable(_sales);
   }
 
+  @override
   Future<void> restoreSalesIntoEmpty(List<SaleRecord> sales) async {
     if (_sales.isNotEmpty) {
       throw StateError('Sales repository is not empty.');
@@ -241,6 +249,7 @@ class LocalSaleRepository
     }
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _sales.clear();
     _operationRequestIds.clear();

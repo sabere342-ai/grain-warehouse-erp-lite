@@ -3878,6 +3878,1101 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   }
 }
 
+class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SalesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _productIdMeta =
+      const VerificationMeta('productId');
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+      'product_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _quantityKgMeta =
+      const VerificationMeta('quantityKg');
+  @override
+  late final GeneratedColumn<int> quantityKg = GeneratedColumn<int>(
+      'quantity_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _salePriceQirshPerKgMeta =
+      const VerificationMeta('salePriceQirshPerKg');
+  @override
+  late final GeneratedColumn<int> salePriceQirshPerKg = GeneratedColumn<int>(
+      'sale_price_qirsh_per_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _totalQirshMeta =
+      const VerificationMeta('totalQirsh');
+  @override
+  late final GeneratedColumn<int> totalQirsh = GeneratedColumn<int>(
+      'total_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _createdByUserIdMeta =
+      const VerificationMeta('createdByUserId');
+  @override
+  late final GeneratedColumn<String> createdByUserId = GeneratedColumn<String>(
+      'created_by_user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdByUserNameMeta =
+      const VerificationMeta('createdByUserName');
+  @override
+  late final GeneratedColumn<String> createdByUserName =
+      GeneratedColumn<String>('created_by_user_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _stockMovementIdMeta =
+      const VerificationMeta('stockMovementId');
+  @override
+  late final GeneratedColumn<String> stockMovementId = GeneratedColumn<String>(
+      'stock_movement_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _paymentModeMeta =
+      const VerificationMeta('paymentMode');
+  @override
+  late final GeneratedColumn<String> paymentMode = GeneratedColumn<String>(
+      'payment_mode', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _customerIdMeta =
+      const VerificationMeta('customerId');
+  @override
+  late final GeneratedColumn<String> customerId = GeneratedColumn<String>(
+      'customer_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _itemsJsonMeta =
+      const VerificationMeta('itemsJson');
+  @override
+  late final GeneratedColumn<String> itemsJson = GeneratedColumn<String>(
+      'items_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _paidAmountQirshMeta =
+      const VerificationMeta('paidAmountQirsh');
+  @override
+  late final GeneratedColumn<int> paidAmountQirsh = GeneratedColumn<int>(
+      'paid_amount_qirsh', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _financialAccountIdMeta =
+      const VerificationMeta('financialAccountId');
+  @override
+  late final GeneratedColumn<String> financialAccountId =
+      GeneratedColumn<String>('financial_account_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _paymentMethodMeta =
+      const VerificationMeta('paymentMethod');
+  @override
+  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
+      'payment_method', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _paymentAllocationsJsonMeta =
+      const VerificationMeta('paymentAllocationsJson');
+  @override
+  late final GeneratedColumn<String> paymentAllocationsJson =
+      GeneratedColumn<String>('payment_allocations_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _operationRequestIdMeta =
+      const VerificationMeta('operationRequestId');
+  @override
+  late final GeneratedColumn<String> operationRequestId =
+      GeneratedColumn<String>('operation_request_id', aliasedName, true,
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _cancelledAtMeta =
+      const VerificationMeta('cancelledAt');
+  @override
+  late final GeneratedColumn<DateTime> cancelledAt = GeneratedColumn<DateTime>(
+      'cancelled_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _cancelledByUserIdMeta =
+      const VerificationMeta('cancelledByUserId');
+  @override
+  late final GeneratedColumn<String> cancelledByUserId =
+      GeneratedColumn<String>('cancelled_by_user_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cancellationReasonMeta =
+      const VerificationMeta('cancellationReason');
+  @override
+  late final GeneratedColumn<String> cancellationReason =
+      GeneratedColumn<String>('cancellation_reason', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _reversalMovementIdsJsonMeta =
+      const VerificationMeta('reversalMovementIdsJson');
+  @override
+  late final GeneratedColumn<String> reversalMovementIdsJson =
+      GeneratedColumn<String>('reversal_movement_ids_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        productId,
+        quantityKg,
+        salePriceQirshPerKg,
+        totalQirsh,
+        createdByUserId,
+        createdByUserName,
+        createdAt,
+        stockMovementId,
+        paymentMode,
+        customerId,
+        notes,
+        itemsJson,
+        paidAmountQirsh,
+        financialAccountId,
+        paymentMethod,
+        paymentAllocationsJson,
+        operationRequestId,
+        cancelledAt,
+        cancelledByUserId,
+        cancellationReason,
+        reversalMovementIdsJson
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sales';
+  @override
+  VerificationContext validateIntegrity(Insertable<Sale> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(_productIdMeta,
+          productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta));
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('quantity_kg')) {
+      context.handle(
+          _quantityKgMeta,
+          quantityKg.isAcceptableOrUnknown(
+              data['quantity_kg']!, _quantityKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityKgMeta);
+    }
+    if (data.containsKey('sale_price_qirsh_per_kg')) {
+      context.handle(
+          _salePriceQirshPerKgMeta,
+          salePriceQirshPerKg.isAcceptableOrUnknown(
+              data['sale_price_qirsh_per_kg']!, _salePriceQirshPerKgMeta));
+    } else if (isInserting) {
+      context.missing(_salePriceQirshPerKgMeta);
+    }
+    if (data.containsKey('total_qirsh')) {
+      context.handle(
+          _totalQirshMeta,
+          totalQirsh.isAcceptableOrUnknown(
+              data['total_qirsh']!, _totalQirshMeta));
+    } else if (isInserting) {
+      context.missing(_totalQirshMeta);
+    }
+    if (data.containsKey('created_by_user_id')) {
+      context.handle(
+          _createdByUserIdMeta,
+          createdByUserId.isAcceptableOrUnknown(
+              data['created_by_user_id']!, _createdByUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_createdByUserIdMeta);
+    }
+    if (data.containsKey('created_by_user_name')) {
+      context.handle(
+          _createdByUserNameMeta,
+          createdByUserName.isAcceptableOrUnknown(
+              data['created_by_user_name']!, _createdByUserNameMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('stock_movement_id')) {
+      context.handle(
+          _stockMovementIdMeta,
+          stockMovementId.isAcceptableOrUnknown(
+              data['stock_movement_id']!, _stockMovementIdMeta));
+    } else if (isInserting) {
+      context.missing(_stockMovementIdMeta);
+    }
+    if (data.containsKey('payment_mode')) {
+      context.handle(
+          _paymentModeMeta,
+          paymentMode.isAcceptableOrUnknown(
+              data['payment_mode']!, _paymentModeMeta));
+    } else if (isInserting) {
+      context.missing(_paymentModeMeta);
+    }
+    if (data.containsKey('customer_id')) {
+      context.handle(
+          _customerIdMeta,
+          customerId.isAcceptableOrUnknown(
+              data['customer_id']!, _customerIdMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('items_json')) {
+      context.handle(_itemsJsonMeta,
+          itemsJson.isAcceptableOrUnknown(data['items_json']!, _itemsJsonMeta));
+    } else if (isInserting) {
+      context.missing(_itemsJsonMeta);
+    }
+    if (data.containsKey('paid_amount_qirsh')) {
+      context.handle(
+          _paidAmountQirshMeta,
+          paidAmountQirsh.isAcceptableOrUnknown(
+              data['paid_amount_qirsh']!, _paidAmountQirshMeta));
+    }
+    if (data.containsKey('financial_account_id')) {
+      context.handle(
+          _financialAccountIdMeta,
+          financialAccountId.isAcceptableOrUnknown(
+              data['financial_account_id']!, _financialAccountIdMeta));
+    }
+    if (data.containsKey('payment_method')) {
+      context.handle(
+          _paymentMethodMeta,
+          paymentMethod.isAcceptableOrUnknown(
+              data['payment_method']!, _paymentMethodMeta));
+    }
+    if (data.containsKey('payment_allocations_json')) {
+      context.handle(
+          _paymentAllocationsJsonMeta,
+          paymentAllocationsJson.isAcceptableOrUnknown(
+              data['payment_allocations_json']!, _paymentAllocationsJsonMeta));
+    } else if (isInserting) {
+      context.missing(_paymentAllocationsJsonMeta);
+    }
+    if (data.containsKey('operation_request_id')) {
+      context.handle(
+          _operationRequestIdMeta,
+          operationRequestId.isAcceptableOrUnknown(
+              data['operation_request_id']!, _operationRequestIdMeta));
+    }
+    if (data.containsKey('cancelled_at')) {
+      context.handle(
+          _cancelledAtMeta,
+          cancelledAt.isAcceptableOrUnknown(
+              data['cancelled_at']!, _cancelledAtMeta));
+    }
+    if (data.containsKey('cancelled_by_user_id')) {
+      context.handle(
+          _cancelledByUserIdMeta,
+          cancelledByUserId.isAcceptableOrUnknown(
+              data['cancelled_by_user_id']!, _cancelledByUserIdMeta));
+    }
+    if (data.containsKey('cancellation_reason')) {
+      context.handle(
+          _cancellationReasonMeta,
+          cancellationReason.isAcceptableOrUnknown(
+              data['cancellation_reason']!, _cancellationReasonMeta));
+    }
+    if (data.containsKey('reversal_movement_ids_json')) {
+      context.handle(
+          _reversalMovementIdsJsonMeta,
+          reversalMovementIdsJson.isAcceptableOrUnknown(
+              data['reversal_movement_ids_json']!,
+              _reversalMovementIdsJsonMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Sale map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Sale(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      productId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_id'])!,
+      quantityKg: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity_kg'])!,
+      salePriceQirshPerKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}sale_price_qirsh_per_kg'])!,
+      totalQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_qirsh'])!,
+      createdByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}created_by_user_id'])!,
+      createdByUserName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}created_by_user_name']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      stockMovementId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}stock_movement_id'])!,
+      paymentMode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payment_mode'])!,
+      customerId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}customer_id']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      itemsJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}items_json'])!,
+      paidAmountQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}paid_amount_qirsh']),
+      financialAccountId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}financial_account_id']),
+      paymentMethod: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payment_method']),
+      paymentAllocationsJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}payment_allocations_json'])!,
+      operationRequestId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}operation_request_id']),
+      cancelledAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}cancelled_at']),
+      cancelledByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}cancelled_by_user_id']),
+      cancellationReason: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}cancellation_reason']),
+      reversalMovementIdsJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}reversal_movement_ids_json']),
+    );
+  }
+
+  @override
+  $SalesTable createAlias(String alias) {
+    return $SalesTable(attachedDatabase, alias);
+  }
+}
+
+class Sale extends DataClass implements Insertable<Sale> {
+  final String id;
+  final String productId;
+  final int quantityKg;
+  final int salePriceQirshPerKg;
+  final int totalQirsh;
+  final String createdByUserId;
+  final String? createdByUserName;
+  final DateTime createdAt;
+  final String stockMovementId;
+  final String paymentMode;
+  final String? customerId;
+  final String? notes;
+  final String itemsJson;
+  final int? paidAmountQirsh;
+  final String? financialAccountId;
+  final String? paymentMethod;
+  final String paymentAllocationsJson;
+  final String? operationRequestId;
+  final DateTime? cancelledAt;
+  final String? cancelledByUserId;
+  final String? cancellationReason;
+  final String? reversalMovementIdsJson;
+  const Sale(
+      {required this.id,
+      required this.productId,
+      required this.quantityKg,
+      required this.salePriceQirshPerKg,
+      required this.totalQirsh,
+      required this.createdByUserId,
+      this.createdByUserName,
+      required this.createdAt,
+      required this.stockMovementId,
+      required this.paymentMode,
+      this.customerId,
+      this.notes,
+      required this.itemsJson,
+      this.paidAmountQirsh,
+      this.financialAccountId,
+      this.paymentMethod,
+      required this.paymentAllocationsJson,
+      this.operationRequestId,
+      this.cancelledAt,
+      this.cancelledByUserId,
+      this.cancellationReason,
+      this.reversalMovementIdsJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['quantity_kg'] = Variable<int>(quantityKg);
+    map['sale_price_qirsh_per_kg'] = Variable<int>(salePriceQirshPerKg);
+    map['total_qirsh'] = Variable<int>(totalQirsh);
+    map['created_by_user_id'] = Variable<String>(createdByUserId);
+    if (!nullToAbsent || createdByUserName != null) {
+      map['created_by_user_name'] = Variable<String>(createdByUserName);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['stock_movement_id'] = Variable<String>(stockMovementId);
+    map['payment_mode'] = Variable<String>(paymentMode);
+    if (!nullToAbsent || customerId != null) {
+      map['customer_id'] = Variable<String>(customerId);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['items_json'] = Variable<String>(itemsJson);
+    if (!nullToAbsent || paidAmountQirsh != null) {
+      map['paid_amount_qirsh'] = Variable<int>(paidAmountQirsh);
+    }
+    if (!nullToAbsent || financialAccountId != null) {
+      map['financial_account_id'] = Variable<String>(financialAccountId);
+    }
+    if (!nullToAbsent || paymentMethod != null) {
+      map['payment_method'] = Variable<String>(paymentMethod);
+    }
+    map['payment_allocations_json'] = Variable<String>(paymentAllocationsJson);
+    if (!nullToAbsent || operationRequestId != null) {
+      map['operation_request_id'] = Variable<String>(operationRequestId);
+    }
+    if (!nullToAbsent || cancelledAt != null) {
+      map['cancelled_at'] = Variable<DateTime>(cancelledAt);
+    }
+    if (!nullToAbsent || cancelledByUserId != null) {
+      map['cancelled_by_user_id'] = Variable<String>(cancelledByUserId);
+    }
+    if (!nullToAbsent || cancellationReason != null) {
+      map['cancellation_reason'] = Variable<String>(cancellationReason);
+    }
+    if (!nullToAbsent || reversalMovementIdsJson != null) {
+      map['reversal_movement_ids_json'] =
+          Variable<String>(reversalMovementIdsJson);
+    }
+    return map;
+  }
+
+  SalesCompanion toCompanion(bool nullToAbsent) {
+    return SalesCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      quantityKg: Value(quantityKg),
+      salePriceQirshPerKg: Value(salePriceQirshPerKg),
+      totalQirsh: Value(totalQirsh),
+      createdByUserId: Value(createdByUserId),
+      createdByUserName: createdByUserName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByUserName),
+      createdAt: Value(createdAt),
+      stockMovementId: Value(stockMovementId),
+      paymentMode: Value(paymentMode),
+      customerId: customerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerId),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      itemsJson: Value(itemsJson),
+      paidAmountQirsh: paidAmountQirsh == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidAmountQirsh),
+      financialAccountId: financialAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(financialAccountId),
+      paymentMethod: paymentMethod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMethod),
+      paymentAllocationsJson: Value(paymentAllocationsJson),
+      operationRequestId: operationRequestId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operationRequestId),
+      cancelledAt: cancelledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cancelledAt),
+      cancelledByUserId: cancelledByUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cancelledByUserId),
+      cancellationReason: cancellationReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cancellationReason),
+      reversalMovementIdsJson: reversalMovementIdsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reversalMovementIdsJson),
+    );
+  }
+
+  factory Sale.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Sale(
+      id: serializer.fromJson<String>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      quantityKg: serializer.fromJson<int>(json['quantityKg']),
+      salePriceQirshPerKg:
+          serializer.fromJson<int>(json['salePriceQirshPerKg']),
+      totalQirsh: serializer.fromJson<int>(json['totalQirsh']),
+      createdByUserId: serializer.fromJson<String>(json['createdByUserId']),
+      createdByUserName:
+          serializer.fromJson<String?>(json['createdByUserName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      stockMovementId: serializer.fromJson<String>(json['stockMovementId']),
+      paymentMode: serializer.fromJson<String>(json['paymentMode']),
+      customerId: serializer.fromJson<String?>(json['customerId']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      itemsJson: serializer.fromJson<String>(json['itemsJson']),
+      paidAmountQirsh: serializer.fromJson<int?>(json['paidAmountQirsh']),
+      financialAccountId:
+          serializer.fromJson<String?>(json['financialAccountId']),
+      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
+      paymentAllocationsJson:
+          serializer.fromJson<String>(json['paymentAllocationsJson']),
+      operationRequestId:
+          serializer.fromJson<String?>(json['operationRequestId']),
+      cancelledAt: serializer.fromJson<DateTime?>(json['cancelledAt']),
+      cancelledByUserId:
+          serializer.fromJson<String?>(json['cancelledByUserId']),
+      cancellationReason:
+          serializer.fromJson<String?>(json['cancellationReason']),
+      reversalMovementIdsJson:
+          serializer.fromJson<String?>(json['reversalMovementIdsJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'productId': serializer.toJson<String>(productId),
+      'quantityKg': serializer.toJson<int>(quantityKg),
+      'salePriceQirshPerKg': serializer.toJson<int>(salePriceQirshPerKg),
+      'totalQirsh': serializer.toJson<int>(totalQirsh),
+      'createdByUserId': serializer.toJson<String>(createdByUserId),
+      'createdByUserName': serializer.toJson<String?>(createdByUserName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'stockMovementId': serializer.toJson<String>(stockMovementId),
+      'paymentMode': serializer.toJson<String>(paymentMode),
+      'customerId': serializer.toJson<String?>(customerId),
+      'notes': serializer.toJson<String?>(notes),
+      'itemsJson': serializer.toJson<String>(itemsJson),
+      'paidAmountQirsh': serializer.toJson<int?>(paidAmountQirsh),
+      'financialAccountId': serializer.toJson<String?>(financialAccountId),
+      'paymentMethod': serializer.toJson<String?>(paymentMethod),
+      'paymentAllocationsJson':
+          serializer.toJson<String>(paymentAllocationsJson),
+      'operationRequestId': serializer.toJson<String?>(operationRequestId),
+      'cancelledAt': serializer.toJson<DateTime?>(cancelledAt),
+      'cancelledByUserId': serializer.toJson<String?>(cancelledByUserId),
+      'cancellationReason': serializer.toJson<String?>(cancellationReason),
+      'reversalMovementIdsJson':
+          serializer.toJson<String?>(reversalMovementIdsJson),
+    };
+  }
+
+  Sale copyWith(
+          {String? id,
+          String? productId,
+          int? quantityKg,
+          int? salePriceQirshPerKg,
+          int? totalQirsh,
+          String? createdByUserId,
+          Value<String?> createdByUserName = const Value.absent(),
+          DateTime? createdAt,
+          String? stockMovementId,
+          String? paymentMode,
+          Value<String?> customerId = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
+          String? itemsJson,
+          Value<int?> paidAmountQirsh = const Value.absent(),
+          Value<String?> financialAccountId = const Value.absent(),
+          Value<String?> paymentMethod = const Value.absent(),
+          String? paymentAllocationsJson,
+          Value<String?> operationRequestId = const Value.absent(),
+          Value<DateTime?> cancelledAt = const Value.absent(),
+          Value<String?> cancelledByUserId = const Value.absent(),
+          Value<String?> cancellationReason = const Value.absent(),
+          Value<String?> reversalMovementIdsJson = const Value.absent()}) =>
+      Sale(
+        id: id ?? this.id,
+        productId: productId ?? this.productId,
+        quantityKg: quantityKg ?? this.quantityKg,
+        salePriceQirshPerKg: salePriceQirshPerKg ?? this.salePriceQirshPerKg,
+        totalQirsh: totalQirsh ?? this.totalQirsh,
+        createdByUserId: createdByUserId ?? this.createdByUserId,
+        createdByUserName: createdByUserName.present
+            ? createdByUserName.value
+            : this.createdByUserName,
+        createdAt: createdAt ?? this.createdAt,
+        stockMovementId: stockMovementId ?? this.stockMovementId,
+        paymentMode: paymentMode ?? this.paymentMode,
+        customerId: customerId.present ? customerId.value : this.customerId,
+        notes: notes.present ? notes.value : this.notes,
+        itemsJson: itemsJson ?? this.itemsJson,
+        paidAmountQirsh: paidAmountQirsh.present
+            ? paidAmountQirsh.value
+            : this.paidAmountQirsh,
+        financialAccountId: financialAccountId.present
+            ? financialAccountId.value
+            : this.financialAccountId,
+        paymentMethod:
+            paymentMethod.present ? paymentMethod.value : this.paymentMethod,
+        paymentAllocationsJson:
+            paymentAllocationsJson ?? this.paymentAllocationsJson,
+        operationRequestId: operationRequestId.present
+            ? operationRequestId.value
+            : this.operationRequestId,
+        cancelledAt: cancelledAt.present ? cancelledAt.value : this.cancelledAt,
+        cancelledByUserId: cancelledByUserId.present
+            ? cancelledByUserId.value
+            : this.cancelledByUserId,
+        cancellationReason: cancellationReason.present
+            ? cancellationReason.value
+            : this.cancellationReason,
+        reversalMovementIdsJson: reversalMovementIdsJson.present
+            ? reversalMovementIdsJson.value
+            : this.reversalMovementIdsJson,
+      );
+  Sale copyWithCompanion(SalesCompanion data) {
+    return Sale(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      quantityKg:
+          data.quantityKg.present ? data.quantityKg.value : this.quantityKg,
+      salePriceQirshPerKg: data.salePriceQirshPerKg.present
+          ? data.salePriceQirshPerKg.value
+          : this.salePriceQirshPerKg,
+      totalQirsh:
+          data.totalQirsh.present ? data.totalQirsh.value : this.totalQirsh,
+      createdByUserId: data.createdByUserId.present
+          ? data.createdByUserId.value
+          : this.createdByUserId,
+      createdByUserName: data.createdByUserName.present
+          ? data.createdByUserName.value
+          : this.createdByUserName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      stockMovementId: data.stockMovementId.present
+          ? data.stockMovementId.value
+          : this.stockMovementId,
+      paymentMode:
+          data.paymentMode.present ? data.paymentMode.value : this.paymentMode,
+      customerId:
+          data.customerId.present ? data.customerId.value : this.customerId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      itemsJson: data.itemsJson.present ? data.itemsJson.value : this.itemsJson,
+      paidAmountQirsh: data.paidAmountQirsh.present
+          ? data.paidAmountQirsh.value
+          : this.paidAmountQirsh,
+      financialAccountId: data.financialAccountId.present
+          ? data.financialAccountId.value
+          : this.financialAccountId,
+      paymentMethod: data.paymentMethod.present
+          ? data.paymentMethod.value
+          : this.paymentMethod,
+      paymentAllocationsJson: data.paymentAllocationsJson.present
+          ? data.paymentAllocationsJson.value
+          : this.paymentAllocationsJson,
+      operationRequestId: data.operationRequestId.present
+          ? data.operationRequestId.value
+          : this.operationRequestId,
+      cancelledAt:
+          data.cancelledAt.present ? data.cancelledAt.value : this.cancelledAt,
+      cancelledByUserId: data.cancelledByUserId.present
+          ? data.cancelledByUserId.value
+          : this.cancelledByUserId,
+      cancellationReason: data.cancellationReason.present
+          ? data.cancellationReason.value
+          : this.cancellationReason,
+      reversalMovementIdsJson: data.reversalMovementIdsJson.present
+          ? data.reversalMovementIdsJson.value
+          : this.reversalMovementIdsJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Sale(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('salePriceQirshPerKg: $salePriceQirshPerKg, ')
+          ..write('totalQirsh: $totalQirsh, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('createdByUserName: $createdByUserName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('stockMovementId: $stockMovementId, ')
+          ..write('paymentMode: $paymentMode, ')
+          ..write('customerId: $customerId, ')
+          ..write('notes: $notes, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('paidAmountQirsh: $paidAmountQirsh, ')
+          ..write('financialAccountId: $financialAccountId, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('paymentAllocationsJson: $paymentAllocationsJson, ')
+          ..write('operationRequestId: $operationRequestId, ')
+          ..write('cancelledAt: $cancelledAt, ')
+          ..write('cancelledByUserId: $cancelledByUserId, ')
+          ..write('cancellationReason: $cancellationReason, ')
+          ..write('reversalMovementIdsJson: $reversalMovementIdsJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        id,
+        productId,
+        quantityKg,
+        salePriceQirshPerKg,
+        totalQirsh,
+        createdByUserId,
+        createdByUserName,
+        createdAt,
+        stockMovementId,
+        paymentMode,
+        customerId,
+        notes,
+        itemsJson,
+        paidAmountQirsh,
+        financialAccountId,
+        paymentMethod,
+        paymentAllocationsJson,
+        operationRequestId,
+        cancelledAt,
+        cancelledByUserId,
+        cancellationReason,
+        reversalMovementIdsJson
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Sale &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.quantityKg == this.quantityKg &&
+          other.salePriceQirshPerKg == this.salePriceQirshPerKg &&
+          other.totalQirsh == this.totalQirsh &&
+          other.createdByUserId == this.createdByUserId &&
+          other.createdByUserName == this.createdByUserName &&
+          other.createdAt == this.createdAt &&
+          other.stockMovementId == this.stockMovementId &&
+          other.paymentMode == this.paymentMode &&
+          other.customerId == this.customerId &&
+          other.notes == this.notes &&
+          other.itemsJson == this.itemsJson &&
+          other.paidAmountQirsh == this.paidAmountQirsh &&
+          other.financialAccountId == this.financialAccountId &&
+          other.paymentMethod == this.paymentMethod &&
+          other.paymentAllocationsJson == this.paymentAllocationsJson &&
+          other.operationRequestId == this.operationRequestId &&
+          other.cancelledAt == this.cancelledAt &&
+          other.cancelledByUserId == this.cancelledByUserId &&
+          other.cancellationReason == this.cancellationReason &&
+          other.reversalMovementIdsJson == this.reversalMovementIdsJson);
+}
+
+class SalesCompanion extends UpdateCompanion<Sale> {
+  final Value<String> id;
+  final Value<String> productId;
+  final Value<int> quantityKg;
+  final Value<int> salePriceQirshPerKg;
+  final Value<int> totalQirsh;
+  final Value<String> createdByUserId;
+  final Value<String?> createdByUserName;
+  final Value<DateTime> createdAt;
+  final Value<String> stockMovementId;
+  final Value<String> paymentMode;
+  final Value<String?> customerId;
+  final Value<String?> notes;
+  final Value<String> itemsJson;
+  final Value<int?> paidAmountQirsh;
+  final Value<String?> financialAccountId;
+  final Value<String?> paymentMethod;
+  final Value<String> paymentAllocationsJson;
+  final Value<String?> operationRequestId;
+  final Value<DateTime?> cancelledAt;
+  final Value<String?> cancelledByUserId;
+  final Value<String?> cancellationReason;
+  final Value<String?> reversalMovementIdsJson;
+  final Value<int> rowid;
+  const SalesCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.quantityKg = const Value.absent(),
+    this.salePriceQirshPerKg = const Value.absent(),
+    this.totalQirsh = const Value.absent(),
+    this.createdByUserId = const Value.absent(),
+    this.createdByUserName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.stockMovementId = const Value.absent(),
+    this.paymentMode = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.paidAmountQirsh = const Value.absent(),
+    this.financialAccountId = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.paymentAllocationsJson = const Value.absent(),
+    this.operationRequestId = const Value.absent(),
+    this.cancelledAt = const Value.absent(),
+    this.cancelledByUserId = const Value.absent(),
+    this.cancellationReason = const Value.absent(),
+    this.reversalMovementIdsJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SalesCompanion.insert({
+    required String id,
+    required String productId,
+    required int quantityKg,
+    required int salePriceQirshPerKg,
+    required int totalQirsh,
+    required String createdByUserId,
+    this.createdByUserName = const Value.absent(),
+    required DateTime createdAt,
+    required String stockMovementId,
+    required String paymentMode,
+    this.customerId = const Value.absent(),
+    this.notes = const Value.absent(),
+    required String itemsJson,
+    this.paidAmountQirsh = const Value.absent(),
+    this.financialAccountId = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    required String paymentAllocationsJson,
+    this.operationRequestId = const Value.absent(),
+    this.cancelledAt = const Value.absent(),
+    this.cancelledByUserId = const Value.absent(),
+    this.cancellationReason = const Value.absent(),
+    this.reversalMovementIdsJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        productId = Value(productId),
+        quantityKg = Value(quantityKg),
+        salePriceQirshPerKg = Value(salePriceQirshPerKg),
+        totalQirsh = Value(totalQirsh),
+        createdByUserId = Value(createdByUserId),
+        createdAt = Value(createdAt),
+        stockMovementId = Value(stockMovementId),
+        paymentMode = Value(paymentMode),
+        itemsJson = Value(itemsJson),
+        paymentAllocationsJson = Value(paymentAllocationsJson);
+  static Insertable<Sale> custom({
+    Expression<String>? id,
+    Expression<String>? productId,
+    Expression<int>? quantityKg,
+    Expression<int>? salePriceQirshPerKg,
+    Expression<int>? totalQirsh,
+    Expression<String>? createdByUserId,
+    Expression<String>? createdByUserName,
+    Expression<DateTime>? createdAt,
+    Expression<String>? stockMovementId,
+    Expression<String>? paymentMode,
+    Expression<String>? customerId,
+    Expression<String>? notes,
+    Expression<String>? itemsJson,
+    Expression<int>? paidAmountQirsh,
+    Expression<String>? financialAccountId,
+    Expression<String>? paymentMethod,
+    Expression<String>? paymentAllocationsJson,
+    Expression<String>? operationRequestId,
+    Expression<DateTime>? cancelledAt,
+    Expression<String>? cancelledByUserId,
+    Expression<String>? cancellationReason,
+    Expression<String>? reversalMovementIdsJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (quantityKg != null) 'quantity_kg': quantityKg,
+      if (salePriceQirshPerKg != null)
+        'sale_price_qirsh_per_kg': salePriceQirshPerKg,
+      if (totalQirsh != null) 'total_qirsh': totalQirsh,
+      if (createdByUserId != null) 'created_by_user_id': createdByUserId,
+      if (createdByUserName != null) 'created_by_user_name': createdByUserName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (stockMovementId != null) 'stock_movement_id': stockMovementId,
+      if (paymentMode != null) 'payment_mode': paymentMode,
+      if (customerId != null) 'customer_id': customerId,
+      if (notes != null) 'notes': notes,
+      if (itemsJson != null) 'items_json': itemsJson,
+      if (paidAmountQirsh != null) 'paid_amount_qirsh': paidAmountQirsh,
+      if (financialAccountId != null)
+        'financial_account_id': financialAccountId,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (paymentAllocationsJson != null)
+        'payment_allocations_json': paymentAllocationsJson,
+      if (operationRequestId != null)
+        'operation_request_id': operationRequestId,
+      if (cancelledAt != null) 'cancelled_at': cancelledAt,
+      if (cancelledByUserId != null) 'cancelled_by_user_id': cancelledByUserId,
+      if (cancellationReason != null) 'cancellation_reason': cancellationReason,
+      if (reversalMovementIdsJson != null)
+        'reversal_movement_ids_json': reversalMovementIdsJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SalesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? productId,
+      Value<int>? quantityKg,
+      Value<int>? salePriceQirshPerKg,
+      Value<int>? totalQirsh,
+      Value<String>? createdByUserId,
+      Value<String?>? createdByUserName,
+      Value<DateTime>? createdAt,
+      Value<String>? stockMovementId,
+      Value<String>? paymentMode,
+      Value<String?>? customerId,
+      Value<String?>? notes,
+      Value<String>? itemsJson,
+      Value<int?>? paidAmountQirsh,
+      Value<String?>? financialAccountId,
+      Value<String?>? paymentMethod,
+      Value<String>? paymentAllocationsJson,
+      Value<String?>? operationRequestId,
+      Value<DateTime?>? cancelledAt,
+      Value<String?>? cancelledByUserId,
+      Value<String?>? cancellationReason,
+      Value<String?>? reversalMovementIdsJson,
+      Value<int>? rowid}) {
+    return SalesCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      quantityKg: quantityKg ?? this.quantityKg,
+      salePriceQirshPerKg: salePriceQirshPerKg ?? this.salePriceQirshPerKg,
+      totalQirsh: totalQirsh ?? this.totalQirsh,
+      createdByUserId: createdByUserId ?? this.createdByUserId,
+      createdByUserName: createdByUserName ?? this.createdByUserName,
+      createdAt: createdAt ?? this.createdAt,
+      stockMovementId: stockMovementId ?? this.stockMovementId,
+      paymentMode: paymentMode ?? this.paymentMode,
+      customerId: customerId ?? this.customerId,
+      notes: notes ?? this.notes,
+      itemsJson: itemsJson ?? this.itemsJson,
+      paidAmountQirsh: paidAmountQirsh ?? this.paidAmountQirsh,
+      financialAccountId: financialAccountId ?? this.financialAccountId,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentAllocationsJson:
+          paymentAllocationsJson ?? this.paymentAllocationsJson,
+      operationRequestId: operationRequestId ?? this.operationRequestId,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancelledByUserId: cancelledByUserId ?? this.cancelledByUserId,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      reversalMovementIdsJson:
+          reversalMovementIdsJson ?? this.reversalMovementIdsJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (quantityKg.present) {
+      map['quantity_kg'] = Variable<int>(quantityKg.value);
+    }
+    if (salePriceQirshPerKg.present) {
+      map['sale_price_qirsh_per_kg'] = Variable<int>(salePriceQirshPerKg.value);
+    }
+    if (totalQirsh.present) {
+      map['total_qirsh'] = Variable<int>(totalQirsh.value);
+    }
+    if (createdByUserId.present) {
+      map['created_by_user_id'] = Variable<String>(createdByUserId.value);
+    }
+    if (createdByUserName.present) {
+      map['created_by_user_name'] = Variable<String>(createdByUserName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (stockMovementId.present) {
+      map['stock_movement_id'] = Variable<String>(stockMovementId.value);
+    }
+    if (paymentMode.present) {
+      map['payment_mode'] = Variable<String>(paymentMode.value);
+    }
+    if (customerId.present) {
+      map['customer_id'] = Variable<String>(customerId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (itemsJson.present) {
+      map['items_json'] = Variable<String>(itemsJson.value);
+    }
+    if (paidAmountQirsh.present) {
+      map['paid_amount_qirsh'] = Variable<int>(paidAmountQirsh.value);
+    }
+    if (financialAccountId.present) {
+      map['financial_account_id'] = Variable<String>(financialAccountId.value);
+    }
+    if (paymentMethod.present) {
+      map['payment_method'] = Variable<String>(paymentMethod.value);
+    }
+    if (paymentAllocationsJson.present) {
+      map['payment_allocations_json'] =
+          Variable<String>(paymentAllocationsJson.value);
+    }
+    if (operationRequestId.present) {
+      map['operation_request_id'] = Variable<String>(operationRequestId.value);
+    }
+    if (cancelledAt.present) {
+      map['cancelled_at'] = Variable<DateTime>(cancelledAt.value);
+    }
+    if (cancelledByUserId.present) {
+      map['cancelled_by_user_id'] = Variable<String>(cancelledByUserId.value);
+    }
+    if (cancellationReason.present) {
+      map['cancellation_reason'] = Variable<String>(cancellationReason.value);
+    }
+    if (reversalMovementIdsJson.present) {
+      map['reversal_movement_ids_json'] =
+          Variable<String>(reversalMovementIdsJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SalesCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('salePriceQirshPerKg: $salePriceQirshPerKg, ')
+          ..write('totalQirsh: $totalQirsh, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('createdByUserName: $createdByUserName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('stockMovementId: $stockMovementId, ')
+          ..write('paymentMode: $paymentMode, ')
+          ..write('customerId: $customerId, ')
+          ..write('notes: $notes, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('paidAmountQirsh: $paidAmountQirsh, ')
+          ..write('financialAccountId: $financialAccountId, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('paymentAllocationsJson: $paymentAllocationsJson, ')
+          ..write('operationRequestId: $operationRequestId, ')
+          ..write('cancelledAt: $cancelledAt, ')
+          ..write('cancelledByUserId: $cancelledByUserId, ')
+          ..write('cancellationReason: $cancellationReason, ')
+          ..write('reversalMovementIdsJson: $reversalMovementIdsJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -3891,6 +4986,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final $InventoryMovementsTable inventoryMovements =
       $InventoryMovementsTable(this);
   late final $PurchasesTable purchases = $PurchasesTable(this);
+  late final $SalesTable sales = $SalesTable(this);
   late final Index inventoryMovementsProductIdx = Index(
       'inventory_movements_product_idx',
       'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
@@ -3908,6 +5004,14 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       'CREATE INDEX purchases_product_idx ON purchases (product_id)');
   late final Index purchasesRequestIdx = Index('purchases_request_idx',
       'CREATE INDEX purchases_request_idx ON purchases (operation_request_id)');
+  late final Index salesCustomerIdx = Index('sales_customer_idx',
+      'CREATE INDEX sales_customer_idx ON sales (customer_id)');
+  late final Index salesCreatedIdx = Index('sales_created_idx',
+      'CREATE INDEX sales_created_idx ON sales (created_at, id)');
+  late final Index salesRequestIdx = Index('sales_request_idx',
+      'CREATE INDEX sales_request_idx ON sales (operation_request_id)');
+  late final Index salesCancelledIdx = Index('sales_cancelled_idx',
+      'CREATE INDEX sales_cancelled_idx ON sales (cancelled_at)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3920,13 +5024,18 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         suppliers,
         inventoryMovements,
         purchases,
+        sales,
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
         purchasesSupplierIdx,
         purchasesCreatedIdx,
         purchasesProductIdx,
-        purchasesRequestIdx
+        purchasesRequestIdx,
+        salesCustomerIdx,
+        salesCreatedIdx,
+        salesRequestIdx,
+        salesCancelledIdx
       ];
 }
 
@@ -5720,6 +6829,449 @@ typedef $$PurchasesTableProcessedTableManager = ProcessedTableManager<
     (Purchase, BaseReferences<_$FoundationDatabase, $PurchasesTable, Purchase>),
     Purchase,
     PrefetchHooks Function()>;
+typedef $$SalesTableCreateCompanionBuilder = SalesCompanion Function({
+  required String id,
+  required String productId,
+  required int quantityKg,
+  required int salePriceQirshPerKg,
+  required int totalQirsh,
+  required String createdByUserId,
+  Value<String?> createdByUserName,
+  required DateTime createdAt,
+  required String stockMovementId,
+  required String paymentMode,
+  Value<String?> customerId,
+  Value<String?> notes,
+  required String itemsJson,
+  Value<int?> paidAmountQirsh,
+  Value<String?> financialAccountId,
+  Value<String?> paymentMethod,
+  required String paymentAllocationsJson,
+  Value<String?> operationRequestId,
+  Value<DateTime?> cancelledAt,
+  Value<String?> cancelledByUserId,
+  Value<String?> cancellationReason,
+  Value<String?> reversalMovementIdsJson,
+  Value<int> rowid,
+});
+typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
+  Value<String> id,
+  Value<String> productId,
+  Value<int> quantityKg,
+  Value<int> salePriceQirshPerKg,
+  Value<int> totalQirsh,
+  Value<String> createdByUserId,
+  Value<String?> createdByUserName,
+  Value<DateTime> createdAt,
+  Value<String> stockMovementId,
+  Value<String> paymentMode,
+  Value<String?> customerId,
+  Value<String?> notes,
+  Value<String> itemsJson,
+  Value<int?> paidAmountQirsh,
+  Value<String?> financialAccountId,
+  Value<String?> paymentMethod,
+  Value<String> paymentAllocationsJson,
+  Value<String?> operationRequestId,
+  Value<DateTime?> cancelledAt,
+  Value<String?> cancelledByUserId,
+  Value<String?> cancellationReason,
+  Value<String?> reversalMovementIdsJson,
+  Value<int> rowid,
+});
+
+class $$SalesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SalesTable> {
+  $$SalesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get salePriceQirshPerKg => $composableBuilder(
+      column: $table.salePriceQirshPerKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalQirsh => $composableBuilder(
+      column: $table.totalQirsh, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdByUserName => $composableBuilder(
+      column: $table.createdByUserName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get stockMovementId => $composableBuilder(
+      column: $table.stockMovementId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get paymentMode => $composableBuilder(
+      column: $table.paymentMode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get customerId => $composableBuilder(
+      column: $table.customerId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get itemsJson => $composableBuilder(
+      column: $table.itemsJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get paidAmountQirsh => $composableBuilder(
+      column: $table.paidAmountQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get paymentAllocationsJson => $composableBuilder(
+      column: $table.paymentAllocationsJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get cancelledAt => $composableBuilder(
+      column: $table.cancelledAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cancelledByUserId => $composableBuilder(
+      column: $table.cancelledByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cancellationReason => $composableBuilder(
+      column: $table.cancellationReason,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reversalMovementIdsJson => $composableBuilder(
+      column: $table.reversalMovementIdsJson,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$SalesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SalesTable> {
+  $$SalesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get salePriceQirshPerKg => $composableBuilder(
+      column: $table.salePriceQirshPerKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalQirsh => $composableBuilder(
+      column: $table.totalQirsh, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdByUserName => $composableBuilder(
+      column: $table.createdByUserName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get stockMovementId => $composableBuilder(
+      column: $table.stockMovementId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get paymentMode => $composableBuilder(
+      column: $table.paymentMode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get customerId => $composableBuilder(
+      column: $table.customerId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get itemsJson => $composableBuilder(
+      column: $table.itemsJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get paidAmountQirsh => $composableBuilder(
+      column: $table.paidAmountQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get paymentAllocationsJson => $composableBuilder(
+      column: $table.paymentAllocationsJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get cancelledAt => $composableBuilder(
+      column: $table.cancelledAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cancelledByUserId => $composableBuilder(
+      column: $table.cancelledByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cancellationReason => $composableBuilder(
+      column: $table.cancellationReason,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reversalMovementIdsJson => $composableBuilder(
+      column: $table.reversalMovementIdsJson,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$SalesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SalesTable> {
+  $$SalesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => column);
+
+  GeneratedColumn<int> get salePriceQirshPerKg => $composableBuilder(
+      column: $table.salePriceQirshPerKg, builder: (column) => column);
+
+  GeneratedColumn<int> get totalQirsh => $composableBuilder(
+      column: $table.totalQirsh, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByUserName => $composableBuilder(
+      column: $table.createdByUserName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get stockMovementId => $composableBuilder(
+      column: $table.stockMovementId, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMode => $composableBuilder(
+      column: $table.paymentMode, builder: (column) => column);
+
+  GeneratedColumn<String> get customerId => $composableBuilder(
+      column: $table.customerId, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get itemsJson =>
+      $composableBuilder(column: $table.itemsJson, builder: (column) => column);
+
+  GeneratedColumn<int> get paidAmountQirsh => $composableBuilder(
+      column: $table.paidAmountQirsh, builder: (column) => column);
+
+  GeneratedColumn<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentAllocationsJson => $composableBuilder(
+      column: $table.paymentAllocationsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cancelledAt => $composableBuilder(
+      column: $table.cancelledAt, builder: (column) => column);
+
+  GeneratedColumn<String> get cancelledByUserId => $composableBuilder(
+      column: $table.cancelledByUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get cancellationReason => $composableBuilder(
+      column: $table.cancellationReason, builder: (column) => column);
+
+  GeneratedColumn<String> get reversalMovementIdsJson => $composableBuilder(
+      column: $table.reversalMovementIdsJson, builder: (column) => column);
+}
+
+class $$SalesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SalesTable,
+    Sale,
+    $$SalesTableFilterComposer,
+    $$SalesTableOrderingComposer,
+    $$SalesTableAnnotationComposer,
+    $$SalesTableCreateCompanionBuilder,
+    $$SalesTableUpdateCompanionBuilder,
+    (Sale, BaseReferences<_$FoundationDatabase, $SalesTable, Sale>),
+    Sale,
+    PrefetchHooks Function()> {
+  $$SalesTableTableManager(_$FoundationDatabase db, $SalesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SalesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SalesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SalesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> productId = const Value.absent(),
+            Value<int> quantityKg = const Value.absent(),
+            Value<int> salePriceQirshPerKg = const Value.absent(),
+            Value<int> totalQirsh = const Value.absent(),
+            Value<String> createdByUserId = const Value.absent(),
+            Value<String?> createdByUserName = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<String> stockMovementId = const Value.absent(),
+            Value<String> paymentMode = const Value.absent(),
+            Value<String?> customerId = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<String> itemsJson = const Value.absent(),
+            Value<int?> paidAmountQirsh = const Value.absent(),
+            Value<String?> financialAccountId = const Value.absent(),
+            Value<String?> paymentMethod = const Value.absent(),
+            Value<String> paymentAllocationsJson = const Value.absent(),
+            Value<String?> operationRequestId = const Value.absent(),
+            Value<DateTime?> cancelledAt = const Value.absent(),
+            Value<String?> cancelledByUserId = const Value.absent(),
+            Value<String?> cancellationReason = const Value.absent(),
+            Value<String?> reversalMovementIdsJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SalesCompanion(
+            id: id,
+            productId: productId,
+            quantityKg: quantityKg,
+            salePriceQirshPerKg: salePriceQirshPerKg,
+            totalQirsh: totalQirsh,
+            createdByUserId: createdByUserId,
+            createdByUserName: createdByUserName,
+            createdAt: createdAt,
+            stockMovementId: stockMovementId,
+            paymentMode: paymentMode,
+            customerId: customerId,
+            notes: notes,
+            itemsJson: itemsJson,
+            paidAmountQirsh: paidAmountQirsh,
+            financialAccountId: financialAccountId,
+            paymentMethod: paymentMethod,
+            paymentAllocationsJson: paymentAllocationsJson,
+            operationRequestId: operationRequestId,
+            cancelledAt: cancelledAt,
+            cancelledByUserId: cancelledByUserId,
+            cancellationReason: cancellationReason,
+            reversalMovementIdsJson: reversalMovementIdsJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String productId,
+            required int quantityKg,
+            required int salePriceQirshPerKg,
+            required int totalQirsh,
+            required String createdByUserId,
+            Value<String?> createdByUserName = const Value.absent(),
+            required DateTime createdAt,
+            required String stockMovementId,
+            required String paymentMode,
+            Value<String?> customerId = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            required String itemsJson,
+            Value<int?> paidAmountQirsh = const Value.absent(),
+            Value<String?> financialAccountId = const Value.absent(),
+            Value<String?> paymentMethod = const Value.absent(),
+            required String paymentAllocationsJson,
+            Value<String?> operationRequestId = const Value.absent(),
+            Value<DateTime?> cancelledAt = const Value.absent(),
+            Value<String?> cancelledByUserId = const Value.absent(),
+            Value<String?> cancellationReason = const Value.absent(),
+            Value<String?> reversalMovementIdsJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SalesCompanion.insert(
+            id: id,
+            productId: productId,
+            quantityKg: quantityKg,
+            salePriceQirshPerKg: salePriceQirshPerKg,
+            totalQirsh: totalQirsh,
+            createdByUserId: createdByUserId,
+            createdByUserName: createdByUserName,
+            createdAt: createdAt,
+            stockMovementId: stockMovementId,
+            paymentMode: paymentMode,
+            customerId: customerId,
+            notes: notes,
+            itemsJson: itemsJson,
+            paidAmountQirsh: paidAmountQirsh,
+            financialAccountId: financialAccountId,
+            paymentMethod: paymentMethod,
+            paymentAllocationsJson: paymentAllocationsJson,
+            operationRequestId: operationRequestId,
+            cancelledAt: cancelledAt,
+            cancelledByUserId: cancelledByUserId,
+            cancellationReason: cancellationReason,
+            reversalMovementIdsJson: reversalMovementIdsJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SalesTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $SalesTable,
+    Sale,
+    $$SalesTableFilterComposer,
+    $$SalesTableOrderingComposer,
+    $$SalesTableAnnotationComposer,
+    $$SalesTableCreateCompanionBuilder,
+    $$SalesTableUpdateCompanionBuilder,
+    (Sale, BaseReferences<_$FoundationDatabase, $SalesTable, Sale>),
+    Sale,
+    PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -5738,4 +7290,6 @@ class $FoundationDatabaseManager {
       $$InventoryMovementsTableTableManager(_db, _db.inventoryMovements);
   $$PurchasesTableTableManager get purchases =>
       $$PurchasesTableTableManager(_db, _db.purchases);
+  $$SalesTableTableManager get sales =>
+      $$SalesTableTableManager(_db, _db.sales);
 }

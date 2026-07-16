@@ -131,6 +131,38 @@ class Purchases extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@TableIndex(name: 'sales_customer_idx', columns: {#customerId})
+@TableIndex(name: 'sales_created_idx', columns: {#createdAt, #id})
+@TableIndex(name: 'sales_request_idx', columns: {#operationRequestId})
+@TableIndex(name: 'sales_cancelled_idx', columns: {#cancelledAt})
+class Sales extends Table {
+  TextColumn get id => text()();
+  TextColumn get productId => text()();
+  IntColumn get quantityKg => integer()();
+  IntColumn get salePriceQirshPerKg => integer()();
+  IntColumn get totalQirsh => integer()();
+  TextColumn get createdByUserId => text()();
+  TextColumn get createdByUserName => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get stockMovementId => text()();
+  TextColumn get paymentMode => text()();
+  TextColumn get customerId => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get itemsJson => text()();
+  IntColumn get paidAmountQirsh => integer().nullable()();
+  TextColumn get financialAccountId => text().nullable()();
+  TextColumn get paymentMethod => text().nullable()();
+  TextColumn get paymentAllocationsJson => text()();
+  TextColumn get operationRequestId => text().nullable().unique()();
+  DateTimeColumn get cancelledAt => dateTime().nullable()();
+  TextColumn get cancelledByUserId => text().nullable()();
+  TextColumn get cancellationReason => text().nullable()();
+  TextColumn get reversalMovementIdsJson => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
     tables: [
       FoundationProbes,
@@ -140,12 +172,13 @@ class Purchases extends Table {
       Suppliers,
       InventoryMovements,
       Purchases,
+      Sales,
     ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

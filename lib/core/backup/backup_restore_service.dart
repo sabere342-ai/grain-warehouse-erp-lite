@@ -46,7 +46,7 @@ class BackupRestoreService {
     required DurableInventoryRepository inventoryRepository,
     required SupplierDataRepository supplierRepository,
     required DurablePurchaseRepository purchaseRepository,
-    required LocalSaleRepository saleRepository,
+    required DurableSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     BusinessIdentityRepository? businessIdentityRepository,
     CustomerDataRepository? customerRepository,
@@ -82,7 +82,7 @@ class BackupRestoreService {
   final DurableInventoryRepository _inventoryRepository;
   final SupplierDataRepository _supplierRepository;
   final DurablePurchaseRepository _purchaseRepository;
-  final LocalSaleRepository _saleRepository;
+  final DurableSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final BusinessIdentityRepository? _businessIdentityRepository;
   final CustomerDataRepository _customerRepository;
