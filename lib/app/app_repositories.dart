@@ -23,6 +23,7 @@ import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/suppliers/drift_supplier_repository.dart';
 
 class AppRepositories {
   AppRepositories._();
@@ -58,6 +59,10 @@ class AppRepositories {
       LocalCustomerRepository(auditLogRepository: auditLogRepository);
   static CustomerDataRepository get customerRepository => _customerRepository;
 
+  static SupplierDataRepository _supplierRepository =
+      LocalSupplierRepository();
+  static SupplierDataRepository get supplierRepository => _supplierRepository;
+
   static final LocalCustomerAccountRepository customerAccountRepository =
       LocalCustomerAccountRepository(
     customerRepository: customerRepository,
@@ -85,15 +90,13 @@ class AppRepositories {
       database,
       auditLogRepository: auditLogRepository,
     );
+    _supplierRepository = DriftSupplierRepository(database);
   }
 
   static Future<void> close() => database.close();
 
   static final LocalInventoryRepository inventoryRepository =
       LocalInventoryRepository(productRepository: productRepository);
-
-  static final LocalSupplierRepository supplierRepository =
-      LocalSupplierRepository();
 
   static final LocalSupplierAccountRepository supplierAccountRepository =
       LocalSupplierAccountRepository(

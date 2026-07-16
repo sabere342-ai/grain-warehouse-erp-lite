@@ -21,7 +21,7 @@ class BusinessDataWipeService {
     required BackupFileWriter backupFileWriter,
     required ProductDataRepository productRepository,
     required LocalInventoryRepository inventoryRepository,
-    required LocalSupplierRepository supplierRepository,
+    required SupplierDataRepository supplierRepository,
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
@@ -62,7 +62,7 @@ class BusinessDataWipeService {
   final BackupFileWriter _backupFileWriter;
   final ProductDataRepository _productRepository;
   final LocalInventoryRepository _inventoryRepository;
-  final LocalSupplierRepository _supplierRepository;
+  final SupplierDataRepository _supplierRepository;
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;

@@ -55,13 +55,35 @@ class Customers extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class Suppliers extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get normalizedName => text().unique()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get normalizedPhone => text().nullable().unique()();
+  TextColumn get address => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  BoolColumn get isActive => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
-    tables: [FoundationProbes, Products, RepositorySequences, Customers])
+    tables: [
+      FoundationProbes,
+      Products,
+      RepositorySequences,
+      Customers,
+      Suppliers,
+    ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

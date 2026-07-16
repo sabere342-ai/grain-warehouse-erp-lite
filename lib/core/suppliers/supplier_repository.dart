@@ -17,8 +17,14 @@ abstract class SupplierRepository {
   });
 }
 
-class LocalSupplierRepository
+abstract class SupplierDataRepository
     implements SupplierRepository, TransactionSnapshotProvider {
+  Future<void> restoreSuppliersIntoEmpty(List<Supplier> suppliers);
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalSupplierRepository
+    implements SupplierDataRepository {
   final List<Supplier> _suppliers = [];
   int _generatedIdCounter = 0;
 
@@ -98,6 +104,7 @@ class LocalSupplierRepository
     return updated;
   }
 
+  @override
   Future<void> restoreSuppliersIntoEmpty(List<Supplier> suppliers) async {
     if (_suppliers.isNotEmpty) {
       throw StateError('Suppliers repository is not empty.');
@@ -106,6 +113,7 @@ class LocalSupplierRepository
     _suppliers.addAll(suppliers);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _suppliers.clear();
     _generatedIdCounter = 0;
