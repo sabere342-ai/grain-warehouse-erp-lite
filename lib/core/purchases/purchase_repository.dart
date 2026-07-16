@@ -24,8 +24,15 @@ abstract class PurchaseRepository {
   Future<List<PurchaseIntake>> listPurchaseIntakes();
 }
 
-class LocalPurchaseRepository
+abstract class DurablePurchaseRepository
     implements PurchaseRepository, TransactionSnapshotProvider {
+  Future<void> restorePurchaseIntakesIntoEmpty(List<PurchaseIntake> intakes);
+
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalPurchaseRepository
+    implements DurablePurchaseRepository {
   LocalPurchaseRepository({
     required SupplierRepository supplierRepository,
     required ProductRepository productRepository,
@@ -272,6 +279,7 @@ class LocalPurchaseRepository
     return List<PurchaseIntake>.unmodifiable(_intakes);
   }
 
+  @override
   Future<void> restorePurchaseIntakesIntoEmpty(
     List<PurchaseIntake> intakes,
   ) async {
@@ -282,6 +290,7 @@ class LocalPurchaseRepository
     _intakes.addAll(intakes);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _intakes.clear();
     _purchaseRequestFingerprints.clear();

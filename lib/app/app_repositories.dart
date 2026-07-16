@@ -20,6 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/drift_inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/purchases/drift_purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
@@ -95,6 +96,15 @@ class AppRepositories {
       database,
       productRepository: productRepository,
     );
+    _purchaseRepository = DriftPurchaseRepository(
+      database,
+      supplierRepository: supplierRepository,
+      productRepository: productRepository,
+      inventoryRepository: inventoryRepository,
+      supplierAccountRepository: supplierAccountRepository,
+      financialAccountRepository: financialAccountRepository,
+      auditLogRepository: auditLogRepository,
+    );
   }
 
   static Future<void> close() => database.close();
@@ -114,7 +124,7 @@ class AppRepositories {
     negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
-  static final LocalPurchaseRepository purchaseRepository =
+  static DurablePurchaseRepository _purchaseRepository =
       LocalPurchaseRepository(
     supplierRepository: supplierRepository,
     productRepository: productRepository,
@@ -161,6 +171,8 @@ class AppRepositories {
         auditLogRepository: auditLogRepository,
         financialAccountRepository: financialAccountRepository,
       );
+  static DurablePurchaseRepository get purchaseRepository =>
+      _purchaseRepository;
 
   static BackupRestoreService get backupRestoreService => BackupRestoreService(
         businessIdentityRepository: businessIdentityRepository,

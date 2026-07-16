@@ -96,6 +96,41 @@ class InventoryMovements extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@TableIndex(name: 'purchases_supplier_idx', columns: {#supplierId})
+@TableIndex(name: 'purchases_created_idx', columns: {#createdAt, #id})
+@TableIndex(name: 'purchases_product_idx', columns: {#productId})
+@TableIndex(name: 'purchases_request_idx', columns: {#operationRequestId})
+class Purchases extends Table {
+  TextColumn get id => text()();
+  TextColumn get supplierId => text()();
+  TextColumn get supplierName => text().nullable()();
+  TextColumn get supplierPhone => text().nullable()();
+  TextColumn get supplierAddress => text().nullable()();
+  TextColumn get productId => text()();
+  IntColumn get quantityKg => integer()();
+  TextColumn get entryUnit => text()();
+  IntColumn get unitPricePiastersPerKg => integer()();
+  IntColumn get totalAmountPiasters => integer()();
+  TextColumn get createdByUserId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get stockMovementId => text()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get financialAccountId => text().nullable()();
+  TextColumn get paymentMethod => text().nullable()();
+  TextColumn get paymentMode => text()();
+  IntColumn get paidAmountQirsh => integer().nullable()();
+  TextColumn get negativeBalanceApprovalId => text().nullable()();
+  TextColumn get operationRequestId => text().nullable().unique()();
+  TextColumn get requestFingerprint => text().nullable()();
+  DateTimeColumn get cancelledAt => dateTime().nullable()();
+  TextColumn get cancelledByUserId => text().nullable()();
+  TextColumn get cancellationReason => text().nullable()();
+  TextColumn get reversalMovementIds => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
     tables: [
       FoundationProbes,
@@ -104,12 +139,13 @@ class InventoryMovements extends Table {
       Customers,
       Suppliers,
       InventoryMovements,
+      Purchases,
     ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

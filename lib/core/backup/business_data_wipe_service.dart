@@ -22,7 +22,7 @@ class BusinessDataWipeService {
     required ProductDataRepository productRepository,
     required DurableInventoryRepository inventoryRepository,
     required SupplierDataRepository supplierRepository,
-    required LocalPurchaseRepository purchaseRepository,
+    required DurablePurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     CustomerDataRepository? customerRepository,
@@ -63,7 +63,7 @@ class BusinessDataWipeService {
   final ProductDataRepository _productRepository;
   final DurableInventoryRepository _inventoryRepository;
   final SupplierDataRepository _supplierRepository;
-  final LocalPurchaseRepository _purchaseRepository;
+  final DurablePurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final CustomerDataRepository _customerRepository;
