@@ -32,12 +32,13 @@ void main() {
 
     final database = openDatabaseFile(file);
     expect(await database.readProbe('legacy'), 'kept');
-    expect(database.schemaVersion, 7);
+    expect(database.schemaVersion, 8);
     expect(await database.purchases.count().getSingle(), 0);
     await database.close();
   });
 
-  test('purchase aggregate, exact totals and sequence survive reopen', () async {
+  test('purchase aggregate, exact totals and sequence survive reopen',
+      () async {
     final directory = await Directory.systemTemp.createTemp('phase8f-reopen-');
     final file = File('${directory.path}${Platform.pathSeparator}data.sqlite3');
     addTearDown(() async {
@@ -126,7 +127,8 @@ void main() {
     await fixture.purchases.clearForOwnerDataWipe();
     expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
     await fixture.purchases.restorePurchaseIntakesIntoEmpty(snapshot);
-    expect((await fixture.purchases.listPurchaseIntakes()).single.id, created.id);
+    expect(
+        (await fixture.purchases.listPurchaseIntakes()).single.id, created.id);
     final next = await fixture.purchases
         .createPurchaseIntake(fixture.draft(requestId: 'after-restore'));
     expect(next.id, endsWith('-2'));
@@ -134,7 +136,8 @@ void main() {
 
   test('production initialization wires DriftPurchaseRepository', () async {
     final database = openInMemoryTestDatabase();
-    await AppRepositories.initializeProduction(databaseFactory: () async => database);
+    await AppRepositories.initializeProduction(
+        databaseFactory: () async => database);
     expect(AppRepositories.purchaseRepository, isA<DriftPurchaseRepository>());
     await AppRepositories.close();
   });
@@ -151,7 +154,8 @@ class _Fixture {
     final products = DriftProductRepository(database);
     final suppliers = DriftSupplierRepository(database);
     final existingProducts = await products.listProducts(includeInactive: true);
-    final existingSuppliers = await suppliers.listSuppliers(includeInactive: true);
+    final existingSuppliers =
+        await suppliers.listSuppliers(includeInactive: true);
     final product = existingProducts.isEmpty
         ? await products.createProduct(const ProductDraft(
             name: 'Wheat', code: 'WH', unit: GrainUnit.kilogram))
@@ -159,7 +163,8 @@ class _Fixture {
     final supplier = existingSuppliers.isEmpty
         ? await suppliers.createSupplier(const SupplierDraft(name: 'Supplier'))
         : existingSuppliers.single;
-    final inventory = DriftInventoryRepository(database, productRepository: products);
+    final inventory =
+        DriftInventoryRepository(database, productRepository: products);
     final purchases = DriftPurchaseRepository(
       database,
       supplierRepository: suppliers,

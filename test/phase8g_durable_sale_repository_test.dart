@@ -51,7 +51,7 @@ void main() {
     legacy.dispose();
 
     final upgraded = openDatabaseFile(file);
-    expect(upgraded.schemaVersion, 7);
+    expect(upgraded.schemaVersion, 8);
     expect(await upgraded.readProbe('legacy'), 'kept');
     expect(await upgraded.purchases.count().getSingle(), 1);
     expect(await upgraded.sales.count().getSingle(), 0);
@@ -156,14 +156,16 @@ void main() {
 
   test('production initialization wires DriftSaleRepository', () async {
     final database = openInMemoryTestDatabase();
-    await AppRepositories.initializeProduction(databaseFactory: () async => database);
+    await AppRepositories.initializeProduction(
+        databaseFactory: () async => database);
     expect(AppRepositories.saleRepository, isA<DriftSaleRepository>());
     await AppRepositories.close();
   });
 }
 
 class _Fixture {
-  _Fixture(this.database, this.products, this.product, this.inventory, this.sales);
+  _Fixture(
+      this.database, this.products, this.product, this.inventory, this.sales);
 
   static Future<_Fixture> memory() => _build(openInMemoryTestDatabase());
   static Future<_Fixture> file(File file) => _build(openDatabaseFile(file));

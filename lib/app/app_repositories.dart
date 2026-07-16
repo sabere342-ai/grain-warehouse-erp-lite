@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -52,11 +53,13 @@ class AppRepositories {
   static final LocalBusinessIdentityRepository businessIdentityRepository =
       LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
 
-  static final LocalFinancialAccountRepository financialAccountRepository =
+  static LocalFinancialAccountRepository _financialAccountRepository =
       LocalFinancialAccountRepository(
     auditLogRepository: auditLogRepository,
     negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
+  static LocalFinancialAccountRepository get financialAccountRepository =>
+      _financialAccountRepository;
 
   static CustomerDataRepository _customerRepository =
       LocalCustomerRepository(auditLogRepository: auditLogRepository);
@@ -87,6 +90,11 @@ class AppRepositories {
     Future<FoundationDatabase> Function()? databaseFactory,
   }) async {
     database = await (databaseFactory?.call() ?? openProductionDatabase());
+    _financialAccountRepository = await DriftFinancialAccountRepository.open(
+      database,
+      auditLogRepository: auditLogRepository,
+      negativeBalanceApprovalService: negativeBalanceApprovalService,
+    );
     _productRepository = DriftProductRepository(database);
     _customerRepository = DriftCustomerRepository(
       database,

@@ -7,7 +7,7 @@ void main() {
   test('fresh database opens with current schema version', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 7);
+    expect(database.schemaVersion, 8);
     expect(await database.probeCount(), 0);
   });
 

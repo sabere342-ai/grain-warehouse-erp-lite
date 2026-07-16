@@ -1227,6 +1227,9 @@ class LocalFinancialAccountRepository
     _entries.addAll(entries);
     _transfers.addAll(transfers);
     _closings.addAll(closings);
+    _generatedAccountIdCounter = accounts.length;
+    _generatedEntryIdCounter = entries.length;
+    _generatedTransferIdCounter = transfers.length;
   }
 
   Future<void> clearForOwnerDataWipe() async {

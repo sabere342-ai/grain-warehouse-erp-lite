@@ -163,22 +163,111 @@ class Sales extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(
-    tables: [
-      FoundationProbes,
-      Products,
-      RepositorySequences,
-      Customers,
-      Suppliers,
-      InventoryMovements,
-      Purchases,
-      Sales,
-    ])
+@DataClassName('FinancialAccountRow')
+class FinancialAccounts extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get type => text()();
+  BoolColumn get isActive => boolean()();
+  BoolColumn get allowNegativeBalance => boolean()();
+  IntColumn get openingBalanceQirsh => integer()();
+  DateTimeColumn get openingBalanceDate => dateTime().nullable()();
+  TextColumn get referenceInfo => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get createdByUserId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+    name: 'financial_entries_account_date_idx',
+    columns: {#accountId, #effectiveDate, #id})
+@DataClassName('FinancialAccountEntryRow')
+class FinancialAccountEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get accountId => text().references(FinancialAccounts, #id)();
+  TextColumn get direction => text()();
+  IntColumn get amountQirsh => integer()();
+  TextColumn get sourceType => text()();
+  TextColumn get sourceDocumentId => text()();
+  TextColumn get sourceDocumentNumber => text().nullable()();
+  DateTimeColumn get effectiveDate => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get createdByUserId => text()();
+  TextColumn get reference => text().nullable()();
+  TextColumn get note => text().nullable()();
+  TextColumn get reversalOf => text().nullable()();
+  TextColumn get correctionGroup => text().nullable()();
+  TextColumn get paymentMethod => text().nullable()();
+  TextColumn get approvedByUserId => text().nullable()();
+  TextColumn get negativeBalanceApprovalId => text().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+    name: 'financial_transfers_request_idx', columns: {#clientRequestId})
+@DataClassName('FinancialTransferRow')
+class FinancialTransfers extends Table {
+  TextColumn get id => text()();
+  TextColumn get displayNumber => text()();
+  TextColumn get clientRequestId => text().unique()();
+  TextColumn get transferReference => text().unique()();
+  TextColumn get sourceAccountId => text().references(FinancialAccounts, #id)();
+  TextColumn get destinationAccountId =>
+      text().references(FinancialAccounts, #id)();
+  IntColumn get amountQirsh => integer()();
+  DateTimeColumn get effectiveDate => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get createdByUserId => text()();
+  TextColumn get sourceEntryId => text()();
+  TextColumn get destinationEntryId => text()();
+  TextColumn get note => text().nullable()();
+  TextColumn get negativeBalanceApprovalId => text().nullable()();
+  TextColumn get originalTransferId => text().nullable()();
+  TextColumn get reversalTransferId => text().nullable()();
+  TextColumn get reversalReason => text().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('FinancialClosingRow')
+class FinancialClosings extends Table {
+  TextColumn get id => text()();
+  TextColumn get kind => text()();
+  DateTimeColumn get fromDate => dateTime()();
+  DateTimeColumn get toDate => dateTime()();
+  TextColumn get linesJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get createdByUserId => text()();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get reopenedAt => dateTime().nullable()();
+  TextColumn get reopenedByUserId => text().nullable()();
+  TextColumn get reopenReason => text().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [
+  FoundationProbes,
+  Products,
+  RepositorySequences,
+  Customers,
+  Suppliers,
+  InventoryMovements,
+  Purchases,
+  Sales,
+  FinancialAccounts,
+  FinancialAccountEntries,
+  FinancialTransfers,
+  FinancialClosings,
+])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);
