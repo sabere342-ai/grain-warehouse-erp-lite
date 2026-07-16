@@ -8,8 +8,13 @@ abstract class AuditLogRepository {
   Future<AuditLogEntry> record(AuditLogDraft draft);
 }
 
-class LocalAuditLogRepository
+abstract class DurableAuditLogRepository
     implements AuditLogRepository, TransactionSnapshotProvider {
+  Future<void> restoreAuditLogsIntoEmpty(List<AuditLogEntry> entries);
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalAuditLogRepository implements DurableAuditLogRepository {
   final List<AuditLogEntry> _entries = [];
   int _generatedIdCounter = 0;
 
@@ -36,6 +41,7 @@ class LocalAuditLogRepository
     return entry;
   }
 
+  @override
   Future<void> restoreAuditLogsIntoEmpty(List<AuditLogEntry> entries) async {
     if (_entries.isNotEmpty) {
       throw StateError('Audit repository is not empty.');
@@ -44,6 +50,7 @@ class LocalAuditLogRepository
     _entries.addAll(entries);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _generatedIdCounter = 0;

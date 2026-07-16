@@ -29,7 +29,7 @@ class BusinessDataWipeService {
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
-    LocalAuditLogRepository? auditLogRepository,
+    DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
@@ -70,7 +70,7 @@ class BusinessDataWipeService {
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
-  final LocalAuditLogRepository _auditLogRepository;
+  final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
   final BackupRestorePreviewService _previewService;
 

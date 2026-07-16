@@ -53,7 +53,7 @@ class BackupRestoreService {
     LocalCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     LocalExpenseRepository? expenseRepository,
-    LocalAuditLogRepository? auditLogRepository,
+    DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
@@ -89,7 +89,7 @@ class BackupRestoreService {
   final LocalCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final LocalExpenseRepository _expenseRepository;
-  final LocalAuditLogRepository _auditLogRepository;
+  final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
   final BackupRestorePreviewService _previewService;
 
@@ -753,6 +753,9 @@ class BackupRestoreService {
       actionType: _string(map, 'actionType'),
       descriptionAr: _string(map, 'descriptionAr'),
       referenceId: _optionalString(map, 'referenceId'),
+      metadata: map['metadata'] == null
+          ? const <String, Object?>{}
+          : Map<String, Object?>.from(_map(map['metadata'])),
     );
   }
 

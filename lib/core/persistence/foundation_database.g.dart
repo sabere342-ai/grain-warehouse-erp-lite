@@ -7884,6 +7884,368 @@ class FinancialClosingsCompanion extends UpdateCompanion<FinancialClosingRow> {
   }
 }
 
+class $AuditLogsTable extends AuditLogs
+    with TableInfo<$AuditLogsTable, AuditLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AuditLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _timestampMeta =
+      const VerificationMeta('timestamp');
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+      'timestamp', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _actionTypeMeta =
+      const VerificationMeta('actionType');
+  @override
+  late final GeneratedColumn<String> actionType = GeneratedColumn<String>(
+      'action_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _descriptionArMeta =
+      const VerificationMeta('descriptionAr');
+  @override
+  late final GeneratedColumn<String> descriptionAr = GeneratedColumn<String>(
+      'description_ar', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _referenceIdMeta =
+      const VerificationMeta('referenceId');
+  @override
+  late final GeneratedColumn<String> referenceId = GeneratedColumn<String>(
+      'reference_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _metadataJsonMeta =
+      const VerificationMeta('metadataJson');
+  @override
+  late final GeneratedColumn<String> metadataJson = GeneratedColumn<String>(
+      'metadata_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, timestamp, actionType, descriptionAr, referenceId, metadataJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'audit_logs';
+  @override
+  VerificationContext validateIntegrity(Insertable<AuditLogRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(_timestampMeta,
+          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('action_type')) {
+      context.handle(
+          _actionTypeMeta,
+          actionType.isAcceptableOrUnknown(
+              data['action_type']!, _actionTypeMeta));
+    } else if (isInserting) {
+      context.missing(_actionTypeMeta);
+    }
+    if (data.containsKey('description_ar')) {
+      context.handle(
+          _descriptionArMeta,
+          descriptionAr.isAcceptableOrUnknown(
+              data['description_ar']!, _descriptionArMeta));
+    } else if (isInserting) {
+      context.missing(_descriptionArMeta);
+    }
+    if (data.containsKey('reference_id')) {
+      context.handle(
+          _referenceIdMeta,
+          referenceId.isAcceptableOrUnknown(
+              data['reference_id']!, _referenceIdMeta));
+    }
+    if (data.containsKey('metadata_json')) {
+      context.handle(
+          _metadataJsonMeta,
+          metadataJson.isAcceptableOrUnknown(
+              data['metadata_json']!, _metadataJsonMeta));
+    } else if (isInserting) {
+      context.missing(_metadataJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AuditLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuditLogRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      timestamp: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}timestamp'])!,
+      actionType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}action_type'])!,
+      descriptionAr: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description_ar'])!,
+      referenceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reference_id']),
+      metadataJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}metadata_json'])!,
+    );
+  }
+
+  @override
+  $AuditLogsTable createAlias(String alias) {
+    return $AuditLogsTable(attachedDatabase, alias);
+  }
+}
+
+class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
+  final String id;
+  final DateTime timestamp;
+  final String actionType;
+  final String descriptionAr;
+  final String? referenceId;
+  final String metadataJson;
+  const AuditLogRow(
+      {required this.id,
+      required this.timestamp,
+      required this.actionType,
+      required this.descriptionAr,
+      this.referenceId,
+      required this.metadataJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    map['action_type'] = Variable<String>(actionType);
+    map['description_ar'] = Variable<String>(descriptionAr);
+    if (!nullToAbsent || referenceId != null) {
+      map['reference_id'] = Variable<String>(referenceId);
+    }
+    map['metadata_json'] = Variable<String>(metadataJson);
+    return map;
+  }
+
+  AuditLogsCompanion toCompanion(bool nullToAbsent) {
+    return AuditLogsCompanion(
+      id: Value(id),
+      timestamp: Value(timestamp),
+      actionType: Value(actionType),
+      descriptionAr: Value(descriptionAr),
+      referenceId: referenceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(referenceId),
+      metadataJson: Value(metadataJson),
+    );
+  }
+
+  factory AuditLogRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuditLogRow(
+      id: serializer.fromJson<String>(json['id']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      actionType: serializer.fromJson<String>(json['actionType']),
+      descriptionAr: serializer.fromJson<String>(json['descriptionAr']),
+      referenceId: serializer.fromJson<String?>(json['referenceId']),
+      metadataJson: serializer.fromJson<String>(json['metadataJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'actionType': serializer.toJson<String>(actionType),
+      'descriptionAr': serializer.toJson<String>(descriptionAr),
+      'referenceId': serializer.toJson<String?>(referenceId),
+      'metadataJson': serializer.toJson<String>(metadataJson),
+    };
+  }
+
+  AuditLogRow copyWith(
+          {String? id,
+          DateTime? timestamp,
+          String? actionType,
+          String? descriptionAr,
+          Value<String?> referenceId = const Value.absent(),
+          String? metadataJson}) =>
+      AuditLogRow(
+        id: id ?? this.id,
+        timestamp: timestamp ?? this.timestamp,
+        actionType: actionType ?? this.actionType,
+        descriptionAr: descriptionAr ?? this.descriptionAr,
+        referenceId: referenceId.present ? referenceId.value : this.referenceId,
+        metadataJson: metadataJson ?? this.metadataJson,
+      );
+  AuditLogRow copyWithCompanion(AuditLogsCompanion data) {
+    return AuditLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      actionType:
+          data.actionType.present ? data.actionType.value : this.actionType,
+      descriptionAr: data.descriptionAr.present
+          ? data.descriptionAr.value
+          : this.descriptionAr,
+      referenceId:
+          data.referenceId.present ? data.referenceId.value : this.referenceId,
+      metadataJson: data.metadataJson.present
+          ? data.metadataJson.value
+          : this.metadataJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuditLogRow(')
+          ..write('id: $id, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('actionType: $actionType, ')
+          ..write('descriptionAr: $descriptionAr, ')
+          ..write('referenceId: $referenceId, ')
+          ..write('metadataJson: $metadataJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, timestamp, actionType, descriptionAr, referenceId, metadataJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuditLogRow &&
+          other.id == this.id &&
+          other.timestamp == this.timestamp &&
+          other.actionType == this.actionType &&
+          other.descriptionAr == this.descriptionAr &&
+          other.referenceId == this.referenceId &&
+          other.metadataJson == this.metadataJson);
+}
+
+class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
+  final Value<String> id;
+  final Value<DateTime> timestamp;
+  final Value<String> actionType;
+  final Value<String> descriptionAr;
+  final Value<String?> referenceId;
+  final Value<String> metadataJson;
+  final Value<int> rowid;
+  const AuditLogsCompanion({
+    this.id = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.actionType = const Value.absent(),
+    this.descriptionAr = const Value.absent(),
+    this.referenceId = const Value.absent(),
+    this.metadataJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AuditLogsCompanion.insert({
+    required String id,
+    required DateTime timestamp,
+    required String actionType,
+    required String descriptionAr,
+    this.referenceId = const Value.absent(),
+    required String metadataJson,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        timestamp = Value(timestamp),
+        actionType = Value(actionType),
+        descriptionAr = Value(descriptionAr),
+        metadataJson = Value(metadataJson);
+  static Insertable<AuditLogRow> custom({
+    Expression<String>? id,
+    Expression<DateTime>? timestamp,
+    Expression<String>? actionType,
+    Expression<String>? descriptionAr,
+    Expression<String>? referenceId,
+    Expression<String>? metadataJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (actionType != null) 'action_type': actionType,
+      if (descriptionAr != null) 'description_ar': descriptionAr,
+      if (referenceId != null) 'reference_id': referenceId,
+      if (metadataJson != null) 'metadata_json': metadataJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AuditLogsCompanion copyWith(
+      {Value<String>? id,
+      Value<DateTime>? timestamp,
+      Value<String>? actionType,
+      Value<String>? descriptionAr,
+      Value<String?>? referenceId,
+      Value<String>? metadataJson,
+      Value<int>? rowid}) {
+    return AuditLogsCompanion(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      actionType: actionType ?? this.actionType,
+      descriptionAr: descriptionAr ?? this.descriptionAr,
+      referenceId: referenceId ?? this.referenceId,
+      metadataJson: metadataJson ?? this.metadataJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (actionType.present) {
+      map['action_type'] = Variable<String>(actionType.value);
+    }
+    if (descriptionAr.present) {
+      map['description_ar'] = Variable<String>(descriptionAr.value);
+    }
+    if (referenceId.present) {
+      map['reference_id'] = Variable<String>(referenceId.value);
+    }
+    if (metadataJson.present) {
+      map['metadata_json'] = Variable<String>(metadataJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuditLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('actionType: $actionType, ')
+          ..write('descriptionAr: $descriptionAr, ')
+          ..write('referenceId: $referenceId, ')
+          ..write('metadataJson: $metadataJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -7906,6 +8268,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $FinancialTransfersTable(this);
   late final $FinancialClosingsTable financialClosings =
       $FinancialClosingsTable(this);
+  late final $AuditLogsTable auditLogs = $AuditLogsTable(this);
   late final Index inventoryMovementsProductIdx = Index(
       'inventory_movements_product_idx',
       'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
@@ -7937,6 +8300,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index financialTransfersRequestIdx = Index(
       'financial_transfers_request_idx',
       'CREATE INDEX financial_transfers_request_idx ON financial_transfers (client_request_id)');
+  late final Index auditLogsTimestampIdx = Index('audit_logs_timestamp_idx',
+      'CREATE INDEX audit_logs_timestamp_idx ON audit_logs (timestamp, id)');
+  late final Index auditLogsActionIdx = Index('audit_logs_action_idx',
+      'CREATE INDEX audit_logs_action_idx ON audit_logs (action_type)');
+  late final Index auditLogsReferenceIdx = Index('audit_logs_reference_idx',
+      'CREATE INDEX audit_logs_reference_idx ON audit_logs (reference_id)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7954,6 +8323,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         financialAccountEntries,
         financialTransfers,
         financialClosings,
+        auditLogs,
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
@@ -7966,7 +8336,10 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         salesRequestIdx,
         salesCancelledIdx,
         financialEntriesAccountDateIdx,
-        financialTransfersRequestIdx
+        financialTransfersRequestIdx,
+        auditLogsTimestampIdx,
+        auditLogsActionIdx,
+        auditLogsReferenceIdx
       ];
 }
 
@@ -11878,6 +12251,194 @@ typedef $$FinancialClosingsTableProcessedTableManager = ProcessedTableManager<
     ),
     FinancialClosingRow,
     PrefetchHooks Function()>;
+typedef $$AuditLogsTableCreateCompanionBuilder = AuditLogsCompanion Function({
+  required String id,
+  required DateTime timestamp,
+  required String actionType,
+  required String descriptionAr,
+  Value<String?> referenceId,
+  required String metadataJson,
+  Value<int> rowid,
+});
+typedef $$AuditLogsTableUpdateCompanionBuilder = AuditLogsCompanion Function({
+  Value<String> id,
+  Value<DateTime> timestamp,
+  Value<String> actionType,
+  Value<String> descriptionAr,
+  Value<String?> referenceId,
+  Value<String> metadataJson,
+  Value<int> rowid,
+});
+
+class $$AuditLogsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $AuditLogsTable> {
+  $$AuditLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get actionType => $composableBuilder(
+      column: $table.actionType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get descriptionAr => $composableBuilder(
+      column: $table.descriptionAr, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get referenceId => $composableBuilder(
+      column: $table.referenceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get metadataJson => $composableBuilder(
+      column: $table.metadataJson, builder: (column) => ColumnFilters(column));
+}
+
+class $$AuditLogsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $AuditLogsTable> {
+  $$AuditLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get actionType => $composableBuilder(
+      column: $table.actionType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get descriptionAr => $composableBuilder(
+      column: $table.descriptionAr,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get referenceId => $composableBuilder(
+      column: $table.referenceId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get metadataJson => $composableBuilder(
+      column: $table.metadataJson,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AuditLogsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $AuditLogsTable> {
+  $$AuditLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get actionType => $composableBuilder(
+      column: $table.actionType, builder: (column) => column);
+
+  GeneratedColumn<String> get descriptionAr => $composableBuilder(
+      column: $table.descriptionAr, builder: (column) => column);
+
+  GeneratedColumn<String> get referenceId => $composableBuilder(
+      column: $table.referenceId, builder: (column) => column);
+
+  GeneratedColumn<String> get metadataJson => $composableBuilder(
+      column: $table.metadataJson, builder: (column) => column);
+}
+
+class $$AuditLogsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $AuditLogsTable,
+    AuditLogRow,
+    $$AuditLogsTableFilterComposer,
+    $$AuditLogsTableOrderingComposer,
+    $$AuditLogsTableAnnotationComposer,
+    $$AuditLogsTableCreateCompanionBuilder,
+    $$AuditLogsTableUpdateCompanionBuilder,
+    (
+      AuditLogRow,
+      BaseReferences<_$FoundationDatabase, $AuditLogsTable, AuditLogRow>
+    ),
+    AuditLogRow,
+    PrefetchHooks Function()> {
+  $$AuditLogsTableTableManager(_$FoundationDatabase db, $AuditLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AuditLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AuditLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AuditLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<DateTime> timestamp = const Value.absent(),
+            Value<String> actionType = const Value.absent(),
+            Value<String> descriptionAr = const Value.absent(),
+            Value<String?> referenceId = const Value.absent(),
+            Value<String> metadataJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AuditLogsCompanion(
+            id: id,
+            timestamp: timestamp,
+            actionType: actionType,
+            descriptionAr: descriptionAr,
+            referenceId: referenceId,
+            metadataJson: metadataJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required DateTime timestamp,
+            required String actionType,
+            required String descriptionAr,
+            Value<String?> referenceId = const Value.absent(),
+            required String metadataJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AuditLogsCompanion.insert(
+            id: id,
+            timestamp: timestamp,
+            actionType: actionType,
+            descriptionAr: descriptionAr,
+            referenceId: referenceId,
+            metadataJson: metadataJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AuditLogsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $AuditLogsTable,
+    AuditLogRow,
+    $$AuditLogsTableFilterComposer,
+    $$AuditLogsTableOrderingComposer,
+    $$AuditLogsTableAnnotationComposer,
+    $$AuditLogsTableCreateCompanionBuilder,
+    $$AuditLogsTableUpdateCompanionBuilder,
+    (
+      AuditLogRow,
+      BaseReferences<_$FoundationDatabase, $AuditLogsTable, AuditLogRow>
+    ),
+    AuditLogRow,
+    PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -11907,4 +12468,6 @@ class $FoundationDatabaseManager {
       $$FinancialTransfersTableTableManager(_db, _db.financialTransfers);
   $$FinancialClosingsTableTableManager get financialClosings =>
       $$FinancialClosingsTableTableManager(_db, _db.financialClosings);
+  $$AuditLogsTableTableManager get auditLogs =>
+      $$AuditLogsTableTableManager(_db, _db.auditLogs);
 }

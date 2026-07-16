@@ -249,6 +249,22 @@ class FinancialClosings extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('AuditLogRow')
+@TableIndex(name: 'audit_logs_timestamp_idx', columns: {#timestamp, #id})
+@TableIndex(name: 'audit_logs_action_idx', columns: {#actionType})
+@TableIndex(name: 'audit_logs_reference_idx', columns: {#referenceId})
+class AuditLogs extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get timestamp => dateTime()();
+  TextColumn get actionType => text()();
+  TextColumn get descriptionAr => text()();
+  TextColumn get referenceId => text().nullable()();
+  TextColumn get metadataJson => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -262,12 +278,13 @@ class FinancialClosings extends Table {
   FinancialAccountEntries,
   FinancialTransfers,
   FinancialClosings,
+  AuditLogs,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

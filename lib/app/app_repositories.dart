@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/drift_audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
@@ -32,8 +33,10 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/drift_supplier_repositor
 class AppRepositories {
   AppRepositories._();
 
-  static final LocalAuditLogRepository auditLogRepository =
+  static DurableAuditLogRepository _auditLogRepository =
       LocalAuditLogRepository();
+  static DurableAuditLogRepository get auditLogRepository =>
+      _auditLogRepository;
 
   /// The application owns exactly one authentication store. Approval checks
   /// and the visible session must observe the same active/inactive users.
@@ -43,14 +46,14 @@ class AppRepositories {
       negativeBalanceApprovalRepository =
       LocalNegativeBalanceApprovalRepository();
 
-  static final NegativeBalanceApprovalService negativeBalanceApprovalService =
+  static NegativeBalanceApprovalService negativeBalanceApprovalService =
       NegativeBalanceApprovalService(
     authRepository: authRepository,
     approvalRepository: negativeBalanceApprovalRepository,
     auditLogRepository: auditLogRepository,
   );
 
-  static final LocalBusinessIdentityRepository businessIdentityRepository =
+  static LocalBusinessIdentityRepository businessIdentityRepository =
       LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
 
   static LocalFinancialAccountRepository _financialAccountRepository =
@@ -68,7 +71,7 @@ class AppRepositories {
   static SupplierDataRepository _supplierRepository = LocalSupplierRepository();
   static SupplierDataRepository get supplierRepository => _supplierRepository;
 
-  static final LocalCustomerAccountRepository customerAccountRepository =
+  static LocalCustomerAccountRepository customerAccountRepository =
       LocalCustomerAccountRepository(
     customerRepository: customerRepository,
     auditLogRepository: auditLogRepository,
@@ -76,8 +79,7 @@ class AppRepositories {
     negativeBalanceApprovalService: negativeBalanceApprovalService,
   );
 
-  static final LocalExpenseRepository expenseRepository =
-      LocalExpenseRepository(
+  static LocalExpenseRepository expenseRepository = LocalExpenseRepository(
     auditLogRepository: auditLogRepository,
     financialAccountRepository: financialAccountRepository,
   );
@@ -90,6 +92,14 @@ class AppRepositories {
     Future<FoundationDatabase> Function()? databaseFactory,
   }) async {
     database = await (databaseFactory?.call() ?? openProductionDatabase());
+    _auditLogRepository = DriftAuditLogRepository(database);
+    negativeBalanceApprovalService = NegativeBalanceApprovalService(
+      authRepository: authRepository,
+      approvalRepository: negativeBalanceApprovalRepository,
+      auditLogRepository: auditLogRepository,
+    );
+    businessIdentityRepository =
+        LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
     _financialAccountRepository = await DriftFinancialAccountRepository.open(
       database,
       auditLogRepository: auditLogRepository,
@@ -101,6 +111,22 @@ class AppRepositories {
       auditLogRepository: auditLogRepository,
     );
     _supplierRepository = DriftSupplierRepository(database);
+    customerAccountRepository = LocalCustomerAccountRepository(
+      customerRepository: customerRepository,
+      auditLogRepository: auditLogRepository,
+      financialAccountRepository: financialAccountRepository,
+      negativeBalanceApprovalService: negativeBalanceApprovalService,
+    );
+    expenseRepository = LocalExpenseRepository(
+      auditLogRepository: auditLogRepository,
+      financialAccountRepository: financialAccountRepository,
+    );
+    supplierAccountRepository = LocalSupplierAccountRepository(
+      supplierRepository: supplierRepository,
+      auditLogRepository: auditLogRepository,
+      financialAccountRepository: financialAccountRepository,
+      negativeBalanceApprovalService: negativeBalanceApprovalService,
+    );
     _inventoryRepository = DriftInventoryRepository(
       database,
       productRepository: productRepository,
@@ -130,7 +156,7 @@ class AppRepositories {
   static DurableInventoryRepository get inventoryRepository =>
       _inventoryRepository;
 
-  static final LocalSupplierAccountRepository supplierAccountRepository =
+  static LocalSupplierAccountRepository supplierAccountRepository =
       LocalSupplierAccountRepository(
     supplierRepository: supplierRepository,
     auditLogRepository: auditLogRepository,

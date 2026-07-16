@@ -187,18 +187,30 @@ class BackupExportService {
         'customerCollections': customerCollections
             .map(_customerCollectionToJson)
             .toList(growable: false),
-        'customerAdvances': customerAdvances.map(_customerAdvanceToJson).toList(growable: false),
-        'customerAdvanceApplications': customerAdvanceApplications.map(_customerAdvanceApplicationToJson).toList(growable: false),
-        'customerAdvanceRefunds': customerAdvanceRefunds.map(_customerAdvanceRefundToJson).toList(growable: false),
+        'customerAdvances': customerAdvances
+            .map(_customerAdvanceToJson)
+            .toList(growable: false),
+        'customerAdvanceApplications': customerAdvanceApplications
+            .map(_customerAdvanceApplicationToJson)
+            .toList(growable: false),
+        'customerAdvanceRefunds': customerAdvanceRefunds
+            .map(_customerAdvanceRefundToJson)
+            .toList(growable: false),
         'supplierAccountEntries': supplierAccountEntries
             .map(_supplierAccountEntryToJson)
             .toList(growable: false),
         'supplierPayments': supplierPayments
             .map(_supplierPaymentToJson)
             .toList(growable: false),
-        'supplierAdvances': supplierAdvances.map(_supplierAdvanceToJson).toList(growable: false),
-        'supplierAdvanceApplications': supplierAdvanceApplications.map(_supplierAdvanceApplicationToJson).toList(growable: false),
-        'supplierAdvanceRefunds': supplierAdvanceRefunds.map(_supplierAdvanceRefundToJson).toList(growable: false),
+        'supplierAdvances': supplierAdvances
+            .map(_supplierAdvanceToJson)
+            .toList(growable: false),
+        'supplierAdvanceApplications': supplierAdvanceApplications
+            .map(_supplierAdvanceApplicationToJson)
+            .toList(growable: false),
+        'supplierAdvanceRefunds': supplierAdvanceRefunds
+            .map(_supplierAdvanceRefundToJson)
+            .toList(growable: false),
         'expenses': expenses.map(_expenseToJson).toList(growable: false),
         'auditLogs': auditLogs.map(_auditLogToJson).toList(growable: false),
         'financialAccounts': financialAccounts
@@ -450,7 +462,8 @@ class BackupExportService {
   }
 
   Map<String, Object?> _customerAdvanceToJson(CustomerAdvance value) => {
-        'id': value.id, 'customerId': value.customerId,
+        'id': value.id,
+        'customerId': value.customerId,
         'sourceCollectionId': value.sourceCollectionId,
         'financialAccountId': value.financialAccountId,
         'amountQirsh': value.amountQirsh,
@@ -463,10 +476,16 @@ class BackupExportService {
         'reversedByUserId': value.reversedByUserId,
       };
 
-  Map<String, Object?> _customerAdvanceApplicationToJson(CustomerAdvanceApplication value) => {
-        'id': value.id, 'advanceId': value.advanceId, 'customerId': value.customerId,
-        'amountQirsh': value.amountQirsh, 'appliedAt': value.appliedAt.toUtc().toIso8601String(),
-        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+  Map<String, Object?> _customerAdvanceApplicationToJson(
+          CustomerAdvanceApplication value) =>
+      {
+        'id': value.id,
+        'advanceId': value.advanceId,
+        'customerId': value.customerId,
+        'amountQirsh': value.amountQirsh,
+        'appliedAt': value.appliedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'operationRequestId': value.operationRequestId,
         'customerLedgerEntryId': value.customerLedgerEntryId,
         'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
         'reversedByUserId': value.reversedByUserId,
@@ -474,11 +493,17 @@ class BackupExportService {
         'reversalLedgerEntryId': value.reversalLedgerEntryId,
       };
 
-  Map<String, Object?> _customerAdvanceRefundToJson(CustomerAdvanceRefund value) => {
-        'id': value.id, 'advanceId': value.advanceId, 'customerId': value.customerId,
-        'financialAccountId': value.financialAccountId, 'amountQirsh': value.amountQirsh,
+  Map<String, Object?> _customerAdvanceRefundToJson(
+          CustomerAdvanceRefund value) =>
+      {
+        'id': value.id,
+        'advanceId': value.advanceId,
+        'customerId': value.customerId,
+        'financialAccountId': value.financialAccountId,
+        'amountQirsh': value.amountQirsh,
         'refundedAt': value.refundedAt.toUtc().toIso8601String(),
-        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'createdByUserId': value.createdByUserId,
+        'operationRequestId': value.operationRequestId,
         'financialEntryId': value.financialEntryId,
         'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
         'reversedByUserId': value.reversedByUserId,
@@ -487,31 +512,53 @@ class BackupExportService {
       };
 
   Map<String, Object?> _supplierAdvanceToJson(SupplierAdvance value) => {
-        'id': value.id, 'supplierId': value.supplierId,
-        'sourcePaymentId': value.sourcePaymentId, 'financialAccountId': value.financialAccountId,
-        'amountQirsh': value.amountQirsh, 'createdAt': value.createdAt.toUtc().toIso8601String(),
-        'createdByUserId': value.createdByUserId, 'ownerApprovalId': value.ownerApprovalId,
-        'operationRequestId': value.operationRequestId, 'paymentMethod': value.paymentMethod?.name,
-        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
+        'id': value.id,
+        'supplierId': value.supplierId,
+        'sourcePaymentId': value.sourcePaymentId,
+        'financialAccountId': value.financialAccountId,
+        'amountQirsh': value.amountQirsh,
+        'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'ownerApprovalId': value.ownerApprovalId,
+        'operationRequestId': value.operationRequestId,
+        'paymentMethod': value.paymentMethod?.name,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
       };
 
-  Map<String, Object?> _supplierAdvanceApplicationToJson(SupplierAdvanceApplication value) => {
-        'id': value.id, 'advanceId': value.advanceId, 'supplierId': value.supplierId,
-        'amountQirsh': value.amountQirsh, 'appliedAt': value.appliedAt.toUtc().toIso8601String(),
-        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+  Map<String, Object?> _supplierAdvanceApplicationToJson(
+          SupplierAdvanceApplication value) =>
+      {
+        'id': value.id,
+        'advanceId': value.advanceId,
+        'supplierId': value.supplierId,
+        'amountQirsh': value.amountQirsh,
+        'appliedAt': value.appliedAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'operationRequestId': value.operationRequestId,
         'supplierLedgerEntryId': value.supplierLedgerEntryId,
-        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
-        'reversalReason': value.reversalReason, 'reversalLedgerEntryId': value.reversalLedgerEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason,
+        'reversalLedgerEntryId': value.reversalLedgerEntryId,
       };
 
-  Map<String, Object?> _supplierAdvanceRefundToJson(SupplierAdvanceRefund value) => {
-        'id': value.id, 'advanceId': value.advanceId, 'supplierId': value.supplierId,
-        'financialAccountId': value.financialAccountId, 'amountQirsh': value.amountQirsh,
+  Map<String, Object?> _supplierAdvanceRefundToJson(
+          SupplierAdvanceRefund value) =>
+      {
+        'id': value.id,
+        'advanceId': value.advanceId,
+        'supplierId': value.supplierId,
+        'financialAccountId': value.financialAccountId,
+        'amountQirsh': value.amountQirsh,
         'refundedAt': value.refundedAt.toUtc().toIso8601String(),
-        'createdByUserId': value.createdByUserId, 'operationRequestId': value.operationRequestId,
+        'createdByUserId': value.createdByUserId,
+        'operationRequestId': value.operationRequestId,
         'financialEntryId': value.financialEntryId,
-        'reversedAt': value.reversedAt?.toUtc().toIso8601String(), 'reversedByUserId': value.reversedByUserId,
-        'reversalReason': value.reversalReason, 'reversalFinancialEntryId': value.reversalFinancialEntryId,
+        'reversedAt': value.reversedAt?.toUtc().toIso8601String(),
+        'reversedByUserId': value.reversedByUserId,
+        'reversalReason': value.reversalReason,
+        'reversalFinancialEntryId': value.reversalFinancialEntryId,
       };
 
   Map<String, Object?>? _customerCollectionCancellationToJson(
@@ -580,6 +627,7 @@ class BackupExportService {
       'actionType': entry.actionType,
       'descriptionAr': entry.descriptionAr,
       'referenceId': entry.referenceId,
+      'metadata': entry.metadata,
     };
   }
 
