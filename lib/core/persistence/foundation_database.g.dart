@@ -2096,6 +2096,549 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   }
 }
 
+class $InventoryMovementsTable extends InventoryMovements
+    with TableInfo<$InventoryMovementsTable, InventoryMovement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryMovementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _productIdMeta =
+      const VerificationMeta('productId');
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+      'product_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _movementTypeMeta =
+      const VerificationMeta('movementType');
+  @override
+  late final GeneratedColumn<String> movementType = GeneratedColumn<String>(
+      'movement_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _quantityKgMeta =
+      const VerificationMeta('quantityKg');
+  @override
+  late final GeneratedColumn<int> quantityKg = GeneratedColumn<int>(
+      'quantity_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _createdByUserIdMeta =
+      const VerificationMeta('createdByUserId');
+  @override
+  late final GeneratedColumn<String> createdByUserId = GeneratedColumn<String>(
+      'created_by_user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+      'note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isVoidedMeta =
+      const VerificationMeta('isVoided');
+  @override
+  late final GeneratedColumn<bool> isVoided = GeneratedColumn<bool>(
+      'is_voided', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_voided" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _reversedMovementIdMeta =
+      const VerificationMeta('reversedMovementId');
+  @override
+  late final GeneratedColumn<String> reversedMovementId =
+      GeneratedColumn<String>('reversed_movement_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _originalDocumentIdMeta =
+      const VerificationMeta('originalDocumentId');
+  @override
+  late final GeneratedColumn<String> originalDocumentId =
+      GeneratedColumn<String>('original_document_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        productId,
+        movementType,
+        quantityKg,
+        createdByUserId,
+        createdAt,
+        note,
+        isVoided,
+        reversedMovementId,
+        originalDocumentId
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_movements';
+  @override
+  VerificationContext validateIntegrity(Insertable<InventoryMovement> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(_productIdMeta,
+          productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta));
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('movement_type')) {
+      context.handle(
+          _movementTypeMeta,
+          movementType.isAcceptableOrUnknown(
+              data['movement_type']!, _movementTypeMeta));
+    } else if (isInserting) {
+      context.missing(_movementTypeMeta);
+    }
+    if (data.containsKey('quantity_kg')) {
+      context.handle(
+          _quantityKgMeta,
+          quantityKg.isAcceptableOrUnknown(
+              data['quantity_kg']!, _quantityKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityKgMeta);
+    }
+    if (data.containsKey('created_by_user_id')) {
+      context.handle(
+          _createdByUserIdMeta,
+          createdByUserId.isAcceptableOrUnknown(
+              data['created_by_user_id']!, _createdByUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_createdByUserIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
+    }
+    if (data.containsKey('is_voided')) {
+      context.handle(_isVoidedMeta,
+          isVoided.isAcceptableOrUnknown(data['is_voided']!, _isVoidedMeta));
+    }
+    if (data.containsKey('reversed_movement_id')) {
+      context.handle(
+          _reversedMovementIdMeta,
+          reversedMovementId.isAcceptableOrUnknown(
+              data['reversed_movement_id']!, _reversedMovementIdMeta));
+    }
+    if (data.containsKey('original_document_id')) {
+      context.handle(
+          _originalDocumentIdMeta,
+          originalDocumentId.isAcceptableOrUnknown(
+              data['original_document_id']!, _originalDocumentIdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventoryMovement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryMovement(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      productId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_id'])!,
+      movementType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}movement_type'])!,
+      quantityKg: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity_kg'])!,
+      createdByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}created_by_user_id'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      note: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}note']),
+      isVoided: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_voided'])!,
+      reversedMovementId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}reversed_movement_id']),
+      originalDocumentId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}original_document_id']),
+    );
+  }
+
+  @override
+  $InventoryMovementsTable createAlias(String alias) {
+    return $InventoryMovementsTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryMovement extends DataClass
+    implements Insertable<InventoryMovement> {
+  final String id;
+  final String productId;
+  final String movementType;
+  final int quantityKg;
+  final String createdByUserId;
+  final DateTime createdAt;
+  final String? note;
+  final bool isVoided;
+  final String? reversedMovementId;
+  final String? originalDocumentId;
+  const InventoryMovement(
+      {required this.id,
+      required this.productId,
+      required this.movementType,
+      required this.quantityKg,
+      required this.createdByUserId,
+      required this.createdAt,
+      this.note,
+      required this.isVoided,
+      this.reversedMovementId,
+      this.originalDocumentId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['movement_type'] = Variable<String>(movementType);
+    map['quantity_kg'] = Variable<int>(quantityKg);
+    map['created_by_user_id'] = Variable<String>(createdByUserId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['is_voided'] = Variable<bool>(isVoided);
+    if (!nullToAbsent || reversedMovementId != null) {
+      map['reversed_movement_id'] = Variable<String>(reversedMovementId);
+    }
+    if (!nullToAbsent || originalDocumentId != null) {
+      map['original_document_id'] = Variable<String>(originalDocumentId);
+    }
+    return map;
+  }
+
+  InventoryMovementsCompanion toCompanion(bool nullToAbsent) {
+    return InventoryMovementsCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      movementType: Value(movementType),
+      quantityKg: Value(quantityKg),
+      createdByUserId: Value(createdByUserId),
+      createdAt: Value(createdAt),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      isVoided: Value(isVoided),
+      reversedMovementId: reversedMovementId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reversedMovementId),
+      originalDocumentId: originalDocumentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalDocumentId),
+    );
+  }
+
+  factory InventoryMovement.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryMovement(
+      id: serializer.fromJson<String>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      movementType: serializer.fromJson<String>(json['movementType']),
+      quantityKg: serializer.fromJson<int>(json['quantityKg']),
+      createdByUserId: serializer.fromJson<String>(json['createdByUserId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      note: serializer.fromJson<String?>(json['note']),
+      isVoided: serializer.fromJson<bool>(json['isVoided']),
+      reversedMovementId:
+          serializer.fromJson<String?>(json['reversedMovementId']),
+      originalDocumentId:
+          serializer.fromJson<String?>(json['originalDocumentId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'productId': serializer.toJson<String>(productId),
+      'movementType': serializer.toJson<String>(movementType),
+      'quantityKg': serializer.toJson<int>(quantityKg),
+      'createdByUserId': serializer.toJson<String>(createdByUserId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'note': serializer.toJson<String?>(note),
+      'isVoided': serializer.toJson<bool>(isVoided),
+      'reversedMovementId': serializer.toJson<String?>(reversedMovementId),
+      'originalDocumentId': serializer.toJson<String?>(originalDocumentId),
+    };
+  }
+
+  InventoryMovement copyWith(
+          {String? id,
+          String? productId,
+          String? movementType,
+          int? quantityKg,
+          String? createdByUserId,
+          DateTime? createdAt,
+          Value<String?> note = const Value.absent(),
+          bool? isVoided,
+          Value<String?> reversedMovementId = const Value.absent(),
+          Value<String?> originalDocumentId = const Value.absent()}) =>
+      InventoryMovement(
+        id: id ?? this.id,
+        productId: productId ?? this.productId,
+        movementType: movementType ?? this.movementType,
+        quantityKg: quantityKg ?? this.quantityKg,
+        createdByUserId: createdByUserId ?? this.createdByUserId,
+        createdAt: createdAt ?? this.createdAt,
+        note: note.present ? note.value : this.note,
+        isVoided: isVoided ?? this.isVoided,
+        reversedMovementId: reversedMovementId.present
+            ? reversedMovementId.value
+            : this.reversedMovementId,
+        originalDocumentId: originalDocumentId.present
+            ? originalDocumentId.value
+            : this.originalDocumentId,
+      );
+  InventoryMovement copyWithCompanion(InventoryMovementsCompanion data) {
+    return InventoryMovement(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      movementType: data.movementType.present
+          ? data.movementType.value
+          : this.movementType,
+      quantityKg:
+          data.quantityKg.present ? data.quantityKg.value : this.quantityKg,
+      createdByUserId: data.createdByUserId.present
+          ? data.createdByUserId.value
+          : this.createdByUserId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      note: data.note.present ? data.note.value : this.note,
+      isVoided: data.isVoided.present ? data.isVoided.value : this.isVoided,
+      reversedMovementId: data.reversedMovementId.present
+          ? data.reversedMovementId.value
+          : this.reversedMovementId,
+      originalDocumentId: data.originalDocumentId.present
+          ? data.originalDocumentId.value
+          : this.originalDocumentId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryMovement(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('movementType: $movementType, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('note: $note, ')
+          ..write('isVoided: $isVoided, ')
+          ..write('reversedMovementId: $reversedMovementId, ')
+          ..write('originalDocumentId: $originalDocumentId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      productId,
+      movementType,
+      quantityKg,
+      createdByUserId,
+      createdAt,
+      note,
+      isVoided,
+      reversedMovementId,
+      originalDocumentId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryMovement &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.movementType == this.movementType &&
+          other.quantityKg == this.quantityKg &&
+          other.createdByUserId == this.createdByUserId &&
+          other.createdAt == this.createdAt &&
+          other.note == this.note &&
+          other.isVoided == this.isVoided &&
+          other.reversedMovementId == this.reversedMovementId &&
+          other.originalDocumentId == this.originalDocumentId);
+}
+
+class InventoryMovementsCompanion extends UpdateCompanion<InventoryMovement> {
+  final Value<String> id;
+  final Value<String> productId;
+  final Value<String> movementType;
+  final Value<int> quantityKg;
+  final Value<String> createdByUserId;
+  final Value<DateTime> createdAt;
+  final Value<String?> note;
+  final Value<bool> isVoided;
+  final Value<String?> reversedMovementId;
+  final Value<String?> originalDocumentId;
+  final Value<int> rowid;
+  const InventoryMovementsCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.movementType = const Value.absent(),
+    this.quantityKg = const Value.absent(),
+    this.createdByUserId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.note = const Value.absent(),
+    this.isVoided = const Value.absent(),
+    this.reversedMovementId = const Value.absent(),
+    this.originalDocumentId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InventoryMovementsCompanion.insert({
+    required String id,
+    required String productId,
+    required String movementType,
+    required int quantityKg,
+    required String createdByUserId,
+    required DateTime createdAt,
+    this.note = const Value.absent(),
+    this.isVoided = const Value.absent(),
+    this.reversedMovementId = const Value.absent(),
+    this.originalDocumentId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        productId = Value(productId),
+        movementType = Value(movementType),
+        quantityKg = Value(quantityKg),
+        createdByUserId = Value(createdByUserId),
+        createdAt = Value(createdAt);
+  static Insertable<InventoryMovement> custom({
+    Expression<String>? id,
+    Expression<String>? productId,
+    Expression<String>? movementType,
+    Expression<int>? quantityKg,
+    Expression<String>? createdByUserId,
+    Expression<DateTime>? createdAt,
+    Expression<String>? note,
+    Expression<bool>? isVoided,
+    Expression<String>? reversedMovementId,
+    Expression<String>? originalDocumentId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (movementType != null) 'movement_type': movementType,
+      if (quantityKg != null) 'quantity_kg': quantityKg,
+      if (createdByUserId != null) 'created_by_user_id': createdByUserId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (note != null) 'note': note,
+      if (isVoided != null) 'is_voided': isVoided,
+      if (reversedMovementId != null)
+        'reversed_movement_id': reversedMovementId,
+      if (originalDocumentId != null)
+        'original_document_id': originalDocumentId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InventoryMovementsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? productId,
+      Value<String>? movementType,
+      Value<int>? quantityKg,
+      Value<String>? createdByUserId,
+      Value<DateTime>? createdAt,
+      Value<String?>? note,
+      Value<bool>? isVoided,
+      Value<String?>? reversedMovementId,
+      Value<String?>? originalDocumentId,
+      Value<int>? rowid}) {
+    return InventoryMovementsCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      movementType: movementType ?? this.movementType,
+      quantityKg: quantityKg ?? this.quantityKg,
+      createdByUserId: createdByUserId ?? this.createdByUserId,
+      createdAt: createdAt ?? this.createdAt,
+      note: note ?? this.note,
+      isVoided: isVoided ?? this.isVoided,
+      reversedMovementId: reversedMovementId ?? this.reversedMovementId,
+      originalDocumentId: originalDocumentId ?? this.originalDocumentId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (movementType.present) {
+      map['movement_type'] = Variable<String>(movementType.value);
+    }
+    if (quantityKg.present) {
+      map['quantity_kg'] = Variable<int>(quantityKg.value);
+    }
+    if (createdByUserId.present) {
+      map['created_by_user_id'] = Variable<String>(createdByUserId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (isVoided.present) {
+      map['is_voided'] = Variable<bool>(isVoided.value);
+    }
+    if (reversedMovementId.present) {
+      map['reversed_movement_id'] = Variable<String>(reversedMovementId.value);
+    }
+    if (originalDocumentId.present) {
+      map['original_document_id'] = Variable<String>(originalDocumentId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryMovementsCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('movementType: $movementType, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('note: $note, ')
+          ..write('isVoided: $isVoided, ')
+          ..write('reversedMovementId: $reversedMovementId, ')
+          ..write('originalDocumentId: $originalDocumentId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -2106,12 +2649,32 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $RepositorySequencesTable(this);
   late final $CustomersTable customers = $CustomersTable(this);
   late final $SuppliersTable suppliers = $SuppliersTable(this);
+  late final $InventoryMovementsTable inventoryMovements =
+      $InventoryMovementsTable(this);
+  late final Index inventoryMovementsProductIdx = Index(
+      'inventory_movements_product_idx',
+      'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
+  late final Index inventoryMovementsCreatedIdx = Index(
+      'inventory_movements_created_idx',
+      'CREATE INDEX inventory_movements_created_idx ON inventory_movements (created_at, id)');
+  late final Index inventoryMovementsDocumentIdx = Index(
+      'inventory_movements_document_idx',
+      'CREATE INDEX inventory_movements_document_idx ON inventory_movements (original_document_id)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [foundationProbes, products, repositorySequences, customers, suppliers];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        foundationProbes,
+        products,
+        repositorySequences,
+        customers,
+        suppliers,
+        inventoryMovements,
+        inventoryMovementsProductIdx,
+        inventoryMovementsCreatedIdx,
+        inventoryMovementsDocumentIdx
+      ];
 }
 
 typedef $$FoundationProbesTableCreateCompanionBuilder
@@ -3151,6 +3714,265 @@ typedef $$SuppliersTableProcessedTableManager = ProcessedTableManager<
     (Supplier, BaseReferences<_$FoundationDatabase, $SuppliersTable, Supplier>),
     Supplier,
     PrefetchHooks Function()>;
+typedef $$InventoryMovementsTableCreateCompanionBuilder
+    = InventoryMovementsCompanion Function({
+  required String id,
+  required String productId,
+  required String movementType,
+  required int quantityKg,
+  required String createdByUserId,
+  required DateTime createdAt,
+  Value<String?> note,
+  Value<bool> isVoided,
+  Value<String?> reversedMovementId,
+  Value<String?> originalDocumentId,
+  Value<int> rowid,
+});
+typedef $$InventoryMovementsTableUpdateCompanionBuilder
+    = InventoryMovementsCompanion Function({
+  Value<String> id,
+  Value<String> productId,
+  Value<String> movementType,
+  Value<int> quantityKg,
+  Value<String> createdByUserId,
+  Value<DateTime> createdAt,
+  Value<String?> note,
+  Value<bool> isVoided,
+  Value<String?> reversedMovementId,
+  Value<String?> originalDocumentId,
+  Value<int> rowid,
+});
+
+class $$InventoryMovementsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $InventoryMovementsTable> {
+  $$InventoryMovementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get movementType => $composableBuilder(
+      column: $table.movementType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isVoided => $composableBuilder(
+      column: $table.isVoided, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reversedMovementId => $composableBuilder(
+      column: $table.reversedMovementId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get originalDocumentId => $composableBuilder(
+      column: $table.originalDocumentId,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$InventoryMovementsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $InventoryMovementsTable> {
+  $$InventoryMovementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get movementType => $composableBuilder(
+      column: $table.movementType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isVoided => $composableBuilder(
+      column: $table.isVoided, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reversedMovementId => $composableBuilder(
+      column: $table.reversedMovementId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get originalDocumentId => $composableBuilder(
+      column: $table.originalDocumentId,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$InventoryMovementsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $InventoryMovementsTable> {
+  $$InventoryMovementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get movementType => $composableBuilder(
+      column: $table.movementType, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<bool> get isVoided =>
+      $composableBuilder(column: $table.isVoided, builder: (column) => column);
+
+  GeneratedColumn<String> get reversedMovementId => $composableBuilder(
+      column: $table.reversedMovementId, builder: (column) => column);
+
+  GeneratedColumn<String> get originalDocumentId => $composableBuilder(
+      column: $table.originalDocumentId, builder: (column) => column);
+}
+
+class $$InventoryMovementsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $InventoryMovementsTable,
+    InventoryMovement,
+    $$InventoryMovementsTableFilterComposer,
+    $$InventoryMovementsTableOrderingComposer,
+    $$InventoryMovementsTableAnnotationComposer,
+    $$InventoryMovementsTableCreateCompanionBuilder,
+    $$InventoryMovementsTableUpdateCompanionBuilder,
+    (
+      InventoryMovement,
+      BaseReferences<_$FoundationDatabase, $InventoryMovementsTable,
+          InventoryMovement>
+    ),
+    InventoryMovement,
+    PrefetchHooks Function()> {
+  $$InventoryMovementsTableTableManager(
+      _$FoundationDatabase db, $InventoryMovementsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InventoryMovementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InventoryMovementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InventoryMovementsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> productId = const Value.absent(),
+            Value<String> movementType = const Value.absent(),
+            Value<int> quantityKg = const Value.absent(),
+            Value<String> createdByUserId = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<String?> note = const Value.absent(),
+            Value<bool> isVoided = const Value.absent(),
+            Value<String?> reversedMovementId = const Value.absent(),
+            Value<String?> originalDocumentId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryMovementsCompanion(
+            id: id,
+            productId: productId,
+            movementType: movementType,
+            quantityKg: quantityKg,
+            createdByUserId: createdByUserId,
+            createdAt: createdAt,
+            note: note,
+            isVoided: isVoided,
+            reversedMovementId: reversedMovementId,
+            originalDocumentId: originalDocumentId,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String productId,
+            required String movementType,
+            required int quantityKg,
+            required String createdByUserId,
+            required DateTime createdAt,
+            Value<String?> note = const Value.absent(),
+            Value<bool> isVoided = const Value.absent(),
+            Value<String?> reversedMovementId = const Value.absent(),
+            Value<String?> originalDocumentId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryMovementsCompanion.insert(
+            id: id,
+            productId: productId,
+            movementType: movementType,
+            quantityKg: quantityKg,
+            createdByUserId: createdByUserId,
+            createdAt: createdAt,
+            note: note,
+            isVoided: isVoided,
+            reversedMovementId: reversedMovementId,
+            originalDocumentId: originalDocumentId,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$InventoryMovementsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $InventoryMovementsTable,
+    InventoryMovement,
+    $$InventoryMovementsTableFilterComposer,
+    $$InventoryMovementsTableOrderingComposer,
+    $$InventoryMovementsTableAnnotationComposer,
+    $$InventoryMovementsTableCreateCompanionBuilder,
+    $$InventoryMovementsTableUpdateCompanionBuilder,
+    (
+      InventoryMovement,
+      BaseReferences<_$FoundationDatabase, $InventoryMovementsTable,
+          InventoryMovement>
+    ),
+    InventoryMovement,
+    PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -3165,4 +3987,6 @@ class $FoundationDatabaseManager {
       $$CustomersTableTableManager(_db, _db.customers);
   $$SuppliersTableTableManager get suppliers =>
       $$SuppliersTableTableManager(_db, _db.suppliers);
+  $$InventoryMovementsTableTableManager get inventoryMovements =>
+      $$InventoryMovementsTableTableManager(_db, _db.inventoryMovements);
 }

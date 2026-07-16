@@ -18,8 +18,14 @@ abstract class InventoryRepository {
       {bool activeProductsOnly = false});
 }
 
-class LocalInventoryRepository
+abstract class DurableInventoryRepository
     implements InventoryRepository, TransactionSnapshotProvider {
+  Future<void> restoreMovementsIntoEmpty(List<StockMovement> movements);
+
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalInventoryRepository implements DurableInventoryRepository {
   LocalInventoryRepository({required ProductRepository productRepository})
       : _productRepository = productRepository;
 
@@ -130,6 +136,7 @@ class LocalInventoryRepository
     return Map<String, int>.unmodifiable(balances);
   }
 
+  @override
   Future<void> restoreMovementsIntoEmpty(List<StockMovement> movements) async {
     if (_movements.isNotEmpty) {
       throw StateError('Inventory repository is not empty.');
@@ -138,6 +145,7 @@ class LocalInventoryRepository
     _movements.addAll(movements);
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _movements.clear();
     _generatedIdCounter = 0;

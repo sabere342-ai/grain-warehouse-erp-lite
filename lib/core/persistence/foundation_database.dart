@@ -71,6 +71,31 @@ class Suppliers extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@TableIndex(name: 'inventory_movements_product_idx', columns: {#productId})
+@TableIndex(
+  name: 'inventory_movements_created_idx',
+  columns: {#createdAt, #id},
+)
+@TableIndex(
+  name: 'inventory_movements_document_idx',
+  columns: {#originalDocumentId},
+)
+class InventoryMovements extends Table {
+  TextColumn get id => text()();
+  TextColumn get productId => text()();
+  TextColumn get movementType => text()();
+  IntColumn get quantityKg => integer()();
+  TextColumn get createdByUserId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get note => text().nullable()();
+  BoolColumn get isVoided => boolean().withDefault(const Constant(false))();
+  TextColumn get reversedMovementId => text().nullable()();
+  TextColumn get originalDocumentId => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
     tables: [
       FoundationProbes,
@@ -78,12 +103,13 @@ class Suppliers extends Table {
       RepositorySequences,
       Customers,
       Suppliers,
+      InventoryMovements,
     ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

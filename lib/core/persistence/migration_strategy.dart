@@ -31,4 +31,5 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
       },
       3: (migrator) => migrator.createTable(database.customers),
       4: (migrator) => migrator.createTable(database.suppliers),
+      5: (migrator) => migrator.createTable(database.inventoryMovements),
     };

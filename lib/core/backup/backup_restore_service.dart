@@ -43,7 +43,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 class BackupRestoreService {
   BackupRestoreService({
     required ProductDataRepository productRepository,
-    required LocalInventoryRepository inventoryRepository,
+    required DurableInventoryRepository inventoryRepository,
     required SupplierDataRepository supplierRepository,
     required LocalPurchaseRepository purchaseRepository,
     required LocalSaleRepository saleRepository,
@@ -79,7 +79,7 @@ class BackupRestoreService {
         _previewService = previewService;
 
   final ProductDataRepository _productRepository;
-  final LocalInventoryRepository _inventoryRepository;
+  final DurableInventoryRepository _inventoryRepository;
   final SupplierDataRepository _supplierRepository;
   final LocalPurchaseRepository _purchaseRepository;
   final LocalSaleRepository _saleRepository;
