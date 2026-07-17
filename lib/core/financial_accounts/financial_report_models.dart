@@ -373,3 +373,133 @@ class SupplierSettlementsByAccountReport {
   final int totalReversalsQirsh;
   final int totalNetSettlementsQirsh;
 }
+
+enum AdvancesAndRefundsPartyType {
+  customer,
+  supplier;
+
+  String get labelAr {
+    switch (this) {
+      case AdvancesAndRefundsPartyType.customer:
+        return 'عميل';
+      case AdvancesAndRefundsPartyType.supplier:
+        return 'مورد';
+    }
+  }
+}
+
+class AdvancesAndRefundsDetail {
+  const AdvancesAndRefundsDetail({
+    required this.entryId,
+    required this.accountId,
+    required this.accountName,
+    required this.partyType,
+    this.entityId,
+    required this.entityName,
+    required this.timestamp,
+    required this.sourceType,
+    required this.isReversal,
+    required this.amountQirsh,
+    required this.signedCashEffect,
+    this.reference,
+    this.sourceDocumentId,
+    this.reversalOfEntryId,
+  });
+
+  final String entryId;
+  final String accountId;
+  final String accountName;
+  final AdvancesAndRefundsPartyType partyType;
+  final String? entityId;
+  final String entityName;
+  final DateTime timestamp;
+  final FinancialAccountEntrySource sourceType;
+  final bool isReversal;
+  final int amountQirsh;
+  final int signedCashEffect;
+  final String? reference;
+  final String? sourceDocumentId;
+  final String? reversalOfEntryId;
+
+  bool get isUnresolved => entityId == null;
+}
+
+class AdvancesAndRefundsAccountSummary {
+  const AdvancesAndRefundsAccountSummary({
+    required this.account,
+    required this.customerGrossRefundOutflow,
+    required this.customerRefundReversals,
+    required this.customerNetRefundOutflow,
+    required this.supplierGrossRefundInflow,
+    required this.supplierRefundReversals,
+    required this.supplierNetRefundInflow,
+    required this.signedNetCashEffect,
+    required this.detailCount,
+  });
+
+  final FinancialAccount account;
+  final int customerGrossRefundOutflow;
+  final int customerRefundReversals;
+  final int customerNetRefundOutflow;
+  final int supplierGrossRefundInflow;
+  final int supplierRefundReversals;
+  final int supplierNetRefundInflow;
+  final int signedNetCashEffect;
+  final int detailCount;
+}
+
+class AdvancesAndRefundsEntitySummary {
+  const AdvancesAndRefundsEntitySummary({
+    required this.partyType,
+    this.entityId,
+    required this.entityName,
+    required this.grossAmount,
+    required this.reversalAmount,
+    required this.netAmount,
+    required this.accountCount,
+    required this.detailCount,
+  });
+
+  final AdvancesAndRefundsPartyType partyType;
+  final String? entityId;
+  final String entityName;
+  final int grossAmount;
+  final int reversalAmount;
+  final int netAmount;
+  final int accountCount;
+  final int detailCount;
+
+  bool get isUnresolved => entityId == null;
+}
+
+class AdvancesAndRefundsReport {
+  const AdvancesAndRefundsReport({
+    required this.fromDate,
+    required this.toDate,
+    required this.details,
+    required this.accountSummaries,
+    required this.customerSummaries,
+    required this.supplierSummaries,
+    required this.totalCustomerGrossRefundOutflow,
+    required this.totalCustomerRefundReversals,
+    required this.totalCustomerNetRefundOutflow,
+    required this.totalSupplierGrossRefundInflow,
+    required this.totalSupplierRefundReversals,
+    required this.totalSupplierNetRefundInflow,
+    required this.signedGrandCashEffect,
+  });
+
+  final DateTime fromDate;
+  final DateTime toDate;
+  final List<AdvancesAndRefundsDetail> details;
+  final List<AdvancesAndRefundsAccountSummary> accountSummaries;
+  final List<AdvancesAndRefundsEntitySummary> customerSummaries;
+  final List<AdvancesAndRefundsEntitySummary> supplierSummaries;
+  final int totalCustomerGrossRefundOutflow;
+  final int totalCustomerRefundReversals;
+  final int totalCustomerNetRefundOutflow;
+  final int totalSupplierGrossRefundInflow;
+  final int totalSupplierRefundReversals;
+  final int totalSupplierNetRefundInflow;
+  final int signedGrandCashEffect;
+}

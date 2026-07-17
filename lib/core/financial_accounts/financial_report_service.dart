@@ -892,6 +892,360 @@ class FinancialReportService {
       totalNetSettlementsQirsh: totalGross - totalRev,
     );
   }
+
+  static const _qualifiedCustomerRefundSources = {
+    FinancialAccountEntrySource.customerAdvanceRefund,
+  };
+
+  static const _qualifiedCustomerRefundReversalSources = {
+    FinancialAccountEntrySource.customerAdvanceRefundReversal,
+  };
+
+  static const _qualifiedSupplierRefundSources = {
+    FinancialAccountEntrySource.supplierAdvanceRefund,
+  };
+
+  static const _qualifiedSupplierRefundReversalSources = {
+    FinancialAccountEntrySource.supplierAdvanceRefundReversal,
+  };
+
+  Future<AdvancesAndRefundsReport> getAdvancesAndRefundsReport({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+    AdvancesAndRefundsPartyType? partyTypeFilter,
+    String? entityIdFilter,
+    SupplierSettlementReportLookup? supplierLookup,
+  }) async {
+    final effectiveFrom =
+        fromDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final effectiveTo = toDate ?? DateTime.now();
+
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final accountMap = {for (final a in accounts) a.id: a.name};
+
+    final allEntries = <FinancialAccountEntry>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final entries = await _entriesForAccount(account.id);
+      allEntries.addAll(entries);
+    }
+
+    final entryById = <String, FinancialAccountEntry>{};
+    for (final e in allEntries) {
+      entryById[e.id] = e;
+    }
+
+    final filtered = allEntries
+        .where((e) => _isInRange(e.effectiveDate, effectiveFrom, effectiveTo))
+        .where((e) {
+      if (_qualifiedCustomerRefundSources.contains(e.sourceType)) return true;
+      if (_qualifiedSupplierRefundSources.contains(e.sourceType)) return true;
+      if (_qualifiedCustomerRefundReversalSources.contains(e.sourceType)) {
+        if (e.reversalOf == null) return false;
+        final original = entryById[e.reversalOf];
+        if (original == null) return false;
+        return _qualifiedCustomerRefundSources
+            .contains(original.sourceType);
+      }
+      if (_qualifiedSupplierRefundReversalSources.contains(e.sourceType)) {
+        if (e.reversalOf == null) return false;
+        final original = entryById[e.reversalOf];
+        if (original == null) return false;
+        return _qualifiedSupplierRefundSources
+            .contains(original.sourceType);
+      }
+      return false;
+    }).toList();
+
+    final entryCustomerCache = <String, _ResolvedCustomer>{};
+
+    Future<_ResolvedCustomer> resolveCustomer(
+        FinancialAccountEntry entry) async {
+      if (entryCustomerCache.containsKey(entry.id)) {
+        return entryCustomerCache[entry.id]!;
+      }
+
+      final lookup = _customerLookup;
+      if (lookup == null) {
+        const unresolved = _ResolvedCustomer(null, null);
+        entryCustomerCache[entry.id] = unresolved;
+        return unresolved;
+      }
+
+      String? customerId;
+
+      if (_qualifiedCustomerRefundSources.contains(entry.sourceType)) {
+        customerId =
+            await lookup.customerIdForCollection(entry.sourceDocumentId);
+      } else if (_qualifiedCustomerRefundReversalSources
+              .contains(entry.sourceType) &&
+          entry.reversalOf != null) {
+        customerId =
+            await lookup.customerIdForAdvanceRefundReversalEntry(entry);
+      }
+
+      if (customerId != null) {
+        final name = await lookup.customerNameForId(customerId);
+        final resolved = _ResolvedCustomer(customerId, name);
+        entryCustomerCache[entry.id] = resolved;
+        return resolved;
+      }
+
+      const unresolved = _ResolvedCustomer(null, null);
+      entryCustomerCache[entry.id] = unresolved;
+      return unresolved;
+    }
+
+    final entrySupplierCache = <String, _ResolvedSupplier>{};
+
+    Future<_ResolvedSupplier> resolveSupplier(
+        FinancialAccountEntry entry) async {
+      if (entrySupplierCache.containsKey(entry.id)) {
+        return entrySupplierCache[entry.id]!;
+      }
+
+      if (supplierLookup == null) {
+        const unresolved = _ResolvedSupplier(null, null);
+        entrySupplierCache[entry.id] = unresolved;
+        return unresolved;
+      }
+
+      String? supplierId;
+
+      if (_qualifiedSupplierRefundSources.contains(entry.sourceType)) {
+        supplierId =
+            await supplierLookup.supplierIdForPayment(entry.sourceDocumentId);
+      } else if (_qualifiedSupplierRefundReversalSources
+              .contains(entry.sourceType) &&
+          entry.reversalOf != null) {
+        supplierId = await supplierLookup.supplierIdForReversalEntry(entry);
+      }
+
+      if (supplierId != null) {
+        final name = await supplierLookup.supplierNameForId(supplierId);
+        final resolved = _ResolvedSupplier(supplierId, name);
+        entrySupplierCache[entry.id] = resolved;
+        return resolved;
+      }
+
+      const unresolved = _ResolvedSupplier(null, null);
+      entrySupplierCache[entry.id] = unresolved;
+      return unresolved;
+    }
+
+    final details = <AdvancesAndRefundsDetail>[];
+    for (final entry in filtered) {
+      final isCustomerSource = _qualifiedCustomerRefundSources
+              .contains(entry.sourceType) ||
+          _qualifiedCustomerRefundReversalSources.contains(entry.sourceType);
+      final isReversal = entry.reversalOf != null;
+
+      if (isCustomerSource) {
+        final resolved = await resolveCustomer(entry);
+        details.add(AdvancesAndRefundsDetail(
+          entryId: entry.id,
+          accountId: entry.accountId,
+          accountName: accountMap[entry.accountId] ?? entry.accountId,
+          partyType: AdvancesAndRefundsPartyType.customer,
+          entityId: resolved.customerId,
+          entityName: resolved.customerName ?? 'عميل غير محدد',
+          timestamp: entry.effectiveDate,
+          sourceType: entry.sourceType,
+          isReversal: isReversal,
+          amountQirsh: entry.amountQirsh,
+          signedCashEffect: -entry.amountQirsh,
+          reference: entry.reference,
+          sourceDocumentId: entry.sourceDocumentId,
+          reversalOfEntryId: entry.reversalOf,
+        ));
+      } else {
+        final resolved = await resolveSupplier(entry);
+        details.add(AdvancesAndRefundsDetail(
+          entryId: entry.id,
+          accountId: entry.accountId,
+          accountName: accountMap[entry.accountId] ?? entry.accountId,
+          partyType: AdvancesAndRefundsPartyType.supplier,
+          entityId: resolved.supplierId,
+          entityName: resolved.supplierName ?? 'مورد غير محدد',
+          timestamp: entry.effectiveDate,
+          sourceType: entry.sourceType,
+          isReversal: isReversal,
+          amountQirsh: entry.amountQirsh,
+          signedCashEffect: entry.amountQirsh,
+          reference: entry.reference,
+          sourceDocumentId: entry.sourceDocumentId,
+          reversalOfEntryId: entry.reversalOf,
+        ));
+      }
+    }
+
+    details.sort((a, b) {
+      final cmp = a.accountName.compareTo(b.accountName);
+      if (cmp != 0) return cmp;
+      final cmp2 = a.partyType.index.compareTo(b.partyType.index);
+      if (cmp2 != 0) return cmp2;
+      final cmp3 = a.entityName.compareTo(b.entityName);
+      if (cmp3 != 0) return cmp3;
+      final cmp4 = b.timestamp.compareTo(a.timestamp);
+      if (cmp4 != 0) return cmp4;
+      return a.entryId.compareTo(b.entryId);
+    });
+
+    if (partyTypeFilter != null) {
+      details.removeWhere((d) => d.partyType != partyTypeFilter);
+    }
+    if (entityIdFilter != null) {
+      details.removeWhere((d) => d.entityId != entityIdFilter);
+    }
+
+    var totalCustomerGross = 0;
+    var totalCustomerRev = 0;
+    var totalSupplierGross = 0;
+    var totalSupplierRev = 0;
+
+    for (final d in details) {
+      if (d.partyType == AdvancesAndRefundsPartyType.customer) {
+        if (d.isReversal) {
+          totalCustomerRev += d.amountQirsh;
+        } else {
+          totalCustomerGross += d.amountQirsh;
+        }
+      } else {
+        if (d.isReversal) {
+          totalSupplierRev += d.amountQirsh;
+        } else {
+          totalSupplierGross += d.amountQirsh;
+        }
+      }
+    }
+
+    final accountCustomerGross = <String, int>{};
+    final accountCustomerRev = <String, int>{};
+    final accountSupplierGross = <String, int>{};
+    final accountSupplierRev = <String, int>{};
+    final accountDetailCount = <String, int>{};
+
+    for (final d in details) {
+      accountDetailCount[d.accountId] =
+          (accountDetailCount[d.accountId] ?? 0) + 1;
+      if (d.partyType == AdvancesAndRefundsPartyType.customer) {
+        if (d.isReversal) {
+          accountCustomerRev[d.accountId] =
+              (accountCustomerRev[d.accountId] ?? 0) + d.amountQirsh;
+        } else {
+          accountCustomerGross[d.accountId] =
+              (accountCustomerGross[d.accountId] ?? 0) + d.amountQirsh;
+        }
+      } else {
+        if (d.isReversal) {
+          accountSupplierRev[d.accountId] =
+              (accountSupplierRev[d.accountId] ?? 0) + d.amountQirsh;
+        } else {
+          accountSupplierGross[d.accountId] =
+              (accountSupplierGross[d.accountId] ?? 0) + d.amountQirsh;
+        }
+      }
+    }
+
+    final accountSummaries = <AdvancesAndRefundsAccountSummary>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final cGross = accountCustomerGross[account.id] ?? 0;
+      final cRev = accountCustomerRev[account.id] ?? 0;
+      final sGross = accountSupplierGross[account.id] ?? 0;
+      final sRev = accountSupplierRev[account.id] ?? 0;
+      final count = accountDetailCount[account.id] ?? 0;
+      if (count == 0) continue;
+      final cNet = cGross - cRev;
+      final sNet = sGross - sRev;
+      accountSummaries.add(AdvancesAndRefundsAccountSummary(
+        account: account,
+        customerGrossRefundOutflow: cGross,
+        customerRefundReversals: cRev,
+        customerNetRefundOutflow: cNet,
+        supplierGrossRefundInflow: sGross,
+        supplierRefundReversals: sRev,
+        supplierNetRefundInflow: sNet,
+        signedNetCashEffect: sNet - cNet,
+        detailCount: count,
+      ));
+    }
+
+    final entityData = <String, _EntityAggregator>{};
+    for (final d in details) {
+      final key = '${d.partyType.index}|${d.entityId ?? ''}';
+      final agg = entityData.putIfAbsent(
+        key,
+        () => _EntityAggregator(d.partyType, d.entityId),
+      );
+      agg.names.add(d.entityName);
+      agg.accountIds.add(d.accountId);
+      if (d.isReversal) {
+        agg.reversalAmount += d.amountQirsh;
+      } else {
+        agg.grossAmount += d.amountQirsh;
+      }
+      agg.detailCount++;
+    }
+
+    final customerSummaries = <AdvancesAndRefundsEntitySummary>[];
+    final supplierSummaries = <AdvancesAndRefundsEntitySummary>[];
+
+    for (final agg in entityData.values) {
+      final resolvedName =
+          agg.names.reduce((a, b) => a.length >= b.length ? a : b);
+      final summary = AdvancesAndRefundsEntitySummary(
+        partyType: agg.partyType,
+        entityId: agg.resolvedEntityId,
+        entityName: resolvedName,
+        grossAmount: agg.grossAmount,
+        reversalAmount: agg.reversalAmount,
+        netAmount: agg.grossAmount - agg.reversalAmount,
+        accountCount: agg.accountIds.length,
+        detailCount: agg.detailCount,
+      );
+      if (agg.partyType == AdvancesAndRefundsPartyType.customer) {
+        customerSummaries.add(summary);
+      } else {
+        supplierSummaries.add(summary);
+      }
+    }
+
+    customerSummaries.sort((a, b) {
+      final cmp = a.entityName.compareTo(b.entityName);
+      if (cmp != 0) return cmp;
+      final aId = a.entityId ?? '';
+      final bId = b.entityId ?? '';
+      return aId.compareTo(bId);
+    });
+
+    supplierSummaries.sort((a, b) {
+      final cmp = a.entityName.compareTo(b.entityName);
+      if (cmp != 0) return cmp;
+      final aId = a.entityId ?? '';
+      final bId = b.entityId ?? '';
+      return aId.compareTo(bId);
+    });
+
+    return AdvancesAndRefundsReport(
+      fromDate: effectiveFrom,
+      toDate: effectiveTo,
+      details: details,
+      accountSummaries: accountSummaries,
+      customerSummaries: customerSummaries,
+      supplierSummaries: supplierSummaries,
+      totalCustomerGrossRefundOutflow: totalCustomerGross,
+      totalCustomerRefundReversals: totalCustomerRev,
+      totalCustomerNetRefundOutflow: totalCustomerGross - totalCustomerRev,
+      totalSupplierGrossRefundInflow: totalSupplierGross,
+      totalSupplierRefundReversals: totalSupplierRev,
+      totalSupplierNetRefundInflow: totalSupplierGross - totalSupplierRev,
+      signedGrandCashEffect:
+          (totalSupplierGross - totalSupplierRev) -
+              (totalCustomerGross - totalCustomerRev),
+    );
+  }
 }
 
 class _ResolvedCustomer {
@@ -911,4 +1265,17 @@ class _ResolvedSupplier {
   const _ResolvedSupplier(this.supplierId, this.supplierName);
   final String? supplierId;
   final String? supplierName;
+}
+
+class _EntityAggregator {
+  _EntityAggregator(this.partyType, this._entityId);
+  final AdvancesAndRefundsPartyType partyType;
+  final String? _entityId;
+  final Set<String> names = {};
+  final Set<String> accountIds = {};
+  int grossAmount = 0;
+  int reversalAmount = 0;
+  int detailCount = 0;
+
+  String? get resolvedEntityId => _entityId;
 }

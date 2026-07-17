@@ -1192,4 +1192,355 @@ class FinancialReportPdfBuilder {
     await file.writeAsBytes(bytes);
     return file;
   }
+
+  static Future<File> buildAdvancesAndRefundsReport({
+    required AdvancesAndRefundsReport report,
+  }) async {
+    await initialize();
+    final pdf = pw.Document();
+
+    final titleStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 16);
+    final headerStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 10);
+    final cellStyle = pw.TextStyle(font: _arabicFont!, fontSize: 9);
+    final boldCell = pw.TextStyle(font: _arabicFontBold!, fontSize: 9);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        build: (ctx) => [
+          pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                pw.Center(
+                  child: pw.Text('تقرير السلف والردود', style: titleStyle),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Center(
+                  child: pw.Text(
+                    'من: ${_formatDate(report.fromDate)}  إلى: ${_formatDate(report.toDate)}',
+                    style: boldCell,
+                  ),
+                ),
+                pw.SizedBox(height: 12),
+                // Customer summary
+                pw.TableHelper.fromTextArray(
+                  context: ctx,
+                  cellStyle: cellStyle,
+                  headerStyle: headerStyle,
+                  headerAlignment: pw.Alignment.center,
+                  cellAlignment: pw.Alignment.center,
+                  headerDirection: pw.TextDirection.rtl,
+                  headers: [
+                    'إجمالي رد سلف العملاء',
+                    'إلغاءات العملاء',
+                    'صافي رد سلف العملاء',
+                  ],
+                  data: [
+                    [
+                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerGrossRefundOutflow),
+                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerRefundReversals),
+                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerNetRefundOutflow),
+                    ],
+                  ],
+                  cellAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  headerAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(2),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(2),
+                  },
+                ),
+                pw.SizedBox(height: 8),
+                // Supplier summary
+                pw.TableHelper.fromTextArray(
+                  context: ctx,
+                  cellStyle: cellStyle,
+                  headerStyle: headerStyle,
+                  headerAlignment: pw.Alignment.center,
+                  cellAlignment: pw.Alignment.center,
+                  headerDirection: pw.TextDirection.rtl,
+                  headers: [
+                    'إجمالي ردود سلف الموردين',
+                    'إلغاءات الموردين',
+                    'صافي ردود سلف الموردين',
+                  ],
+                  data: [
+                    [
+                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierGrossRefundInflow),
+                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierRefundReversals),
+                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierNetRefundInflow),
+                    ],
+                  ],
+                  cellAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  headerAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(2),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(2),
+                  },
+                ),
+                pw.SizedBox(height: 8),
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(text: 'صافي الأثر النقدي: ', style: boldCell),
+                      pw.TextSpan(
+                        text: MoneyUtils.formatPiastersAsEgp(report.signedGrandCashEffect),
+                        style: cellStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                // Account summaries
+                if (report.accountSummaries.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('الملخص حسب الحساب المالي', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'الحساب',
+                      'رد عملاء',
+                      'إلغاء عملاء',
+                      'صافي عملاء',
+                      'رد موردين',
+                      'إلغاء موردين',
+                      'صافي موردين',
+                      'صافي',
+                    ],
+                    data: [
+                      ...report.accountSummaries.map((a) => [
+                        '${a.account.name} (${a.account.type.labelAr})',
+                        MoneyUtils.formatPiastersAsEgp(a.customerGrossRefundOutflow),
+                        MoneyUtils.formatPiastersAsEgp(a.customerRefundReversals),
+                        MoneyUtils.formatPiastersAsEgp(a.customerNetRefundOutflow),
+                        MoneyUtils.formatPiastersAsEgp(a.supplierGrossRefundInflow),
+                        MoneyUtils.formatPiastersAsEgp(a.supplierRefundReversals),
+                        MoneyUtils.formatPiastersAsEgp(a.supplierNetRefundInflow),
+                        MoneyUtils.formatPiastersAsEgp(a.signedNetCashEffect),
+                      ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                      4: pw.Alignment.centerLeft,
+                      5: pw.Alignment.centerLeft,
+                      6: pw.Alignment.centerLeft,
+                      7: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                      4: pw.Alignment.centerLeft,
+                      5: pw.Alignment.centerLeft,
+                      6: pw.Alignment.centerLeft,
+                      7: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.3),
+                      2: const pw.FlexColumnWidth(1.3),
+                      3: const pw.FlexColumnWidth(1.3),
+                      4: const pw.FlexColumnWidth(1.3),
+                      5: const pw.FlexColumnWidth(1.3),
+                      6: const pw.FlexColumnWidth(1.3),
+                      7: const pw.FlexColumnWidth(1.3),
+                    },
+                  ),
+                ],
+                // Customer entity summaries
+                if (report.customerSummaries.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('ملخص حسب العميل', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'العميل',
+                      'إجمالي',
+                      'إلغاءات',
+                      'صافي',
+                    ],
+                    data: [
+                      ...report.customerSummaries.map((c) => [
+                        c.entityName,
+                        MoneyUtils.formatPiastersAsEgp(c.grossAmount),
+                        MoneyUtils.formatPiastersAsEgp(c.reversalAmount),
+                        MoneyUtils.formatPiastersAsEgp(c.netAmount),
+                      ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+                // Supplier entity summaries
+                if (report.supplierSummaries.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('ملخص حسب المورد', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'المورد',
+                      'إجمالي',
+                      'إلغاءات',
+                      'صافي',
+                    ],
+                    data: [
+                      ...report.supplierSummaries.map((s) => [
+                        s.entityName,
+                        MoneyUtils.formatPiastersAsEgp(s.grossAmount),
+                        MoneyUtils.formatPiastersAsEgp(s.reversalAmount),
+                        MoneyUtils.formatPiastersAsEgp(s.netAmount),
+                      ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+                // Details
+                if (report.details.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('التفاصيل', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'التاريخ',
+                      'الطرف',
+                      'الاسم',
+                      'الحساب',
+                      'النوع',
+                      'المبلغ',
+                      'الأثر النقدي',
+                    ],
+                    data: [
+                      ...report.details.map((d) => [
+                        _formatDate(d.timestamp),
+                        d.partyType.labelAr,
+                        d.entityName,
+                        d.accountName,
+                        d.sourceType.labelAr,
+                        MoneyUtils.formatPiastersAsEgp(d.amountQirsh),
+                        MoneyUtils.formatPiastersAsEgp(d.signedCashEffect),
+                      ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.center,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerRight,
+                      4: pw.Alignment.centerRight,
+                      5: pw.Alignment.centerLeft,
+                      6: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.center,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerRight,
+                      4: pw.Alignment.centerRight,
+                      5: pw.Alignment.centerLeft,
+                      6: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1.2),
+                      1: const pw.FlexColumnWidth(0.8),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                      4: const pw.FlexColumnWidth(1.5),
+                      5: const pw.FlexColumnWidth(1.3),
+                      6: const pw.FlexColumnWidth(1.3),
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final dir = await _exportDir();
+    final filename = PdfFileNaming.advancesAndRefundsReport(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
 }

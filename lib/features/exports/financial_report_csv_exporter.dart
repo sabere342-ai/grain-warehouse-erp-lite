@@ -475,4 +475,169 @@ class FinancialReportCsvExporter {
     await file.writeAsString(csv, encoding: utf8);
     return file;
   }
+
+  static Future<File> exportAdvancesAndRefundsReport({
+    required AdvancesAndRefundsReport report,
+  }) async {
+    final rows = <List<String>>[];
+    rows.add([
+      'الطرف',
+      'اسم الطرف',
+      'معرف الطرف',
+      'الحساب',
+      'التاريخ',
+      'النوع',
+      'التصنيف',
+      'المبلغ',
+      'الأثر النقدي',
+      'المرجع',
+      'معرف المستند',
+      'معرف القيد',
+      'عكس القيد',
+    ]);
+    for (final d in report.details) {
+      rows.add([
+        d.partyType.labelAr,
+        _formulaSafe(d.entityName),
+        d.entityId ?? '',
+        d.accountName,
+        _formatDate(d.timestamp),
+        d.isReversal ? 'عكس' : 'أصلي',
+        d.sourceType.labelAr,
+        _money(d.amountQirsh),
+        _money(d.signedCashEffect),
+        _formulaSafe(d.reference ?? ''),
+        d.sourceDocumentId ?? '',
+        d.entryId,
+        d.reversalOfEntryId ?? '',
+      ]);
+    }
+    rows.add([
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'الإجمالي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'رد سلف العملاء - إجمالي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalCustomerGrossRefundOutflow),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'رد سلف العملاء - إلغاءات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalCustomerRefundReversals),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'رد سلف العملاء - صافي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalCustomerNetRefundOutflow),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'ردود سلف الموردين - إجمالي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalSupplierGrossRefundInflow),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'ردود سلف الموردين - إلغاءات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalSupplierRefundReversals),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'ردود سلف الموردين - صافي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalSupplierNetRefundInflow),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'صافي الأثر النقدي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.signedGrandCashEffect),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+
+    final csv = _bomCsv(rows);
+    final dir = await _exportDir();
+    final filename = PdfFileNaming.advancesAndRefundsReportCsv(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsString(csv, encoding: utf8);
+    return file;
+  }
 }

@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_balance_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/advances_and_refunds_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/customer_collections_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
@@ -103,6 +104,15 @@ class FinancialReportsScreen extends StatelessWidget {
             icon: Icons.business_center_rounded,
             onTap: () =>
                 _navigate(context, const SupplierSettlementsReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تقرير السلف والردود',
+            subtitle:
+                'رد سلف العملاء، عكس رد سلف العملاء، ردود سلف الموردين المستلمة، وعكس ردود سلف الموردين',
+            icon: Icons.replay_rounded,
+            onTap: () =>
+                _navigate(context, const AdvancesAndRefundsReportScreen()),
           ),
         ],
       ),
