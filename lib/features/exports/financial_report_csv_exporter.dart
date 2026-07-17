@@ -215,4 +215,61 @@ class FinancialReportCsvExporter {
     if (row.isReversed) return 'تم عكسه';
     return 'نشط';
   }
+
+  static Future<File> exportInflowsReport({
+    required FlowReport report,
+  }) async {
+    return _exportFlowReport(
+      report: report,
+      fileName: PdfFileNaming.inflowsReportCsv(report.toDate),
+    );
+  }
+
+  static Future<File> exportOutflowsReport({
+    required FlowReport report,
+  }) async {
+    return _exportFlowReport(
+      report: report,
+      fileName: PdfFileNaming.outflowsReportCsv(report.toDate),
+    );
+  }
+
+  static Future<File> _exportFlowReport({
+    required FlowReport report,
+    required String fileName,
+  }) async {
+    final rows = <List<String>>[];
+    rows.add([
+      'التاريخ',
+      'الحساب',
+      'المصدر',
+      'المبلغ',
+      'مرجع',
+      'ملاحظات',
+    ]);
+    for (final e in report.entries) {
+      rows.add([
+        _formatDate(e.timestamp),
+        e.accountName,
+        e.source.labelAr,
+        _money(e.amountQirsh),
+        e.referenceId ?? '',
+        e.description ?? '',
+      ]);
+    }
+    rows.add([
+      '',
+      '',
+      'الإجمالي',
+      _money(report.totalQirsh),
+      '',
+      '',
+    ]);
+
+    final csv = _bomCsv(rows);
+    final dir = await _exportDir();
+    final file = File('${dir.path}\\$fileName');
+    await file.writeAsString(csv, encoding: utf8);
+    return file;
+  }
 }

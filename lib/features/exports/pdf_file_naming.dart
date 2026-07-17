@@ -81,4 +81,24 @@ class PdfFileNaming {
     return _sanitize(
         '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062d\u0648\u064a\u0644\u0627\u062a-${_datePart(date)}.csv');
   }
+
+  static String inflowsReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062f\u0641\u0642\u0627\u062a-\u0627\u0644\u062f\u0627\u062e\u0644\u0629-${_datePart(date)}.pdf');
+  }
+
+  static String inflowsReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062f\u0641\u0642\u0627\u062a-\u0627\u0644\u062f\u0627\u062e\u0644\u0629-${_datePart(date)}.csv');
+  }
+
+  static String outflowsReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062f\u0641\u0642\u0627\u062a-\u0627\u0644\u062e\u0627\u0631\u062c\u0629-${_datePart(date)}.pdf');
+  }
+
+  static String outflowsReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u0642\u0631\u064a\u0631-\u0627\u0644\u062a\u062f\u0641\u0642\u0627\u062a-\u0627\u0644\u062e\u0627\u0631\u062c\u0629-${_datePart(date)}.csv');
+  }
 }

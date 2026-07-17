@@ -159,3 +159,45 @@ class TransferReport {
   final List<TransferReportRow> rows;
   final int totalAmountQirsh;
 }
+
+class FlowReportEntry {
+  const FlowReportEntry({
+    required this.entryId,
+    required this.timestamp,
+    required this.accountId,
+    required this.accountName,
+    required this.source,
+    this.referenceId,
+    this.description,
+    required this.amountQirsh,
+    required this.direction,
+    required this.isReversal,
+  });
+
+  final String entryId;
+  final DateTime timestamp;
+  final String accountId;
+  final String accountName;
+  final FinancialAccountEntrySource source;
+  final String? referenceId;
+  final String? description;
+  final int amountQirsh;
+  final FinancialAccountEntryDirection direction;
+  final bool isReversal;
+}
+
+class FlowReport {
+  const FlowReport({
+    required this.fromDate,
+    required this.toDate,
+    required this.entries,
+    required this.totalQirsh,
+    required this.sourceBreakdown,
+  });
+
+  final DateTime fromDate;
+  final DateTime toDate;
+  final List<FlowReportEntry> entries;
+  final int totalQirsh;
+  final Map<FinancialAccountEntrySource, int> sourceBreakdown;
+}

@@ -507,4 +507,173 @@ class FinancialReportPdfBuilder {
     if (row.isReversed) return 'تم عكسه';
     return 'نشط';
   }
+
+  static Future<File> buildInflowsReport({
+    required FlowReport report,
+    String? accountLabel,
+  }) async {
+    return _buildFlowReport(
+      report: report,
+      title: 'تقرير التدفقات الداخلة',
+      accountLabel: accountLabel,
+      fileName: PdfFileNaming.inflowsReport(report.toDate),
+    );
+  }
+
+  static Future<File> buildOutflowsReport({
+    required FlowReport report,
+    String? accountLabel,
+  }) async {
+    return _buildFlowReport(
+      report: report,
+      title: 'تقرير التدفقات الخارجة',
+      accountLabel: accountLabel,
+      fileName: PdfFileNaming.outflowsReport(report.toDate),
+    );
+  }
+
+  static Future<File> _buildFlowReport({
+    required FlowReport report,
+    required String title,
+    String? accountLabel,
+    required String fileName,
+  }) async {
+    await initialize();
+    final pdf = pw.Document();
+
+    final titleStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 16);
+    final headerStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 10);
+    final cellStyle = pw.TextStyle(font: _arabicFont!, fontSize: 9);
+    final boldCell = pw.TextStyle(font: _arabicFontBold!, fontSize: 9);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        build: (ctx) => [
+          pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                pw.Center(child: pw.Text(title, style: titleStyle)),
+                pw.SizedBox(height: 4),
+                pw.Center(
+                  child: pw.Text(
+                    'من: ${_formatDate(report.fromDate)}  إلى: ${_formatDate(report.toDate)}',
+                    style: boldCell,
+                  ),
+                ),
+                if (accountLabel != null) ...[
+                  pw.SizedBox(height: 4),
+                  pw.Center(
+                    child: pw.Text('الحساب: $accountLabel', style: boldCell),
+                  ),
+                ],
+                pw.SizedBox(height: 12),
+                if (report.sourceBreakdown.isNotEmpty) ...[
+                  pw.Text('التصنيف حسب المصدر', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: ['المصدر', 'الإجمالي'],
+                    data: [
+                      ...report.sourceBreakdown.entries.map((e) => [
+                            e.key.labelAr,
+                            MoneyUtils.formatPiastersAsEgp(e.value),
+                          ]),
+                      [
+                        'الإجمالي',
+                        MoneyUtils.formatPiastersAsEgp(report.totalQirsh),
+                      ],
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(3),
+                      1: const pw.FlexColumnWidth(2),
+                    },
+                  ),
+                  pw.SizedBox(height: 16),
+                ],
+                if (report.entries.isNotEmpty) ...[
+                  pw.Text('الحركات', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'التاريخ',
+                      'الحساب',
+                      'المصدر',
+                      'المبلغ',
+                      'ملاحظات',
+                    ],
+                    data: [
+                      ...report.entries.map((e) => [
+                            _formatDate(e.timestamp),
+                            e.accountName,
+                            e.source.labelAr,
+                            MoneyUtils.formatPiastersAsEgp(e.amountQirsh),
+                            e.description ?? '',
+                          ]),
+                      [
+                        '',
+                        '',
+                        'الإجمالي',
+                        MoneyUtils.formatPiastersAsEgp(report.totalQirsh),
+                        '',
+                      ],
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerLeft,
+                      4: pw.Alignment.centerRight,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerLeft,
+                      4: pw.Alignment.centerRight,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1.2),
+                      1: const pw.FlexColumnWidth(1.8),
+                      2: const pw.FlexColumnWidth(1.8),
+                      3: const pw.FlexColumnWidth(1.5),
+                      4: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final dir = await _exportDir();
+    final file = File('${dir.path}\\$fileName');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
 }

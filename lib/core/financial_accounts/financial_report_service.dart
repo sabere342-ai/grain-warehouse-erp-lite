@@ -346,4 +346,104 @@ class FinancialReportService {
     final statement = await _repository.statementForAccount(accountId);
     return statement.lines.map((l) => l.entry).toList();
   }
+
+  static const _transferSourceTypes = {
+    FinancialAccountEntrySource.transferOut,
+    FinancialAccountEntrySource.transferIn,
+    FinancialAccountEntrySource.transferReversalOut,
+    FinancialAccountEntrySource.transferReversalIn,
+  };
+
+  Future<FlowReport> inflowsReport({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+  }) async {
+    return _flowReport(
+      fromDate: fromDate,
+      toDate: toDate,
+      accountIdFilter: accountIdFilter,
+      direction: FinancialAccountEntryDirection.inflow,
+    );
+  }
+
+  Future<FlowReport> outflowsReport({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+  }) async {
+    return _flowReport(
+      fromDate: fromDate,
+      toDate: toDate,
+      accountIdFilter: accountIdFilter,
+      direction: FinancialAccountEntryDirection.outflow,
+    );
+  }
+
+  Future<FlowReport> _flowReport({
+    required DateTime? fromDate,
+    required DateTime? toDate,
+    required String? accountIdFilter,
+    required FinancialAccountEntryDirection direction,
+  }) async {
+    final effectiveFrom =
+        fromDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final effectiveTo = toDate ?? DateTime.now();
+
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final accountMap = {for (final a in accounts) a.id: a.name};
+
+    final allEntries = <FinancialAccountEntry>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final entries = await _entriesForAccount(account.id);
+      allEntries.addAll(entries);
+    }
+
+    var filtered = allEntries
+        .where((e) => _isInRange(e.effectiveDate, effectiveFrom, effectiveTo))
+        .where((e) => e.direction == direction)
+        .toList();
+
+    if (accountIdFilter == null) {
+      filtered = filtered
+          .where((e) => !_transferSourceTypes.contains(e.sourceType))
+          .toList();
+    }
+
+    final entries = <FlowReportEntry>[];
+    var total = 0;
+    final breakdown = <FinancialAccountEntrySource, int>{};
+
+    for (final e in filtered) {
+      entries.add(FlowReportEntry(
+        entryId: e.id,
+        timestamp: e.effectiveDate,
+        accountId: e.accountId,
+        accountName: accountMap[e.accountId] ?? e.accountId,
+        source: e.sourceType,
+        referenceId: e.sourceDocumentNumber,
+        description: e.note,
+        amountQirsh: e.amountQirsh,
+        direction: e.direction,
+        isReversal: e.reversalOf != null,
+      ));
+      total += e.amountQirsh;
+      breakdown[e.sourceType] = (breakdown[e.sourceType] ?? 0) + e.amountQirsh;
+    }
+
+    entries.sort((a, b) {
+      final cmp = b.timestamp.compareTo(a.timestamp);
+      if (cmp != 0) return cmp;
+      return a.entryId.compareTo(b.entryId);
+    });
+
+    return FlowReport(
+      fromDate: effectiveFrom,
+      toDate: effectiveTo,
+      entries: entries,
+      totalQirsh: total,
+      sourceBreakdown: breakdown,
+    );
+  }
 }

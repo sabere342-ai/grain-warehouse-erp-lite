@@ -3,6 +3,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_balance_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_closing_screen.dart';
@@ -69,6 +71,20 @@ class FinancialReportsScreen extends StatelessWidget {
             subtitle: 'سجل التحويلات بين الحسابات المالية',
             icon: Icons.swap_horiz_rounded,
             onTap: () => _navigate(context, const TransferReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تقرير التدفقات الداخلة',
+            subtitle: 'جميع الحركات المالية الواردة خلال الفترة',
+            icon: Icons.arrow_downward_rounded,
+            onTap: () => _navigate(context, const InflowsReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تقرير التدفقات الخارجة',
+            subtitle: 'جميع الحركات المالية الصادرة خلال الفترة',
+            icon: Icons.arrow_upward_rounded,
+            onTap: () => _navigate(context, const OutflowsReportScreen()),
           ),
         ],
       ),
