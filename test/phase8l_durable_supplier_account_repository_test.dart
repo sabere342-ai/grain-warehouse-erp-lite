@@ -17,10 +17,10 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
-  test('fresh schema is v12 with the five supplier account tables', () async {
+  test('fresh schema retains the five supplier account tables', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 12);
+    expect(database.schemaVersion, 13);
     final names = (await database
             .customSelect(
               "SELECT name FROM sqlite_master WHERE type = 'table'",
@@ -62,7 +62,7 @@ void main() {
     legacy.dispose();
 
     final upgraded = openDatabaseFile(file);
-    expect(upgraded.schemaVersion, 12);
+    expect(upgraded.schemaVersion, 13);
     expect(await upgraded.readProbe('v11-data'), 'preserved');
     final count = await upgraded
         .customSelect(

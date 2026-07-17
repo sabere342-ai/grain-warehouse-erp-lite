@@ -1,6 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/drift_audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/drift_auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
@@ -43,7 +44,7 @@ class AppRepositories {
 
   /// The application owns exactly one authentication store. Approval checks
   /// and the visible session must observe the same active/inactive users.
-  static final LocalAuthRepository authRepository = LocalAuthRepository.empty();
+  static AuthRepository authRepository = LocalAuthRepository.empty();
 
   static final LocalNegativeBalanceApprovalRepository
       negativeBalanceApprovalRepository =
@@ -95,6 +96,7 @@ class AppRepositories {
     Future<FoundationDatabase> Function()? databaseFactory,
   }) async {
     database = await (databaseFactory?.call() ?? openProductionDatabase());
+    authRepository = DriftAuthRepository(database);
     _auditLogRepository = DriftAuditLogRepository(database);
     negativeBalanceApprovalService = NegativeBalanceApprovalService(
       authRepository: authRepository,

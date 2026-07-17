@@ -45,6 +45,7 @@ dependencies:
   url_launcher: ^6.3.1
   file_picker: ^8.0.0
   crypto: ^3.0.3
+  cryptography: 2.9.0
   path: ^1.9.0
   drift: ^2.23.1
   sqlite3_flutter_libs: ^0.5.42

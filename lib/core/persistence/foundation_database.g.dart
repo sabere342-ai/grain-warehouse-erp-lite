@@ -11693,6 +11693,642 @@ class SupplierAdvanceRefundsCompanion
   }
 }
 
+class $AuthAccountsTable extends AuthAccounts
+    with TableInfo<$AuthAccountsTable, AuthAccountRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AuthAccountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _phoneNormalizedMeta =
+      const VerificationMeta('phoneNormalized');
+  @override
+  late final GeneratedColumn<String> phoneNormalized = GeneratedColumn<String>(
+      'phone_normalized', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+      'role', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _credentialSchemeMeta =
+      const VerificationMeta('credentialScheme');
+  @override
+  late final GeneratedColumn<String> credentialScheme = GeneratedColumn<String>(
+      'credential_scheme', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _credentialSaltMeta =
+      const VerificationMeta('credentialSalt');
+  @override
+  late final GeneratedColumn<Uint8List> credentialSalt =
+      GeneratedColumn<Uint8List>('credential_salt', aliasedName, false,
+          type: DriftSqlType.blob, requiredDuringInsert: true);
+  static const VerificationMeta _credentialVerifierMeta =
+      const VerificationMeta('credentialVerifier');
+  @override
+  late final GeneratedColumn<Uint8List> credentialVerifier =
+      GeneratedColumn<Uint8List>('credential_verifier', aliasedName, false,
+          type: DriftSqlType.blob, requiredDuringInsert: true);
+  static const VerificationMeta _credentialParametersJsonMeta =
+      const VerificationMeta('credentialParametersJson');
+  @override
+  late final GeneratedColumn<String> credentialParametersJson =
+      GeneratedColumn<String>('credential_parameters_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _credentialUpdatedAtMeta =
+      const VerificationMeta('credentialUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> credentialUpdatedAt =
+      GeneratedColumn<DateTime>('credential_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        phoneNormalized,
+        name,
+        role,
+        isActive,
+        createdAt,
+        updatedAt,
+        credentialScheme,
+        credentialSalt,
+        credentialVerifier,
+        credentialParametersJson,
+        credentialUpdatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'auth_accounts';
+  @override
+  VerificationContext validateIntegrity(Insertable<AuthAccountRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('phone_normalized')) {
+      context.handle(
+          _phoneNormalizedMeta,
+          phoneNormalized.isAcceptableOrUnknown(
+              data['phone_normalized']!, _phoneNormalizedMeta));
+    } else if (isInserting) {
+      context.missing(_phoneNormalizedMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+          _roleMeta, role.isAcceptableOrUnknown(data['role']!, _roleMeta));
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('credential_scheme')) {
+      context.handle(
+          _credentialSchemeMeta,
+          credentialScheme.isAcceptableOrUnknown(
+              data['credential_scheme']!, _credentialSchemeMeta));
+    } else if (isInserting) {
+      context.missing(_credentialSchemeMeta);
+    }
+    if (data.containsKey('credential_salt')) {
+      context.handle(
+          _credentialSaltMeta,
+          credentialSalt.isAcceptableOrUnknown(
+              data['credential_salt']!, _credentialSaltMeta));
+    } else if (isInserting) {
+      context.missing(_credentialSaltMeta);
+    }
+    if (data.containsKey('credential_verifier')) {
+      context.handle(
+          _credentialVerifierMeta,
+          credentialVerifier.isAcceptableOrUnknown(
+              data['credential_verifier']!, _credentialVerifierMeta));
+    } else if (isInserting) {
+      context.missing(_credentialVerifierMeta);
+    }
+    if (data.containsKey('credential_parameters_json')) {
+      context.handle(
+          _credentialParametersJsonMeta,
+          credentialParametersJson.isAcceptableOrUnknown(
+              data['credential_parameters_json']!,
+              _credentialParametersJsonMeta));
+    } else if (isInserting) {
+      context.missing(_credentialParametersJsonMeta);
+    }
+    if (data.containsKey('credential_updated_at')) {
+      context.handle(
+          _credentialUpdatedAtMeta,
+          credentialUpdatedAt.isAcceptableOrUnknown(
+              data['credential_updated_at']!, _credentialUpdatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_credentialUpdatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AuthAccountRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuthAccountRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      phoneNormalized: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}phone_normalized'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      role: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}role'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      credentialScheme: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}credential_scheme'])!,
+      credentialSalt: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}credential_salt'])!,
+      credentialVerifier: attachedDatabase.typeMapping.read(
+          DriftSqlType.blob, data['${effectivePrefix}credential_verifier'])!,
+      credentialParametersJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}credential_parameters_json'])!,
+      credentialUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}credential_updated_at'])!,
+    );
+  }
+
+  @override
+  $AuthAccountsTable createAlias(String alias) {
+    return $AuthAccountsTable(attachedDatabase, alias);
+  }
+}
+
+class AuthAccountRow extends DataClass implements Insertable<AuthAccountRow> {
+  final String id;
+  final String phoneNormalized;
+  final String name;
+  final String role;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String credentialScheme;
+  final Uint8List credentialSalt;
+  final Uint8List credentialVerifier;
+  final String credentialParametersJson;
+  final DateTime credentialUpdatedAt;
+  const AuthAccountRow(
+      {required this.id,
+      required this.phoneNormalized,
+      required this.name,
+      required this.role,
+      required this.isActive,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.credentialScheme,
+      required this.credentialSalt,
+      required this.credentialVerifier,
+      required this.credentialParametersJson,
+      required this.credentialUpdatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['phone_normalized'] = Variable<String>(phoneNormalized);
+    map['name'] = Variable<String>(name);
+    map['role'] = Variable<String>(role);
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['credential_scheme'] = Variable<String>(credentialScheme);
+    map['credential_salt'] = Variable<Uint8List>(credentialSalt);
+    map['credential_verifier'] = Variable<Uint8List>(credentialVerifier);
+    map['credential_parameters_json'] =
+        Variable<String>(credentialParametersJson);
+    map['credential_updated_at'] = Variable<DateTime>(credentialUpdatedAt);
+    return map;
+  }
+
+  AuthAccountsCompanion toCompanion(bool nullToAbsent) {
+    return AuthAccountsCompanion(
+      id: Value(id),
+      phoneNormalized: Value(phoneNormalized),
+      name: Value(name),
+      role: Value(role),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      credentialScheme: Value(credentialScheme),
+      credentialSalt: Value(credentialSalt),
+      credentialVerifier: Value(credentialVerifier),
+      credentialParametersJson: Value(credentialParametersJson),
+      credentialUpdatedAt: Value(credentialUpdatedAt),
+    );
+  }
+
+  factory AuthAccountRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuthAccountRow(
+      id: serializer.fromJson<String>(json['id']),
+      phoneNormalized: serializer.fromJson<String>(json['phoneNormalized']),
+      name: serializer.fromJson<String>(json['name']),
+      role: serializer.fromJson<String>(json['role']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      credentialScheme: serializer.fromJson<String>(json['credentialScheme']),
+      credentialSalt: serializer.fromJson<Uint8List>(json['credentialSalt']),
+      credentialVerifier:
+          serializer.fromJson<Uint8List>(json['credentialVerifier']),
+      credentialParametersJson:
+          serializer.fromJson<String>(json['credentialParametersJson']),
+      credentialUpdatedAt:
+          serializer.fromJson<DateTime>(json['credentialUpdatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'phoneNormalized': serializer.toJson<String>(phoneNormalized),
+      'name': serializer.toJson<String>(name),
+      'role': serializer.toJson<String>(role),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'credentialScheme': serializer.toJson<String>(credentialScheme),
+      'credentialSalt': serializer.toJson<Uint8List>(credentialSalt),
+      'credentialVerifier': serializer.toJson<Uint8List>(credentialVerifier),
+      'credentialParametersJson':
+          serializer.toJson<String>(credentialParametersJson),
+      'credentialUpdatedAt': serializer.toJson<DateTime>(credentialUpdatedAt),
+    };
+  }
+
+  AuthAccountRow copyWith(
+          {String? id,
+          String? phoneNormalized,
+          String? name,
+          String? role,
+          bool? isActive,
+          DateTime? createdAt,
+          DateTime? updatedAt,
+          String? credentialScheme,
+          Uint8List? credentialSalt,
+          Uint8List? credentialVerifier,
+          String? credentialParametersJson,
+          DateTime? credentialUpdatedAt}) =>
+      AuthAccountRow(
+        id: id ?? this.id,
+        phoneNormalized: phoneNormalized ?? this.phoneNormalized,
+        name: name ?? this.name,
+        role: role ?? this.role,
+        isActive: isActive ?? this.isActive,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        credentialScheme: credentialScheme ?? this.credentialScheme,
+        credentialSalt: credentialSalt ?? this.credentialSalt,
+        credentialVerifier: credentialVerifier ?? this.credentialVerifier,
+        credentialParametersJson:
+            credentialParametersJson ?? this.credentialParametersJson,
+        credentialUpdatedAt: credentialUpdatedAt ?? this.credentialUpdatedAt,
+      );
+  AuthAccountRow copyWithCompanion(AuthAccountsCompanion data) {
+    return AuthAccountRow(
+      id: data.id.present ? data.id.value : this.id,
+      phoneNormalized: data.phoneNormalized.present
+          ? data.phoneNormalized.value
+          : this.phoneNormalized,
+      name: data.name.present ? data.name.value : this.name,
+      role: data.role.present ? data.role.value : this.role,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      credentialScheme: data.credentialScheme.present
+          ? data.credentialScheme.value
+          : this.credentialScheme,
+      credentialSalt: data.credentialSalt.present
+          ? data.credentialSalt.value
+          : this.credentialSalt,
+      credentialVerifier: data.credentialVerifier.present
+          ? data.credentialVerifier.value
+          : this.credentialVerifier,
+      credentialParametersJson: data.credentialParametersJson.present
+          ? data.credentialParametersJson.value
+          : this.credentialParametersJson,
+      credentialUpdatedAt: data.credentialUpdatedAt.present
+          ? data.credentialUpdatedAt.value
+          : this.credentialUpdatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthAccountRow(')
+          ..write('id: $id, ')
+          ..write('phoneNormalized: $phoneNormalized, ')
+          ..write('name: $name, ')
+          ..write('role: $role, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('credentialScheme: $credentialScheme, ')
+          ..write('credentialSalt: $credentialSalt, ')
+          ..write('credentialVerifier: $credentialVerifier, ')
+          ..write('credentialParametersJson: $credentialParametersJson, ')
+          ..write('credentialUpdatedAt: $credentialUpdatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      phoneNormalized,
+      name,
+      role,
+      isActive,
+      createdAt,
+      updatedAt,
+      credentialScheme,
+      $driftBlobEquality.hash(credentialSalt),
+      $driftBlobEquality.hash(credentialVerifier),
+      credentialParametersJson,
+      credentialUpdatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuthAccountRow &&
+          other.id == this.id &&
+          other.phoneNormalized == this.phoneNormalized &&
+          other.name == this.name &&
+          other.role == this.role &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.credentialScheme == this.credentialScheme &&
+          $driftBlobEquality.equals(
+              other.credentialSalt, this.credentialSalt) &&
+          $driftBlobEquality.equals(
+              other.credentialVerifier, this.credentialVerifier) &&
+          other.credentialParametersJson == this.credentialParametersJson &&
+          other.credentialUpdatedAt == this.credentialUpdatedAt);
+}
+
+class AuthAccountsCompanion extends UpdateCompanion<AuthAccountRow> {
+  final Value<String> id;
+  final Value<String> phoneNormalized;
+  final Value<String> name;
+  final Value<String> role;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> credentialScheme;
+  final Value<Uint8List> credentialSalt;
+  final Value<Uint8List> credentialVerifier;
+  final Value<String> credentialParametersJson;
+  final Value<DateTime> credentialUpdatedAt;
+  final Value<int> rowid;
+  const AuthAccountsCompanion({
+    this.id = const Value.absent(),
+    this.phoneNormalized = const Value.absent(),
+    this.name = const Value.absent(),
+    this.role = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.credentialScheme = const Value.absent(),
+    this.credentialSalt = const Value.absent(),
+    this.credentialVerifier = const Value.absent(),
+    this.credentialParametersJson = const Value.absent(),
+    this.credentialUpdatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AuthAccountsCompanion.insert({
+    required String id,
+    required String phoneNormalized,
+    required String name,
+    required String role,
+    required bool isActive,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required String credentialScheme,
+    required Uint8List credentialSalt,
+    required Uint8List credentialVerifier,
+    required String credentialParametersJson,
+    required DateTime credentialUpdatedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        phoneNormalized = Value(phoneNormalized),
+        name = Value(name),
+        role = Value(role),
+        isActive = Value(isActive),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt),
+        credentialScheme = Value(credentialScheme),
+        credentialSalt = Value(credentialSalt),
+        credentialVerifier = Value(credentialVerifier),
+        credentialParametersJson = Value(credentialParametersJson),
+        credentialUpdatedAt = Value(credentialUpdatedAt);
+  static Insertable<AuthAccountRow> custom({
+    Expression<String>? id,
+    Expression<String>? phoneNormalized,
+    Expression<String>? name,
+    Expression<String>? role,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? credentialScheme,
+    Expression<Uint8List>? credentialSalt,
+    Expression<Uint8List>? credentialVerifier,
+    Expression<String>? credentialParametersJson,
+    Expression<DateTime>? credentialUpdatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (phoneNormalized != null) 'phone_normalized': phoneNormalized,
+      if (name != null) 'name': name,
+      if (role != null) 'role': role,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (credentialScheme != null) 'credential_scheme': credentialScheme,
+      if (credentialSalt != null) 'credential_salt': credentialSalt,
+      if (credentialVerifier != null) 'credential_verifier': credentialVerifier,
+      if (credentialParametersJson != null)
+        'credential_parameters_json': credentialParametersJson,
+      if (credentialUpdatedAt != null)
+        'credential_updated_at': credentialUpdatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AuthAccountsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? phoneNormalized,
+      Value<String>? name,
+      Value<String>? role,
+      Value<bool>? isActive,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<String>? credentialScheme,
+      Value<Uint8List>? credentialSalt,
+      Value<Uint8List>? credentialVerifier,
+      Value<String>? credentialParametersJson,
+      Value<DateTime>? credentialUpdatedAt,
+      Value<int>? rowid}) {
+    return AuthAccountsCompanion(
+      id: id ?? this.id,
+      phoneNormalized: phoneNormalized ?? this.phoneNormalized,
+      name: name ?? this.name,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      credentialScheme: credentialScheme ?? this.credentialScheme,
+      credentialSalt: credentialSalt ?? this.credentialSalt,
+      credentialVerifier: credentialVerifier ?? this.credentialVerifier,
+      credentialParametersJson:
+          credentialParametersJson ?? this.credentialParametersJson,
+      credentialUpdatedAt: credentialUpdatedAt ?? this.credentialUpdatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (phoneNormalized.present) {
+      map['phone_normalized'] = Variable<String>(phoneNormalized.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (credentialScheme.present) {
+      map['credential_scheme'] = Variable<String>(credentialScheme.value);
+    }
+    if (credentialSalt.present) {
+      map['credential_salt'] = Variable<Uint8List>(credentialSalt.value);
+    }
+    if (credentialVerifier.present) {
+      map['credential_verifier'] =
+          Variable<Uint8List>(credentialVerifier.value);
+    }
+    if (credentialParametersJson.present) {
+      map['credential_parameters_json'] =
+          Variable<String>(credentialParametersJson.value);
+    }
+    if (credentialUpdatedAt.present) {
+      map['credential_updated_at'] =
+          Variable<DateTime>(credentialUpdatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthAccountsCompanion(')
+          ..write('id: $id, ')
+          ..write('phoneNormalized: $phoneNormalized, ')
+          ..write('name: $name, ')
+          ..write('role: $role, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('credentialScheme: $credentialScheme, ')
+          ..write('credentialSalt: $credentialSalt, ')
+          ..write('credentialVerifier: $credentialVerifier, ')
+          ..write('credentialParametersJson: $credentialParametersJson, ')
+          ..write('credentialUpdatedAt: $credentialUpdatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -11737,6 +12373,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $SupplierAdvanceApplicationsTable(this);
   late final $SupplierAdvanceRefundsTable supplierAdvanceRefunds =
       $SupplierAdvanceRefundsTable(this);
+  late final $AuthAccountsTable authAccounts = $AuthAccountsTable(this);
   late final Index inventoryMovementsProductIdx = Index(
       'inventory_movements_product_idx',
       'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
@@ -11807,6 +12444,11 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index supplierAdvanceRefundsAdvanceIdx = Index(
       'supplier_advance_refunds_advance_idx',
       'CREATE INDEX supplier_advance_refunds_advance_idx ON supplier_advance_refunds (advance_id)');
+  late final Index authAccountsRoleActiveIdx = Index(
+      'auth_accounts_role_active_idx',
+      'CREATE INDEX auth_accounts_role_active_idx ON auth_accounts (role, is_active)');
+  late final Index authAccountsCreatedIdx = Index('auth_accounts_created_idx',
+      'CREATE INDEX auth_accounts_created_idx ON auth_accounts (created_at, id)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11836,6 +12478,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         supplierAdvances,
         supplierAdvanceApplications,
         supplierAdvanceRefunds,
+        authAccounts,
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
@@ -11862,7 +12505,9 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         supplierPaymentsSupplierTimestampIdx,
         supplierAdvancesSupplierTimestampIdx,
         supplierAdvanceApplicationsAdvanceIdx,
-        supplierAdvanceRefundsAdvanceIdx
+        supplierAdvanceRefundsAdvanceIdx,
+        authAccountsRoleActiveIdx,
+        authAccountsCreatedIdx
       ];
 }
 
@@ -17877,6 +18522,297 @@ typedef $$SupplierAdvanceRefundsTableProcessedTableManager
         ),
         SupplierAdvanceRefundRow,
         PrefetchHooks Function()>;
+typedef $$AuthAccountsTableCreateCompanionBuilder = AuthAccountsCompanion
+    Function({
+  required String id,
+  required String phoneNormalized,
+  required String name,
+  required String role,
+  required bool isActive,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  required String credentialScheme,
+  required Uint8List credentialSalt,
+  required Uint8List credentialVerifier,
+  required String credentialParametersJson,
+  required DateTime credentialUpdatedAt,
+  Value<int> rowid,
+});
+typedef $$AuthAccountsTableUpdateCompanionBuilder = AuthAccountsCompanion
+    Function({
+  Value<String> id,
+  Value<String> phoneNormalized,
+  Value<String> name,
+  Value<String> role,
+  Value<bool> isActive,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<String> credentialScheme,
+  Value<Uint8List> credentialSalt,
+  Value<Uint8List> credentialVerifier,
+  Value<String> credentialParametersJson,
+  Value<DateTime> credentialUpdatedAt,
+  Value<int> rowid,
+});
+
+class $$AuthAccountsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $AuthAccountsTable> {
+  $$AuthAccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get phoneNormalized => $composableBuilder(
+      column: $table.phoneNormalized,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get role => $composableBuilder(
+      column: $table.role, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get credentialScheme => $composableBuilder(
+      column: $table.credentialScheme,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<Uint8List> get credentialSalt => $composableBuilder(
+      column: $table.credentialSalt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<Uint8List> get credentialVerifier => $composableBuilder(
+      column: $table.credentialVerifier,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get credentialParametersJson => $composableBuilder(
+      column: $table.credentialParametersJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get credentialUpdatedAt => $composableBuilder(
+      column: $table.credentialUpdatedAt,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$AuthAccountsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $AuthAccountsTable> {
+  $$AuthAccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get phoneNormalized => $composableBuilder(
+      column: $table.phoneNormalized,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get role => $composableBuilder(
+      column: $table.role, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get credentialScheme => $composableBuilder(
+      column: $table.credentialScheme,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<Uint8List> get credentialSalt => $composableBuilder(
+      column: $table.credentialSalt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<Uint8List> get credentialVerifier => $composableBuilder(
+      column: $table.credentialVerifier,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get credentialParametersJson => $composableBuilder(
+      column: $table.credentialParametersJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get credentialUpdatedAt => $composableBuilder(
+      column: $table.credentialUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$AuthAccountsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $AuthAccountsTable> {
+  $$AuthAccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get phoneNormalized => $composableBuilder(
+      column: $table.phoneNormalized, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get credentialScheme => $composableBuilder(
+      column: $table.credentialScheme, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get credentialSalt => $composableBuilder(
+      column: $table.credentialSalt, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get credentialVerifier => $composableBuilder(
+      column: $table.credentialVerifier, builder: (column) => column);
+
+  GeneratedColumn<String> get credentialParametersJson => $composableBuilder(
+      column: $table.credentialParametersJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get credentialUpdatedAt => $composableBuilder(
+      column: $table.credentialUpdatedAt, builder: (column) => column);
+}
+
+class $$AuthAccountsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $AuthAccountsTable,
+    AuthAccountRow,
+    $$AuthAccountsTableFilterComposer,
+    $$AuthAccountsTableOrderingComposer,
+    $$AuthAccountsTableAnnotationComposer,
+    $$AuthAccountsTableCreateCompanionBuilder,
+    $$AuthAccountsTableUpdateCompanionBuilder,
+    (
+      AuthAccountRow,
+      BaseReferences<_$FoundationDatabase, $AuthAccountsTable, AuthAccountRow>
+    ),
+    AuthAccountRow,
+    PrefetchHooks Function()> {
+  $$AuthAccountsTableTableManager(
+      _$FoundationDatabase db, $AuthAccountsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AuthAccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AuthAccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AuthAccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> phoneNormalized = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> role = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> credentialScheme = const Value.absent(),
+            Value<Uint8List> credentialSalt = const Value.absent(),
+            Value<Uint8List> credentialVerifier = const Value.absent(),
+            Value<String> credentialParametersJson = const Value.absent(),
+            Value<DateTime> credentialUpdatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AuthAccountsCompanion(
+            id: id,
+            phoneNormalized: phoneNormalized,
+            name: name,
+            role: role,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            credentialScheme: credentialScheme,
+            credentialSalt: credentialSalt,
+            credentialVerifier: credentialVerifier,
+            credentialParametersJson: credentialParametersJson,
+            credentialUpdatedAt: credentialUpdatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String phoneNormalized,
+            required String name,
+            required String role,
+            required bool isActive,
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            required String credentialScheme,
+            required Uint8List credentialSalt,
+            required Uint8List credentialVerifier,
+            required String credentialParametersJson,
+            required DateTime credentialUpdatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AuthAccountsCompanion.insert(
+            id: id,
+            phoneNormalized: phoneNormalized,
+            name: name,
+            role: role,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            credentialScheme: credentialScheme,
+            credentialSalt: credentialSalt,
+            credentialVerifier: credentialVerifier,
+            credentialParametersJson: credentialParametersJson,
+            credentialUpdatedAt: credentialUpdatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AuthAccountsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $AuthAccountsTable,
+    AuthAccountRow,
+    $$AuthAccountsTableFilterComposer,
+    $$AuthAccountsTableOrderingComposer,
+    $$AuthAccountsTableAnnotationComposer,
+    $$AuthAccountsTableCreateCompanionBuilder,
+    $$AuthAccountsTableUpdateCompanionBuilder,
+    (
+      AuthAccountRow,
+      BaseReferences<_$FoundationDatabase, $AuthAccountsTable, AuthAccountRow>
+    ),
+    AuthAccountRow,
+    PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -17938,4 +18874,6 @@ class $FoundationDatabaseManager {
   $$SupplierAdvanceRefundsTableTableManager get supplierAdvanceRefunds =>
       $$SupplierAdvanceRefundsTableTableManager(
           _db, _db.supplierAdvanceRefunds);
+  $$AuthAccountsTableTableManager get authAccounts =>
+      $$AuthAccountsTableTableManager(_db, _db.authAccounts);
 }

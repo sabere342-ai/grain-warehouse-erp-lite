@@ -56,4 +56,20 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.supplierAdvanceApplications);
         await migrator.createTable(database.supplierAdvanceRefunds);
       },
+      13: (migrator) async {
+        await migrator.createTable(database.authAccounts);
+        // Some legacy v7/v8 fixtures predate the sequence table despite their
+        // recorded user_version. Repair that additive foundation invariant
+        // before reserving the auth namespace.
+        await database.customStatement(
+          'CREATE TABLE IF NOT EXISTS repository_sequences ('
+          'repository TEXT NOT NULL PRIMARY KEY, '
+          'next_value INTEGER NOT NULL)',
+        );
+        await database.customStatement(
+          'INSERT INTO repository_sequences (repository, next_value) VALUES (?, ?) '
+          'ON CONFLICT(repository) DO NOTHING',
+          ['auth_accounts', 1],
+        );
+      },
     };

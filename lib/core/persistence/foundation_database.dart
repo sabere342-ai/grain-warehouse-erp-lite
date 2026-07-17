@@ -382,6 +382,27 @@ class SupplierAdvanceRefunds extends SupplierAccountPayloadTable {
   TextColumn get advanceId => text()();
 }
 
+@TableIndex(name: 'auth_accounts_role_active_idx', columns: {#role, #isActive})
+@TableIndex(name: 'auth_accounts_created_idx', columns: {#createdAt, #id})
+@DataClassName('AuthAccountRow')
+class AuthAccounts extends Table {
+  TextColumn get id => text()();
+  TextColumn get phoneNormalized => text().unique()();
+  TextColumn get name => text()();
+  TextColumn get role => text()();
+  BoolColumn get isActive => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get credentialScheme => text()();
+  BlobColumn get credentialSalt => blob()();
+  BlobColumn get credentialVerifier => blob()();
+  TextColumn get credentialParametersJson => text()();
+  DateTimeColumn get credentialUpdatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -407,12 +428,13 @@ class SupplierAdvanceRefunds extends SupplierAccountPayloadTable {
   SupplierAdvances,
   SupplierAdvanceApplications,
   SupplierAdvanceRefunds,
+  AuthAccounts,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);
