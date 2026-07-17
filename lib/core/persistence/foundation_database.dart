@@ -333,6 +333,55 @@ class CustomerAdvanceRefunds extends CustomerAccountPayloadTable {
   TextColumn get advanceId => text()();
 }
 
+abstract class SupplierAccountPayloadTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get supplierId => text()();
+  DateTimeColumn get occurredAt => dateTime()();
+  TextColumn get payloadJson => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'supplier_account_entries_supplier_timestamp_idx',
+  columns: {#supplierId, #occurredAt, #id},
+)
+@DataClassName('SupplierAccountEntryRow')
+class SupplierAccountEntries extends SupplierAccountPayloadTable {}
+
+@TableIndex(
+  name: 'supplier_payments_supplier_timestamp_idx',
+  columns: {#supplierId, #occurredAt, #id},
+)
+@DataClassName('SupplierPaymentRow')
+class SupplierPayments extends SupplierAccountPayloadTable {}
+
+@TableIndex(
+  name: 'supplier_advances_supplier_timestamp_idx',
+  columns: {#supplierId, #occurredAt, #id},
+)
+@DataClassName('SupplierAdvanceRow')
+class SupplierAdvances extends SupplierAccountPayloadTable {}
+
+@TableIndex(
+  name: 'supplier_advance_applications_advance_idx',
+  columns: {#advanceId},
+)
+@DataClassName('SupplierAdvanceApplicationRow')
+class SupplierAdvanceApplications extends SupplierAccountPayloadTable {
+  TextColumn get advanceId => text()();
+}
+
+@TableIndex(
+  name: 'supplier_advance_refunds_advance_idx',
+  columns: {#advanceId},
+)
+@DataClassName('SupplierAdvanceRefundRow')
+class SupplierAdvanceRefunds extends SupplierAccountPayloadTable {
+  TextColumn get advanceId => text()();
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -353,12 +402,17 @@ class CustomerAdvanceRefunds extends CustomerAccountPayloadTable {
   CustomerAdvances,
   CustomerAdvanceApplications,
   CustomerAdvanceRefunds,
+  SupplierAccountEntries,
+  SupplierPayments,
+  SupplierAdvances,
+  SupplierAdvanceApplications,
+  SupplierAdvanceRefunds,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

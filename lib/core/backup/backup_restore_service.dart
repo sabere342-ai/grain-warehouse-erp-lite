@@ -51,7 +51,7 @@ class BackupRestoreService {
     BusinessIdentityRepository? businessIdentityRepository,
     CustomerDataRepository? customerRepository,
     DurableCustomerAccountRepository? customerAccountRepository,
-    LocalSupplierAccountRepository? supplierAccountRepository,
+    DurableSupplierAccountRepository? supplierAccountRepository,
     DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
@@ -87,7 +87,7 @@ class BackupRestoreService {
   final BusinessIdentityRepository? _businessIdentityRepository;
   final CustomerDataRepository _customerRepository;
   final DurableCustomerAccountRepository _customerAccountRepository;
-  final LocalSupplierAccountRepository _supplierAccountRepository;
+  final DurableSupplierAccountRepository _supplierAccountRepository;
   final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
@@ -519,6 +519,7 @@ class BackupRestoreService {
       reason: _string(map, 'reason'),
       supplierLedgerReversalEntryId:
           _string(map, 'supplierLedgerReversalEntryId'),
+      operationRequestId: _optionalString(map, 'operationRequestId'),
       financialAccountReversalEntryId:
           _optionalString(map, 'financialAccountReversalEntryId'),
     );
@@ -671,6 +672,9 @@ class BackupRestoreService {
       paymentMethod: _optionalPaymentMethod(map),
       settledAmountQirsh: _optionalInt(map, 'settledAmountQirsh'),
       advanceAmountQirsh: _optionalInt(map, 'advanceAmountQirsh') ?? 0,
+      operationRequestId: _optionalString(map, 'operationRequestId'),
+      operationRequestFingerprint:
+          _optionalString(map, 'operationRequestFingerprint'),
       cancellation: _parseSupplierPaymentCancellation(map['cancellation']),
     );
   }

@@ -29,6 +29,7 @@ import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/drift_sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/supplier_accounts/drift_supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/drift_supplier_repository.dart';
 
@@ -125,7 +126,8 @@ class AppRepositories {
       auditLogRepository: auditLogRepository,
       financialAccountRepository: financialAccountRepository,
     );
-    supplierAccountRepository = LocalSupplierAccountRepository(
+    supplierAccountRepository = DriftSupplierAccountRepository(
+      database,
       supplierRepository: supplierRepository,
       auditLogRepository: auditLogRepository,
       financialAccountRepository: financialAccountRepository,
@@ -160,7 +162,7 @@ class AppRepositories {
   static DurableInventoryRepository get inventoryRepository =>
       _inventoryRepository;
 
-  static LocalSupplierAccountRepository supplierAccountRepository =
+  static DurableSupplierAccountRepository supplierAccountRepository =
       LocalSupplierAccountRepository(
     supplierRepository: supplierRepository,
     auditLogRepository: auditLogRepository,

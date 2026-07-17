@@ -14,6 +14,8 @@ class SupplierPaymentRecord {
     this.paymentMethod,
     this.settledAmountQirsh,
     this.advanceAmountQirsh = 0,
+    this.operationRequestId,
+    this.operationRequestFingerprint,
     this.cancellation,
   });
 
@@ -29,6 +31,8 @@ class SupplierPaymentRecord {
   final PaymentMethod? paymentMethod;
   final int? settledAmountQirsh;
   final int advanceAmountQirsh;
+  final String? operationRequestId;
+  final String? operationRequestFingerprint;
   final SupplierPaymentCancellation? cancellation;
 
   bool get hasValidId => id.trim().isNotEmpty;
@@ -44,6 +48,7 @@ class SupplierPaymentCancellation {
     required this.cancelledByUserId,
     required this.reason,
     required this.supplierLedgerReversalEntryId,
+    this.operationRequestId,
     this.financialAccountReversalEntryId,
   });
 
@@ -53,6 +58,7 @@ class SupplierPaymentCancellation {
   final String cancelledByUserId;
   final String reason;
   final String supplierLedgerReversalEntryId;
+  final String? operationRequestId;
   final String? financialAccountReversalEntryId;
 }
 

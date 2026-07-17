@@ -10193,6 +10193,1506 @@ class CustomerAdvanceRefundsCompanion
   }
 }
 
+class $SupplierAccountEntriesTable extends SupplierAccountEntries
+    with TableInfo<$SupplierAccountEntriesTable, SupplierAccountEntryRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierAccountEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierIdMeta =
+      const VerificationMeta('supplierId');
+  @override
+  late final GeneratedColumn<String> supplierId = GeneratedColumn<String>(
+      'supplier_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, supplierId, occurredAt, payloadJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_account_entries';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<SupplierAccountEntryRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('supplier_id')) {
+      context.handle(
+          _supplierIdMeta,
+          supplierId.isAcceptableOrUnknown(
+              data['supplier_id']!, _supplierIdMeta));
+    } else if (isInserting) {
+      context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierAccountEntryRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierAccountEntryRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      supplierId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+    );
+  }
+
+  @override
+  $SupplierAccountEntriesTable createAlias(String alias) {
+    return $SupplierAccountEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierAccountEntryRow extends DataClass
+    implements Insertable<SupplierAccountEntryRow> {
+  final String id;
+  final String supplierId;
+  final DateTime occurredAt;
+  final String payloadJson;
+  const SupplierAccountEntryRow(
+      {required this.id,
+      required this.supplierId,
+      required this.occurredAt,
+      required this.payloadJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['supplier_id'] = Variable<String>(supplierId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['payload_json'] = Variable<String>(payloadJson);
+    return map;
+  }
+
+  SupplierAccountEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SupplierAccountEntriesCompanion(
+      id: Value(id),
+      supplierId: Value(supplierId),
+      occurredAt: Value(occurredAt),
+      payloadJson: Value(payloadJson),
+    );
+  }
+
+  factory SupplierAccountEntryRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierAccountEntryRow(
+      id: serializer.fromJson<String>(json['id']),
+      supplierId: serializer.fromJson<String>(json['supplierId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'supplierId': serializer.toJson<String>(supplierId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+    };
+  }
+
+  SupplierAccountEntryRow copyWith(
+          {String? id,
+          String? supplierId,
+          DateTime? occurredAt,
+          String? payloadJson}) =>
+      SupplierAccountEntryRow(
+        id: id ?? this.id,
+        supplierId: supplierId ?? this.supplierId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        payloadJson: payloadJson ?? this.payloadJson,
+      );
+  SupplierAccountEntryRow copyWithCompanion(
+      SupplierAccountEntriesCompanion data) {
+    return SupplierAccountEntryRow(
+      id: data.id.present ? data.id.value : this.id,
+      supplierId:
+          data.supplierId.present ? data.supplierId.value : this.supplierId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAccountEntryRow(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, supplierId, occurredAt, payloadJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierAccountEntryRow &&
+          other.id == this.id &&
+          other.supplierId == this.supplierId &&
+          other.occurredAt == this.occurredAt &&
+          other.payloadJson == this.payloadJson);
+}
+
+class SupplierAccountEntriesCompanion
+    extends UpdateCompanion<SupplierAccountEntryRow> {
+  final Value<String> id;
+  final Value<String> supplierId;
+  final Value<DateTime> occurredAt;
+  final Value<String> payloadJson;
+  final Value<int> rowid;
+  const SupplierAccountEntriesCompanion({
+    this.id = const Value.absent(),
+    this.supplierId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SupplierAccountEntriesCompanion.insert({
+    required String id,
+    required String supplierId,
+    required DateTime occurredAt,
+    required String payloadJson,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        supplierId = Value(supplierId),
+        occurredAt = Value(occurredAt),
+        payloadJson = Value(payloadJson);
+  static Insertable<SupplierAccountEntryRow> custom({
+    Expression<String>? id,
+    Expression<String>? supplierId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? payloadJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierId != null) 'supplier_id': supplierId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SupplierAccountEntriesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? supplierId,
+      Value<DateTime>? occurredAt,
+      Value<String>? payloadJson,
+      Value<int>? rowid}) {
+    return SupplierAccountEntriesCompanion(
+      id: id ?? this.id,
+      supplierId: supplierId ?? this.supplierId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      payloadJson: payloadJson ?? this.payloadJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (supplierId.present) {
+      map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAccountEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SupplierPaymentsTable extends SupplierPayments
+    with TableInfo<$SupplierPaymentsTable, SupplierPaymentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierPaymentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierIdMeta =
+      const VerificationMeta('supplierId');
+  @override
+  late final GeneratedColumn<String> supplierId = GeneratedColumn<String>(
+      'supplier_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, supplierId, occurredAt, payloadJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_payments';
+  @override
+  VerificationContext validateIntegrity(Insertable<SupplierPaymentRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('supplier_id')) {
+      context.handle(
+          _supplierIdMeta,
+          supplierId.isAcceptableOrUnknown(
+              data['supplier_id']!, _supplierIdMeta));
+    } else if (isInserting) {
+      context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierPaymentRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierPaymentRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      supplierId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+    );
+  }
+
+  @override
+  $SupplierPaymentsTable createAlias(String alias) {
+    return $SupplierPaymentsTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierPaymentRow extends DataClass
+    implements Insertable<SupplierPaymentRow> {
+  final String id;
+  final String supplierId;
+  final DateTime occurredAt;
+  final String payloadJson;
+  const SupplierPaymentRow(
+      {required this.id,
+      required this.supplierId,
+      required this.occurredAt,
+      required this.payloadJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['supplier_id'] = Variable<String>(supplierId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['payload_json'] = Variable<String>(payloadJson);
+    return map;
+  }
+
+  SupplierPaymentsCompanion toCompanion(bool nullToAbsent) {
+    return SupplierPaymentsCompanion(
+      id: Value(id),
+      supplierId: Value(supplierId),
+      occurredAt: Value(occurredAt),
+      payloadJson: Value(payloadJson),
+    );
+  }
+
+  factory SupplierPaymentRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierPaymentRow(
+      id: serializer.fromJson<String>(json['id']),
+      supplierId: serializer.fromJson<String>(json['supplierId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'supplierId': serializer.toJson<String>(supplierId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+    };
+  }
+
+  SupplierPaymentRow copyWith(
+          {String? id,
+          String? supplierId,
+          DateTime? occurredAt,
+          String? payloadJson}) =>
+      SupplierPaymentRow(
+        id: id ?? this.id,
+        supplierId: supplierId ?? this.supplierId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        payloadJson: payloadJson ?? this.payloadJson,
+      );
+  SupplierPaymentRow copyWithCompanion(SupplierPaymentsCompanion data) {
+    return SupplierPaymentRow(
+      id: data.id.present ? data.id.value : this.id,
+      supplierId:
+          data.supplierId.present ? data.supplierId.value : this.supplierId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierPaymentRow(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, supplierId, occurredAt, payloadJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierPaymentRow &&
+          other.id == this.id &&
+          other.supplierId == this.supplierId &&
+          other.occurredAt == this.occurredAt &&
+          other.payloadJson == this.payloadJson);
+}
+
+class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPaymentRow> {
+  final Value<String> id;
+  final Value<String> supplierId;
+  final Value<DateTime> occurredAt;
+  final Value<String> payloadJson;
+  final Value<int> rowid;
+  const SupplierPaymentsCompanion({
+    this.id = const Value.absent(),
+    this.supplierId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SupplierPaymentsCompanion.insert({
+    required String id,
+    required String supplierId,
+    required DateTime occurredAt,
+    required String payloadJson,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        supplierId = Value(supplierId),
+        occurredAt = Value(occurredAt),
+        payloadJson = Value(payloadJson);
+  static Insertable<SupplierPaymentRow> custom({
+    Expression<String>? id,
+    Expression<String>? supplierId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? payloadJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierId != null) 'supplier_id': supplierId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SupplierPaymentsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? supplierId,
+      Value<DateTime>? occurredAt,
+      Value<String>? payloadJson,
+      Value<int>? rowid}) {
+    return SupplierPaymentsCompanion(
+      id: id ?? this.id,
+      supplierId: supplierId ?? this.supplierId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      payloadJson: payloadJson ?? this.payloadJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (supplierId.present) {
+      map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierPaymentsCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SupplierAdvancesTable extends SupplierAdvances
+    with TableInfo<$SupplierAdvancesTable, SupplierAdvanceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierAdvancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierIdMeta =
+      const VerificationMeta('supplierId');
+  @override
+  late final GeneratedColumn<String> supplierId = GeneratedColumn<String>(
+      'supplier_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, supplierId, occurredAt, payloadJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_advances';
+  @override
+  VerificationContext validateIntegrity(Insertable<SupplierAdvanceRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('supplier_id')) {
+      context.handle(
+          _supplierIdMeta,
+          supplierId.isAcceptableOrUnknown(
+              data['supplier_id']!, _supplierIdMeta));
+    } else if (isInserting) {
+      context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierAdvanceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierAdvanceRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      supplierId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+    );
+  }
+
+  @override
+  $SupplierAdvancesTable createAlias(String alias) {
+    return $SupplierAdvancesTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierAdvanceRow extends DataClass
+    implements Insertable<SupplierAdvanceRow> {
+  final String id;
+  final String supplierId;
+  final DateTime occurredAt;
+  final String payloadJson;
+  const SupplierAdvanceRow(
+      {required this.id,
+      required this.supplierId,
+      required this.occurredAt,
+      required this.payloadJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['supplier_id'] = Variable<String>(supplierId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['payload_json'] = Variable<String>(payloadJson);
+    return map;
+  }
+
+  SupplierAdvancesCompanion toCompanion(bool nullToAbsent) {
+    return SupplierAdvancesCompanion(
+      id: Value(id),
+      supplierId: Value(supplierId),
+      occurredAt: Value(occurredAt),
+      payloadJson: Value(payloadJson),
+    );
+  }
+
+  factory SupplierAdvanceRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierAdvanceRow(
+      id: serializer.fromJson<String>(json['id']),
+      supplierId: serializer.fromJson<String>(json['supplierId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'supplierId': serializer.toJson<String>(supplierId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+    };
+  }
+
+  SupplierAdvanceRow copyWith(
+          {String? id,
+          String? supplierId,
+          DateTime? occurredAt,
+          String? payloadJson}) =>
+      SupplierAdvanceRow(
+        id: id ?? this.id,
+        supplierId: supplierId ?? this.supplierId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        payloadJson: payloadJson ?? this.payloadJson,
+      );
+  SupplierAdvanceRow copyWithCompanion(SupplierAdvancesCompanion data) {
+    return SupplierAdvanceRow(
+      id: data.id.present ? data.id.value : this.id,
+      supplierId:
+          data.supplierId.present ? data.supplierId.value : this.supplierId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvanceRow(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, supplierId, occurredAt, payloadJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierAdvanceRow &&
+          other.id == this.id &&
+          other.supplierId == this.supplierId &&
+          other.occurredAt == this.occurredAt &&
+          other.payloadJson == this.payloadJson);
+}
+
+class SupplierAdvancesCompanion extends UpdateCompanion<SupplierAdvanceRow> {
+  final Value<String> id;
+  final Value<String> supplierId;
+  final Value<DateTime> occurredAt;
+  final Value<String> payloadJson;
+  final Value<int> rowid;
+  const SupplierAdvancesCompanion({
+    this.id = const Value.absent(),
+    this.supplierId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SupplierAdvancesCompanion.insert({
+    required String id,
+    required String supplierId,
+    required DateTime occurredAt,
+    required String payloadJson,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        supplierId = Value(supplierId),
+        occurredAt = Value(occurredAt),
+        payloadJson = Value(payloadJson);
+  static Insertable<SupplierAdvanceRow> custom({
+    Expression<String>? id,
+    Expression<String>? supplierId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? payloadJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierId != null) 'supplier_id': supplierId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SupplierAdvancesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? supplierId,
+      Value<DateTime>? occurredAt,
+      Value<String>? payloadJson,
+      Value<int>? rowid}) {
+    return SupplierAdvancesCompanion(
+      id: id ?? this.id,
+      supplierId: supplierId ?? this.supplierId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      payloadJson: payloadJson ?? this.payloadJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (supplierId.present) {
+      map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvancesCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SupplierAdvanceApplicationsTable extends SupplierAdvanceApplications
+    with
+        TableInfo<$SupplierAdvanceApplicationsTable,
+            SupplierAdvanceApplicationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierAdvanceApplicationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierIdMeta =
+      const VerificationMeta('supplierId');
+  @override
+  late final GeneratedColumn<String> supplierId = GeneratedColumn<String>(
+      'supplier_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _advanceIdMeta =
+      const VerificationMeta('advanceId');
+  @override
+  late final GeneratedColumn<String> advanceId = GeneratedColumn<String>(
+      'advance_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, supplierId, occurredAt, payloadJson, advanceId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_advance_applications';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<SupplierAdvanceApplicationRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('supplier_id')) {
+      context.handle(
+          _supplierIdMeta,
+          supplierId.isAcceptableOrUnknown(
+              data['supplier_id']!, _supplierIdMeta));
+    } else if (isInserting) {
+      context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('advance_id')) {
+      context.handle(_advanceIdMeta,
+          advanceId.isAcceptableOrUnknown(data['advance_id']!, _advanceIdMeta));
+    } else if (isInserting) {
+      context.missing(_advanceIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierAdvanceApplicationRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierAdvanceApplicationRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      supplierId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      advanceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}advance_id'])!,
+    );
+  }
+
+  @override
+  $SupplierAdvanceApplicationsTable createAlias(String alias) {
+    return $SupplierAdvanceApplicationsTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierAdvanceApplicationRow extends DataClass
+    implements Insertable<SupplierAdvanceApplicationRow> {
+  final String id;
+  final String supplierId;
+  final DateTime occurredAt;
+  final String payloadJson;
+  final String advanceId;
+  const SupplierAdvanceApplicationRow(
+      {required this.id,
+      required this.supplierId,
+      required this.occurredAt,
+      required this.payloadJson,
+      required this.advanceId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['supplier_id'] = Variable<String>(supplierId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['advance_id'] = Variable<String>(advanceId);
+    return map;
+  }
+
+  SupplierAdvanceApplicationsCompanion toCompanion(bool nullToAbsent) {
+    return SupplierAdvanceApplicationsCompanion(
+      id: Value(id),
+      supplierId: Value(supplierId),
+      occurredAt: Value(occurredAt),
+      payloadJson: Value(payloadJson),
+      advanceId: Value(advanceId),
+    );
+  }
+
+  factory SupplierAdvanceApplicationRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierAdvanceApplicationRow(
+      id: serializer.fromJson<String>(json['id']),
+      supplierId: serializer.fromJson<String>(json['supplierId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      advanceId: serializer.fromJson<String>(json['advanceId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'supplierId': serializer.toJson<String>(supplierId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'advanceId': serializer.toJson<String>(advanceId),
+    };
+  }
+
+  SupplierAdvanceApplicationRow copyWith(
+          {String? id,
+          String? supplierId,
+          DateTime? occurredAt,
+          String? payloadJson,
+          String? advanceId}) =>
+      SupplierAdvanceApplicationRow(
+        id: id ?? this.id,
+        supplierId: supplierId ?? this.supplierId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        payloadJson: payloadJson ?? this.payloadJson,
+        advanceId: advanceId ?? this.advanceId,
+      );
+  SupplierAdvanceApplicationRow copyWithCompanion(
+      SupplierAdvanceApplicationsCompanion data) {
+    return SupplierAdvanceApplicationRow(
+      id: data.id.present ? data.id.value : this.id,
+      supplierId:
+          data.supplierId.present ? data.supplierId.value : this.supplierId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      advanceId: data.advanceId.present ? data.advanceId.value : this.advanceId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvanceApplicationRow(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('advanceId: $advanceId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, supplierId, occurredAt, payloadJson, advanceId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierAdvanceApplicationRow &&
+          other.id == this.id &&
+          other.supplierId == this.supplierId &&
+          other.occurredAt == this.occurredAt &&
+          other.payloadJson == this.payloadJson &&
+          other.advanceId == this.advanceId);
+}
+
+class SupplierAdvanceApplicationsCompanion
+    extends UpdateCompanion<SupplierAdvanceApplicationRow> {
+  final Value<String> id;
+  final Value<String> supplierId;
+  final Value<DateTime> occurredAt;
+  final Value<String> payloadJson;
+  final Value<String> advanceId;
+  final Value<int> rowid;
+  const SupplierAdvanceApplicationsCompanion({
+    this.id = const Value.absent(),
+    this.supplierId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.advanceId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SupplierAdvanceApplicationsCompanion.insert({
+    required String id,
+    required String supplierId,
+    required DateTime occurredAt,
+    required String payloadJson,
+    required String advanceId,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        supplierId = Value(supplierId),
+        occurredAt = Value(occurredAt),
+        payloadJson = Value(payloadJson),
+        advanceId = Value(advanceId);
+  static Insertable<SupplierAdvanceApplicationRow> custom({
+    Expression<String>? id,
+    Expression<String>? supplierId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? payloadJson,
+    Expression<String>? advanceId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierId != null) 'supplier_id': supplierId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (advanceId != null) 'advance_id': advanceId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SupplierAdvanceApplicationsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? supplierId,
+      Value<DateTime>? occurredAt,
+      Value<String>? payloadJson,
+      Value<String>? advanceId,
+      Value<int>? rowid}) {
+    return SupplierAdvanceApplicationsCompanion(
+      id: id ?? this.id,
+      supplierId: supplierId ?? this.supplierId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      payloadJson: payloadJson ?? this.payloadJson,
+      advanceId: advanceId ?? this.advanceId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (supplierId.present) {
+      map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (advanceId.present) {
+      map['advance_id'] = Variable<String>(advanceId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvanceApplicationsCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('advanceId: $advanceId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SupplierAdvanceRefundsTable extends SupplierAdvanceRefunds
+    with TableInfo<$SupplierAdvanceRefundsTable, SupplierAdvanceRefundRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierAdvanceRefundsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierIdMeta =
+      const VerificationMeta('supplierId');
+  @override
+  late final GeneratedColumn<String> supplierId = GeneratedColumn<String>(
+      'supplier_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _advanceIdMeta =
+      const VerificationMeta('advanceId');
+  @override
+  late final GeneratedColumn<String> advanceId = GeneratedColumn<String>(
+      'advance_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, supplierId, occurredAt, payloadJson, advanceId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_advance_refunds';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<SupplierAdvanceRefundRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('supplier_id')) {
+      context.handle(
+          _supplierIdMeta,
+          supplierId.isAcceptableOrUnknown(
+              data['supplier_id']!, _supplierIdMeta));
+    } else if (isInserting) {
+      context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('advance_id')) {
+      context.handle(_advanceIdMeta,
+          advanceId.isAcceptableOrUnknown(data['advance_id']!, _advanceIdMeta));
+    } else if (isInserting) {
+      context.missing(_advanceIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierAdvanceRefundRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierAdvanceRefundRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      supplierId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      advanceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}advance_id'])!,
+    );
+  }
+
+  @override
+  $SupplierAdvanceRefundsTable createAlias(String alias) {
+    return $SupplierAdvanceRefundsTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierAdvanceRefundRow extends DataClass
+    implements Insertable<SupplierAdvanceRefundRow> {
+  final String id;
+  final String supplierId;
+  final DateTime occurredAt;
+  final String payloadJson;
+  final String advanceId;
+  const SupplierAdvanceRefundRow(
+      {required this.id,
+      required this.supplierId,
+      required this.occurredAt,
+      required this.payloadJson,
+      required this.advanceId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['supplier_id'] = Variable<String>(supplierId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['advance_id'] = Variable<String>(advanceId);
+    return map;
+  }
+
+  SupplierAdvanceRefundsCompanion toCompanion(bool nullToAbsent) {
+    return SupplierAdvanceRefundsCompanion(
+      id: Value(id),
+      supplierId: Value(supplierId),
+      occurredAt: Value(occurredAt),
+      payloadJson: Value(payloadJson),
+      advanceId: Value(advanceId),
+    );
+  }
+
+  factory SupplierAdvanceRefundRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierAdvanceRefundRow(
+      id: serializer.fromJson<String>(json['id']),
+      supplierId: serializer.fromJson<String>(json['supplierId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      advanceId: serializer.fromJson<String>(json['advanceId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'supplierId': serializer.toJson<String>(supplierId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'advanceId': serializer.toJson<String>(advanceId),
+    };
+  }
+
+  SupplierAdvanceRefundRow copyWith(
+          {String? id,
+          String? supplierId,
+          DateTime? occurredAt,
+          String? payloadJson,
+          String? advanceId}) =>
+      SupplierAdvanceRefundRow(
+        id: id ?? this.id,
+        supplierId: supplierId ?? this.supplierId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        payloadJson: payloadJson ?? this.payloadJson,
+        advanceId: advanceId ?? this.advanceId,
+      );
+  SupplierAdvanceRefundRow copyWithCompanion(
+      SupplierAdvanceRefundsCompanion data) {
+    return SupplierAdvanceRefundRow(
+      id: data.id.present ? data.id.value : this.id,
+      supplierId:
+          data.supplierId.present ? data.supplierId.value : this.supplierId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      advanceId: data.advanceId.present ? data.advanceId.value : this.advanceId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvanceRefundRow(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('advanceId: $advanceId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, supplierId, occurredAt, payloadJson, advanceId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierAdvanceRefundRow &&
+          other.id == this.id &&
+          other.supplierId == this.supplierId &&
+          other.occurredAt == this.occurredAt &&
+          other.payloadJson == this.payloadJson &&
+          other.advanceId == this.advanceId);
+}
+
+class SupplierAdvanceRefundsCompanion
+    extends UpdateCompanion<SupplierAdvanceRefundRow> {
+  final Value<String> id;
+  final Value<String> supplierId;
+  final Value<DateTime> occurredAt;
+  final Value<String> payloadJson;
+  final Value<String> advanceId;
+  final Value<int> rowid;
+  const SupplierAdvanceRefundsCompanion({
+    this.id = const Value.absent(),
+    this.supplierId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.advanceId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SupplierAdvanceRefundsCompanion.insert({
+    required String id,
+    required String supplierId,
+    required DateTime occurredAt,
+    required String payloadJson,
+    required String advanceId,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        supplierId = Value(supplierId),
+        occurredAt = Value(occurredAt),
+        payloadJson = Value(payloadJson),
+        advanceId = Value(advanceId);
+  static Insertable<SupplierAdvanceRefundRow> custom({
+    Expression<String>? id,
+    Expression<String>? supplierId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? payloadJson,
+    Expression<String>? advanceId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierId != null) 'supplier_id': supplierId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (advanceId != null) 'advance_id': advanceId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SupplierAdvanceRefundsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? supplierId,
+      Value<DateTime>? occurredAt,
+      Value<String>? payloadJson,
+      Value<String>? advanceId,
+      Value<int>? rowid}) {
+    return SupplierAdvanceRefundsCompanion(
+      id: id ?? this.id,
+      supplierId: supplierId ?? this.supplierId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      payloadJson: payloadJson ?? this.payloadJson,
+      advanceId: advanceId ?? this.advanceId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (supplierId.present) {
+      map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (advanceId.present) {
+      map['advance_id'] = Variable<String>(advanceId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierAdvanceRefundsCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierId: $supplierId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('advanceId: $advanceId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -10227,6 +11727,16 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $CustomerAdvanceApplicationsTable(this);
   late final $CustomerAdvanceRefundsTable customerAdvanceRefunds =
       $CustomerAdvanceRefundsTable(this);
+  late final $SupplierAccountEntriesTable supplierAccountEntries =
+      $SupplierAccountEntriesTable(this);
+  late final $SupplierPaymentsTable supplierPayments =
+      $SupplierPaymentsTable(this);
+  late final $SupplierAdvancesTable supplierAdvances =
+      $SupplierAdvancesTable(this);
+  late final $SupplierAdvanceApplicationsTable supplierAdvanceApplications =
+      $SupplierAdvanceApplicationsTable(this);
+  late final $SupplierAdvanceRefundsTable supplierAdvanceRefunds =
+      $SupplierAdvanceRefundsTable(this);
   late final Index inventoryMovementsProductIdx = Index(
       'inventory_movements_product_idx',
       'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
@@ -10282,6 +11792,21 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index customerAdvanceRefundsAdvanceIdx = Index(
       'customer_advance_refunds_advance_idx',
       'CREATE INDEX customer_advance_refunds_advance_idx ON customer_advance_refunds (advance_id)');
+  late final Index supplierAccountEntriesSupplierTimestampIdx = Index(
+      'supplier_account_entries_supplier_timestamp_idx',
+      'CREATE INDEX supplier_account_entries_supplier_timestamp_idx ON supplier_account_entries (supplier_id, occurred_at, id)');
+  late final Index supplierPaymentsSupplierTimestampIdx = Index(
+      'supplier_payments_supplier_timestamp_idx',
+      'CREATE INDEX supplier_payments_supplier_timestamp_idx ON supplier_payments (supplier_id, occurred_at, id)');
+  late final Index supplierAdvancesSupplierTimestampIdx = Index(
+      'supplier_advances_supplier_timestamp_idx',
+      'CREATE INDEX supplier_advances_supplier_timestamp_idx ON supplier_advances (supplier_id, occurred_at, id)');
+  late final Index supplierAdvanceApplicationsAdvanceIdx = Index(
+      'supplier_advance_applications_advance_idx',
+      'CREATE INDEX supplier_advance_applications_advance_idx ON supplier_advance_applications (advance_id)');
+  late final Index supplierAdvanceRefundsAdvanceIdx = Index(
+      'supplier_advance_refunds_advance_idx',
+      'CREATE INDEX supplier_advance_refunds_advance_idx ON supplier_advance_refunds (advance_id)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10306,6 +11831,11 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         customerAdvances,
         customerAdvanceApplications,
         customerAdvanceRefunds,
+        supplierAccountEntries,
+        supplierPayments,
+        supplierAdvances,
+        supplierAdvanceApplications,
+        supplierAdvanceRefunds,
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
@@ -10327,7 +11857,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
         customerAdvanceApplicationsAdvanceIdx,
-        customerAdvanceRefundsAdvanceIdx
+        customerAdvanceRefundsAdvanceIdx,
+        supplierAccountEntriesSupplierTimestampIdx,
+        supplierPaymentsSupplierTimestampIdx,
+        supplierAdvancesSupplierTimestampIdx,
+        supplierAdvanceApplicationsAdvanceIdx,
+        supplierAdvanceRefundsAdvanceIdx
       ];
 }
 
@@ -15495,6 +17030,853 @@ typedef $$CustomerAdvanceRefundsTableProcessedTableManager
         ),
         CustomerAdvanceRefundRow,
         PrefetchHooks Function()>;
+typedef $$SupplierAccountEntriesTableCreateCompanionBuilder
+    = SupplierAccountEntriesCompanion Function({
+  required String id,
+  required String supplierId,
+  required DateTime occurredAt,
+  required String payloadJson,
+  Value<int> rowid,
+});
+typedef $$SupplierAccountEntriesTableUpdateCompanionBuilder
+    = SupplierAccountEntriesCompanion Function({
+  Value<String> id,
+  Value<String> supplierId,
+  Value<DateTime> occurredAt,
+  Value<String> payloadJson,
+  Value<int> rowid,
+});
+
+class $$SupplierAccountEntriesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SupplierAccountEntriesTable> {
+  $$SupplierAccountEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierAccountEntriesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SupplierAccountEntriesTable> {
+  $$SupplierAccountEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierAccountEntriesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SupplierAccountEntriesTable> {
+  $$SupplierAccountEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+}
+
+class $$SupplierAccountEntriesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SupplierAccountEntriesTable,
+    SupplierAccountEntryRow,
+    $$SupplierAccountEntriesTableFilterComposer,
+    $$SupplierAccountEntriesTableOrderingComposer,
+    $$SupplierAccountEntriesTableAnnotationComposer,
+    $$SupplierAccountEntriesTableCreateCompanionBuilder,
+    $$SupplierAccountEntriesTableUpdateCompanionBuilder,
+    (
+      SupplierAccountEntryRow,
+      BaseReferences<_$FoundationDatabase, $SupplierAccountEntriesTable,
+          SupplierAccountEntryRow>
+    ),
+    SupplierAccountEntryRow,
+    PrefetchHooks Function()> {
+  $$SupplierAccountEntriesTableTableManager(
+      _$FoundationDatabase db, $SupplierAccountEntriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierAccountEntriesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierAccountEntriesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierAccountEntriesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> supplierId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAccountEntriesCompanion(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String supplierId,
+            required DateTime occurredAt,
+            required String payloadJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAccountEntriesCompanion.insert(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierAccountEntriesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $SupplierAccountEntriesTable,
+        SupplierAccountEntryRow,
+        $$SupplierAccountEntriesTableFilterComposer,
+        $$SupplierAccountEntriesTableOrderingComposer,
+        $$SupplierAccountEntriesTableAnnotationComposer,
+        $$SupplierAccountEntriesTableCreateCompanionBuilder,
+        $$SupplierAccountEntriesTableUpdateCompanionBuilder,
+        (
+          SupplierAccountEntryRow,
+          BaseReferences<_$FoundationDatabase, $SupplierAccountEntriesTable,
+              SupplierAccountEntryRow>
+        ),
+        SupplierAccountEntryRow,
+        PrefetchHooks Function()>;
+typedef $$SupplierPaymentsTableCreateCompanionBuilder
+    = SupplierPaymentsCompanion Function({
+  required String id,
+  required String supplierId,
+  required DateTime occurredAt,
+  required String payloadJson,
+  Value<int> rowid,
+});
+typedef $$SupplierPaymentsTableUpdateCompanionBuilder
+    = SupplierPaymentsCompanion Function({
+  Value<String> id,
+  Value<String> supplierId,
+  Value<DateTime> occurredAt,
+  Value<String> payloadJson,
+  Value<int> rowid,
+});
+
+class $$SupplierPaymentsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SupplierPaymentsTable> {
+  $$SupplierPaymentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierPaymentsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SupplierPaymentsTable> {
+  $$SupplierPaymentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierPaymentsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SupplierPaymentsTable> {
+  $$SupplierPaymentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+}
+
+class $$SupplierPaymentsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SupplierPaymentsTable,
+    SupplierPaymentRow,
+    $$SupplierPaymentsTableFilterComposer,
+    $$SupplierPaymentsTableOrderingComposer,
+    $$SupplierPaymentsTableAnnotationComposer,
+    $$SupplierPaymentsTableCreateCompanionBuilder,
+    $$SupplierPaymentsTableUpdateCompanionBuilder,
+    (
+      SupplierPaymentRow,
+      BaseReferences<_$FoundationDatabase, $SupplierPaymentsTable,
+          SupplierPaymentRow>
+    ),
+    SupplierPaymentRow,
+    PrefetchHooks Function()> {
+  $$SupplierPaymentsTableTableManager(
+      _$FoundationDatabase db, $SupplierPaymentsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierPaymentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierPaymentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierPaymentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> supplierId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierPaymentsCompanion(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String supplierId,
+            required DateTime occurredAt,
+            required String payloadJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierPaymentsCompanion.insert(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierPaymentsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $SupplierPaymentsTable,
+    SupplierPaymentRow,
+    $$SupplierPaymentsTableFilterComposer,
+    $$SupplierPaymentsTableOrderingComposer,
+    $$SupplierPaymentsTableAnnotationComposer,
+    $$SupplierPaymentsTableCreateCompanionBuilder,
+    $$SupplierPaymentsTableUpdateCompanionBuilder,
+    (
+      SupplierPaymentRow,
+      BaseReferences<_$FoundationDatabase, $SupplierPaymentsTable,
+          SupplierPaymentRow>
+    ),
+    SupplierPaymentRow,
+    PrefetchHooks Function()>;
+typedef $$SupplierAdvancesTableCreateCompanionBuilder
+    = SupplierAdvancesCompanion Function({
+  required String id,
+  required String supplierId,
+  required DateTime occurredAt,
+  required String payloadJson,
+  Value<int> rowid,
+});
+typedef $$SupplierAdvancesTableUpdateCompanionBuilder
+    = SupplierAdvancesCompanion Function({
+  Value<String> id,
+  Value<String> supplierId,
+  Value<DateTime> occurredAt,
+  Value<String> payloadJson,
+  Value<int> rowid,
+});
+
+class $$SupplierAdvancesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvancesTable> {
+  $$SupplierAdvancesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierAdvancesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvancesTable> {
+  $$SupplierAdvancesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierAdvancesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvancesTable> {
+  $$SupplierAdvancesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+}
+
+class $$SupplierAdvancesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SupplierAdvancesTable,
+    SupplierAdvanceRow,
+    $$SupplierAdvancesTableFilterComposer,
+    $$SupplierAdvancesTableOrderingComposer,
+    $$SupplierAdvancesTableAnnotationComposer,
+    $$SupplierAdvancesTableCreateCompanionBuilder,
+    $$SupplierAdvancesTableUpdateCompanionBuilder,
+    (
+      SupplierAdvanceRow,
+      BaseReferences<_$FoundationDatabase, $SupplierAdvancesTable,
+          SupplierAdvanceRow>
+    ),
+    SupplierAdvanceRow,
+    PrefetchHooks Function()> {
+  $$SupplierAdvancesTableTableManager(
+      _$FoundationDatabase db, $SupplierAdvancesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierAdvancesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierAdvancesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierAdvancesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> supplierId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvancesCompanion(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String supplierId,
+            required DateTime occurredAt,
+            required String payloadJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvancesCompanion.insert(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierAdvancesTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $SupplierAdvancesTable,
+    SupplierAdvanceRow,
+    $$SupplierAdvancesTableFilterComposer,
+    $$SupplierAdvancesTableOrderingComposer,
+    $$SupplierAdvancesTableAnnotationComposer,
+    $$SupplierAdvancesTableCreateCompanionBuilder,
+    $$SupplierAdvancesTableUpdateCompanionBuilder,
+    (
+      SupplierAdvanceRow,
+      BaseReferences<_$FoundationDatabase, $SupplierAdvancesTable,
+          SupplierAdvanceRow>
+    ),
+    SupplierAdvanceRow,
+    PrefetchHooks Function()>;
+typedef $$SupplierAdvanceApplicationsTableCreateCompanionBuilder
+    = SupplierAdvanceApplicationsCompanion Function({
+  required String id,
+  required String supplierId,
+  required DateTime occurredAt,
+  required String payloadJson,
+  required String advanceId,
+  Value<int> rowid,
+});
+typedef $$SupplierAdvanceApplicationsTableUpdateCompanionBuilder
+    = SupplierAdvanceApplicationsCompanion Function({
+  Value<String> id,
+  Value<String> supplierId,
+  Value<DateTime> occurredAt,
+  Value<String> payloadJson,
+  Value<String> advanceId,
+  Value<int> rowid,
+});
+
+class $$SupplierAdvanceApplicationsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceApplicationsTable> {
+  $$SupplierAdvanceApplicationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get advanceId => $composableBuilder(
+      column: $table.advanceId, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierAdvanceApplicationsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceApplicationsTable> {
+  $$SupplierAdvanceApplicationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get advanceId => $composableBuilder(
+      column: $table.advanceId, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierAdvanceApplicationsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceApplicationsTable> {
+  $$SupplierAdvanceApplicationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get advanceId =>
+      $composableBuilder(column: $table.advanceId, builder: (column) => column);
+}
+
+class $$SupplierAdvanceApplicationsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SupplierAdvanceApplicationsTable,
+    SupplierAdvanceApplicationRow,
+    $$SupplierAdvanceApplicationsTableFilterComposer,
+    $$SupplierAdvanceApplicationsTableOrderingComposer,
+    $$SupplierAdvanceApplicationsTableAnnotationComposer,
+    $$SupplierAdvanceApplicationsTableCreateCompanionBuilder,
+    $$SupplierAdvanceApplicationsTableUpdateCompanionBuilder,
+    (
+      SupplierAdvanceApplicationRow,
+      BaseReferences<_$FoundationDatabase, $SupplierAdvanceApplicationsTable,
+          SupplierAdvanceApplicationRow>
+    ),
+    SupplierAdvanceApplicationRow,
+    PrefetchHooks Function()> {
+  $$SupplierAdvanceApplicationsTableTableManager(
+      _$FoundationDatabase db, $SupplierAdvanceApplicationsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierAdvanceApplicationsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierAdvanceApplicationsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierAdvanceApplicationsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> supplierId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<String> advanceId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvanceApplicationsCompanion(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            advanceId: advanceId,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String supplierId,
+            required DateTime occurredAt,
+            required String payloadJson,
+            required String advanceId,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvanceApplicationsCompanion.insert(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            advanceId: advanceId,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierAdvanceApplicationsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $SupplierAdvanceApplicationsTable,
+        SupplierAdvanceApplicationRow,
+        $$SupplierAdvanceApplicationsTableFilterComposer,
+        $$SupplierAdvanceApplicationsTableOrderingComposer,
+        $$SupplierAdvanceApplicationsTableAnnotationComposer,
+        $$SupplierAdvanceApplicationsTableCreateCompanionBuilder,
+        $$SupplierAdvanceApplicationsTableUpdateCompanionBuilder,
+        (
+          SupplierAdvanceApplicationRow,
+          BaseReferences<_$FoundationDatabase,
+              $SupplierAdvanceApplicationsTable, SupplierAdvanceApplicationRow>
+        ),
+        SupplierAdvanceApplicationRow,
+        PrefetchHooks Function()>;
+typedef $$SupplierAdvanceRefundsTableCreateCompanionBuilder
+    = SupplierAdvanceRefundsCompanion Function({
+  required String id,
+  required String supplierId,
+  required DateTime occurredAt,
+  required String payloadJson,
+  required String advanceId,
+  Value<int> rowid,
+});
+typedef $$SupplierAdvanceRefundsTableUpdateCompanionBuilder
+    = SupplierAdvanceRefundsCompanion Function({
+  Value<String> id,
+  Value<String> supplierId,
+  Value<DateTime> occurredAt,
+  Value<String> payloadJson,
+  Value<String> advanceId,
+  Value<int> rowid,
+});
+
+class $$SupplierAdvanceRefundsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceRefundsTable> {
+  $$SupplierAdvanceRefundsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get advanceId => $composableBuilder(
+      column: $table.advanceId, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierAdvanceRefundsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceRefundsTable> {
+  $$SupplierAdvanceRefundsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get advanceId => $composableBuilder(
+      column: $table.advanceId, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierAdvanceRefundsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $SupplierAdvanceRefundsTable> {
+  $$SupplierAdvanceRefundsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierId => $composableBuilder(
+      column: $table.supplierId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get advanceId =>
+      $composableBuilder(column: $table.advanceId, builder: (column) => column);
+}
+
+class $$SupplierAdvanceRefundsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $SupplierAdvanceRefundsTable,
+    SupplierAdvanceRefundRow,
+    $$SupplierAdvanceRefundsTableFilterComposer,
+    $$SupplierAdvanceRefundsTableOrderingComposer,
+    $$SupplierAdvanceRefundsTableAnnotationComposer,
+    $$SupplierAdvanceRefundsTableCreateCompanionBuilder,
+    $$SupplierAdvanceRefundsTableUpdateCompanionBuilder,
+    (
+      SupplierAdvanceRefundRow,
+      BaseReferences<_$FoundationDatabase, $SupplierAdvanceRefundsTable,
+          SupplierAdvanceRefundRow>
+    ),
+    SupplierAdvanceRefundRow,
+    PrefetchHooks Function()> {
+  $$SupplierAdvanceRefundsTableTableManager(
+      _$FoundationDatabase db, $SupplierAdvanceRefundsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierAdvanceRefundsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierAdvanceRefundsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierAdvanceRefundsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> supplierId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<String> advanceId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvanceRefundsCompanion(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            advanceId: advanceId,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String supplierId,
+            required DateTime occurredAt,
+            required String payloadJson,
+            required String advanceId,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SupplierAdvanceRefundsCompanion.insert(
+            id: id,
+            supplierId: supplierId,
+            occurredAt: occurredAt,
+            payloadJson: payloadJson,
+            advanceId: advanceId,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierAdvanceRefundsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $SupplierAdvanceRefundsTable,
+        SupplierAdvanceRefundRow,
+        $$SupplierAdvanceRefundsTableFilterComposer,
+        $$SupplierAdvanceRefundsTableOrderingComposer,
+        $$SupplierAdvanceRefundsTableAnnotationComposer,
+        $$SupplierAdvanceRefundsTableCreateCompanionBuilder,
+        $$SupplierAdvanceRefundsTableUpdateCompanionBuilder,
+        (
+          SupplierAdvanceRefundRow,
+          BaseReferences<_$FoundationDatabase, $SupplierAdvanceRefundsTable,
+              SupplierAdvanceRefundRow>
+        ),
+        SupplierAdvanceRefundRow,
+        PrefetchHooks Function()>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -15542,4 +17924,18 @@ class $FoundationDatabaseManager {
   $$CustomerAdvanceRefundsTableTableManager get customerAdvanceRefunds =>
       $$CustomerAdvanceRefundsTableTableManager(
           _db, _db.customerAdvanceRefunds);
+  $$SupplierAccountEntriesTableTableManager get supplierAccountEntries =>
+      $$SupplierAccountEntriesTableTableManager(
+          _db, _db.supplierAccountEntries);
+  $$SupplierPaymentsTableTableManager get supplierPayments =>
+      $$SupplierPaymentsTableTableManager(_db, _db.supplierPayments);
+  $$SupplierAdvancesTableTableManager get supplierAdvances =>
+      $$SupplierAdvancesTableTableManager(_db, _db.supplierAdvances);
+  $$SupplierAdvanceApplicationsTableTableManager
+      get supplierAdvanceApplications =>
+          $$SupplierAdvanceApplicationsTableTableManager(
+              _db, _db.supplierAdvanceApplications);
+  $$SupplierAdvanceRefundsTableTableManager get supplierAdvanceRefunds =>
+      $$SupplierAdvanceRefundsTableTableManager(
+          _db, _db.supplierAdvanceRefunds);
 }

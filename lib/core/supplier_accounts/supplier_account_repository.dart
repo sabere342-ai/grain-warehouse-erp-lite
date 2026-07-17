@@ -63,8 +63,21 @@ abstract class SupplierAccountRepository {
   Future<bool> hasOpeningBalanceEntry(String supplierId);
 }
 
-class LocalSupplierAccountRepository
+abstract class DurableSupplierAccountRepository
     implements SupplierAccountRepository, TransactionSnapshotProvider {
+  Future<void> restoreSupplierAccountsIntoEmpty({
+    required List<SupplierAccountEntry> entries,
+    required List<SupplierPaymentRecord> payments,
+    List<SupplierAdvance> advances = const [],
+    List<SupplierAdvanceApplication> applications = const [],
+    List<SupplierAdvanceRefund> refunds = const [],
+  });
+
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalSupplierAccountRepository
+    implements DurableSupplierAccountRepository {
   LocalSupplierAccountRepository({
     required SupplierRepository supplierRepository,
     AuditLogRepository? auditLogRepository,
@@ -239,6 +252,8 @@ class LocalSupplierAccountRepository
       paymentMethod: draft.paymentMethod,
       settledAmountQirsh: settledAmountQirsh,
       advanceAmountQirsh: advanceAmountQirsh,
+      operationRequestId: _normalizedOptionalText(draft.operationRequestId),
+      operationRequestFingerprint: _paymentFingerprint(draft),
     );
     _validatePayment(payment);
 
@@ -855,6 +870,7 @@ class LocalSupplierAccountRepository
         cancelledByUserId: user.id,
         reason: cleanReason,
         supplierLedgerReversalEntryId: ledgerReversal.id,
+        operationRequestId: requestId,
         financialAccountReversalEntryId: financialReversalEntryId,
       );
       _payments[index] = SupplierPaymentRecord(
@@ -868,6 +884,10 @@ class LocalSupplierAccountRepository
         notes: payment.notes,
         financialAccountId: payment.financialAccountId,
         paymentMethod: payment.paymentMethod,
+        settledAmountQirsh: payment.settledAmountQirsh,
+        advanceAmountQirsh: payment.advanceAmountQirsh,
+        operationRequestId: payment.operationRequestId,
+        operationRequestFingerprint: payment.operationRequestFingerprint,
         cancellation: cancellation,
       );
       _cancellationRequestIds[requestId] = cancellationId;
@@ -1000,6 +1020,7 @@ class LocalSupplierAccountRepository
     );
   }
 
+  @override
   Future<void> restoreSupplierAccountsIntoEmpty({
     required List<SupplierAccountEntry> entries,
     required List<SupplierPaymentRecord> payments,
@@ -1018,6 +1039,26 @@ class LocalSupplierAccountRepository
     _validateUniqueRestoredPayments(payments);
     _entries.addAll(entries);
     _payments.addAll(payments);
+    for (final payment in payments) {
+      final requestId = _normalizedOptionalText(payment.operationRequestId);
+      final fingerprint =
+          _normalizedOptionalText(payment.operationRequestFingerprint);
+      if (requestId != null && fingerprint != null) {
+        if (_paymentRequestFingerprints.containsKey(requestId)) {
+          throw StateError('Duplicate supplier payment request id.');
+        }
+        _paymentRequestFingerprints[requestId] = fingerprint;
+      }
+      final cancellationRequestId =
+          _normalizedOptionalText(payment.cancellation?.operationRequestId);
+      if (cancellationRequestId != null) {
+        if (_cancellationRequestIds.containsKey(cancellationRequestId)) {
+          throw StateError('Duplicate supplier cancellation request id.');
+        }
+        _cancellationRequestIds[cancellationRequestId] =
+            payment.cancellation!.id;
+      }
+    }
     _validateRestoredAdvances(advances, applications, refunds);
     _advances.addAll(advances);
     _advanceApplications.addAll(applications);
@@ -1031,6 +1072,7 @@ class LocalSupplierAccountRepository
     }
   }
 
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _payments.clear();

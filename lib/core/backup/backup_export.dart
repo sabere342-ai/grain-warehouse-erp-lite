@@ -457,6 +457,8 @@ class BackupExportService {
       'paymentMethod': payment.paymentMethod?.name,
       'settledAmountQirsh': payment.settledAmountQirsh,
       'advanceAmountQirsh': payment.advanceAmountQirsh,
+      'operationRequestId': payment.operationRequestId,
+      'operationRequestFingerprint': payment.operationRequestFingerprint,
       'cancellation': _supplierPaymentCancellationToJson(payment.cancellation),
     };
   }
@@ -591,6 +593,7 @@ class BackupExportService {
               'reason': cancellation.reason,
               'supplierLedgerReversalEntryId':
                   cancellation.supplierLedgerReversalEntryId,
+              'operationRequestId': cancellation.operationRequestId,
               'financialAccountReversalEntryId':
                   cancellation.financialAccountReversalEntryId,
             };

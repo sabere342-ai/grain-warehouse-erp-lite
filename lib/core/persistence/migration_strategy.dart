@@ -49,4 +49,11 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.customerAdvanceApplications);
         await migrator.createTable(database.customerAdvanceRefunds);
       },
+      12: (migrator) async {
+        await migrator.createTable(database.supplierAccountEntries);
+        await migrator.createTable(database.supplierPayments);
+        await migrator.createTable(database.supplierAdvances);
+        await migrator.createTable(database.supplierAdvanceApplications);
+        await migrator.createTable(database.supplierAdvanceRefunds);
+      },
     };
