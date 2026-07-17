@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.d
 import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/customer_accounts/drift_customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
@@ -72,7 +73,7 @@ class AppRepositories {
   static SupplierDataRepository _supplierRepository = LocalSupplierRepository();
   static SupplierDataRepository get supplierRepository => _supplierRepository;
 
-  static LocalCustomerAccountRepository customerAccountRepository =
+  static DurableCustomerAccountRepository customerAccountRepository =
       LocalCustomerAccountRepository(
     customerRepository: customerRepository,
     auditLogRepository: auditLogRepository,
@@ -112,7 +113,8 @@ class AppRepositories {
       auditLogRepository: auditLogRepository,
     );
     _supplierRepository = DriftSupplierRepository(database);
-    customerAccountRepository = LocalCustomerAccountRepository(
+    customerAccountRepository = DriftCustomerAccountRepository(
+      database,
       customerRepository: customerRepository,
       auditLogRepository: auditLogRepository,
       financialAccountRepository: financialAccountRepository,

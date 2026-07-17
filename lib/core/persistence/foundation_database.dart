@@ -284,6 +284,55 @@ class Expenses extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+abstract class CustomerAccountPayloadTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get customerId => text()();
+  DateTimeColumn get occurredAt => dateTime()();
+  TextColumn get payloadJson => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'customer_account_entries_customer_timestamp_idx',
+  columns: {#customerId, #occurredAt, #id},
+)
+@DataClassName('CustomerAccountEntryRow')
+class CustomerAccountEntries extends CustomerAccountPayloadTable {}
+
+@TableIndex(
+  name: 'customer_collections_customer_timestamp_idx',
+  columns: {#customerId, #occurredAt, #id},
+)
+@DataClassName('CustomerCollectionRow')
+class CustomerCollections extends CustomerAccountPayloadTable {}
+
+@TableIndex(
+  name: 'customer_advances_customer_timestamp_idx',
+  columns: {#customerId, #occurredAt, #id},
+)
+@DataClassName('CustomerAdvanceRow')
+class CustomerAdvances extends CustomerAccountPayloadTable {}
+
+@TableIndex(
+  name: 'customer_advance_applications_advance_idx',
+  columns: {#advanceId},
+)
+@DataClassName('CustomerAdvanceApplicationRow')
+class CustomerAdvanceApplications extends CustomerAccountPayloadTable {
+  TextColumn get advanceId => text()();
+}
+
+@TableIndex(
+  name: 'customer_advance_refunds_advance_idx',
+  columns: {#advanceId},
+)
+@DataClassName('CustomerAdvanceRefundRow')
+class CustomerAdvanceRefunds extends CustomerAccountPayloadTable {
+  TextColumn get advanceId => text()();
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -299,12 +348,17 @@ class Expenses extends Table {
   FinancialClosings,
   AuditLogs,
   Expenses,
+  CustomerAccountEntries,
+  CustomerCollections,
+  CustomerAdvances,
+  CustomerAdvanceApplications,
+  CustomerAdvanceRefunds,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

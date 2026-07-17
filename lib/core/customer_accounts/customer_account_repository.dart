@@ -72,8 +72,21 @@ abstract class CustomerAccountRepository {
   });
 }
 
-class LocalCustomerAccountRepository
+abstract class DurableCustomerAccountRepository
     implements CustomerAccountRepository, TransactionSnapshotProvider {
+  Future<void> restoreCustomerAccountsIntoEmpty({
+    required List<CustomerAccountEntry> entries,
+    required List<CustomerCollectionRecord> collections,
+    List<CustomerAdvance> advances = const [],
+    List<CustomerAdvanceApplication> applications = const [],
+    List<CustomerAdvanceRefund> refunds = const [],
+  });
+
+  Future<void> clearForOwnerDataWipe();
+}
+
+class LocalCustomerAccountRepository
+    implements DurableCustomerAccountRepository {
   LocalCustomerAccountRepository({
     required CustomerRepository customerRepository,
     AuditLogRepository? auditLogRepository,
@@ -1107,6 +1120,7 @@ class LocalCustomerAccountRepository
     return reversalEntry;
   }
 
+  @override
   Future<void> restoreCustomerAccountsIntoEmpty({
     required List<CustomerAccountEntry> entries,
     required List<CustomerCollectionRecord> collections,
@@ -1129,6 +1143,14 @@ class LocalCustomerAccountRepository
     _advances.addAll(advances);
     _advanceApplications.addAll(applications);
     _advanceRefunds.addAll(refunds);
+    _generatedEntryIdCounter = _maxIdCounter(entries.map((v) => v.id));
+    _generatedCollectionIdCounter = _maxIdCounter(collections.map((v) => v.id));
+    _generatedCancellationIdCounter = _maxIdCounter(
+        collections.map((v) => v.cancellation?.id).whereType<String>());
+    _generatedAdvanceIdCounter = _maxIdCounter(advances.map((v) => v.id));
+    _generatedAdvanceApplicationIdCounter =
+        _maxIdCounter(applications.map((v) => v.id));
+    _generatedAdvanceRefundIdCounter = _maxIdCounter(refunds.map((v) => v.id));
     for (final value in [
       ...advances.map((v) => v.operationRequestId),
       ...applications.map((v) => v.operationRequestId),
@@ -1138,6 +1160,16 @@ class LocalCustomerAccountRepository
     }
   }
 
+  int _maxIdCounter(Iterable<String> ids) {
+    var maximum = 0;
+    for (final id in ids) {
+      final value = int.tryParse(id.split('-').last);
+      if (value != null && value > maximum) maximum = value;
+    }
+    return maximum;
+  }
+
+  @override
   Future<void> clearForOwnerDataWipe() async {
     _entries.clear();
     _collections.clear();

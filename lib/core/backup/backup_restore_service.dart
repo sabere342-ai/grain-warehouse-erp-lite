@@ -50,7 +50,7 @@ class BackupRestoreService {
     required DocumentHistoryRepository documentHistoryRepository,
     BusinessIdentityRepository? businessIdentityRepository,
     CustomerDataRepository? customerRepository,
-    LocalCustomerAccountRepository? customerAccountRepository,
+    DurableCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
@@ -86,7 +86,7 @@ class BackupRestoreService {
   final DocumentHistoryRepository _documentHistoryRepository;
   final BusinessIdentityRepository? _businessIdentityRepository;
   final CustomerDataRepository _customerRepository;
-  final LocalCustomerAccountRepository _customerAccountRepository;
+  final DurableCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;

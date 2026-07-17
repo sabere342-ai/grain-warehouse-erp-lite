@@ -42,4 +42,11 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
       },
       9: (migrator) => migrator.createTable(database.auditLogs),
       10: (migrator) => migrator.createTable(database.expenses),
+      11: (migrator) async {
+        await migrator.createTable(database.customerAccountEntries);
+        await migrator.createTable(database.customerCollections);
+        await migrator.createTable(database.customerAdvances);
+        await migrator.createTable(database.customerAdvanceApplications);
+        await migrator.createTable(database.customerAdvanceRefunds);
+      },
     };

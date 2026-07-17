@@ -26,7 +26,7 @@ class BusinessDataWipeService {
     required DurableSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     CustomerDataRepository? customerRepository,
-    LocalCustomerAccountRepository? customerAccountRepository,
+    DurableCustomerAccountRepository? customerAccountRepository,
     LocalSupplierAccountRepository? supplierAccountRepository,
     DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
@@ -67,7 +67,7 @@ class BusinessDataWipeService {
   final DurableSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final CustomerDataRepository _customerRepository;
-  final LocalCustomerAccountRepository _customerAccountRepository;
+  final DurableCustomerAccountRepository _customerAccountRepository;
   final LocalSupplierAccountRepository _supplierAccountRepository;
   final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;
