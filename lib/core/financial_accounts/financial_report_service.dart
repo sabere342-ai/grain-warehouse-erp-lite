@@ -1,3 +1,4 @@
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
@@ -16,11 +17,14 @@ class FinancialReportService {
   const FinancialReportService({
     required FinancialAccountRepository repository,
     CustomerCollectionReportLookup? customerLookup,
+    ExpenseRepository? expenseRepository,
   })  : _repository = repository,
-        _customerLookup = customerLookup;
+        _customerLookup = customerLookup,
+        _expenseRepository = expenseRepository;
 
   final FinancialAccountRepository _repository;
   final CustomerCollectionReportLookup? _customerLookup;
+  final ExpenseRepository? _expenseRepository;
 
   static bool _isInRange(DateTime value, DateTime start, DateTime end) {
     return !value.isBefore(start) && !value.isAfter(end);
@@ -945,15 +949,13 @@ class FinancialReportService {
         if (e.reversalOf == null) return false;
         final original = entryById[e.reversalOf];
         if (original == null) return false;
-        return _qualifiedCustomerRefundSources
-            .contains(original.sourceType);
+        return _qualifiedCustomerRefundSources.contains(original.sourceType);
       }
       if (_qualifiedSupplierRefundReversalSources.contains(e.sourceType)) {
         if (e.reversalOf == null) return false;
         final original = entryById[e.reversalOf];
         if (original == null) return false;
-        return _qualifiedSupplierRefundSources
-            .contains(original.sourceType);
+        return _qualifiedSupplierRefundSources.contains(original.sourceType);
       }
       return false;
     }).toList();
@@ -1241,9 +1243,128 @@ class FinancialReportService {
       totalSupplierGrossRefundInflow: totalSupplierGross,
       totalSupplierRefundReversals: totalSupplierRev,
       totalSupplierNetRefundInflow: totalSupplierGross - totalSupplierRev,
-      signedGrandCashEffect:
-          (totalSupplierGross - totalSupplierRev) -
-              (totalCustomerGross - totalCustomerRev),
+      signedGrandCashEffect: (totalSupplierGross - totalSupplierRev) -
+          (totalCustomerGross - totalCustomerRev),
+    );
+  }
+
+  Future<ExpenseAnalysisReport> expenseAnalysisReport({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+    PaymentMethod? paymentMethodFilter,
+    String? categoryFilter,
+  }) async {
+    final effectiveFrom =
+        fromDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final effectiveTo = toDate ?? DateTime.now();
+
+    final expenseRepo = _expenseRepository;
+    if (expenseRepo == null) {
+      return ExpenseAnalysisReport(
+        fromDate: effectiveFrom,
+        toDate: effectiveTo,
+        rows: const [],
+        totalQirsh: 0,
+        grandCount: 0,
+        allDetails: const [],
+      );
+    }
+
+    final expenses = await expenseRepo.listExpenses();
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final accountMap = {for (final a in accounts) a.id: a.name};
+
+    var filtered = expenses
+        .where((e) => _isInRange(e.date, effectiveFrom, effectiveTo))
+        .toList();
+
+    if (accountIdFilter != null) {
+      filtered = filtered
+          .where((e) => e.financialAccountId == accountIdFilter)
+          .toList();
+    }
+
+    if (paymentMethodFilter != null) {
+      filtered = filtered
+          .where((e) => e.paymentMethod == paymentMethodFilter)
+          .toList();
+    }
+
+    if (categoryFilter != null && categoryFilter.trim().isNotEmpty) {
+      final searchLower = categoryFilter.trim().toLowerCase();
+      filtered = filtered.where((e) {
+        return e.category.toLowerCase().contains(searchLower);
+      }).toList();
+    }
+
+    final details = <ExpenseAnalysisReportDetail>[];
+    for (final expense in filtered) {
+      details.add(ExpenseAnalysisReportDetail(
+        expenseId: expense.id,
+        date: expense.date,
+        createdAt: expense.createdAt,
+        category: expense.category,
+        amountQirsh: expense.amountQirsh,
+        paymentMethodLabel: expense.paymentMethod?.labelAr ?? 'غير محدد',
+        accountName: expense.financialAccountId != null
+            ? (accountMap[expense.financialAccountId] ?? 'غير محدد')
+            : 'غير محدد',
+        notes: expense.notes,
+      ));
+    }
+
+    details.sort((a, b) {
+      final cmp = b.date.compareTo(a.date);
+      if (cmp != 0) return cmp;
+      final cmp2 = b.createdAt.compareTo(a.createdAt);
+      if (cmp2 != 0) return cmp2;
+      return a.expenseId.compareTo(b.expenseId);
+    });
+
+    final grouped = <String, List<ExpenseAnalysisReportDetail>>{};
+    for (final detail in details) {
+      grouped.putIfAbsent(detail.category, () => []).add(detail);
+    }
+
+    var totalQirsh = 0;
+    var grandCount = 0;
+    for (final detail in details) {
+      totalQirsh += detail.amountQirsh;
+      grandCount++;
+    }
+
+    final rows = <ExpenseAnalysisReportRow>[];
+    for (final entry in grouped.entries) {
+      var catTotal = 0;
+      var catCount = 0;
+      for (final d in entry.value) {
+        catTotal += d.amountQirsh;
+        catCount++;
+      }
+      final pct = totalQirsh > 0 ? catTotal / totalQirsh * 100.0 : 0.0;
+      rows.add(ExpenseAnalysisReportRow(
+        category: entry.key,
+        totalAmountQirsh: catTotal,
+        count: catCount,
+        percentageOfTotal: pct,
+        details: entry.value,
+      ));
+    }
+
+    rows.sort((a, b) {
+      final cmp = b.totalAmountQirsh.compareTo(a.totalAmountQirsh);
+      if (cmp != 0) return cmp;
+      return a.category.compareTo(b.category);
+    });
+
+    return ExpenseAnalysisReport(
+      fromDate: effectiveFrom,
+      toDate: effectiveTo,
+      rows: rows,
+      totalQirsh: totalQirsh,
+      grandCount: grandCount,
+      allDetails: details,
     );
   }
 }

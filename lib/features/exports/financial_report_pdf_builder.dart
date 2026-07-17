@@ -1240,9 +1240,12 @@ class FinancialReportPdfBuilder {
                   ],
                   data: [
                     [
-                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerGrossRefundOutflow),
-                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerRefundReversals),
-                      MoneyUtils.formatPiastersAsEgp(report.totalCustomerNetRefundOutflow),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalCustomerGrossRefundOutflow),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalCustomerRefundReversals),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalCustomerNetRefundOutflow),
                     ],
                   ],
                   cellAlignments: {
@@ -1277,9 +1280,12 @@ class FinancialReportPdfBuilder {
                   ],
                   data: [
                     [
-                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierGrossRefundInflow),
-                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierRefundReversals),
-                      MoneyUtils.formatPiastersAsEgp(report.totalSupplierNetRefundInflow),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalSupplierGrossRefundInflow),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalSupplierRefundReversals),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalSupplierNetRefundInflow),
                     ],
                   ],
                   cellAlignments: {
@@ -1304,7 +1310,8 @@ class FinancialReportPdfBuilder {
                     children: [
                       pw.TextSpan(text: 'صافي الأثر النقدي: ', style: boldCell),
                       pw.TextSpan(
-                        text: MoneyUtils.formatPiastersAsEgp(report.signedGrandCashEffect),
+                        text: MoneyUtils.formatPiastersAsEgp(
+                            report.signedGrandCashEffect),
                         style: cellStyle,
                       ),
                     ],
@@ -1334,15 +1341,22 @@ class FinancialReportPdfBuilder {
                     ],
                     data: [
                       ...report.accountSummaries.map((a) => [
-                        '${a.account.name} (${a.account.type.labelAr})',
-                        MoneyUtils.formatPiastersAsEgp(a.customerGrossRefundOutflow),
-                        MoneyUtils.formatPiastersAsEgp(a.customerRefundReversals),
-                        MoneyUtils.formatPiastersAsEgp(a.customerNetRefundOutflow),
-                        MoneyUtils.formatPiastersAsEgp(a.supplierGrossRefundInflow),
-                        MoneyUtils.formatPiastersAsEgp(a.supplierRefundReversals),
-                        MoneyUtils.formatPiastersAsEgp(a.supplierNetRefundInflow),
-                        MoneyUtils.formatPiastersAsEgp(a.signedNetCashEffect),
-                      ]),
+                            '${a.account.name} (${a.account.type.labelAr})',
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.customerGrossRefundOutflow),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.customerRefundReversals),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.customerNetRefundOutflow),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.supplierGrossRefundInflow),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.supplierRefundReversals),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.supplierNetRefundInflow),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.signedNetCashEffect),
+                          ]),
                     ],
                     cellAlignments: {
                       0: pw.Alignment.centerRight,
@@ -1396,11 +1410,11 @@ class FinancialReportPdfBuilder {
                     ],
                     data: [
                       ...report.customerSummaries.map((c) => [
-                        c.entityName,
-                        MoneyUtils.formatPiastersAsEgp(c.grossAmount),
-                        MoneyUtils.formatPiastersAsEgp(c.reversalAmount),
-                        MoneyUtils.formatPiastersAsEgp(c.netAmount),
-                      ]),
+                            c.entityName,
+                            MoneyUtils.formatPiastersAsEgp(c.grossAmount),
+                            MoneyUtils.formatPiastersAsEgp(c.reversalAmount),
+                            MoneyUtils.formatPiastersAsEgp(c.netAmount),
+                          ]),
                     ],
                     cellAlignments: {
                       0: pw.Alignment.centerRight,
@@ -1442,11 +1456,11 @@ class FinancialReportPdfBuilder {
                     ],
                     data: [
                       ...report.supplierSummaries.map((s) => [
-                        s.entityName,
-                        MoneyUtils.formatPiastersAsEgp(s.grossAmount),
-                        MoneyUtils.formatPiastersAsEgp(s.reversalAmount),
-                        MoneyUtils.formatPiastersAsEgp(s.netAmount),
-                      ]),
+                            s.entityName,
+                            MoneyUtils.formatPiastersAsEgp(s.grossAmount),
+                            MoneyUtils.formatPiastersAsEgp(s.reversalAmount),
+                            MoneyUtils.formatPiastersAsEgp(s.netAmount),
+                          ]),
                     ],
                     cellAlignments: {
                       0: pw.Alignment.centerRight,
@@ -1491,14 +1505,14 @@ class FinancialReportPdfBuilder {
                     ],
                     data: [
                       ...report.details.map((d) => [
-                        _formatDate(d.timestamp),
-                        d.partyType.labelAr,
-                        d.entityName,
-                        d.accountName,
-                        d.sourceType.labelAr,
-                        MoneyUtils.formatPiastersAsEgp(d.amountQirsh),
-                        MoneyUtils.formatPiastersAsEgp(d.signedCashEffect),
-                      ]),
+                            _formatDate(d.timestamp),
+                            d.partyType.labelAr,
+                            d.entityName,
+                            d.accountName,
+                            d.sourceType.labelAr,
+                            MoneyUtils.formatPiastersAsEgp(d.amountQirsh),
+                            MoneyUtils.formatPiastersAsEgp(d.signedCashEffect),
+                          ]),
                     ],
                     cellAlignments: {
                       0: pw.Alignment.center,
@@ -1539,6 +1553,183 @@ class FinancialReportPdfBuilder {
     final bytes = await pdf.save();
     final dir = await _exportDir();
     final filename = PdfFileNaming.advancesAndRefundsReport(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  static Future<File> buildExpenseAnalysisReport({
+    required ExpenseAnalysisReport report,
+  }) async {
+    await initialize();
+    final pdf = pw.Document();
+
+    final titleStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 16);
+    final headerStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 10);
+    final cellStyle = pw.TextStyle(font: _arabicFont!, fontSize: 9);
+    final boldCell = pw.TextStyle(font: _arabicFontBold!, fontSize: 9);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        build: (ctx) => [
+          pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                pw.Center(
+                  child: pw.Text('تقرير تحليل المصروفات', style: titleStyle),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Center(
+                  child: pw.Text(
+                    'من: ${_formatDate(report.fromDate)}  إلى: ${_formatDate(report.toDate)}',
+                    style: boldCell,
+                  ),
+                ),
+                pw.SizedBox(height: 12),
+                pw.TableHelper.fromTextArray(
+                  context: ctx,
+                  cellStyle: cellStyle,
+                  headerStyle: headerStyle,
+                  headerAlignment: pw.Alignment.center,
+                  cellAlignment: pw.Alignment.center,
+                  headerDirection: pw.TextDirection.rtl,
+                  headers: [
+                    'الإجمالي',
+                    'العدد',
+                  ],
+                  data: [
+                    [
+                      MoneyUtils.formatPiastersAsEgp(report.totalQirsh),
+                      '${report.grandCount}',
+                    ],
+                  ],
+                  cellAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.center,
+                  },
+                  headerAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.center,
+                  },
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(3),
+                    1: const pw.FlexColumnWidth(2),
+                  },
+                ),
+                if (report.rows.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('تحليل التصنيفات', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'التصنيف',
+                      'الإجمالي',
+                      'العدد',
+                      'النسبة',
+                    ],
+                    data: [
+                      ...report.rows.map((r) => [
+                            r.category,
+                            MoneyUtils.formatPiastersAsEgp(r.totalAmountQirsh),
+                            '${r.count}',
+                            '${r.percentageOfTotal.toStringAsFixed(1)}%',
+                          ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.center,
+                      3: pw.Alignment.center,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.center,
+                      3: pw.Alignment.center,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1),
+                      3: const pw.FlexColumnWidth(1),
+                    },
+                  ),
+                ],
+                if (report.allDetails.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('تفاصيل المصروفات', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'التاريخ',
+                      'التصنيف',
+                      'المبلغ',
+                      'وسيلة الدفع',
+                      'الحساب',
+                      'ملاحظات',
+                    ],
+                    data: [
+                      ...report.allDetails.map((d) => [
+                            _formatDate(d.date),
+                            d.category,
+                            MoneyUtils.formatPiastersAsEgp(d.amountQirsh),
+                            d.paymentMethodLabel,
+                            d.accountName,
+                            d.notes ?? '',
+                          ]),
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.center,
+                      4: pw.Alignment.centerRight,
+                      5: pw.Alignment.centerRight,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.center,
+                      4: pw.Alignment.centerRight,
+                      5: pw.Alignment.centerRight,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1.2),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1.3),
+                      3: const pw.FlexColumnWidth(1.2),
+                      4: const pw.FlexColumnWidth(1.5),
+                      5: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final dir = await _exportDir();
+    final filename = PdfFileNaming.expenseAnalysisReport(report.toDate);
     final file = File('${dir.path}\\$filename');
     await file.writeAsBytes(bytes);
     return file;

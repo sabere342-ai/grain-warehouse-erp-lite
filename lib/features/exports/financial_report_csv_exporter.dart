@@ -640,4 +640,67 @@ class FinancialReportCsvExporter {
     await file.writeAsString(csv, encoding: utf8);
     return file;
   }
+
+  static Future<File> exportExpenseAnalysisReport({
+    required ExpenseAnalysisReport report,
+  }) async {
+    final rows = <List<String>>[];
+    rows.add([
+      'التصنيف',
+      'الإجمالي',
+      'العدد',
+      'النسبة',
+    ]);
+    for (final r in report.rows) {
+      rows.add([
+        r.category,
+        _money(r.totalAmountQirsh),
+        '${r.count}',
+        '${r.percentageOfTotal.toStringAsFixed(1)}%',
+      ]);
+    }
+    rows.add([
+      'الإجمالي',
+      _money(report.totalQirsh),
+      '${report.grandCount}',
+      '',
+    ]);
+    rows.add([]);
+    rows.add([
+      'التاريخ',
+      'التصنيف',
+      'المبلغ',
+      'وسيلة الدفع',
+      'الحساب',
+      'ملاحظات',
+      'معرف المصروف',
+    ]);
+    for (final d in report.allDetails) {
+      rows.add([
+        _formatDate(d.date),
+        d.category,
+        _money(d.amountQirsh),
+        d.paymentMethodLabel,
+        d.accountName,
+        _formulaSafe(d.notes ?? ''),
+        d.expenseId,
+      ]);
+    }
+    rows.add([
+      'الإجمالي',
+      '',
+      _money(report.totalQirsh),
+      '',
+      '',
+      '',
+      '',
+    ]);
+
+    final csv = _bomCsv(rows);
+    final dir = await _exportDir();
+    final filename = PdfFileNaming.expenseAnalysisReportCsv(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsString(csv, encoding: utf8);
+    return file;
+  }
 }

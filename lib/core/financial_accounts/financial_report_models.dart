@@ -503,3 +503,59 @@ class AdvancesAndRefundsReport {
   final int totalSupplierNetRefundInflow;
   final int signedGrandCashEffect;
 }
+
+class ExpenseAnalysisReportDetail {
+  const ExpenseAnalysisReportDetail({
+    required this.expenseId,
+    required this.date,
+    required this.createdAt,
+    required this.category,
+    required this.amountQirsh,
+    required this.paymentMethodLabel,
+    required this.accountName,
+    this.notes,
+  });
+
+  final String expenseId;
+  final DateTime date;
+  final DateTime createdAt;
+  final String category;
+  final int amountQirsh;
+  final String paymentMethodLabel;
+  final String accountName;
+  final String? notes;
+}
+
+class ExpenseAnalysisReportRow {
+  const ExpenseAnalysisReportRow({
+    required this.category,
+    required this.totalAmountQirsh,
+    required this.count,
+    required this.percentageOfTotal,
+    required this.details,
+  });
+
+  final String category;
+  final int totalAmountQirsh;
+  final int count;
+  final double percentageOfTotal;
+  final List<ExpenseAnalysisReportDetail> details;
+}
+
+class ExpenseAnalysisReport {
+  const ExpenseAnalysisReport({
+    required this.fromDate,
+    required this.toDate,
+    required this.rows,
+    required this.totalQirsh,
+    required this.grandCount,
+    required this.allDetails,
+  });
+
+  final DateTime fromDate;
+  final DateTime toDate;
+  final List<ExpenseAnalysisReportRow> rows;
+  final int totalQirsh;
+  final int grandCount;
+  final List<ExpenseAnalysisReportDetail> allDetails;
+}

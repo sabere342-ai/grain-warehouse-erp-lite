@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/features/financial_reports/account_bala
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/advances_and_refunds_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/customer_collections_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/expense_analysis_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
@@ -113,6 +114,14 @@ class FinancialReportsScreen extends StatelessWidget {
             icon: Icons.replay_rounded,
             onTap: () =>
                 _navigate(context, const AdvancesAndRefundsReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تقرير تحليل المصروفات',
+            subtitle: 'تحليل المصروفات حسب التصنيف مع التفاصيل والنسب',
+            icon: Icons.pie_chart_rounded,
+            onTap: () =>
+                _navigate(context, const ExpenseAnalysisReportScreen()),
           ),
         ],
       ),

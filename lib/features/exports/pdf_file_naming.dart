@@ -131,4 +131,14 @@ class PdfFileNaming {
     return _sanitize(
         '\u0627\u0644\u0633\u0644\u0641-\u0648\u0627\u0644\u0631\u062f\u0648\u062f-${_datePart(date)}.csv');
   }
+
+  static String expenseAnalysisReport(DateTime date) {
+    return _sanitize(
+        '\u062a\u062d\u0644\u064a\u0644-\u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062a-${_datePart(date)}.pdf');
+  }
+
+  static String expenseAnalysisReportCsv(DateTime date) {
+    return _sanitize(
+        '\u062a\u062d\u0644\u064a\u0644-\u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062a-${_datePart(date)}.csv');
+  }
 }
