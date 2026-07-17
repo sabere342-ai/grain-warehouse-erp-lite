@@ -47,10 +47,10 @@
 | UI | Arabic RTL, Amiri font |
 | Money type | `int` (Qirsh — no decimals) |
 | Weight type | `int` (grams) |
-| Persistence | In-memory repositories (`Local*Repository`) |
+| Persistence | SQLite/Drift (12 durable repositories); In-memory Local*Repository for tests; Filesystem for config (theme, business identity) |
 | Backup/Restore | JSON export/import (Version 6 with transaction financial linkage; backward-compatible with v1–v5) |
 | PDF generation | Flutter PDF rendering |
-| Database | **None** — no SQLite, no cloud, no server |
+| Database | SQLite/Drift (schema v13, 25 tables, 29 indexes) |
 | Networking | None (offline-only) |
 | Auth | Local role-based (owner/employee) |
 
@@ -349,7 +349,9 @@ SaaS licensing
 | CAN-005/006/007 | Atomic financial reversals — collection cancellation, payment cancellation, financial account reversal | Implementation | ✅ Complete |
 | DC-U002 Core | Atomic split payments — multi-account allocation, atomic creation, cancellation reversal | Implementation | ✅ Complete |
 | DC-U008 Core | Overpayments, advances, refunds — customer/supplier credit, refund documents, owner approval | Implementation | ✅ Complete |
+| DC-U008 Durable Persistence | SQLite/Drift migration — 12 repositories, 25 tables, 29 indexes, 20 sequence namespaces, schema v13 | Implementation | ✅ Complete |
 | Owner Wipe | Snapshot coverage gate + transaction rollback safety | Implementation | ✅ Complete (current) |
+| DC-U008 Durable Persistence | SQLite/Drift migration — 12 repositories, 25 tables, 29 indexes, schema v13 | Implementation | ✅ Complete |
 
 > **⚠️ Phase 66 was never executed. No git tag exists for Phase 66. Do not reference it as completed.**
 
@@ -415,6 +417,12 @@ All core financial features are implemented and tested:
 2. ✅ Refund documents with compensating entries
 3. ✅ Owner approval with authentic binding
 
+**DC-U008: Durable Persistence — COMPLETED**
+1. ✅ SQLite/Drift schema (v1→v13, 25 tables, 29 indexes, 20 sequence namespaces)
+2. ✅ 12 Drift-backed repositories in production wiring
+3. ✅ Backup/restore/wipe via Drift database transactions
+4. ✅ Closure documentation (`docs/DC_U008_DURABLE_PERSISTENCE_PROGRAM_COMPLETE_REPORT.md`)
+
 ### Then: Financial UI — NEXT
 
 **Split Payments End-User UI** — Arabic RTL split payment review and confirmation screen
@@ -423,11 +431,12 @@ All core financial features are implemented and tested:
 ### Then: Persistence
 
 1. ✅ Phase 7 — Durable Persistence Architecture Decision (`ADR-001`): SQLite with Drift selected
-2. Phase 8A — Durable Persistence Foundation — complete (schema v1, lifecycle,
-   transactions, generated code; no business repository migration)
-3. Phase 8B — not started
-4. Transaction-safe restore
-5. Transaction-safe wipe
+2. ✅ Phases 8A–8M — Durable Persistence Implementation — all 12 business-state repositories migrated to Drift (schema v1→v13); Commit `4597bfb`, Tag `dc-u008-durable-auth-repository-pass`
+3. ✅ Phase 8N — Documentation closure (see `docs/DC_U008_DURABLE_PERSISTENCE_PROGRAM_COMPLETE_REPORT.md`)
+4. Transaction-safe restore (available via Drift database transactions)
+5. Transaction-safe wipe (available via Drift database transactions)
+
+Remaining non-Drift stores are kept by documented design: NegativeBalanceApprovalRepository (ephemeral security tokens), ReportRepository and DocumentHistoryRepository (stateless computed views), ThemeSettingsRepository and BusinessIdentityRepository (filesystem-backed configuration).
 
 Phase 7 is documentation and architecture only. It adds no persistence package,
 schema, migration, generated code, or production repository implementation.
@@ -513,3 +522,7 @@ Phase 8A is locked. Phase 8B is limited to durable `ProductRepository` persisten
 # Phase 8C status
 
 Phase 8A and Phase 8B are locked. Phase 8C is limited to durable `CustomerRepository` persistence on schema version 3. Products and customers are durable; customer financial repositories and all other repositories remain unmigrated. Phase 8D has not started and deployment is excluded.
+
+# Phase 8N status
+
+DC-U008 Durable Persistence program is COMPLETE. Phases 8A–8M migrated all 12 business-state repositories to SQLite/Drift. Phase 8N is documentation-only closure. See `docs/DC_U008_DURABLE_PERSISTENCE_PROGRAM_COMPLETE_REPORT.md`.

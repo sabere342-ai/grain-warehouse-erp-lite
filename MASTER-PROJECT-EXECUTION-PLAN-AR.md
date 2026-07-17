@@ -31,6 +31,7 @@
 | DC-U002 UI | — | — | مغلق ومتكامل |
 | DC-U008 Core | `59d689f` | `dc-u008-overpayments-advances-refunds-pass` | Core مغلق ومتكامل |
 | DC-U008 UI | — | — | غير منفذ |
+| DC-U008 Durable Persistence | `4597bfb` | `dc-u008-durable-auth-repository-pass` | COMPLETE (Phase 8N closure docs pending push) |
 | Owner Wipe | `4d8705b` | `owner-wipe-final-pass` | مغلق ومتكامل |
 
 **لا يُعاد فتح أي نطاق مغلق إلا عند وجود regression مثبت بالاختبارات.**
@@ -612,8 +613,8 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 1. ~~Split Payments End-User UI.~~ ✓ مكتمل
 2. ~~Advances/Overpayments/Refunds End-User UI.~~ ✓ مكتمل
 3. ~~Durable Persistence Architecture Decision (ADR).~~ ✓ Phase 7 — `docs/ADR-001-DURABLE-PERSISTENCE.md`
-4. Durable Persistence Implementation — Phase 8A foundation complete; business
-   repository/schema migration remains for later separately authorized phases.
+4. ~~Durable Persistence Implementation — Phases 8A–8M.~~ ✓ Commit `4597bfb`, Tag `dc-u008-durable-auth-repository-pass`
+   Closure documentation: `docs/DC_U008_DURABLE_PERSISTENCE_PROGRAM_COMPLETE_REPORT.md`
 
 ### الحظر التشغيلي
 
@@ -632,10 +633,10 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 
 ### Data safety
 
-- Durable Persistence ADR.
-- Durable Persistence Implementation.
-- Transaction-safe restore (يحتاج persistent storage).
-- Transaction-safe wipe (يحتاج persistent storage).
+- ~~Durable Persistence ADR.~~ ✓ Phase 7
+- ~~Durable Persistence Implementation.~~ ✓ Phases 8A–8M — Commit `4597bfb`
+- Transaction-safe restore (يحتاج persistent storage — متوفر الآن عبر Drift).
+- Transaction-safe wipe (يحتاج persistent storage — متوفر الآن عبر Drift).
 
 ### Reports — مفتوح
 
@@ -660,7 +661,7 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 ### Operational readiness
 
 - Controlled synthetic-data pilot.
-- Real financial data pilot (محظور قبل durable persistence).
+- Real Financial Data Pilot (متاح الآن بعد durable persistence).
 - Extended real-condition trial.
 - Performance/edge-case hardening.
 - Restore drill on separate machine.
@@ -740,10 +741,10 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 6. ~~**Split Payments End-User UI.**~~ ✓ مكتمل
 7. ~~**Advances/Overpayments/Refunds End-User UI.**~~ ✓ مكتمل
 8. ~~**Durable Persistence Architecture Decision (ADR).**~~ ✓ Phase 7
-9. **Durable Persistence Implementation — Phase 8.**
+9. ~~**Durable Persistence Implementation — Phases 8A–8M.**~~ ✓ Commit `4597bfb`
 10. **Remaining financial and settlement reports.**
 11. **Stock-adjustment PDF + UI/branding/navigation audit.**
-12. **Real Financial Data Pilot (محظور قبل durable persistence).**
+12. **Real Financial Data Pilot.**
 13. **Local production hardening.**
 14. **Resolve cloud/mobile owner decisions.**
 15. **Cloud backend + durable DB + migration.**
@@ -764,7 +765,7 @@ Phase 66 لم تُنفذ تاريخيًا، ولا يجوز إضافة Tag له�
 - كل الحركات المالية والمخزنية ذرية ومدققة وقابلة للعكس.
 - ~~Split Payments وOverpayments والإلغاءات مكتملة (Core)~~ ✓ مكتمل.
 - Split Payments UI وAdvances UI مكتملة.
-- Durable persistence منفذة ومجربة.
+- ~~Durable persistence منفذة ومجربة.~~ ✓ Phases 8A–8M — Commit `4597bfb`
 - Backup/restore/wipe ذرية ومجربة على persistent storage.
 - التقارير الأساسية والداعمة متسقة مع Ledger.
 - التجربة الحقيقية للمالك مكتملة ومقبولة.
@@ -779,3 +780,7 @@ Phase 8A is locked. Phase 8B migrates only `ProductRepository` to the production
 # Phase 8C update
 
 Phase 8A and Phase 8B remain locked. Phase 8C migrates only `CustomerRepository` to the shared production Drift database and raises the schema to version 3. Products and customers are durable; customer financial ledgers and every other business repository remain on their existing implementations. Phase 8D has not started and no deployment is included.
+
+# Phase 8N — Durable Persistence Program Closure
+
+DC-U008 Durable Persistence program is COMPLETE. Phases 8A–8M migrated all 12 business-state repositories to SQLite/Drift (schema v1→v13, 25 tables, 29 indexes, 20 sequence namespaces). Phase 8N is documentation-only closure. See `docs/DC_U008_DURABLE_PERSISTENCE_PROGRAM_COMPLETE_REPORT.md`. Remaining non-Drift stores (NegativeBalanceApprovalRepository, ReportRepository, DocumentHistoryRepository, ThemeSettingsRepository, BusinessIdentityRepository) are kept by documented design boundaries.
