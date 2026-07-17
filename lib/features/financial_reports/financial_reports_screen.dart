@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_balance_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/customer_collections_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
@@ -85,6 +86,14 @@ class FinancialReportsScreen extends StatelessWidget {
             subtitle: 'جميع الحركات المالية الصادرة خلال الفترة',
             icon: Icons.arrow_upward_rounded,
             onTap: () => _navigate(context, const OutflowsReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تحصيلات العملاء حسب الحساب',
+            subtitle: 'تحليل تحصيلات العملاء موزعة على الحسابات المالية',
+            icon: Icons.group_work_rounded,
+            onTap: () =>
+                _navigate(context, const CustomerCollectionsReportScreen()),
           ),
         ],
       ),

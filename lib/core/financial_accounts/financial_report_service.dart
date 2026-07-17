@@ -3,11 +3,24 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 
+abstract class CustomerCollectionReportLookup {
+  Future<String?> customerIdForCollection(String collectionId);
+  Future<String?> customerIdForReversalEntry(
+      FinancialAccountEntry reversalEntry);
+  Future<String?> customerIdForAdvanceRefundReversalEntry(
+      FinancialAccountEntry reversalEntry);
+  Future<String> customerNameForId(String customerId);
+}
+
 class FinancialReportService {
-  const FinancialReportService({required FinancialAccountRepository repository})
-      : _repository = repository;
+  const FinancialReportService({
+    required FinancialAccountRepository repository,
+    CustomerCollectionReportLookup? customerLookup,
+  })  : _repository = repository,
+        _customerLookup = customerLookup;
 
   final FinancialAccountRepository _repository;
+  final CustomerCollectionReportLookup? _customerLookup;
 
   static bool _isInRange(DateTime value, DateTime start, DateTime end) {
     return !value.isBefore(start) && !value.isAfter(end);
@@ -446,4 +459,227 @@ class FinancialReportService {
       sourceBreakdown: breakdown,
     );
   }
+
+  static const _qualifiedCollectionSources = {
+    FinancialAccountEntrySource.customerCollection,
+  };
+
+  static const _qualifiedReversalSources = {
+    FinancialAccountEntrySource.cancellationReversal,
+  };
+
+  static const _qualifiedAdvanceRefundReversalSources = {
+    FinancialAccountEntrySource.customerAdvanceRefundReversal,
+  };
+
+  Future<CustomerCollectionsByAccountReport> getCustomerCollectionsByAccount({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+    String? customerIdFilter,
+  }) async {
+    final effectiveFrom =
+        fromDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final effectiveTo = toDate ?? DateTime.now();
+
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final accountMap = {for (final a in accounts) a.id: a.name};
+
+    final allEntries = <FinancialAccountEntry>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final entries = await _entriesForAccount(account.id);
+      allEntries.addAll(entries);
+    }
+
+    final filtered = allEntries
+        .where((e) => _isInRange(e.effectiveDate, effectiveFrom, effectiveTo))
+        .where((e) {
+      if (_qualifiedCollectionSources.contains(e.sourceType)) return true;
+      if (_qualifiedReversalSources.contains(e.sourceType)) {
+        return e.reversalOf != null;
+      }
+      if (_qualifiedAdvanceRefundReversalSources.contains(e.sourceType)) {
+        return e.reversalOf != null;
+      }
+      return false;
+    }).toList();
+
+    final entryCustomerCache = <String, _ResolvedCustomer>{};
+
+    Future<_ResolvedCustomer> resolveCustomer(
+        FinancialAccountEntry entry) async {
+      if (entryCustomerCache.containsKey(entry.id)) {
+        return entryCustomerCache[entry.id]!;
+      }
+
+      final lookup = _customerLookup;
+      if (lookup == null) {
+        const unresolved = _ResolvedCustomer(null, null);
+        entryCustomerCache[entry.id] = unresolved;
+        return unresolved;
+      }
+
+      String? customerId;
+
+      if (_qualifiedCollectionSources.contains(entry.sourceType)) {
+        customerId =
+            await lookup.customerIdForCollection(entry.sourceDocumentId);
+      } else if (_qualifiedAdvanceRefundReversalSources
+          .contains(entry.sourceType)) {
+        customerId =
+            await lookup.customerIdForAdvanceRefundReversalEntry(entry);
+      } else if (_qualifiedReversalSources.contains(entry.sourceType)) {
+        customerId = await lookup.customerIdForReversalEntry(entry);
+      }
+
+      if (customerId != null) {
+        final name = await lookup.customerNameForId(customerId);
+        final resolved = _ResolvedCustomer(customerId, name);
+        entryCustomerCache[entry.id] = resolved;
+        return resolved;
+      }
+
+      const unresolved = _ResolvedCustomer(null, null);
+      entryCustomerCache[entry.id] = unresolved;
+      return unresolved;
+    }
+
+    final details = <CustomerCollectionsByAccountDetail>[];
+    for (final entry in filtered) {
+      final resolved = await resolveCustomer(entry);
+      final isReversal = entry.reversalOf != null;
+      details.add(CustomerCollectionsByAccountDetail(
+        entryId: entry.id,
+        sourceDocumentId: entry.sourceDocumentId,
+        customerId: resolved.customerId,
+        customerName: resolved.customerName ?? 'غير محدد',
+        accountId: entry.accountId,
+        accountName: accountMap[entry.accountId] ?? entry.accountId,
+        timestamp: entry.effectiveDate,
+        isReversal: isReversal,
+        amountQirsh: entry.amountQirsh,
+        sourceType: entry.sourceType,
+        reference: entry.reference,
+        reversalOfEntryId: entry.reversalOf,
+      ));
+    }
+
+    details.sort((a, b) {
+      final cmp = a.accountName.compareTo(b.accountName);
+      if (cmp != 0) return cmp;
+      final cmp2 = a.customerName.compareTo(b.customerName);
+      if (cmp2 != 0) return cmp2;
+      final cmp3 = b.timestamp.compareTo(a.timestamp);
+      if (cmp3 != 0) return cmp3;
+      return a.entryId.compareTo(b.entryId);
+    });
+
+    if (customerIdFilter != null) {
+      details.removeWhere((d) => d.customerId != customerIdFilter);
+    }
+
+    final accountGross = <String, int>{};
+    final accountRev = <String, int>{};
+    for (final d in details) {
+      if (d.isReversal) {
+        accountRev[d.accountId] =
+            (accountRev[d.accountId] ?? 0) + d.amountQirsh;
+      } else {
+        accountGross[d.accountId] =
+            (accountGross[d.accountId] ?? 0) + d.amountQirsh;
+      }
+    }
+
+    final accountSummaries = <CustomerCollectionsByAccountAccountSummary>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final gross = accountGross[account.id] ?? 0;
+      final rev = accountRev[account.id] ?? 0;
+      if (gross == 0 && rev == 0) continue;
+      accountSummaries.add(CustomerCollectionsByAccountAccountSummary(
+        account: account,
+        grossCollectionsQirsh: gross,
+        reversalsQirsh: rev,
+        netCollectionsQirsh: gross - rev,
+      ));
+    }
+
+    final custGross = <String?, int>{};
+    final custRev = <String?, int>{};
+    final custNames = <String?, String>{};
+    for (final d in details) {
+      if (d.isReversal) {
+        custRev[d.customerId] = (custRev[d.customerId] ?? 0) + d.amountQirsh;
+      } else {
+        custGross[d.customerId] =
+            (custGross[d.customerId] ?? 0) + d.amountQirsh;
+      }
+      custNames[d.customerId] = d.customerName;
+    }
+
+    final customerSummaries = <CustomerCollectionsByAccountCustomerSummary>[];
+    for (final custId in custGross.keys) {
+      final gross = custGross[custId] ?? 0;
+      final rev = custRev[custId] ?? 0;
+      customerSummaries.add(
+        CustomerCollectionsByAccountCustomerSummary(
+          customerId: custId,
+          customerName: custNames[custId] ?? 'غير محدد',
+          grossCollectionsQirsh: gross,
+          reversalsQirsh: rev,
+          netCollectionsQirsh: gross - rev,
+        ),
+      );
+    }
+    for (final custId in custRev.keys) {
+      if (!custGross.containsKey(custId)) {
+        final rev = custRev[custId]!;
+        customerSummaries.add(
+          CustomerCollectionsByAccountCustomerSummary(
+            customerId: custId,
+            customerName: custNames[custId] ?? 'غير محدد',
+            grossCollectionsQirsh: 0,
+            reversalsQirsh: rev,
+            netCollectionsQirsh: -rev,
+          ),
+        );
+      }
+    }
+
+    customerSummaries.sort((a, b) {
+      final cmp = a.customerName.compareTo(b.customerName);
+      if (cmp != 0) return cmp;
+      final aId = a.customerId ?? '';
+      final bId = b.customerId ?? '';
+      return aId.compareTo(bId);
+    });
+
+    var totalGross = 0;
+    var totalRev = 0;
+    for (final d in details) {
+      if (d.isReversal) {
+        totalRev += d.amountQirsh;
+      } else {
+        totalGross += d.amountQirsh;
+      }
+    }
+
+    return CustomerCollectionsByAccountReport(
+      fromDate: effectiveFrom,
+      toDate: effectiveTo,
+      accountSummaries: accountSummaries,
+      customerSummaries: customerSummaries,
+      details: details,
+      totalGrossCollectionsQirsh: totalGross,
+      totalReversalsQirsh: totalRev,
+      totalNetCollectionsQirsh: totalGross - totalRev,
+    );
+  }
+}
+
+class _ResolvedCustomer {
+  const _ResolvedCustomer(this.customerId, this.customerName);
+  final String? customerId;
+  final String? customerName;
 }

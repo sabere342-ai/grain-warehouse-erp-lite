@@ -272,4 +272,107 @@ class FinancialReportCsvExporter {
     await file.writeAsString(csv, encoding: utf8);
     return file;
   }
+
+  static String _formulaSafe(String value) {
+    if (value.isEmpty) return value;
+    final first = value.codeUnitAt(0);
+    if (first == 0x3D || first == 0x2B || first == 0x2D || first == 0x40) {
+      return '\t$value';
+    }
+    return value;
+  }
+
+  static Future<File> exportCustomerCollectionsByAccountReport({
+    required CustomerCollectionsByAccountReport report,
+  }) async {
+    final rows = <List<String>>[];
+    rows.add([
+      'الحساب',
+      'العميل',
+      'معرف العميل',
+      'التاريخ',
+      'النوع',
+      'التصنيف',
+      'المبلغ',
+      'المصدر',
+      'المرجع',
+      'معرف المستند',
+      'معرف القيد',
+    ]);
+    for (final d in report.details) {
+      rows.add([
+        d.accountName,
+        _formulaSafe(d.customerName),
+        d.customerId ?? '',
+        _formatDate(d.timestamp),
+        d.isReversal ? 'مرتجع' : 'تحصيل',
+        d.sourceType.labelAr,
+        _money(d.amountQirsh),
+        d.sourceType.labelAr,
+        _formulaSafe(d.reference ?? ''),
+        d.sourceDocumentId ?? '',
+        d.entryId,
+      ]);
+    }
+    rows.add([
+      '',
+      '',
+      '',
+      '',
+      '',
+      'الإجمالي',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'إجمالي التحصيلات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalGrossCollectionsQirsh),
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'إجمالي المرتجعات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalReversalsQirsh),
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'صافي التحصيلات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalNetCollectionsQirsh),
+      '',
+      '',
+      '',
+      '',
+    ]);
+
+    final csv = _bomCsv(rows);
+    final dir = await _exportDir();
+    final filename =
+        PdfFileNaming.customerCollectionsByAccountReportCsv(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsString(csv, encoding: utf8);
+    return file;
+  }
 }

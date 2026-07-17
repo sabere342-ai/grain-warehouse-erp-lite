@@ -201,3 +201,89 @@ class FlowReport {
   final int totalQirsh;
   final Map<FinancialAccountEntrySource, int> sourceBreakdown;
 }
+
+class CustomerCollectionsByAccountDetail {
+  const CustomerCollectionsByAccountDetail({
+    required this.entryId,
+    this.sourceDocumentId,
+    this.customerId,
+    required this.customerName,
+    required this.accountId,
+    required this.accountName,
+    required this.timestamp,
+    required this.isReversal,
+    required this.amountQirsh,
+    required this.sourceType,
+    this.reference,
+    this.reversalOfEntryId,
+  });
+
+  final String entryId;
+  final String? sourceDocumentId;
+  final String? customerId;
+  final String customerName;
+  final String accountId;
+  final String accountName;
+  final DateTime timestamp;
+  final bool isReversal;
+  final int amountQirsh;
+  final FinancialAccountEntrySource sourceType;
+  final String? reference;
+  final String? reversalOfEntryId;
+
+  bool get isUnresolved => customerId == null;
+}
+
+class CustomerCollectionsByAccountAccountSummary {
+  const CustomerCollectionsByAccountAccountSummary({
+    required this.account,
+    required this.grossCollectionsQirsh,
+    required this.reversalsQirsh,
+    required this.netCollectionsQirsh,
+  });
+
+  final FinancialAccount account;
+  final int grossCollectionsQirsh;
+  final int reversalsQirsh;
+  final int netCollectionsQirsh;
+}
+
+class CustomerCollectionsByAccountCustomerSummary {
+  const CustomerCollectionsByAccountCustomerSummary({
+    required this.customerId,
+    required this.customerName,
+    required this.grossCollectionsQirsh,
+    required this.reversalsQirsh,
+    required this.netCollectionsQirsh,
+  });
+
+  final String? customerId;
+  final String customerName;
+  final int grossCollectionsQirsh;
+  final int reversalsQirsh;
+  final int netCollectionsQirsh;
+
+  bool get isUnresolved => customerId == null;
+}
+
+class CustomerCollectionsByAccountReport {
+  const CustomerCollectionsByAccountReport({
+    required this.fromDate,
+    required this.toDate,
+    required this.accountSummaries,
+    required this.customerSummaries,
+    required this.details,
+    required this.totalGrossCollectionsQirsh,
+    required this.totalReversalsQirsh,
+    required this.totalNetCollectionsQirsh,
+  });
+
+  final DateTime fromDate;
+  final DateTime toDate;
+  final List<CustomerCollectionsByAccountAccountSummary> accountSummaries;
+  final List<CustomerCollectionsByAccountCustomerSummary> customerSummaries;
+  final List<CustomerCollectionsByAccountDetail> details;
+  final int totalGrossCollectionsQirsh;
+  final int totalReversalsQirsh;
+  final int totalNetCollectionsQirsh;
+}
