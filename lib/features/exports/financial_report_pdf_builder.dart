@@ -934,4 +934,262 @@ class FinancialReportPdfBuilder {
     await file.writeAsBytes(bytes);
     return file;
   }
+
+  static Future<File> buildSupplierSettlementsByAccountReport({
+    required SupplierSettlementsByAccountReport report,
+  }) async {
+    await initialize();
+    final pdf = pw.Document();
+
+    final titleStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 16);
+    final headerStyle = pw.TextStyle(font: _arabicFontBold!, fontSize: 10);
+    final cellStyle = pw.TextStyle(font: _arabicFont!, fontSize: 9);
+    final boldCell = pw.TextStyle(font: _arabicFontBold!, fontSize: 9);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        build: (ctx) => [
+          pw.Directionality(
+            textDirection: pw.TextDirection.rtl,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                pw.Center(
+                  child:
+                      pw.Text('تسويات الموردين حسب الحساب', style: titleStyle),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Center(
+                  child: pw.Text(
+                    'من: ${_formatDate(report.fromDate)}  إلى: ${_formatDate(report.toDate)}',
+                    style: boldCell,
+                  ),
+                ),
+                pw.SizedBox(height: 12),
+                pw.TableHelper.fromTextArray(
+                  context: ctx,
+                  cellStyle: cellStyle,
+                  headerStyle: headerStyle,
+                  headerAlignment: pw.Alignment.center,
+                  cellAlignment: pw.Alignment.center,
+                  headerDirection: pw.TextDirection.rtl,
+                  headers: [
+                    'إجمالي التسويات',
+                    'إجمالي الإلغاءات',
+                    'صافي التسويات',
+                  ],
+                  data: [
+                    [
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalGrossSettlementsQirsh),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalReversalsQirsh),
+                      MoneyUtils.formatPiastersAsEgp(
+                          report.totalNetSettlementsQirsh),
+                    ],
+                  ],
+                  cellAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  headerAlignments: {
+                    0: pw.Alignment.centerLeft,
+                    1: pw.Alignment.centerLeft,
+                    2: pw.Alignment.centerLeft,
+                  },
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(2),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(2),
+                  },
+                ),
+                if (report.accountSummaries.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('التسويات حسب الحساب', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'الحساب',
+                      'تسويات',
+                      'إلغاءات',
+                      'صافي',
+                    ],
+                    data: [
+                      ...report.accountSummaries.map((a) => [
+                            '${a.account.name} (${a.account.type.labelAr})',
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.grossSettlementsQirsh),
+                            MoneyUtils.formatPiastersAsEgp(a.reversalsQirsh),
+                            MoneyUtils.formatPiastersAsEgp(
+                                a.netSettlementsQirsh),
+                          ]),
+                      [
+                        'الإجمالي',
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalGrossSettlementsQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalReversalsQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalNetSettlementsQirsh),
+                      ],
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+                if (report.supplierSummaries.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('التسويات حسب المورد', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'المورد',
+                      'تسويات',
+                      'إلغاءات',
+                      'صافي',
+                    ],
+                    data: [
+                      ...report.supplierSummaries.map((s) => [
+                            s.supplierName,
+                            MoneyUtils.formatPiastersAsEgp(
+                                s.grossSettlementsQirsh),
+                            MoneyUtils.formatPiastersAsEgp(s.reversalsQirsh),
+                            MoneyUtils.formatPiastersAsEgp(
+                                s.netSettlementsQirsh),
+                          ]),
+                      [
+                        'الإجمالي',
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalGrossSettlementsQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalReversalsQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalNetSettlementsQirsh),
+                      ],
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.centerRight,
+                      1: pw.Alignment.centerLeft,
+                      2: pw.Alignment.centerLeft,
+                      3: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(2.5),
+                      1: const pw.FlexColumnWidth(1.5),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+                if (report.details.isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('التفاصيل', style: boldCell),
+                  pw.SizedBox(height: 8),
+                  pw.TableHelper.fromTextArray(
+                    context: ctx,
+                    cellStyle: cellStyle,
+                    headerStyle: headerStyle,
+                    headerAlignment: pw.Alignment.center,
+                    cellAlignment: pw.Alignment.center,
+                    headerDirection: pw.TextDirection.rtl,
+                    headers: [
+                      'التاريخ',
+                      'المورد',
+                      'الحساب',
+                      'النوع',
+                      'المبلغ',
+                    ],
+                    data: [
+                      ...report.details.map((d) => [
+                            _formatDate(d.timestamp),
+                            d.supplierName,
+                            d.accountName,
+                            d.sourceType.labelAr,
+                            MoneyUtils.formatPiastersAsEgp(d.amountQirsh),
+                          ]),
+                      [
+                        '',
+                        '',
+                        '',
+                        'الإجمالي',
+                        MoneyUtils.formatPiastersAsEgp(
+                            report.totalGrossSettlementsQirsh -
+                                report.totalReversalsQirsh),
+                      ],
+                    ],
+                    cellAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerRight,
+                      4: pw.Alignment.centerLeft,
+                    },
+                    headerAlignments: {
+                      0: pw.Alignment.center,
+                      1: pw.Alignment.centerRight,
+                      2: pw.Alignment.centerRight,
+                      3: pw.Alignment.centerRight,
+                      4: pw.Alignment.centerLeft,
+                    },
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1.2),
+                      1: const pw.FlexColumnWidth(1.8),
+                      2: const pw.FlexColumnWidth(1.8),
+                      3: const pw.FlexColumnWidth(1.5),
+                      4: const pw.FlexColumnWidth(1.5),
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final dir = await _exportDir();
+    final filename =
+        PdfFileNaming.supplierSettlementsByAccountReport(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
 }

@@ -375,4 +375,104 @@ class FinancialReportCsvExporter {
     await file.writeAsString(csv, encoding: utf8);
     return file;
   }
+
+  static Future<File> exportSupplierSettlementsByAccountReport({
+    required SupplierSettlementsByAccountReport report,
+  }) async {
+    final rows = <List<String>>[];
+    rows.add([
+      'الحساب',
+      'المورد',
+      'معرف المورد',
+      'التاريخ',
+      'النوع',
+      'التصنيف',
+      'المبلغ',
+      'المصدر',
+      'المرجع',
+      'معرف المستند',
+      'معرف القيد',
+      'عكس القيد',
+    ]);
+    for (final d in report.details) {
+      rows.add([
+        d.accountName,
+        _formulaSafe(d.supplierName),
+        d.supplierId ?? '',
+        _formatDate(d.timestamp),
+        d.isReversal ? 'إلغاء' : 'تسوية',
+        d.sourceType.labelAr,
+        _money(d.amountQirsh),
+        d.sourceType.labelAr,
+        _formulaSafe(d.reference ?? ''),
+        d.sourceDocumentId ?? '',
+        d.entryId,
+        d.reversalOfEntryId ?? '',
+      ]);
+    }
+    rows.add([
+      '',
+      '',
+      '',
+      '',
+      '',
+      'الإجمالي',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'إجمالي التسويات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalGrossSettlementsQirsh),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'إجمالي الإلغاءات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalReversalsQirsh),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+    rows.add([
+      'صافي التسويات',
+      '',
+      '',
+      '',
+      '',
+      '',
+      _money(report.totalNetSettlementsQirsh),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]);
+
+    final csv = _bomCsv(rows);
+    final dir = await _exportDir();
+    final filename =
+        PdfFileNaming.supplierSettlementsByAccountReportCsv(report.toDate);
+    final file = File('${dir.path}\\$filename');
+    await file.writeAsString(csv, encoding: utf8);
+    return file;
+  }
 }

@@ -676,10 +676,239 @@ class FinancialReportService {
       totalNetCollectionsQirsh: totalGross - totalRev,
     );
   }
+
+  static const _qualifiedSettlementSources = {
+    FinancialAccountEntrySource.supplierSettlement,
+  };
+
+  static const _qualifiedSettlementReversalSources = {
+    FinancialAccountEntrySource.cancellationReversal,
+  };
+
+  Future<SupplierSettlementsByAccountReport> getSupplierSettlementsByAccount({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? accountIdFilter,
+    String? supplierIdFilter,
+    SupplierSettlementReportLookup? supplierLookup,
+  }) async {
+    final effectiveFrom =
+        fromDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final effectiveTo = toDate ?? DateTime.now();
+
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final accountMap = {for (final a in accounts) a.id: a.name};
+
+    final allEntries = <FinancialAccountEntry>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final entries = await _entriesForAccount(account.id);
+      allEntries.addAll(entries);
+    }
+
+    final entryById = <String, FinancialAccountEntry>{};
+    for (final e in allEntries) {
+      entryById[e.id] = e;
+    }
+
+    final filtered = allEntries
+        .where((e) => _isInRange(e.effectiveDate, effectiveFrom, effectiveTo))
+        .where((e) {
+      if (_qualifiedSettlementSources.contains(e.sourceType)) return true;
+      if (_qualifiedSettlementReversalSources.contains(e.sourceType)) {
+        if (e.reversalOf == null) return false;
+        final original = entryById[e.reversalOf];
+        if (original == null) return false;
+        return _qualifiedSettlementSources.contains(original.sourceType);
+      }
+      return false;
+    }).toList();
+
+    final entrySupplierCache = <String, _ResolvedSupplier>{};
+
+    Future<_ResolvedSupplier> resolveSupplier(
+        FinancialAccountEntry entry) async {
+      if (entrySupplierCache.containsKey(entry.id)) {
+        return entrySupplierCache[entry.id]!;
+      }
+
+      if (supplierLookup == null) {
+        const unresolved = _ResolvedSupplier(null, null);
+        entrySupplierCache[entry.id] = unresolved;
+        return unresolved;
+      }
+
+      String? supplierId;
+
+      if (_qualifiedSettlementSources.contains(entry.sourceType)) {
+        supplierId =
+            await supplierLookup.supplierIdForPayment(entry.sourceDocumentId);
+      } else if (_qualifiedSettlementReversalSources
+              .contains(entry.sourceType) &&
+          entry.reversalOf != null) {
+        supplierId = await supplierLookup.supplierIdForReversalEntry(entry);
+      }
+
+      if (supplierId != null) {
+        final name = await supplierLookup.supplierNameForId(supplierId);
+        final resolved = _ResolvedSupplier(supplierId, name);
+        entrySupplierCache[entry.id] = resolved;
+        return resolved;
+      }
+
+      const unresolved = _ResolvedSupplier(null, null);
+      entrySupplierCache[entry.id] = unresolved;
+      return unresolved;
+    }
+
+    final details = <SupplierSettlementsByAccountDetail>[];
+    for (final entry in filtered) {
+      final resolved = await resolveSupplier(entry);
+      final isReversal = entry.reversalOf != null;
+      details.add(SupplierSettlementsByAccountDetail(
+        entryId: entry.id,
+        sourceDocumentId: entry.sourceDocumentId,
+        supplierId: resolved.supplierId,
+        supplierName: resolved.supplierName ?? 'مورد غير محدد',
+        accountId: entry.accountId,
+        accountName: accountMap[entry.accountId] ?? entry.accountId,
+        timestamp: entry.effectiveDate,
+        isReversal: isReversal,
+        amountQirsh: entry.amountQirsh,
+        sourceType: entry.sourceType,
+        reference: entry.reference,
+        reversalOfEntryId: entry.reversalOf,
+      ));
+    }
+
+    details.sort((a, b) {
+      final cmp = a.accountName.compareTo(b.accountName);
+      if (cmp != 0) return cmp;
+      final cmp2 = a.supplierName.compareTo(b.supplierName);
+      if (cmp2 != 0) return cmp2;
+      final cmp3 = b.timestamp.compareTo(a.timestamp);
+      if (cmp3 != 0) return cmp3;
+      return a.entryId.compareTo(b.entryId);
+    });
+
+    if (supplierIdFilter != null) {
+      details.removeWhere((d) => d.supplierId != supplierIdFilter);
+    }
+
+    final accountGross = <String, int>{};
+    final accountRev = <String, int>{};
+    for (final d in details) {
+      if (d.isReversal) {
+        accountRev[d.accountId] =
+            (accountRev[d.accountId] ?? 0) + d.amountQirsh;
+      } else {
+        accountGross[d.accountId] =
+            (accountGross[d.accountId] ?? 0) + d.amountQirsh;
+      }
+    }
+
+    final accountSummaries = <SupplierSettlementsByAccountAccountSummary>[];
+    for (final account in accounts) {
+      if (accountIdFilter != null && account.id != accountIdFilter) continue;
+      final gross = accountGross[account.id] ?? 0;
+      final rev = accountRev[account.id] ?? 0;
+      if (gross == 0 && rev == 0) continue;
+      accountSummaries.add(SupplierSettlementsByAccountAccountSummary(
+        account: account,
+        grossSettlementsQirsh: gross,
+        reversalsQirsh: rev,
+        netSettlementsQirsh: gross - rev,
+      ));
+    }
+
+    final suppGross = <String?, int>{};
+    final suppRev = <String?, int>{};
+    final suppNames = <String?, String>{};
+    for (final d in details) {
+      if (d.isReversal) {
+        suppRev[d.supplierId] = (suppRev[d.supplierId] ?? 0) + d.amountQirsh;
+      } else {
+        suppGross[d.supplierId] =
+            (suppGross[d.supplierId] ?? 0) + d.amountQirsh;
+      }
+      suppNames[d.supplierId] = d.supplierName;
+    }
+
+    final supplierSummaries = <SupplierSettlementsByAccountSupplierSummary>[];
+    for (final suppId in suppGross.keys) {
+      final gross = suppGross[suppId] ?? 0;
+      final rev = suppRev[suppId] ?? 0;
+      supplierSummaries.add(
+        SupplierSettlementsByAccountSupplierSummary(
+          supplierId: suppId,
+          supplierName: suppNames[suppId] ?? 'مورد غير محدد',
+          grossSettlementsQirsh: gross,
+          reversalsQirsh: rev,
+          netSettlementsQirsh: gross - rev,
+        ),
+      );
+    }
+    for (final suppId in suppRev.keys) {
+      if (!suppGross.containsKey(suppId)) {
+        final rev = suppRev[suppId]!;
+        supplierSummaries.add(
+          SupplierSettlementsByAccountSupplierSummary(
+            supplierId: suppId,
+            supplierName: suppNames[suppId] ?? 'مورد غير محدد',
+            grossSettlementsQirsh: 0,
+            reversalsQirsh: rev,
+            netSettlementsQirsh: -rev,
+          ),
+        );
+      }
+    }
+
+    supplierSummaries.sort((a, b) {
+      final cmp = a.supplierName.compareTo(b.supplierName);
+      if (cmp != 0) return cmp;
+      final aId = a.supplierId ?? '';
+      final bId = b.supplierId ?? '';
+      return aId.compareTo(bId);
+    });
+
+    var totalGross = 0;
+    var totalRev = 0;
+    for (final d in details) {
+      if (d.isReversal) {
+        totalRev += d.amountQirsh;
+      } else {
+        totalGross += d.amountQirsh;
+      }
+    }
+
+    return SupplierSettlementsByAccountReport(
+      fromDate: effectiveFrom,
+      toDate: effectiveTo,
+      accountSummaries: accountSummaries,
+      supplierSummaries: supplierSummaries,
+      details: details,
+      totalGrossSettlementsQirsh: totalGross,
+      totalReversalsQirsh: totalRev,
+      totalNetSettlementsQirsh: totalGross - totalRev,
+    );
+  }
 }
 
 class _ResolvedCustomer {
   const _ResolvedCustomer(this.customerId, this.customerName);
   final String? customerId;
   final String? customerName;
+}
+
+abstract class SupplierSettlementReportLookup {
+  Future<String?> supplierIdForPayment(String paymentId);
+  Future<String?> supplierIdForReversalEntry(
+      FinancialAccountEntry reversalEntry);
+  Future<String> supplierNameForId(String supplierId);
+}
+
+class _ResolvedSupplier {
+  const _ResolvedSupplier(this.supplierId, this.supplierName);
+  final String? supplierId;
+  final String? supplierName;
 }

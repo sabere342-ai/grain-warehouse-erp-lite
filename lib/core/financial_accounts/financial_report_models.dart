@@ -287,3 +287,89 @@ class CustomerCollectionsByAccountReport {
   final int totalReversalsQirsh;
   final int totalNetCollectionsQirsh;
 }
+
+class SupplierSettlementsByAccountDetail {
+  const SupplierSettlementsByAccountDetail({
+    required this.entryId,
+    this.sourceDocumentId,
+    this.supplierId,
+    required this.supplierName,
+    required this.accountId,
+    required this.accountName,
+    required this.timestamp,
+    required this.isReversal,
+    required this.amountQirsh,
+    required this.sourceType,
+    this.reference,
+    this.reversalOfEntryId,
+  });
+
+  final String entryId;
+  final String? sourceDocumentId;
+  final String? supplierId;
+  final String supplierName;
+  final String accountId;
+  final String accountName;
+  final DateTime timestamp;
+  final bool isReversal;
+  final int amountQirsh;
+  final FinancialAccountEntrySource sourceType;
+  final String? reference;
+  final String? reversalOfEntryId;
+
+  bool get isUnresolved => supplierId == null;
+}
+
+class SupplierSettlementsByAccountAccountSummary {
+  const SupplierSettlementsByAccountAccountSummary({
+    required this.account,
+    required this.grossSettlementsQirsh,
+    required this.reversalsQirsh,
+    required this.netSettlementsQirsh,
+  });
+
+  final FinancialAccount account;
+  final int grossSettlementsQirsh;
+  final int reversalsQirsh;
+  final int netSettlementsQirsh;
+}
+
+class SupplierSettlementsByAccountSupplierSummary {
+  const SupplierSettlementsByAccountSupplierSummary({
+    required this.supplierId,
+    required this.supplierName,
+    required this.grossSettlementsQirsh,
+    required this.reversalsQirsh,
+    required this.netSettlementsQirsh,
+  });
+
+  final String? supplierId;
+  final String supplierName;
+  final int grossSettlementsQirsh;
+  final int reversalsQirsh;
+  final int netSettlementsQirsh;
+
+  bool get isUnresolved => supplierId == null;
+}
+
+class SupplierSettlementsByAccountReport {
+  const SupplierSettlementsByAccountReport({
+    required this.fromDate,
+    required this.toDate,
+    required this.accountSummaries,
+    required this.supplierSummaries,
+    required this.details,
+    required this.totalGrossSettlementsQirsh,
+    required this.totalReversalsQirsh,
+    required this.totalNetSettlementsQirsh,
+  });
+
+  final DateTime fromDate;
+  final DateTime toDate;
+  final List<SupplierSettlementsByAccountAccountSummary> accountSummaries;
+  final List<SupplierSettlementsByAccountSupplierSummary> supplierSummaries;
+  final List<SupplierSettlementsByAccountDetail> details;
+  final int totalGrossSettlementsQirsh;
+  final int totalReversalsQirsh;
+  final int totalNetSettlementsQirsh;
+}

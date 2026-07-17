@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/features/financial_reports/customer_col
 import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/supplier_settlements_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_closing_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -94,6 +95,14 @@ class FinancialReportsScreen extends StatelessWidget {
             icon: Icons.group_work_rounded,
             onTap: () =>
                 _navigate(context, const CustomerCollectionsReportScreen()),
+          ),
+          const SizedBox(height: 12),
+          _ReportCard(
+            title: 'تسويات الموردين حسب الحساب',
+            subtitle: 'تحليل تسويات الموردين موزعة على الحسابات المالية',
+            icon: Icons.business_center_rounded,
+            onTap: () =>
+                _navigate(context, const SupplierSettlementsReportScreen()),
           ),
         ],
       ),
