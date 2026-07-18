@@ -39,6 +39,11 @@ abstract interface class FinancialInflowsReportReader {
   Future<FlowReport> loadFinancialInflowsReport();
 }
 
+/// Read-only boundary for the canonical current-month financial outflows report.
+abstract interface class FinancialOutflowsReportReader {
+  Future<FlowReport> loadFinancialOutflowsReport();
+}
+
 final class FinancialReportServiceAccountBalanceReader
     implements FinancialAccountBalanceReportReader {
   const FinancialReportServiceAccountBalanceReader({
@@ -129,4 +134,16 @@ final class FinancialReportServiceInflowsReader
 
   @override
   Future<FlowReport> loadFinancialInflowsReport() => _service.inflowsReport();
+}
+
+final class FinancialReportServiceOutflowsReader
+    implements FinancialOutflowsReportReader {
+  const FinancialReportServiceOutflowsReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<FlowReport> loadFinancialOutflowsReport() => _service.outflowsReport();
 }
