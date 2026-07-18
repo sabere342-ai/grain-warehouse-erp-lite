@@ -45,6 +45,7 @@ final class AiExecutionService {
         messages: result.messages,
         tables: result.tables,
         actions: result.actions,
+        data: result.data,
       );
     } on AiToolValidationException catch (error) {
       return AiExecutionResponse(

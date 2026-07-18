@@ -26,11 +26,13 @@ final class AiToolResult {
     this.messages = const [],
     this.tables = const [],
     this.actions = const [],
+    this.data,
   });
 
   final List<String> messages;
   final List<AiResponseTable> tables;
   final List<AiResponseAction> actions;
+  final Object? data;
 }
 
 final class AiExecutionResponse {
@@ -40,6 +42,7 @@ final class AiExecutionResponse {
     this.validationErrors = const [],
     this.tables = const [],
     this.actions = const [],
+    this.data,
   });
 
   final AiResponseStatus status;
@@ -47,6 +50,7 @@ final class AiExecutionResponse {
   final List<AiValidationError> validationErrors;
   final List<AiResponseTable> tables;
   final List<AiResponseAction> actions;
+  final Object? data;
 
   bool get isSuccess => status == AiResponseStatus.success;
 }
