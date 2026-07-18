@@ -1,5 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -67,12 +68,18 @@ class DashboardService {
     required ExpenseRepository expenseRepository,
     required CustomerAccountRepository customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
+    InventoryAttentionService? inventoryAttentionService,
   })  : _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
         _productRepository = productRepository,
         _expenseRepository = expenseRepository,
         _customerAccountRepository = customerAccountRepository,
-        _supplierAccountRepository = supplierAccountRepository;
+        _supplierAccountRepository = supplierAccountRepository,
+        _inventoryAttentionService = inventoryAttentionService ??
+            InventoryAttentionService(
+              productRepository: productRepository,
+              inventoryRepository: inventoryRepository,
+            );
 
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
@@ -80,6 +87,7 @@ class DashboardService {
   final ExpenseRepository _expenseRepository;
   final CustomerAccountRepository _customerAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
+  final InventoryAttentionService _inventoryAttentionService;
 
   Future<DashboardData> load() async {
     final now = DateTime.now();
@@ -174,14 +182,8 @@ class DashboardService {
       wheatStockKg = balances[wheatProduct.first.id] ?? 0;
     }
 
-    int stockAlertCount = 0;
-    for (final product in products) {
-      if (product.minimumSalePricePiastersPerKg == null) continue;
-      final stock = balances[product.id] ?? 0;
-      if (stock <= 0) {
-        stockAlertCount++;
-      }
-    }
+    final stockAlertCount =
+        (await _inventoryAttentionService.loadAttention()).length;
 
     return DashboardData(
       todaySalesQirsh: todaySalesQirsh,

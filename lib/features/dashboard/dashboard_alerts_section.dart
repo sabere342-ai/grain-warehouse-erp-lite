@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
@@ -41,14 +42,14 @@ class OwnerAlertData {
     SupplierAccountRepository? supplierAccountRepository,
     ProductRepository? productRepository,
     InventoryRepository? inventoryRepository,
+    InventoryAttentionService? inventoryAttentionService,
   }) async {
     final customers =
         await (customerRepository ?? AppRepositories.customerRepository)
             .listCustomers();
-    final customerBalances =
-        await (customerAccountRepository ??
-                AppRepositories.customerAccountRepository)
-            .balancesByCustomerId();
+    final customerBalances = await (customerAccountRepository ??
+            AppRepositories.customerAccountRepository)
+        .balancesByCustomerId();
     final customerAlerts = <_CustomerBalanceAlert>[];
     for (final c in customers) {
       final b = customerBalances[c.id] ?? 0;
@@ -64,10 +65,9 @@ class OwnerAlertData {
     final suppliers =
         await (supplierRepository ?? AppRepositories.supplierRepository)
             .listSuppliers();
-    final supplierBalances =
-        await (supplierAccountRepository ??
-                AppRepositories.supplierAccountRepository)
-            .balancesBySupplierId();
+    final supplierBalances = await (supplierAccountRepository ??
+            AppRepositories.supplierAccountRepository)
+        .balancesBySupplierId();
     final supplierAlerts = <_SupplierPayableAlert>[];
     for (final s in suppliers) {
       final b = supplierBalances[s.id] ?? 0;
@@ -80,19 +80,20 @@ class OwnerAlertData {
     }
     supplierAlerts.sort((a, b) => b.payableQirsh.compareTo(a.payableQirsh));
 
-    final products =
-        await (productRepository ?? AppRepositories.productRepository)
-            .listProducts();
-    final stockBalances =
-        await (inventoryRepository ?? AppRepositories.inventoryRepository)
-            .allProductBalancesKg();
+    final attentionService = inventoryAttentionService ??
+        InventoryAttentionService(
+          productRepository:
+              productRepository ?? AppRepositories.productRepository,
+          inventoryRepository:
+              inventoryRepository ?? AppRepositories.inventoryRepository,
+        );
+    final attention = await attentionService.loadAttention();
     final stockAlerts = <_LowStockAlert>[];
-    for (final p in products) {
-      final s = stockBalances[p.id] ?? 0;
-      if (s > 0 && s <= 5) {
+    for (final item in attention) {
+      if (item.type == InventoryAttentionType.lowStock) {
         stockAlerts.add(_LowStockAlert(
-          productName: p.name,
-          stockKg: s,
+          productName: item.productName,
+          stockKg: item.quantityKg,
         ));
       }
     }
@@ -170,7 +171,8 @@ class _OwnerAlertsContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.person_rounded, size: 16, color: AppColors.wheat),
+              const Icon(Icons.person_rounded,
+                  size: 16, color: AppColors.wheat),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -196,7 +198,8 @@ class _OwnerAlertsContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.person_rounded, size: 16, color: AppColors.wheat),
+              const Icon(Icons.person_rounded,
+                  size: 16, color: AppColors.wheat),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -222,7 +225,8 @@ class _OwnerAlertsContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.inventory_2_rounded, size: 16, color: AppColors.wheat),
+              const Icon(Icons.inventory_2_rounded,
+                  size: 16, color: AppColors.wheat),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -240,7 +244,8 @@ class _OwnerAlertsContent extends StatelessWidget {
     if (!data.hasAnyAlert) {
       items.add(Row(
         children: [
-          const Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.olive),
+          const Icon(Icons.check_circle_outline_rounded,
+              size: 18, color: AppColors.olive),
           const SizedBox(width: 8),
           Text('لا توجد تنبيهات.', style: textTheme.bodySmall),
         ],
@@ -266,7 +271,8 @@ class _OwnerAlertsContent extends StatelessWidget {
     items.add(Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.wheat),
+        const Icon(Icons.info_outline_rounded,
+            size: 18, color: AppColors.wheat),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
