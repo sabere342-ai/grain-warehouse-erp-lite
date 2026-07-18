@@ -1,3 +1,4 @@
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_service.dart';
 
@@ -42,6 +43,15 @@ abstract interface class FinancialInflowsReportReader {
 /// Read-only boundary for the canonical current-month financial outflows report.
 abstract interface class FinancialOutflowsReportReader {
   Future<FlowReport> loadFinancialOutflowsReport();
+}
+
+/// Read-only boundary for the canonical expense analysis report.
+abstract interface class FinancialExpenseAnalysisReportReader {
+  Future<ExpenseAnalysisReport> loadExpenseAnalysisReport({
+    String? accountIdFilter,
+    PaymentMethod? paymentMethodFilter,
+    String? categoryFilter,
+  });
 }
 
 final class FinancialReportServiceAccountBalanceReader
@@ -146,4 +156,25 @@ final class FinancialReportServiceOutflowsReader
 
   @override
   Future<FlowReport> loadFinancialOutflowsReport() => _service.outflowsReport();
+}
+
+final class FinancialReportServiceExpenseAnalysisReader
+    implements FinancialExpenseAnalysisReportReader {
+  const FinancialReportServiceExpenseAnalysisReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<ExpenseAnalysisReport> loadExpenseAnalysisReport({
+    String? accountIdFilter,
+    PaymentMethod? paymentMethodFilter,
+    String? categoryFilter,
+  }) =>
+      _service.expenseAnalysisReport(
+        accountIdFilter: accountIdFilter,
+        paymentMethodFilter: paymentMethodFilter,
+        categoryFilter: categoryFilter,
+      );
 }
