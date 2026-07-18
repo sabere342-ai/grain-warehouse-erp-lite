@@ -16,4 +16,5 @@ export 'tools/financial_payment_method_summary_tool.dart';
 export 'tools/financial_transfer_summary_tool.dart';
 export 'tools/financial_advances_and_refunds_summary_tool.dart';
 export 'tools/financial_closing_reconciliation_summary_tool.dart';
+export 'tools/financial_inflows_summary_tool.dart';
 export 'tools/inventory_attention_tool.dart';
