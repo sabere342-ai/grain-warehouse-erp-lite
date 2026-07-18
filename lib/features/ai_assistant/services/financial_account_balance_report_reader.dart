@@ -6,6 +6,13 @@ abstract interface class FinancialAccountBalanceReportReader {
   Future<AccountBalanceReport> loadAccountBalanceReport();
 }
 
+/// Read-only boundary for the existing Financial Account Statement Report.
+abstract interface class FinancialAccountStatementReportReader {
+  Future<AccountStatementReport> loadAccountStatementReport({
+    required String financialAccountId,
+  });
+}
+
 final class FinancialReportServiceAccountBalanceReader
     implements FinancialAccountBalanceReportReader {
   const FinancialReportServiceAccountBalanceReader({
@@ -17,4 +24,19 @@ final class FinancialReportServiceAccountBalanceReader
   @override
   Future<AccountBalanceReport> loadAccountBalanceReport() =>
       _service.accountBalanceReport(includeInactive: true);
+}
+
+final class FinancialReportServiceAccountStatementReader
+    implements FinancialAccountStatementReportReader {
+  const FinancialReportServiceAccountStatementReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<AccountStatementReport> loadAccountStatementReport({
+    required String financialAccountId,
+  }) =>
+      _service.accountStatementReport(accountId: financialAccountId);
 }
