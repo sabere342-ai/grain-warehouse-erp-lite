@@ -1,5 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 
 class AccountBalanceReportRow {
   const AccountBalanceReportRow({
@@ -558,4 +559,74 @@ class ExpenseAnalysisReport {
   final int totalQirsh;
   final int grandCount;
   final List<ExpenseAnalysisReportDetail> allDetails;
+}
+
+/// Immutable, canonical read-only representation of closing reconciliation.
+final class FinancialClosingReconciliationReport {
+  FinancialClosingReconciliationReport({
+    required List<FinancialClosingReconciliationSummary> closings,
+  }) : closings = List<FinancialClosingReconciliationSummary>.unmodifiable(
+          closings,
+        );
+
+  final List<FinancialClosingReconciliationSummary> closings;
+
+  bool get isEmpty => closings.isEmpty;
+}
+
+/// A recorded financial closing with its canonical reconciliation rows.
+final class FinancialClosingReconciliationSummary {
+  FinancialClosingReconciliationSummary({
+    required this.closingId,
+    required this.kind,
+    required this.fromDate,
+    required this.toDate,
+    required this.createdAt,
+    required this.createdByUserId,
+    required this.isOpen,
+    required this.totalDifferenceQirsh,
+    required List<FinancialClosingReconciliationAccountRow> accountRows,
+    this.note,
+    this.reopenedAt,
+    this.reopenedByUserId,
+    this.reopenReason,
+  }) : accountRows =
+            List<FinancialClosingReconciliationAccountRow>.unmodifiable(
+          accountRows,
+        );
+
+  final String closingId;
+  final FinancialClosingKind kind;
+  final DateTime fromDate;
+  final DateTime toDate;
+  final DateTime createdAt;
+  final String createdByUserId;
+  final String? note;
+  final bool isOpen;
+  final DateTime? reopenedAt;
+  final String? reopenedByUserId;
+  final String? reopenReason;
+  final int totalDifferenceQirsh;
+  final List<FinancialClosingReconciliationAccountRow> accountRows;
+}
+
+/// A single account value as recorded in a financial closing reconciliation.
+final class FinancialClosingReconciliationAccountRow {
+  const FinancialClosingReconciliationAccountRow({
+    required this.accountId,
+    required this.accountName,
+    required this.accountType,
+    required this.isAccountActive,
+    required this.expectedBalanceQirsh,
+    required this.actualBalanceQirsh,
+    required this.differenceQirsh,
+  });
+
+  final String accountId;
+  final String accountName;
+  final FinancialAccountType accountType;
+  final bool isAccountActive;
+  final int expectedBalanceQirsh;
+  final int actualBalanceQirsh;
+  final int differenceQirsh;
 }

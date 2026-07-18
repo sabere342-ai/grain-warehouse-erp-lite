@@ -28,6 +28,12 @@ abstract interface class FinancialAdvancesAndRefundsReportReader {
   Future<AdvancesAndRefundsReport> loadAdvancesAndRefundsReport();
 }
 
+/// Read-only boundary for the canonical closing reconciliation report.
+abstract interface class FinancialClosingReconciliationReportReader {
+  Future<FinancialClosingReconciliationReport>
+      loadClosingReconciliationReport();
+}
+
 final class FinancialReportServiceAccountBalanceReader
     implements FinancialAccountBalanceReportReader {
   const FinancialReportServiceAccountBalanceReader({
@@ -92,4 +98,18 @@ final class FinancialReportServiceAdvancesAndRefundsReader
   @override
   Future<AdvancesAndRefundsReport> loadAdvancesAndRefundsReport() =>
       _service.getAdvancesAndRefundsReport();
+}
+
+final class FinancialReportServiceClosingReconciliationReader
+    implements FinancialClosingReconciliationReportReader {
+  const FinancialReportServiceClosingReconciliationReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<FinancialClosingReconciliationReport>
+      loadClosingReconciliationReport() =>
+          _service.closingReconciliationReport();
 }

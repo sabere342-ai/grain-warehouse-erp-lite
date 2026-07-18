@@ -1,6 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 
@@ -28,6 +29,67 @@ class FinancialReportService {
 
   static bool _isInRange(DateTime value, DateTime start, DateTime end) {
     return !value.isBefore(start) && !value.isAfter(end);
+  }
+
+  /// Returns the Phase 80 closing and reconciliation history without changing
+  /// its ordering, values, or repository state.
+  Future<FinancialClosingReconciliationReport>
+      closingReconciliationReport() async {
+    final accounts = await _repository.listAccounts(includeInactive: true);
+    final closings = await _repository.listClosings();
+    final accountsById = <String, FinancialAccount>{
+      for (final account in accounts) account.id: account,
+    };
+
+    return FinancialClosingReconciliationReport(
+      closings: closings
+          .map(
+            (closing) => FinancialClosingReconciliationSummary(
+              closingId: closing.id,
+              kind: closing.kind,
+              fromDate: closing.fromDate,
+              toDate: closing.toDate,
+              createdAt: closing.createdAt,
+              createdByUserId: closing.createdByUserId,
+              note: closing.note,
+              isOpen: closing.isOpen,
+              reopenedAt: closing.reopenedAt,
+              reopenedByUserId: closing.reopenedByUserId,
+              reopenReason: closing.reopenReason,
+              totalDifferenceQirsh: closing.totalDifferenceQirsh,
+              accountRows: closing.lines
+                  .map(
+                    (line) => _closingReconciliationAccountRow(
+                      line: line,
+                      accountsById: accountsById,
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  FinancialClosingReconciliationAccountRow _closingReconciliationAccountRow({
+    required FinancialClosingLine line,
+    required Map<String, FinancialAccount> accountsById,
+  }) {
+    final account = accountsById[line.accountId];
+    if (account == null) {
+      throw StateError(
+        'Financial closing references an unavailable financial account.',
+      );
+    }
+    return FinancialClosingReconciliationAccountRow(
+      accountId: account.id,
+      accountName: account.name,
+      accountType: account.type,
+      isAccountActive: account.isActive,
+      expectedBalanceQirsh: line.expectedBalanceQirsh,
+      actualBalanceQirsh: line.actualBalanceQirsh,
+      differenceQirsh: line.differenceQirsh,
+    );
   }
 
   Future<AccountBalanceReport> accountBalanceReport({
