@@ -13,6 +13,11 @@ abstract interface class FinancialAccountStatementReportReader {
   });
 }
 
+/// Read-only boundary for the existing payment-method financial report.
+abstract interface class FinancialPaymentMethodReportReader {
+  Future<PaymentMethodReport> loadPaymentMethodReport();
+}
+
 final class FinancialReportServiceAccountBalanceReader
     implements FinancialAccountBalanceReportReader {
   const FinancialReportServiceAccountBalanceReader({
@@ -39,4 +44,17 @@ final class FinancialReportServiceAccountStatementReader
     required String financialAccountId,
   }) =>
       _service.accountStatementReport(accountId: financialAccountId);
+}
+
+final class FinancialReportServicePaymentMethodReader
+    implements FinancialPaymentMethodReportReader {
+  const FinancialReportServicePaymentMethodReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<PaymentMethodReport> loadPaymentMethodReport() =>
+      _service.paymentMethodReport();
 }
