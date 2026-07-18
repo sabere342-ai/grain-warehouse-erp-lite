@@ -23,6 +23,11 @@ abstract interface class FinancialTransferReportReader {
   Future<TransferReport> loadTransferReport();
 }
 
+/// Read-only boundary for the existing advances-and-refunds report.
+abstract interface class FinancialAdvancesAndRefundsReportReader {
+  Future<AdvancesAndRefundsReport> loadAdvancesAndRefundsReport();
+}
+
 final class FinancialReportServiceAccountBalanceReader
     implements FinancialAccountBalanceReportReader {
   const FinancialReportServiceAccountBalanceReader({
@@ -74,4 +79,17 @@ final class FinancialReportServiceTransferReader
 
   @override
   Future<TransferReport> loadTransferReport() => _service.transferReport();
+}
+
+final class FinancialReportServiceAdvancesAndRefundsReader
+    implements FinancialAdvancesAndRefundsReportReader {
+  const FinancialReportServiceAdvancesAndRefundsReader({
+    required FinancialReportService service,
+  }) : _service = service;
+
+  final FinancialReportService _service;
+
+  @override
+  Future<AdvancesAndRefundsReport> loadAdvancesAndRefundsReport() =>
+      _service.getAdvancesAndRefundsReport();
 }
