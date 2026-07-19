@@ -108,7 +108,7 @@ class FinancialReportsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _ReportCard(
-            title: 'تقرير السلف والردود',
+            title: 'تقرير رد السلف وعكسها',
             subtitle:
                 'رد سلف العملاء، عكس رد سلف العملاء، ردود سلف الموردين المستلمة، وعكس ردود سلف الموردين',
             icon: Icons.replay_rounded,

@@ -12,7 +12,6 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_repor
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_csv_exporter.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_pdf_builder.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -47,11 +46,22 @@ class _CustomerAdvanceRefundLookupAdapter
   Future<Map<String, FinancialAccountEntry>> _getEntryMap() async {
     if (_entryMap != null) return _entryMap!;
     final collections = await _customerAccountRepo.listCollections();
+    final refunds = await _customerAccountRepo.listAdvanceRefunds();
     final entryMap = <String, FinancialAccountEntry>{};
     final seenAccounts = <String>{};
     for (final c in collections) {
       final faId = c.financialAccountId;
       if (faId == null || faId.trim().isEmpty) continue;
+      if (!seenAccounts.add(faId)) continue;
+      try {
+        final statement = await _financialRepo.statementForAccount(faId);
+        for (final line in statement.lines) {
+          entryMap[line.entry.id] = line.entry;
+        }
+      } catch (_) {}
+    }
+    for (final refund in refunds) {
+      final faId = refund.financialAccountId;
       if (!seenAccounts.add(faId)) continue;
       try {
         final statement = await _financialRepo.statementForAccount(faId);
@@ -127,26 +137,26 @@ class _SupplierSettlementLookupAdapter
   final SupplierDataRepository _supplierRepo;
   final FinancialAccountRepository _financialRepo;
 
-  Map<String, String>? _paymentSupplierMap;
+  Map<String, String>? _advanceRefundSupplierMap;
   Map<String, FinancialAccountEntry>? _entryMap;
 
-  Future<Map<String, String>> _getPaymentSupplierMap() async {
-    if (_paymentSupplierMap != null) return _paymentSupplierMap!;
-    final payments = await _supplierAccountRepo.listPayments();
-    _paymentSupplierMap = {
-      for (final p in payments) p.id: p.supplierId,
+  Future<Map<String, String>> _getAdvanceRefundSupplierMap() async {
+    if (_advanceRefundSupplierMap != null) return _advanceRefundSupplierMap!;
+    final refunds = await _supplierAccountRepo.listAdvanceRefunds();
+    _advanceRefundSupplierMap = {
+      for (final refund in refunds)
+        refund.operationRequestId: refund.supplierId,
     };
-    return _paymentSupplierMap!;
+    return _advanceRefundSupplierMap!;
   }
 
   Future<Map<String, FinancialAccountEntry>> _getEntryMap() async {
     if (_entryMap != null) return _entryMap!;
-    final payments = await _supplierAccountRepo.listPayments();
+    final refunds = await _supplierAccountRepo.listAdvanceRefunds();
     final entryMap = <String, FinancialAccountEntry>{};
     final seenAccounts = <String>{};
-    for (final p in payments) {
-      final faId = p.financialAccountId;
-      if (faId == null || faId.trim().isEmpty) continue;
+    for (final refund in refunds) {
+      final faId = refund.financialAccountId;
       if (!seenAccounts.add(faId)) continue;
       try {
         final statement = await _financialRepo.statementForAccount(faId);
@@ -160,9 +170,9 @@ class _SupplierSettlementLookupAdapter
   }
 
   @override
-  Future<String?> supplierIdForPayment(String paymentId) async {
-    final map = await _getPaymentSupplierMap();
-    return map[paymentId];
+  Future<String?> supplierIdForPayment(String operationRequestId) async {
+    final map = await _getAdvanceRefundSupplierMap();
+    return map[operationRequestId];
   }
 
   @override
@@ -213,10 +223,16 @@ class _AdvancesAndRefundsReportScreenState
   List<String> _customerIds = const [];
   List<String> _supplierNames = const [];
   List<String> _supplierIds = const [];
+  bool _hasLoadedAuthorizedData = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final user = AuthScope.of(context).state.user;
+    if (user == null || !user.permissions.canViewFinancialReports) return;
+    if (_hasLoadedAuthorizedData) return;
+    _hasLoadedAuthorizedData = true;
+
     final customerLookup = _CustomerAdvanceRefundLookupAdapter(
       customerAccountRepo: AppRepositories.customerAccountRepository,
       customerRepo: AppRepositories.customerRepository,
@@ -296,7 +312,11 @@ class _AdvancesAndRefundsReportScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تقرير السلف والردود'),
+        title: const Text(
+          'تقرير رد السلف وعكسها',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
           if (user.permissions.canExportFinancialReports) ...[
             IconButton(
@@ -323,7 +343,7 @@ class _AdvancesAndRefundsReportScreenState
             const PremiumCard(child: Text('تعذر تحميل التقرير.'))
           else if (_report!.details.isEmpty)
             const PremiumCard(
-              child: Text('لا توجد سلف وردود في الفترة المحددة.'),
+              child: Text('لا توجد عمليات رد سلف أو عكسها في الفترة المحددة.'),
             )
           else ...[
             _buildSummaryCard(textTheme),
@@ -344,8 +364,10 @@ class _AdvancesAndRefundsReportScreenState
   }
 
   Widget _buildFilters(TextTheme textTheme) {
-    final bool isCustomer = _partyTypeFilter == AdvancesAndRefundsPartyType.customer;
-    final bool isSupplier = _partyTypeFilter == AdvancesAndRefundsPartyType.supplier;
+    final bool isCustomer =
+        _partyTypeFilter == AdvancesAndRefundsPartyType.customer;
+    final bool isSupplier =
+        _partyTypeFilter == AdvancesAndRefundsPartyType.supplier;
 
     final entityNames = isCustomer
         ? _customerNames
@@ -372,32 +394,47 @@ class _AdvancesAndRefundsReportScreenState
         children: [
           Text('الفلاتر', style: textTheme.titleMedium),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: _pickFromDate,
-                  icon: const Icon(Icons.calendar_today, size: 18),
-                  label: Text(
-                    _fromDate != null
-                        ? 'من: ${_formatDate(_fromDate!)}'
-                        : 'من تاريخ',
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 360;
+              final buttonWidth = isNarrow
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - 8) / 2;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  SizedBox(
+                    width: buttonWidth,
+                    child: TextButton.icon(
+                      onPressed: _pickFromDate,
+                      icon: const Icon(Icons.calendar_today, size: 18),
+                      label: Text(
+                        _fromDate != null
+                            ? 'من: ${_formatDate(_fromDate!)}'
+                            : 'من تاريخ',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: _pickToDate,
-                  icon: const Icon(Icons.calendar_today, size: 18),
-                  label: Text(
-                    _toDate != null
-                        ? 'إلى: ${_formatDate(_toDate!)}'
-                        : 'إلى تاريخ',
+                  SizedBox(
+                    width: buttonWidth,
+                    child: TextButton.icon(
+                      onPressed: _pickToDate,
+                      icon: const Icon(Icons.calendar_today, size: 18),
+                      label: Text(
+                        _toDate != null
+                            ? 'إلى: ${_formatDate(_toDate!)}'
+                            : 'إلى تاريخ',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String?>(
@@ -422,16 +459,16 @@ class _AdvancesAndRefundsReportScreenState
           DropdownButtonFormField<AdvancesAndRefundsPartyType?>(
             value: _partyTypeFilter,
             decoration: const InputDecoration(labelText: 'الطرف'),
-            items: [
-              const DropdownMenuItem(
+            items: const [
+              DropdownMenuItem(
                 value: null,
                 child: Text('الكل'),
               ),
-              const DropdownMenuItem(
+              DropdownMenuItem(
                 value: AdvancesAndRefundsPartyType.customer,
                 child: Text('عميل'),
               ),
-              const DropdownMenuItem(
+              DropdownMenuItem(
                 value: AdvancesAndRefundsPartyType.supplier,
                 child: Text('مورد'),
               ),
@@ -467,13 +504,14 @@ class _AdvancesAndRefundsReportScreenState
             ),
           ],
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               FilledButton(
                 onPressed: _applyFilters,
                 child: const Text('تطبيق'),
               ),
-              const SizedBox(width: 8),
               TextButton(
                 onPressed: _resetFilters,
                 child: const Text('إعادة تعيين'),
@@ -494,13 +532,16 @@ class _AdvancesAndRefundsReportScreenState
           Text('الإجمالي', style: textTheme.titleMedium),
           const SizedBox(height: 8),
           Text('رد سلف العملاء',
-              style: textTheme.titleSmall?.copyWith(color: Colors.blue)),
+              style: textTheme.titleSmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              )),
           const SizedBox(height: 4),
           Row(
             children: [
               _summaryItem(
                 'إجمالي',
-                MoneyUtils.formatPiastersAsEgp(r.totalCustomerGrossRefundOutflow),
+                MoneyUtils.formatPiastersAsEgp(
+                    r.totalCustomerGrossRefundOutflow),
               ),
               _summaryItem(
                 'إلغاءات',
@@ -514,13 +555,16 @@ class _AdvancesAndRefundsReportScreenState
           ),
           const SizedBox(height: 8),
           Text('ردود سلف الموردين',
-              style: textTheme.titleSmall?.copyWith(color: Colors.green)),
+              style: textTheme.titleSmall?.copyWith(
+                color: Theme.of(context).colorScheme.tertiary,
+              )),
           const SizedBox(height: 4),
           Row(
             children: [
               _summaryItem(
                 'إجمالي',
-                MoneyUtils.formatPiastersAsEgp(r.totalSupplierGrossRefundInflow),
+                MoneyUtils.formatPiastersAsEgp(
+                    r.totalSupplierGrossRefundInflow),
               ),
               _summaryItem(
                 'إلغاءات',
@@ -546,8 +590,13 @@ class _AdvancesAndRefundsReportScreenState
     return Expanded(
       child: Column(
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: AppColors.mutedText)),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
           const SizedBox(height: 2),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
         ],
@@ -563,7 +612,7 @@ class _AdvancesAndRefundsReportScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('السلف والردود حسب الحساب', style: textTheme.titleMedium),
+          Text('رد السلف وعكسها حسب الحساب', style: textTheme.titleMedium),
           const SizedBox(height: 8),
           ...accounts.map(
             (a) => Padding(
@@ -578,42 +627,52 @@ class _AdvancesAndRefundsReportScreenState
                   const SizedBox(height: 4),
                   Text('العملاء',
                       style: textTheme.bodySmall?.copyWith(
-                          color: Colors.blue, fontWeight: FontWeight.w600)),
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      )),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       _summaryItem(
                         'إجمالي',
-                        MoneyUtils.formatPiastersAsEgp(a.customerGrossRefundOutflow),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.customerGrossRefundOutflow),
                       ),
                       _summaryItem(
                         'إلغاءات',
-                        MoneyUtils.formatPiastersAsEgp(a.customerRefundReversals),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.customerRefundReversals),
                       ),
                       _summaryItem(
                         'صافي',
-                        MoneyUtils.formatPiastersAsEgp(a.customerNetRefundOutflow),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.customerNetRefundOutflow),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text('الموردين',
                       style: textTheme.bodySmall?.copyWith(
-                          color: Colors.green, fontWeight: FontWeight.w600)),
+                        color: Theme.of(context).colorScheme.tertiary,
+                        fontWeight: FontWeight.w600,
+                      )),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       _summaryItem(
                         'إجمالي',
-                        MoneyUtils.formatPiastersAsEgp(a.supplierGrossRefundInflow),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.supplierGrossRefundInflow),
                       ),
                       _summaryItem(
                         'إلغاءات',
-                        MoneyUtils.formatPiastersAsEgp(a.supplierRefundReversals),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.supplierRefundReversals),
                       ),
                       _summaryItem(
                         'صافي',
-                        MoneyUtils.formatPiastersAsEgp(a.supplierNetRefundInflow),
+                        MoneyUtils.formatPiastersAsEgp(
+                            a.supplierNetRefundInflow),
                       ),
                     ],
                   ),
@@ -649,14 +708,18 @@ class _AdvancesAndRefundsReportScreenState
                             ? Icons.help_outline_rounded
                             : Icons.person_rounded,
                         size: 16,
-                        color: c.isUnresolved ? Colors.orange : Colors.blue,
+                        color: c.isUnresolved
+                            ? Theme.of(context).colorScheme.error
+                            : Theme.of(context).colorScheme.primary,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           c.entityName,
                           style: textTheme.titleSmall?.copyWith(
-                            color: c.isUnresolved ? Colors.orange : Colors.blue,
+                            color: c.isUnresolved
+                                ? Theme.of(context).colorScheme.error
+                                : Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ),
@@ -711,14 +774,18 @@ class _AdvancesAndRefundsReportScreenState
                             ? Icons.help_outline_rounded
                             : Icons.business_center_rounded,
                         size: 16,
-                        color: s.isUnresolved ? Colors.orange : Colors.green,
+                        color: s.isUnresolved
+                            ? Theme.of(context).colorScheme.error
+                            : Theme.of(context).colorScheme.tertiary,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           s.entityName,
                           style: textTheme.titleSmall?.copyWith(
-                            color: s.isUnresolved ? Colors.orange : Colors.green,
+                            color: s.isUnresolved
+                                ? Theme.of(context).colorScheme.error
+                                : Theme.of(context).colorScheme.tertiary,
                           ),
                         ),
                       ),
@@ -754,7 +821,9 @@ class _AdvancesAndRefundsReportScreenState
       AdvancesAndRefundsDetail detail, TextTheme textTheme) {
     final isReversal = detail.isReversal;
     final isCustomer = detail.partyType == AdvancesAndRefundsPartyType.customer;
-    final partyColor = isCustomer ? Colors.blue : Colors.green;
+    final colorScheme = Theme.of(context).colorScheme;
+    final partyColor = isCustomer ? colorScheme.primary : colorScheme.tertiary;
+    final reversalColor = colorScheme.error;
     final partyLabel = detail.partyType.labelAr;
 
     return PremiumCard(
@@ -764,12 +833,12 @@ class _AdvancesAndRefundsReportScreenState
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isReversal ? Colors.orange : partyColor).withAlpha(25),
+              color: (isReversal ? reversalColor : partyColor).withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               isReversal ? Icons.undo_rounded : Icons.arrow_upward_rounded,
-              color: isReversal ? Colors.orange : partyColor,
+              color: isReversal ? reversalColor : partyColor,
               size: 20,
             ),
           ),
@@ -804,13 +873,15 @@ class _AdvancesAndRefundsReportScreenState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withAlpha(25),
+                          color: colorScheme.error.withAlpha(25),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           '$partyLabel غير محدد',
-                          style: const TextStyle(
-                              fontSize: 10, color: Colors.orange),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: colorScheme.error,
+                          ),
                         ),
                       ),
                   ],
@@ -818,13 +889,15 @@ class _AdvancesAndRefundsReportScreenState
                 const SizedBox(height: 2),
                 Text(
                   '${detail.entityName} · ${detail.accountName}',
-                  style:
-                      textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 Text(
                   _formatDate(detail.timestamp),
-                  style:
-                      textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -833,7 +906,7 @@ class _AdvancesAndRefundsReportScreenState
             MoneyUtils.formatPiastersAsEgp(detail.amountQirsh),
             style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              color: isReversal ? Colors.orange[800] : partyColor[800],
+              color: isReversal ? reversalColor : partyColor,
             ),
           ),
         ],
@@ -874,8 +947,9 @@ class _AdvancesAndRefundsReportScreenState
   Future<void> _exportPdf() async {
     if (_report == null) return;
     try {
-      final file = await FinancialReportPdfBuilder
-          .buildAdvancesAndRefundsReport(report: _report!);
+      final file =
+          await FinancialReportPdfBuilder.buildAdvancesAndRefundsReport(
+              report: _report!);
       await _showExportResult(file);
     } catch (e) {
       if (mounted) {
@@ -892,8 +966,9 @@ class _AdvancesAndRefundsReportScreenState
   Future<void> _exportCsv() async {
     if (_report == null) return;
     try {
-      final file = await FinancialReportCsvExporter
-          .exportAdvancesAndRefundsReport(report: _report!);
+      final file =
+          await FinancialReportCsvExporter.exportAdvancesAndRefundsReport(
+              report: _report!);
       await _showExportResult(file);
     } catch (e) {
       if (mounted) {
