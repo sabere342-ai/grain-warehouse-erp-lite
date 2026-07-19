@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 
 class DashboardController extends ChangeNotifier {
-  DashboardController({required DashboardService service})
-      : _service = service;
+  DashboardController({
+    DashboardService? service,
+    Future<DashboardData> Function()? loadData,
+  })  : assert(service != null || loadData != null),
+        _loadData = loadData ?? service!.load;
 
-  final DashboardService _service;
+  final Future<DashboardData> Function() _loadData;
 
   DashboardData _data = DashboardData.empty();
   bool _isLoading = false;
@@ -21,7 +24,7 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _data = await _service.load();
+      _data = await _loadData();
       _isLoading = false;
       notifyListeners();
     } catch (error) {

@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -238,7 +239,8 @@ void main() {
 
       setUp(() {
         productRepo = LocalProductRepository();
-        inventoryRepo = LocalInventoryRepository(productRepository: productRepo);
+        inventoryRepo =
+            LocalInventoryRepository(productRepository: productRepo);
         saleRepo = LocalSaleRepository(
           productRepository: productRepo,
           inventoryRepository: inventoryRepo,
@@ -258,11 +260,12 @@ void main() {
           productRepository: productRepo,
           expenseRepository: expenseRepo,
           customerAccountRepository: customerAccountRepo,
+          financialAccountRepository: LocalFinancialAccountRepository(),
           supplierAccountRepository: supplierAccountRepo,
         );
       });
 
-      test('cash balance correctly subtracts multiple supplier payments',
+      test('does not infer a financial balance from supplier payments',
           () async {
         final product = await productRepo.createProduct(
           const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
@@ -320,7 +323,7 @@ void main() {
         ));
 
         final data = await service.load();
-        expect(data.cashBalanceQirsh, 350000);
+        expect(data.cashBalanceQirsh, 0);
       });
 
       test('DashboardController loads data correctly', () async {
@@ -341,7 +344,8 @@ void main() {
       setUp(() {
         supplierRepo = LocalSupplierRepository();
         productRepo = LocalProductRepository();
-        inventoryRepo = LocalInventoryRepository(productRepository: productRepo);
+        inventoryRepo =
+            LocalInventoryRepository(productRepository: productRepo);
         supplierAccountRepo = LocalSupplierAccountRepository(
           supplierRepository: supplierRepo,
         );

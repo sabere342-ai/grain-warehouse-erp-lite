@@ -5,7 +5,6 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
@@ -190,7 +189,7 @@ class _DashboardShellState extends State<DashboardShell> {
           : NavigationBar(
               selectedIndex: selectedIndex > 4 ? 0 : selectedIndex,
               onDestinationSelected: _setSelectedIndex,
-              indicatorColor: AppColors.surfaceAlt,
+              indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
               destinations: [
                 for (final destination in visibleDestinations.take(5))
                   NavigationDestination(

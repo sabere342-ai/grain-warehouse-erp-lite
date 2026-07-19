@@ -13,6 +13,7 @@ import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dar
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
@@ -46,7 +47,8 @@ void main() {
       setUp(() async {
         supplierRepo = LocalSupplierRepository();
         productRepo = LocalProductRepository();
-        inventoryRepo = LocalInventoryRepository(productRepository: productRepo);
+        inventoryRepo =
+            LocalInventoryRepository(productRepository: productRepo);
         accountRepo = LocalSupplierAccountRepository(
           supplierRepository: supplierRepo,
         );
@@ -149,14 +151,15 @@ void main() {
           );
         });
         if (auth == null) {
-          throw StateError('The purchase cancellation fixture did not initialize.');
+          throw StateError(
+              'The purchase cancellation fixture did not initialize.');
         }
         addTearDown(auth.dispose);
         addTearDown(controller.dispose);
 
         await tester.pumpWidget(
-          _purchaseHarness(auth: auth, controller: controller,
-              accountRepo: accountRepo),
+          _purchaseHarness(
+              auth: auth, controller: controller, accountRepo: accountRepo),
         );
         await _pumpExpectedState(tester);
         expect(
@@ -169,8 +172,7 @@ void main() {
         );
       });
 
-      testWidgets('cancel button shows normal when no payment',
-          (tester) async {
+      testWidgets('cancel button shows normal when no payment', (tester) async {
         final auth = await tester.runAsync(() async {
           await controller.load(_owner);
           return _signedInController(
@@ -179,14 +181,15 @@ void main() {
           );
         });
         if (auth == null) {
-          throw StateError('The purchase cancellation fixture did not initialize.');
+          throw StateError(
+              'The purchase cancellation fixture did not initialize.');
         }
         addTearDown(auth.dispose);
         addTearDown(controller.dispose);
 
         await tester.pumpWidget(
-          _purchaseHarness(auth: auth, controller: controller,
-              accountRepo: accountRepo),
+          _purchaseHarness(
+              auth: auth, controller: controller, accountRepo: accountRepo),
         );
         await _pumpExpectedState(tester);
 
@@ -202,8 +205,7 @@ void main() {
     });
 
     group('Reports label clarity', () {
-      testWidgets('report shows clarified labels for owner',
-          (tester) async {
+      testWidgets('report shows clarified labels for owner', (tester) async {
         final auth = await _signedInController(
           phone: '01000000000',
           password: 'owner123',
@@ -249,7 +251,7 @@ void main() {
     });
 
     group('Dashboard helper clarity', () {
-      testWidgets('dashboard cash balance card shows subtitle',
+      testWidgets('dashboard financial balance card shows canonical subtitle',
           (tester) async {
         final auth = await _signedInController(
           phone: '01000000000',
@@ -263,7 +265,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining('منذ بداية النظام'),
+          find.textContaining('الحسابات غير النشطة'),
           findsOneWidget,
         );
       });
@@ -362,6 +364,7 @@ DashboardService _dashboardService() {
     customerAccountRepository: LocalCustomerAccountRepository(
       customerRepository: LocalCustomerRepository(),
     ),
+    financialAccountRepository: LocalFinancialAccountRepository(),
     supplierAccountRepository: LocalSupplierAccountRepository(
       supplierRepository: LocalSupplierRepository(),
     ),
@@ -461,8 +464,7 @@ class _FakePurchaseRepository implements PurchaseRepository {
     return purchases;
   }
 
-  Future<void> restorePurchaseIntakesIntoEmpty(
-      List<PurchaseIntake> intakes) {
+  Future<void> restorePurchaseIntakesIntoEmpty(List<PurchaseIntake> intakes) {
     throw UnimplementedError();
   }
 }

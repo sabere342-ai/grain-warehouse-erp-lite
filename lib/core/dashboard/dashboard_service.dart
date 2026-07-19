@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 
 class DashboardData {
@@ -67,6 +68,7 @@ class DashboardService {
     required ProductRepository productRepository,
     required ExpenseRepository expenseRepository,
     required CustomerAccountRepository customerAccountRepository,
+    required FinancialAccountRepository financialAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
     InventoryAttentionService? inventoryAttentionService,
   })  : _saleRepository = saleRepository,
@@ -74,6 +76,7 @@ class DashboardService {
         _productRepository = productRepository,
         _expenseRepository = expenseRepository,
         _customerAccountRepository = customerAccountRepository,
+        _financialAccountRepository = financialAccountRepository,
         _supplierAccountRepository = supplierAccountRepository,
         _inventoryAttentionService = inventoryAttentionService ??
             InventoryAttentionService(
@@ -86,6 +89,7 @@ class DashboardService {
   final ProductRepository _productRepository;
   final ExpenseRepository _expenseRepository;
   final CustomerAccountRepository _customerAccountRepository;
+  final FinancialAccountRepository _financialAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final InventoryAttentionService _inventoryAttentionService;
 
@@ -133,27 +137,12 @@ class DashboardService {
             p.date.isBefore(todayEnd))
         .fold<int>(0, (t, p) => t + p.amountQirsh);
 
-    final totalCashSalesQirsh = allSales
-        .where((s) => !s.isCancelled && s.paymentMode == SalePaymentMode.cash)
-        .fold<int>(0, (t, s) => t + s.totalQirsh);
-
-    final totalCollections =
-        (await _customerAccountRepository.listCollections())
-            .where((collection) => !collection.isCancelled)
-            .fold<int>(0, (t, c) => t + c.amountQirsh);
-
-    final allExpenses = await _expenseRepository.listExpenses();
-    final totalExpensesQirsh =
-        allExpenses.fold<int>(0, (t, e) => t + e.amountQirsh);
-
-    final totalSupplierPaymentsQirsh = allSupplierPayments
-        .where((payment) => !payment.isCancelled)
-        .fold<int>(0, (t, p) => t + p.amountQirsh);
-
-    final cashBalanceQirsh = totalCashSalesQirsh +
-        totalCollections -
-        totalExpensesQirsh -
-        totalSupplierPaymentsQirsh;
+    final accountBalances = await _financialAccountRepository
+        .allAccountBalances(includeInactive: true);
+    final cashBalanceQirsh = accountBalances.fold<int>(
+      0,
+      (total, account) => total + account.currentBalanceQirsh,
+    );
 
     final receivablesByCustomer =
         await _customerAccountRepository.balancesByCustomerId();

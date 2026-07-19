@@ -16,6 +16,7 @@ import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -91,7 +92,8 @@ void main() {
 
       setUp(() {
         productRepo = LocalProductRepository();
-        inventoryRepo = LocalInventoryRepository(productRepository: productRepo);
+        inventoryRepo =
+            LocalInventoryRepository(productRepository: productRepo);
         saleRepo = LocalSaleRepository(
           productRepository: productRepo,
           inventoryRepository: inventoryRepo,
@@ -111,6 +113,7 @@ void main() {
           productRepository: productRepo,
           expenseRepository: expenseRepo,
           customerAccountRepository: customerAccountRepo,
+          financialAccountRepository: LocalFinancialAccountRepository(),
           supplierAccountRepository: supplierAccountRepo,
         );
       });
@@ -304,7 +307,7 @@ void main() {
 
         final data = await service.load();
         expect(data.todayExpensesQirsh, 0);
-        expect(data.cashBalanceQirsh, -99999);
+        expect(data.cashBalanceQirsh, 0);
       });
     });
 
@@ -357,7 +360,7 @@ void main() {
         expect(find.text('نقد داخل اليوم'), findsOneWidget);
         expect(find.text('المستحق على العملاء'), findsOneWidget);
         expect(find.text('المستحق للموردين'), findsOneWidget);
-        expect(find.text('رصيد النقدية التراكمي'), findsOneWidget);
+        expect(find.text('إجمالي أرصدة الحسابات المالية'), findsOneWidget);
         expect(find.text('مخزون القمح'), findsOneWidget);
         expect(find.text('تنبيهات المخزون'), findsOneWidget);
       });
@@ -483,6 +486,7 @@ DashboardService _dashboardService() {
     customerAccountRepository: LocalCustomerAccountRepository(
       customerRepository: LocalCustomerRepository(),
     ),
+    financialAccountRepository: LocalFinancialAccountRepository(),
     supplierAccountRepository: LocalSupplierAccountRepository(
       supplierRepository: LocalSupplierRepository(),
     ),

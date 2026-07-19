@@ -4,7 +4,6 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
@@ -14,10 +13,12 @@ class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
     this.loadGuidance,
+    this.loadAlerts,
     this.controller,
   });
 
   final Future<DashboardGuidanceState> Function()? loadGuidance;
+  final Future<OwnerAlertData> Function()? loadAlerts;
   final DashboardController? controller;
 
   @override
@@ -27,6 +28,9 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   late final DashboardController _controller;
   late final bool _ownsController;
+  bool _hasLoadedProtectedData = false;
+  Future<DashboardGuidanceState>? _guidanceFuture;
+  Future<OwnerAlertData>? _alertsFuture;
 
   @override
   void initState() {
@@ -41,13 +45,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
             expenseRepository: AppRepositories.expenseRepository,
             customerAccountRepository:
                 AppRepositories.customerAccountRepository,
+            financialAccountRepository:
+                AppRepositories.financialAccountRepository,
             supplierAccountRepository:
                 AppRepositories.supplierAccountRepository,
           ),
         );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.load();
-    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final user = AuthScope.maybeOf(context)?.state.user;
+    if (user == null || !user.permissions.canViewFinancialReports) return;
+    if (_hasLoadedProtectedData) return;
+    _hasLoadedProtectedData = true;
+    _guidanceFuture = (widget.loadGuidance ?? DashboardGuidanceState.load)();
+    _alertsFuture = (widget.loadAlerts ?? OwnerAlertData.load)();
+    _controller.load();
   }
 
   @override
@@ -61,9 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final ownerCanExport =
-        AuthScope.maybeOf(context)?.state.user?.permissions.canExportBackups ??
-            false;
+    final user = AuthScope.maybeOf(context)?.state.user;
+    final canViewDashboardData =
+        user?.permissions.canViewFinancialReports ?? false;
+    final ownerCanExport = user?.permissions.canExportBackups ?? false;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -76,34 +92,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 6),
             Text(
               'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
-              style: textTheme.bodyMedium
-                  ?.copyWith(color: AppColors.mutedText),
+              style: textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             if (ownerCanExport) ...[
               const _BackupExportCard(),
               const SizedBox(height: 16),
             ],
-            FutureBuilder<DashboardGuidanceState>(
-              future:
-                  (widget.loadGuidance ?? DashboardGuidanceState.load)(),
-              builder: (context, snapshot) {
-                final guidance =
-                    snapshot.data ?? DashboardGuidanceState.empty();
-                return _GettingStartedCard(guidance: guidance);
-              },
-            ),
+            if (!canViewDashboardData)
+              const PremiumCard(
+                child: Text('ملخصات لوحة المتابعة المالية متاحة للمالك فقط.'),
+              )
+            else
+              FutureBuilder<DashboardGuidanceState>(
+                future: _guidanceFuture,
+                builder: (context, snapshot) {
+                  final guidance =
+                      snapshot.data ?? DashboardGuidanceState.empty();
+                  return _GettingStartedCard(guidance: guidance);
+                },
+              ),
             const SizedBox(height: 16),
-            if (_controller.isLoading)
+            if (!canViewDashboardData)
+              const SizedBox.shrink()
+            else if (_controller.isLoading)
               const Center(child: CircularProgressIndicator())
+            else if (_controller.errorMessage != null)
+              PremiumCard(child: Text(_controller.errorMessage!))
             else ...[
               LayoutBuilder(
                 builder: (context, constraints) {
                   final columns = constraints.maxWidth >= 900 ? 4 : 2;
                   return GridView.count(
                     crossAxisCount: columns,
-                    childAspectRatio:
-                        constraints.maxWidth >= 900 ? 1.35 : 1.15,
+                    childAspectRatio: constraints.maxWidth >= 900 ? 1.35 : 1.15,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 12,
@@ -113,7 +136,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'مبيعات اليوم',
                         MoneyUtils.formatPiastersAsEgp(data.todaySalesQirsh),
                         Icons.point_of_sale_rounded,
-                        subtitle: data.todayCashSalesQirsh > 0 || data.todayCreditSalesQirsh > 0
+                        subtitle: data.todayCashSalesQirsh > 0 ||
+                                data.todayCreditSalesQirsh > 0
                             ? 'نقدي ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • آجل ${MoneyUtils.formatPiastersAsEgp(data.todayCreditSalesQirsh)}'
                             : null,
                       ),
@@ -121,27 +145,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'نقد داخل اليوم',
                         MoneyUtils.formatPiastersAsEgp(data.todayCashInQirsh),
                         Icons.payments_rounded,
-                        subtitle: data.todayCashSalesQirsh > 0 || data.todayCollectionsQirsh > 0
+                        subtitle: data.todayCashSalesQirsh > 0 ||
+                                data.todayCollectionsQirsh > 0
                             ? 'مبيعات نقدية ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • تحصيلات ${MoneyUtils.formatPiastersAsEgp(data.todayCollectionsQirsh)}'
                             : null,
                       ),
                       _MetricCard(
                         'المستحق على العملاء',
-                        MoneyUtils.formatPiastersAsEgp(data.customerReceivablesQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            data.customerReceivablesQirsh),
                         Icons.account_balance_wallet_rounded,
                         subtitle: 'إجمالي المبالغ المستحقة لنا على العملاء.',
                       ),
                       _MetricCard(
                         'المستحق للموردين',
-                        MoneyUtils.formatPiastersAsEgp(data.supplierPayablesQirsh),
+                        MoneyUtils.formatPiastersAsEgp(
+                            data.supplierPayablesQirsh),
                         Icons.account_balance_wallet_rounded,
                         subtitle: 'إجمالي المبالغ المستحقة للموردين.',
                       ),
                       _MetricCard(
-                        'رصيد النقدية التراكمي',
+                        'إجمالي أرصدة الحسابات المالية',
                         MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
                         Icons.savings_rounded,
-                        subtitle: 'إجمالي النقد الداخل (مبيعات نقدية + تحصيلات) منذ بداية النظام ناقص المصروفات ومدفوعات الموردين.',
+                        subtitle:
+                            'إجمالي الأرصدة الحالية للحسابات المالية، شاملاً الحسابات غير النشطة.',
                       ),
                       _MetricCard(
                         'مخزون القمح',
@@ -166,13 +194,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            const OwnerAlertsSection(),
+            if (canViewDashboardData)
+              OwnerAlertsSection(loadData: _alertsFuture!),
             const SizedBox(height: 16),
-            const PremiumCard(
-              child: Text(
-                'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
+            if (canViewDashboardData)
+              const PremiumCard(
+                child: Text(
+                  'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
+                ),
               ),
-            ),
           ],
         );
       },
@@ -189,7 +219,8 @@ class _BackupExportCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.backup_rounded, color: AppColors.olive),
+          Icon(Icons.backup_rounded,
+              color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -286,7 +317,8 @@ class _GettingStartedCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.help_outline_rounded, color: AppColors.olive),
+          Icon(Icons.help_outline_rounded,
+              color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -337,7 +369,7 @@ class _MetricCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.olive, size: 22),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
           const SizedBox(height: 8),
           Text(
             label,
@@ -355,7 +387,7 @@ class _MetricCard extends StatelessWidget {
                 textDirection: TextDirection.ltr,
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w900,
-                  color: AppColors.text,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -367,7 +399,7 @@ class _MetricCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: textTheme.bodySmall?.copyWith(
-                color: AppColors.mutedText,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],

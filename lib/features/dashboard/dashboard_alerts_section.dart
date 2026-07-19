@@ -10,7 +10,6 @@ import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_serv
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class OwnerAlertData {
@@ -134,12 +133,14 @@ class _LowStockAlert {
 }
 
 class OwnerAlertsSection extends StatelessWidget {
-  const OwnerAlertsSection({super.key});
+  const OwnerAlertsSection({super.key, required this.loadData});
+
+  final Future<OwnerAlertData> loadData;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<OwnerAlertData>(
-      future: OwnerAlertData.load(),
+      future: loadData,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const SizedBox.shrink();
@@ -158,21 +159,22 @@ class _OwnerAlertsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final items = <Widget>[];
 
     if (data.customerAlerts.isNotEmpty) {
       items.add(Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text('أرصدة العملاء المستحقة',
-            style: textTheme.titleSmall?.copyWith(color: AppColors.mutedText)),
+            style: textTheme.titleSmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant)),
       ));
       for (final a in data.customerAlerts.take(5)) {
         items.add(Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.person_rounded,
-                  size: 16, color: AppColors.wheat),
+              Icon(Icons.person_rounded, size: 16, color: colorScheme.primary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -191,15 +193,15 @@ class _OwnerAlertsContent extends StatelessWidget {
       items.add(Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text('أرصدة الموردين المستحقة',
-            style: textTheme.titleSmall?.copyWith(color: AppColors.mutedText)),
+            style: textTheme.titleSmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant)),
       ));
       for (final a in data.supplierAlerts.take(5)) {
         items.add(Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.person_rounded,
-                  size: 16, color: AppColors.wheat),
+              Icon(Icons.person_rounded, size: 16, color: colorScheme.tertiary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -218,15 +220,16 @@ class _OwnerAlertsContent extends StatelessWidget {
       items.add(Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text('مخزون منخفض',
-            style: textTheme.titleSmall?.copyWith(color: AppColors.mutedText)),
+            style: textTheme.titleSmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant)),
       ));
       for (final a in data.stockAlerts) {
         items.add(Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
           child: Row(
             children: [
-              const Icon(Icons.inventory_2_rounded,
-                  size: 16, color: AppColors.wheat),
+              Icon(Icons.inventory_2_rounded,
+                  size: 16, color: colorScheme.tertiary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -244,8 +247,8 @@ class _OwnerAlertsContent extends StatelessWidget {
     if (!data.hasAnyAlert) {
       items.add(Row(
         children: [
-          const Icon(Icons.check_circle_outline_rounded,
-              size: 18, color: AppColors.olive),
+          Icon(Icons.check_circle_outline_rounded,
+              size: 18, color: colorScheme.primary),
           const SizedBox(width: 8),
           Text('لا توجد تنبيهات.', style: textTheme.bodySmall),
         ],
@@ -257,7 +260,7 @@ class _OwnerAlertsContent extends StatelessWidget {
     items.add(Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.backup_rounded, size: 18, color: AppColors.olive),
+        Icon(Icons.backup_rounded, size: 18, color: colorScheme.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -271,8 +274,7 @@ class _OwnerAlertsContent extends StatelessWidget {
     items.add(Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.info_outline_rounded,
-            size: 18, color: AppColors.wheat),
+        Icon(Icons.info_outline_rounded, size: 18, color: colorScheme.tertiary),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -289,7 +291,7 @@ class _OwnerAlertsContent extends StatelessWidget {
         children: [
           Text(
             'تنبيهات المالك',
-            style: textTheme.titleLarge?.copyWith(color: AppColors.olive),
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
           ),
           const SizedBox(height: 8),
           ...items,

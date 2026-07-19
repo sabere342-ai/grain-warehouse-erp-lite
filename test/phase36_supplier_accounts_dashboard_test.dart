@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dar
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -55,6 +56,7 @@ void main() {
         productRepository: productRepo,
         expenseRepository: expenseRepo,
         customerAccountRepository: customerAccountRepo,
+        financialAccountRepository: LocalFinancialAccountRepository(),
         supplierAccountRepository: supplierAccountRepo,
       );
     });
@@ -99,7 +101,8 @@ void main() {
       expect(data.hasData, true);
     });
 
-    test('computes cash balance including supplier payments', () async {
+    test('does not infer a financial balance from sales and supplier payments',
+        () async {
       final product = await productRepo.createProduct(
         const ProductDraft(name: 'قمح', unit: GrainUnit.kilogram),
       );
@@ -150,7 +153,7 @@ void main() {
       ));
 
       final data = await service.load();
-      expect(data.cashBalanceQirsh, 150000);
+      expect(data.cashBalanceQirsh, 0);
     });
 
     test('DashboardController loads and provides data', () async {
