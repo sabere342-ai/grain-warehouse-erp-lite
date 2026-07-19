@@ -17,6 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_shell.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
@@ -163,6 +164,113 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('تطبيق التسوية'), findsOneWidget);
+    });
+
+    testWidgets('back control is visible in the empty state from Inventory',
+        (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final products = LocalProductRepository();
+      final controller = InventoryController(
+        inventoryRepository: LocalInventoryRepository(
+          productRepository: products,
+        ),
+        productRepository: products,
+      );
+      await controller.load(_owner);
+
+      await tester.pumpWidget(
+        _inventoryHarness(auth: auth, controller: controller),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.balance_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StockTakeScreen), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byTooltip('رجوع'), findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('stock-take-back-button')), findsOneWidget);
+    });
+
+    testWidgets(
+        'back control pops the inventory route once without creating a write',
+        (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+      await fixture.controller.createOpeningBalance(
+        user: _owner,
+        productId: fixture.product.id,
+        quantityKg: 1000,
+      );
+      final movementCountBefore =
+          (await fixture.inventory.listAllMovements()).length;
+
+      await tester.pumpWidget(
+        _inventoryHarness(auth: auth, controller: fixture.controller),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.balance_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('رجوع'), findsOneWidget);
+      expect(Icons.arrow_forward_rounded.matchTextDirection, isTrue);
+
+      await tester.tap(find.text('رجوع'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StockTakeScreen), findsNothing);
+      expect(find.byType(InventoryScreen), findsOneWidget);
+      expect((await fixture.inventory.listAllMovements()).length,
+          movementCountBefore);
+    });
+
+    testWidgets('back control remains visible after stocktake validation',
+        (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+      await fixture.controller.createOpeningBalance(
+        user: _owner,
+        productId: fixture.product.id,
+        quantityKg: 1000,
+      );
+
+      await tester.pumpWidget(
+        _inventoryHarness(auth: auth, controller: fixture.controller),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.balance_rounded));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('تطبيق التسوية'));
+      await tester.pump();
+
+      expect(find.byTooltip('رجوع'), findsOneWidget);
+    });
+
+    testWidgets('header uses semantic colors in the dark preset',
+        (tester) async {
+      final auth =
+          await _signedInController(phone: '01000000000', password: 'owner123');
+      final fixture = await _fixture();
+      final theme = AppTheme.fromPreset(AppThemePreset.highContrast);
+
+      await tester.pumpWidget(
+        _stockTakeHarness(
+          auth: auth,
+          controller: fixture.controller,
+          theme: theme,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final title = tester.widget<Text>(find.text('جرد المخزون'));
+      final subtitle = tester.widget<Text>(find.text(
+        'أدخل الكمية الفعلية التي تم عدّها، وسيقوم النظام بحساب الفرق وتسجيل حركة تسوية فقط عند وجود فرق.',
+      ));
+      expect(title.style?.color, theme.colorScheme.onSurface);
+      expect(subtitle.style?.color, theme.colorScheme.onSurfaceVariant);
     });
   });
 
@@ -485,11 +593,12 @@ Future<_StockTakeFixture> _fixture() async {
 Widget _stockTakeHarness({
   required AuthController auth,
   required InventoryController controller,
+  ThemeData? theme,
 }) {
   return AuthScope(
     controller: auth,
     child: MaterialApp(
-      theme: AppTheme.light,
+      theme: theme ?? AppTheme.light,
       locale: const Locale('ar'),
       builder: (context, child) => Directionality(
         textDirection: TextDirection.rtl,

@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 
 const int _maxStockTakeQuantityKg = 9223372036854775807;
 const String _stockTakeAdjustmentNote = 'تسوية جرد المخزون';
@@ -56,7 +57,8 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول.'));
@@ -76,12 +78,24 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('جرد المخزون', style: textTheme.headlineMedium),
+                const Tooltip(
+                  message: 'رجوع',
+                  child: PageBackButton(
+                    key: ValueKey('stock-take-back-button'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'جرد المخزون',
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'أدخل الكمية الفعلية التي تم عدّها، وسيقوم النظام بحساب الفرق وتسجيل حركة تسوية فقط عند وجود فرق.',
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.mutedText,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
