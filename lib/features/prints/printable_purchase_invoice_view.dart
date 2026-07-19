@@ -31,7 +31,8 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canWhatsApp = supplierPhone != null && supplierPhone!.trim().isNotEmpty;
+    final canWhatsApp =
+        supplierPhone != null && supplierPhone!.trim().isNotEmpty;
 
     return PrintableDocumentScaffold(
       title: '\u0641\u0627\u062a\u0648\u0631\u0629 \u0634\u0631\u0627\u0621',
@@ -58,6 +59,7 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          _buildPaymentStatus(),
           if (purchase.isCancelled) _buildCancellationStatus(),
           const Divider(),
           _buildItemSection(),
@@ -65,6 +67,28 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
           _buildTotalRow(),
           if (purchase.notes != null && purchase.notes!.trim().isNotEmpty)
             _buildNotes(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentStatus() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          const Text(
+            'حالة الدفع: ',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(purchase.paymentMode.labelAr),
+          const Text(
+            'طريقة السداد: ',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(purchase.paymentMethod?.labelAr ?? 'غير محددة'),
         ],
       ),
     );
@@ -151,7 +175,9 @@ class PrintablePurchaseInvoiceView extends StatelessWidget {
       child: Row(
         children: [
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Expanded(
+            child: Text(value, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );

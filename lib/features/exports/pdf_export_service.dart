@@ -5,6 +5,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
@@ -53,23 +54,15 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
-      final identity =
-          await AppRepositories.businessIdentityRepository.loadIdentity();
-      Uint8List? logoBytes;
-      if (identity.hasLogo && identity.logo != null) {
-        try {
-          logoBytes = await AppRepositories.businessIdentityRepository
-              .loadLogoBytes(identity.logo!.managedFileName);
-        } catch (_) {}
-      }
+      final branding = await _loadBranding();
       final bytes = await PdfSalesInvoiceBuilder.build(
         sale: sale,
         customerName: customerName,
         productNames: productNames,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
-        businessIdentity: identity,
-        logoBytes: logoBytes,
+        businessIdentity: branding.identity,
+        logoBytes: branding.logoBytes,
       );
       final filename = PdfFileNaming.salesInvoice(sale.id, sale.createdAt);
       if (!context.mounted) return false;
@@ -88,14 +81,19 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
+      final branding = await _loadBranding();
+      final generatedAt = DateTime.now();
       final bytes = await PdfCustomerStatementBuilder.build(
         statement: statement,
         customerName: customerName,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
+        businessIdentity: branding.identity,
+        logoBytes: branding.logoBytes,
+        generatedAt: generatedAt,
       );
       final filename =
-          PdfFileNaming.customerStatement(customerName, DateTime.now());
+          PdfFileNaming.customerStatement(customerName, generatedAt);
       if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
@@ -112,11 +110,14 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
+      final branding = await _loadBranding();
       final bytes = await PdfDailyReportBuilder.build(
         report: report,
         reportDate: reportDate,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
+        businessIdentity: branding.identity,
+        logoBytes: branding.logoBytes,
       );
       final filename = PdfFileNaming.dailyReport(reportDate);
       if (!context.mounted) return false;
@@ -136,23 +137,15 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
-      final identity =
-          await AppRepositories.businessIdentityRepository.loadIdentity();
-      Uint8List? logoBytes;
-      if (identity.hasLogo && identity.logo != null) {
-        try {
-          logoBytes = await AppRepositories.businessIdentityRepository
-              .loadLogoBytes(identity.logo!.managedFileName);
-        } catch (_) {}
-      }
+      final branding = await _loadBranding();
       final bytes = await PdfPurchaseInvoiceBuilder.build(
         purchase: purchase,
         supplierName: supplierName,
         productName: productName,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
-        businessIdentity: identity,
-        logoBytes: logoBytes,
+        businessIdentity: branding.identity,
+        logoBytes: branding.logoBytes,
       );
       final filename =
           PdfFileNaming.purchaseInvoice(purchase.id, purchase.createdAt);
@@ -172,14 +165,19 @@ class PdfExportService {
   }) async {
     try {
       await initialize();
+      final branding = await _loadBranding();
+      final generatedAt = DateTime.now();
       final bytes = await PdfSupplierStatementBuilder.build(
         statement: statement,
         supplierName: supplierName,
         arabicFont: _arabicFont!,
         arabicFontBold: _arabicFontBold!,
+        businessIdentity: branding.identity,
+        logoBytes: branding.logoBytes,
+        generatedAt: generatedAt,
       );
       final filename =
-          PdfFileNaming.supplierStatement(supplierName, DateTime.now());
+          PdfFileNaming.supplierStatement(supplierName, generatedAt);
       if (!context.mounted) return false;
       return _saveAndNotify(context, bytes, filename);
     } catch (e) {
@@ -196,7 +194,7 @@ class PdfExportService {
   ) async {
     try {
       final dir = await _exportDir();
-      final file = File('${dir.path}\\$filename');
+      final file = await _availableFile(dir, filename);
       await file.writeAsBytes(bytes);
       await OpenFilex.open(file.path);
       if (context.mounted) {
@@ -209,6 +207,37 @@ class PdfExportService {
       }
       return false;
     }
+  }
+
+  static Future<_PdfBranding> _loadBranding() async {
+    final identity =
+        await AppRepositories.businessIdentityRepository.loadIdentity();
+    if (!identity.hasLogo || identity.logo == null) {
+      return _PdfBranding(identity: identity);
+    }
+    try {
+      return _PdfBranding(
+        identity: identity,
+        logoBytes: await AppRepositories.businessIdentityRepository
+            .loadLogoBytes(identity.logo!.managedFileName),
+      );
+    } catch (_) {
+      return _PdfBranding(identity: identity);
+    }
+  }
+
+  static Future<File> _availableFile(
+      Directory directory, String filename) async {
+    final dot = filename.lastIndexOf('.');
+    final stem = dot > 0 ? filename.substring(0, dot) : filename;
+    final extension = dot > 0 ? filename.substring(dot) : '';
+    var candidate = File('${directory.path}\\$filename');
+    var suffix = 2;
+    while (await candidate.exists()) {
+      candidate = File('${directory.path}\\$stem ($suffix)$extension');
+      suffix += 1;
+    }
+    return candidate;
   }
 
   static Future<bool> exportAccountBalanceReport(
@@ -377,4 +406,11 @@ class PdfExportService {
       ),
     );
   }
+}
+
+class _PdfBranding {
+  const _PdfBranding({required this.identity, this.logoBytes});
+
+  final BusinessIdentity identity;
+  final Uint8List? logoBytes;
 }

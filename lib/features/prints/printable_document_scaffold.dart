@@ -32,8 +32,7 @@ class PrintableDocumentScaffold extends StatefulWidget {
       _PrintableDocumentScaffoldState();
 }
 
-class _PrintableDocumentScaffoldState
-    extends State<PrintableDocumentScaffold> {
+class _PrintableDocumentScaffoldState extends State<PrintableDocumentScaffold> {
   bool _isExporting = false;
   bool _isSharing = false;
 
@@ -62,15 +61,14 @@ class _PrintableDocumentScaffoldState
     final displayName =
         BusinessIdentityScope.maybeOf(context)?.identity.displayName ??
             BusinessIdentity.defaultDisplayName;
-    final logo =
-        BusinessIdentityScope.maybeOf(context)?.identity.logo;
+    final logo = BusinessIdentityScope.maybeOf(context)?.identity.logo;
     final hasLogo = logo != null && logo.isValid;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Container(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -111,12 +109,12 @@ class _PrintableDocumentScaffoldState
                     if (widget.documentDate != null ||
                         widget.documentNumber != null) ...[
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Column(
                         children: [
                           if (widget.documentDate != null)
                             Text(
                               '\u0627\u0644\u062A\u0627\u0631\u064A\u062E: ${widget.documentDate}',
+                              textAlign: TextAlign.center,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -124,10 +122,11 @@ class _PrintableDocumentScaffoldState
                             ),
                           if (widget.documentDate != null &&
                               widget.documentNumber != null)
-                            const SizedBox(width: 24),
+                            const SizedBox(height: 4),
                           if (widget.documentNumber != null)
                             Text(
                               '\u0631\u0642\u0645 \u0627\u0644\u0645\u0633\u062A\u0646\u062F: ${widget.documentNumber}',
+                              textAlign: TextAlign.center,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -156,8 +155,7 @@ class _PrintableDocumentScaffoldState
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
                 child: Center(
                   child: Wrap(
                     spacing: 12,
@@ -175,8 +173,8 @@ class _PrintableDocumentScaffoldState
                                       CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.picture_as_pdf),
-                          label: const Text(
-                              '\u062A\u0635\u062F\u064A\u0631 PDF'),
+                          label:
+                              const Text('\u062A\u0635\u062F\u064A\u0631 PDF'),
                         ),
                       if (widget.onOpenWhatsApp != null)
                         OutlinedButton.icon(
@@ -189,7 +187,8 @@ class _PrintableDocumentScaffoldState
                                       CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.chat),
-                          label: const Text('\u0641\u062A\u062D \u0648\u0627\u062A\u0633\u0627\u0628'),
+                          label: const Text(
+                              '\u0641\u062A\u062D \u0648\u0627\u062A\u0633\u0627\u0628'),
                         ),
                       OutlinedButton.icon(
                         onPressed: () => Navigator.of(context).maybePop(),

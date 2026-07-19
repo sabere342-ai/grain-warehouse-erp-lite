@@ -45,7 +45,8 @@ class PrintableSalesInvoiceView extends StatelessWidget {
     final items = sale.items;
     final hasItems = items.isNotEmpty;
 
-    final canWhatsApp = customerPhone != null && customerPhone!.trim().isNotEmpty;
+    final canWhatsApp =
+        customerPhone != null && customerPhone!.trim().isNotEmpty;
 
     return PrintableDocumentScaffold(
       title: '\u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639',
@@ -90,13 +91,21 @@ class PrintableSalesInvoiceView extends StatelessWidget {
   Widget _buildPaymentStatus() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
         children: [
           const Text(
             '\u062d\u0627\u0644\u0629 \u0627\u0644\u062f\u0641\u0639: ',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(_paymentStatusLabel()),
+          const SizedBox(width: 16),
+          const Text(
+            'طريقة السداد: ',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(sale.paymentMethod?.labelAr ?? 'غير محددة'),
         ],
       ),
     );
@@ -130,14 +139,16 @@ class PrintableSalesInvoiceView extends StatelessWidget {
           children: const [
             _TableHeader('\u0627\u0644\u0635\u0646\u0641'),
             _TableHeader('\u0627\u0644\u0643\u0645\u064a\u0629'),
-            _TableHeader('\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629'),
+            _TableHeader(
+                '\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629'),
             _TableHeader('\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a'),
           ],
         ),
         ...sale.items.map(
           (item) => TableRow(
             children: [
-              _TableCell(productNames[item.productId] ?? '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'),
+              _TableCell(productNames[item.productId] ??
+                  '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'),
               _TableCell('${item.quantityKg} \u0643\u062c\u0645'),
               _TableCell(
                 MoneyUtils.formatPiastersAsEgp(item.salePriceQirshPerKg),
@@ -159,9 +170,11 @@ class PrintableSalesInvoiceView extends StatelessWidget {
         children: [
           _infoRow(
             '\u0627\u0644\u0635\u0646\u0641',
-            productNames[sale.productId] ?? '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641',
+            productNames[sale.productId] ??
+                '\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641',
           ),
-          _infoRow('\u0627\u0644\u0643\u0645\u064a\u0629', '${sale.quantityKg} \u0643\u062c\u0645'),
+          _infoRow('\u0627\u0644\u0643\u0645\u064a\u0629',
+              '${sale.quantityKg} \u0643\u062c\u0645'),
           _infoRow(
             '\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629',
             MoneyUtils.formatPiastersAsEgp(sale.salePriceQirshPerKg),
@@ -177,7 +190,9 @@ class PrintableSalesInvoiceView extends StatelessWidget {
       child: Row(
         children: [
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Expanded(
+            child: Text(value, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );
