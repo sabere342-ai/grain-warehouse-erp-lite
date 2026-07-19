@@ -118,8 +118,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => StockAdjustmentReportScreen(
-                                controller: _controller,
+                              builder: (_) => Scaffold(
+                                body: StockAdjustmentReportScreen(
+                                  controller: _controller,
+                                ),
                               ),
                             ),
                           );

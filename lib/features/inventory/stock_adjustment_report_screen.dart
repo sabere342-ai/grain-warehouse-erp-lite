@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 const String _stockTakeAdjustmentNote = 'تسوية جرد المخزون';
@@ -54,7 +55,8 @@ class _StockAdjustmentReportScreenState
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول.'));
@@ -75,6 +77,13 @@ class _StockAdjustmentReportScreenState
         return ListView(
           key: const Key('stock-adjustment-report-list'),
           children: [
+            const Tooltip(
+              message: 'رجوع',
+              child: PageBackButton(
+                key: ValueKey('stock-adjustment-report-back-button'),
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -83,13 +92,15 @@ class _StockAdjustmentReportScreenState
                     children: [
                       Text(
                         'تقرير تسويات المخزون',
-                        style: textTheme.headlineMedium,
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         'يعرض هذا التقرير حركات الزيادة والنقص اليدوية الناتجة عن تسويات المخزون، ولا يقوم بتعديل الكميات.',
                         style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
