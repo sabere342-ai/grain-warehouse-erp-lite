@@ -205,8 +205,10 @@ void main() {
           createdByUserId: 'cashier',
           paymentMode: mode,
           paidAmountQirsh: paid,
-          financialAccountId: cash.id,
-          paymentMethod: PaymentMethod.cash,
+          financialAccountId:
+              mode == PurchasePaymentMode.credit ? null : cash.id,
+          paymentMethod:
+              mode == PurchasePaymentMode.credit ? null : PaymentMethod.cash,
           operationRequestId: request,
         ),
       );
@@ -216,6 +218,80 @@ void main() {
     await create(PurchasePaymentMode.partial, 'purchase-partial', 30);
     await create(PurchasePaymentMode.credit, 'purchase-credit');
     expect(await accounts.currentBalanceForAccount(cash.id), 870);
+    expect(await ledger.balanceForSupplier(supplier.id), 170);
+  });
+
+  test('paid purchase cancellation rolls every effect back on audit failure',
+      () async {
+    final suppliers = LocalSupplierRepository();
+    final supplier = await suppliers.createSupplier(
+      const SupplierDraft(name: 'Supplier cancellation'),
+    );
+    final products = LocalProductRepository();
+    final product = await products.createProduct(
+      const ProductDraft(name: 'Cancellation grain', unit: GrainUnit.kilogram),
+    );
+    final audit = _FailOnActionAudit('purchase.cancelled');
+    final accounts = LocalFinancialAccountRepository(auditLogRepository: audit);
+    final cash = await accounts.createAccount(
+      const FinancialAccountDraft(
+        name: 'Cash cancellation',
+        type: FinancialAccountType.treasury,
+        createdByUserId: 'owner',
+      ),
+    );
+    await accounts.setOpeningBalance(
+      accountId: cash.id,
+      amountQirsh: 1000,
+      effectiveDate: DateTime(2026, 1, 1),
+      createdByUserId: 'owner',
+    );
+    final inventory = LocalInventoryRepository(productRepository: products);
+    final ledger = LocalSupplierAccountRepository(
+      supplierRepository: suppliers,
+      auditLogRepository: audit,
+      financialAccountRepository: accounts,
+    );
+    final purchases = LocalPurchaseRepository(
+      supplierRepository: suppliers,
+      productRepository: products,
+      inventoryRepository: inventory,
+      supplierAccountRepository: ledger,
+      financialAccountRepository: accounts,
+      auditLogRepository: audit,
+    );
+    final purchase = await purchases.createPurchaseIntake(
+      PurchaseIntakeDraft(
+        supplierId: supplier.id,
+        productId: product.id,
+        quantityKg: 5,
+        entryUnit: GrainUnit.kilogram,
+        unitPricePiastersPerKg: 100,
+        createdByUserId: 'owner',
+        paymentMode: PurchasePaymentMode.paid,
+        paidAmountQirsh: 500,
+        financialAccountId: cash.id,
+        paymentMethod: PaymentMethod.cash,
+        operationRequestId: 'cancel-paid-1',
+      ),
+    );
+
+    await expectLater(
+      purchases.cancelPurchaseIntake(
+        purchaseIntakeId: purchase.id,
+        cancelledByUserId: 'owner',
+        cancellationReason: 'force audit failure',
+      ),
+      throwsStateError,
+    );
+    expect((await purchases.listPurchaseIntakes()).single.isCancelled, isFalse);
+    expect(await inventory.currentStockKg(product.id), 5);
+    expect(await accounts.currentBalanceForAccount(cash.id), 500);
+    expect(await ledger.listEntries(), isEmpty);
+    expect(
+      (await accounts.statementForAccount(cash.id)).lines,
+      hasLength(2),
+    );
   });
 }
 

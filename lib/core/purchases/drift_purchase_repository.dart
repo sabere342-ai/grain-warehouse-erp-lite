@@ -115,7 +115,9 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
       await _database.into(_database.purchases).insert(
             _companion(intake, requestId: requestId, fingerprint: fingerprint),
           );
-      await _supplierAccountRepository?.createPurchaseEntry(purchase: intake);
+      if (intake.outstandingAmountQirsh > 0) {
+        await _supplierAccountRepository?.createPurchaseEntry(purchase: intake);
+      }
       await _createFinancialPayment(intake, draft);
       await _auditLogRepository.record(AuditLogDraft(
         actionType: 'purchase.created',
@@ -176,11 +178,13 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
         requestId: row.operationRequestId,
         fingerprint: row.requestFingerprint,
       ));
-      await _supplierAccountRepository?.reversePurchaseEntry(
-        cancelledPurchase: cancelled,
-        cancelledByUserId: userId,
-        cancellationReason: reason,
-      );
+      if (cancelled.outstandingAmountQirsh > 0) {
+        await _supplierAccountRepository?.reversePurchaseEntry(
+          cancelledPurchase: cancelled,
+          cancelledByUserId: userId,
+          cancellationReason: reason,
+        );
+      }
       await _createFinancialReversal(cancelled, userId, reason);
       await _auditLogRepository.record(AuditLogDraft(
         actionType: 'purchase.cancelled',
@@ -331,6 +335,18 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
       throw ArgumentError(
           'Credit purchases cannot include an immediate payment.');
     }
+    if (draft.paymentMode == PurchasePaymentMode.credit &&
+        (draft.financialAccountId?.trim().isNotEmpty == true ||
+            draft.paymentMethod != null ||
+            draft.negativeBalanceApprovalId?.trim().isNotEmpty == true)) {
+      throw ArgumentError(
+          'Credit purchases cannot include a payment route or approval.');
+    }
+    if (draft.paymentMode == PurchasePaymentMode.paid &&
+        paid != null &&
+        paid != draft.totalAmountPiasters) {
+      throw ArgumentError('Paid purchases must settle the full total.');
+    }
     if (draft.paymentMode == PurchasePaymentMode.partial &&
         (paid == null || paid <= 0 || paid >= draft.totalAmountPiasters)) {
       throw ArgumentError(
@@ -341,8 +357,6 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   Future<void> _validateNewPaymentRoute(PurchaseIntakeDraft draft) async {
     if (draft.paymentMode == PurchasePaymentMode.credit ||
         draft.effectivePaidAmountQirsh <= 0) return;
-    final repository = _financialAccountRepository;
-    if (repository == null) return;
     final accountId = _optional(draft.financialAccountId);
     if (accountId == null) {
       throw StateError('الحساب المالي مطلوب لسداد الشراء.');
@@ -350,6 +364,10 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     final paymentMethod = draft.paymentMethod;
     if (paymentMethod == null) {
       throw StateError('طريقة الدفع مطلوبة لسداد الشراء.');
+    }
+    final repository = _financialAccountRepository;
+    if (repository == null) {
+      throw StateError('مستودع الحسابات المالية غير مهيأ لسداد الشراء.');
     }
     final account = await repository.accountById(accountId);
     PaymentRoutingPolicy.validateAccount(

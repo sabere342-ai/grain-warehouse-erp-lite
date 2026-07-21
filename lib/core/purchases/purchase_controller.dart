@@ -162,6 +162,19 @@ class PurchaseController extends ChangeNotifier {
       return 'تحقق من بيانات استلام الشراء.';
     }
     if (error is StateError) {
+      final message = error.message.toString();
+      if (message.contains('بيانات الموافقة لا تطابق العملية') ||
+          message.contains('approval') && message.contains('match')) {
+        return 'تغيّر الرصيد أو بيانات السداد بعد الاعتماد. أعد فتح النموذج واطلب اعتمادًا جديدًا.';
+      }
+      if (message.contains('الرصيد غير كافٍ')) {
+        return 'الرصيد غير كافٍ، ولم يتم تسجيل الشراء أو تغيير المخزون.';
+      }
+      if (message.contains('الحساب المالي') ||
+          message.contains('طريقة الدفع') ||
+          message.contains('الشيك')) {
+        return message;
+      }
       return 'لا يمكن تسجيل استلام الشراء بهذه البيانات.';
     }
 

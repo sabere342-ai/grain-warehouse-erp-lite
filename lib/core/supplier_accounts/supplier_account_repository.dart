@@ -177,7 +177,7 @@ class LocalSupplierAccountRepository
     if (purchase.isCancelled) {
       throw StateError('Cancelled purchase cannot create ledger entry.');
     }
-    if (purchase.totalAmountPiasters <= 0) {
+    if (purchase.outstandingAmountQirsh <= 0) {
       throw StateError('Invalid purchase amount for supplier ledger.');
     }
     if (_entries.any((entry) =>
@@ -192,7 +192,7 @@ class LocalSupplierAccountRepository
       supplierId: supplier.id,
       date: purchase.createdAt,
       type: SupplierAccountEntryType.purchase,
-      debitAmountQirsh: purchase.totalAmountPiasters,
+      debitAmountQirsh: purchase.outstandingAmountQirsh,
       creditAmountQirsh: 0,
       sourceDocumentType: 'purchase',
       sourceDocumentId: purchase.id,

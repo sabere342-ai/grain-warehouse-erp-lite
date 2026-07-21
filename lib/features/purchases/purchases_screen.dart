@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -10,6 +18,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class PurchasesScreen extends StatefulWidget {
@@ -17,10 +26,16 @@ class PurchasesScreen extends StatefulWidget {
     super.key,
     this.controller,
     this.supplierAccountRepository,
+    this.financialAccountRepository,
+    this.authRepository,
+    this.negativeBalanceApprovalService,
   });
 
   final PurchaseController? controller;
   final SupplierAccountRepository? supplierAccountRepository;
+  final FinancialAccountRepository? financialAccountRepository;
+  final AuthRepository? authRepository;
+  final NegativeBalanceApprovalService? negativeBalanceApprovalService;
 
   @override
   State<PurchasesScreen> createState() => _PurchasesScreenState();
@@ -30,6 +45,9 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   late final PurchaseController _controller;
   late final bool _ownsController;
   late final SupplierAccountRepository _accountRepo;
+  late final FinancialAccountRepository _financialAccountRepo;
+  late final AuthRepository _authRepo;
+  late final NegativeBalanceApprovalService _approvalService;
   Set<String> _supplierIdsWithPayments = {};
 
   @override
@@ -37,6 +55,11 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     super.initState();
     _accountRepo = widget.supplierAccountRepository ??
         AppRepositories.supplierAccountRepository;
+    _financialAccountRepo = widget.financialAccountRepository ??
+        AppRepositories.financialAccountRepository;
+    _authRepo = widget.authRepository ?? AppRepositories.authRepository;
+    _approvalService = widget.negativeBalanceApprovalService ??
+        AppRepositories.negativeBalanceApprovalService;
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
         PurchaseController(
@@ -58,8 +81,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       final payments = await _accountRepo.listPayments();
       if (!mounted) return;
       setState(() {
-        _supplierIdsWithPayments =
-            payments.map((p) => p.supplierId).toSet();
+        _supplierIdsWithPayments = payments.map((p) => p.supplierId).toSet();
       });
     } catch (_) {
       // silently ignore — cancel button stays active by default
@@ -123,7 +145,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                 if (canCreate)
                   FilledButton.icon(
                     onPressed: canOpenForm
-                        ? () => _showPurchaseForm(context, user: user)
+                        ? () => _showPurchaseForm(user: user)
                         : null,
                     icon: const Icon(Icons.add_business_rounded),
                     label: const Text('تسجيل استلام حبوب'),
@@ -150,12 +172,13 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                 ),
               )
             else
-                ..._controller.intakes.reversed.map(
+              ..._controller.intakes.reversed.map(
                 (intake) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _PurchaseIntakeCard(
                     intake: intake,
-                    hasPayment: _supplierIdsWithPayments.contains(intake.supplierId),
+                    hasPayment:
+                        _supplierIdsWithPayments.contains(intake.supplierId),
                     supplierName: _controller.displaySupplierName(intake),
                     productName: _controller.productName(intake.productId),
                     canCancel: canCancel,
@@ -179,10 +202,18 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     );
   }
 
-  Future<void> _showPurchaseForm(
-    BuildContext context, {
-    required user,
-  }) async {
+  Future<void> _showPurchaseForm({required AppUser user}) async {
+    final accounts = (await _financialAccountRepo.listAccounts())
+        .where((account) => account.isActive)
+        .toList(growable: false);
+    final balances = <String, int>{};
+    for (final account in accounts) {
+      balances[account.id] =
+          await _financialAccountRepo.currentBalanceForAccount(account.id);
+    }
+    if (!mounted) return;
+    final requestId =
+        'purchase-ui-${DateTime.now().microsecondsSinceEpoch}-${user.id}';
     final draft = await showDialog<PurchaseIntakeDraft>(
       context: context,
       builder: (context) => _PurchaseFormDialog(
@@ -193,6 +224,9 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
           return product.isActive;
         }).toList(growable: false),
         userId: user.id,
+        financialAccounts: accounts,
+        accountBalancesQirsh: balances,
+        operationRequestId: requestId,
       ),
     );
 
@@ -200,7 +234,72 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       return;
     }
 
-    await _controller.createPurchaseIntake(user: user, draft: draft);
+    var preparedDraft = draft;
+    if (draft.paymentMode == PurchasePaymentMode.paid) {
+      final accountId = draft.financialAccountId!;
+      final account = accounts.firstWhere((value) => value.id == accountId);
+      final currentBalance =
+          await _financialAccountRepo.currentBalanceForAccount(accountId);
+      if (currentBalance < draft.totalAmountPiasters) {
+        if (!mounted) return;
+        final deficit = draft.totalAmountPiasters - currentBalance;
+        if (!account.allowNegativeBalance) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'الرصيد غير كافٍ بمقدار ${MoneyUtils.formatPiastersAsEgp(deficit)}. '
+                'الحساب لا يسمح بالرصيد السالب، ولم يتم تسجيل الشراء.',
+              ),
+            ),
+          );
+          return;
+        }
+        final approvalId = await NegativeBalanceApprovalDialog.show(
+          context: context,
+          authRepository: _authRepo,
+          accountName: account.name,
+          currentBalanceQirsh: currentBalance,
+          requestedAmountQirsh: draft.totalAmountPiasters,
+          operationDescription: 'سداد شراء مدفوع بالكامل',
+          approvalService: _approvalService,
+          approvalDraft: NegativeBalanceApprovalDraft(
+            requestedByUserId: user.id,
+            approvedByOwnerUserId: '',
+            accountId: account.id,
+            amountQirsh: draft.totalAmountPiasters,
+            operationType: NegativeBalanceOperationType.purchasePayment,
+            sourceDocumentId: requestId,
+            sourceDocumentType:
+                FinancialAccountEntrySource.purchasePayment.name,
+            balanceBeforeQirsh: currentBalance,
+            expectedBalanceAfterQirsh:
+                currentBalance - draft.totalAmountPiasters,
+            reason: 'سداد شراء يتجاوز رصيد الحساب المالي',
+          ),
+        );
+        if (approvalId == null || !mounted) return;
+        preparedDraft = PurchaseIntakeDraft(
+          supplierId: draft.supplierId,
+          supplierName: draft.supplierName,
+          supplierPhone: draft.supplierPhone,
+          supplierAddress: draft.supplierAddress,
+          productId: draft.productId,
+          quantityKg: draft.quantityKg,
+          entryUnit: draft.entryUnit,
+          unitPricePiastersPerKg: draft.unitPricePiastersPerKg,
+          createdByUserId: draft.createdByUserId,
+          notes: draft.notes,
+          financialAccountId: draft.financialAccountId,
+          paymentMethod: draft.paymentMethod,
+          paymentMode: draft.paymentMode,
+          paidAmountQirsh: draft.paidAmountQirsh,
+          negativeBalanceApprovalId: approvalId,
+          operationRequestId: draft.operationRequestId,
+        );
+      }
+    }
+
+    await _controller.createPurchaseIntake(user: user, draft: preparedDraft);
   }
 
   Future<void> _confirmCancelPurchase(
@@ -303,6 +402,9 @@ class _PurchaseIntakeCard extends StatelessWidget {
               Text(
                 'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(intake.totalAmountPiasters)}',
               ),
+              Text('التسوية: ${intake.paymentMode.labelAr}'),
+              if (intake.paymentMethod != null)
+                Text('طريقة الدفع: ${intake.paymentMethod!.labelAr}'),
             ],
           ),
           if (intake.notes != null) ...[
@@ -313,12 +415,16 @@ class _PurchaseIntakeCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text('سبب الإلغاء: ${intake.cancellation!.cancellationReason}'),
           ],
-          if (canCancel && !intake.isCancelled && hasPayment) ...[
+          if (canCancel &&
+              !intake.isCancelled &&
+              intake.paymentMode == PurchasePaymentMode.credit &&
+              hasPayment) ...[
             const SizedBox(height: 12),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Tooltip(
-                message: 'للحفاظ على الحسابات، لا يتم إلغاء شراء تم تسجيل دفعة عليه.',
+                message:
+                    'للحفاظ على الحسابات، لا يتم إلغاء شراء تم تسجيل دفعة عليه.',
                 child: OutlinedButton.icon(
                   onPressed: null,
                   icon: const Icon(Icons.cancel_outlined),
@@ -327,7 +433,10 @@ class _PurchaseIntakeCard extends StatelessWidget {
               ),
             ),
           ],
-          if (canCancel && !intake.isCancelled && !hasPayment) ...[
+          if (canCancel &&
+              !intake.isCancelled &&
+              (intake.paymentMode != PurchasePaymentMode.credit ||
+                  !hasPayment)) ...[
             const SizedBox(height: 12),
             Align(
               alignment: AlignmentDirectional.centerStart,
@@ -358,11 +467,17 @@ class _PurchaseFormDialog extends StatefulWidget {
     required this.suppliers,
     required this.products,
     required this.userId,
+    required this.financialAccounts,
+    required this.accountBalancesQirsh,
+    required this.operationRequestId,
   });
 
   final List<Supplier> suppliers;
   final List<Product> products;
   final String userId;
+  final List<FinancialAccount> financialAccounts;
+  final Map<String, int> accountBalancesQirsh;
+  final String operationRequestId;
 
   @override
   State<_PurchaseFormDialog> createState() => _PurchaseFormDialogState();
@@ -375,6 +490,9 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _notesController = TextEditingController();
+  PurchasePaymentMode _paymentMode = PurchasePaymentMode.credit;
+  PaymentMethod? _paymentMethod;
+  String? _financialAccountId;
   String? _errorMessage;
 
   @override
@@ -438,6 +556,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
                       helperText: 'اكتب الكمية حسب الوحدة المختارة.',
                     ),
                     textDirection: TextDirection.ltr,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -475,7 +594,100 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
                 helperText: 'اكتب سعر شراء الكيلو بالجنيه.',
               ),
               textDirection: TextDirection.ltr,
+              onChanged: (_) => setState(() {}),
             ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<PurchasePaymentMode>(
+              key: const Key('purchase-payment-mode-field'),
+              value: _paymentMode,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'نوع تسوية الشراء',
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: PurchasePaymentMode.credit,
+                  child: Text('آجل بالكامل'),
+                ),
+                DropdownMenuItem(
+                  value: PurchasePaymentMode.paid,
+                  child: Text('مدفوع بالكامل'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  _paymentMode = value;
+                  if (value == PurchasePaymentMode.credit) {
+                    _paymentMethod = null;
+                    _financialAccountId = null;
+                  }
+                  _errorMessage = null;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildSettlementSummary(context),
+            if (_paymentMode == PurchasePaymentMode.paid) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<PaymentMethod>(
+                key: const Key('purchase-payment-method-field'),
+                value: _paymentMethod,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'طريقة الدفع *',
+                  helperText: 'الشيكات غير مدعومة في العقد الحالي.',
+                ),
+                items: PaymentRoutingPolicy.selectablePaymentMethods
+                    .map(
+                      (method) => DropdownMenuItem(
+                        value: method,
+                        child: Text(method.labelAr),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: (method) {
+                  setState(() {
+                    _paymentMethod = method;
+                    if (!_selectedAccountIsCompatible()) {
+                      _financialAccountId = null;
+                    }
+                    _errorMessage = null;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                key: const Key('purchase-financial-account-field'),
+                value: _financialAccountId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'الحساب المالي *',
+                ),
+                items: _compatibleAccounts()
+                    .map(
+                      (account) => DropdownMenuItem(
+                        value: account.id,
+                        child: Text(
+                          '${account.type.iconEmoji} ${account.name} — '
+                          '${MoneyUtils.formatPiastersAsEgp(widget.accountBalancesQirsh[account.id] ?? 0)}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: _paymentMethod == null
+                    ? null
+                    : (accountId) => setState(() {
+                          _financialAccountId = accountId;
+                          _errorMessage = null;
+                        }),
+              ),
+              if (_selectedAccount != null) ...[
+                const SizedBox(height: 12),
+                _buildAccountImpact(context, _selectedAccount!),
+              ],
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
@@ -529,6 +741,28 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
     final selectedSupplier = widget.suppliers.firstWhere(
       (s) => s.id == _supplierId,
     );
+    final total = quantityKg * unitPrice;
+    if (_paymentMode == PurchasePaymentMode.paid) {
+      if (_paymentMethod == null) {
+        setState(() => _errorMessage = 'اختر طريقة الدفع للشراء المدفوع.');
+        return;
+      }
+      if (_financialAccountId == null) {
+        setState(() => _errorMessage = 'اختر الحساب المالي لسداد الشراء.');
+        return;
+      }
+      final account = _selectedAccount;
+      if (account == null ||
+          !account.isActive ||
+          !PaymentRoutingPolicy.isCompatible(
+            paymentMethod: _paymentMethod!,
+            accountType: account.type,
+          )) {
+        setState(() => _errorMessage =
+            'الحساب المالي غير نشط أو لا يتوافق مع طريقة الدفع.');
+        return;
+      }
+    }
 
     Navigator.of(context).pop(
       PurchaseIntakeDraft(
@@ -542,6 +776,15 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
         unitPricePiastersPerKg: unitPrice,
         createdByUserId: widget.userId,
         notes: _notesController.text,
+        paymentMode: _paymentMode,
+        paymentMethod:
+            _paymentMode == PurchasePaymentMode.paid ? _paymentMethod : null,
+        financialAccountId: _paymentMode == PurchasePaymentMode.paid
+            ? _financialAccountId
+            : null,
+        paidAmountQirsh:
+            _paymentMode == PurchasePaymentMode.paid ? total : null,
+        operationRequestId: widget.operationRequestId,
       ),
     );
   }
@@ -554,5 +797,117 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
     } on ArgumentError {
       return null;
     }
+  }
+
+  int? get _calculatedTotalQirsh {
+    final quantity = int.tryParse(_quantityController.text.trim());
+    final unitPrice = _tryParsePrice(_unitPriceController.text);
+    if (quantity == null || quantity <= 0 || unitPrice == null) return null;
+    final quantityKg = _inputUnit == GrainUnit.ton
+        ? GrainUnitConverter.tonsToKilograms(quantity)
+        : quantity;
+    return quantityKg * unitPrice;
+  }
+
+  List<FinancialAccount> _compatibleAccounts() {
+    final method = _paymentMethod;
+    if (method == null) return const [];
+    return widget.financialAccounts
+        .where(
+          (account) =>
+              account.isActive &&
+              PaymentRoutingPolicy.isCompatible(
+                paymentMethod: method,
+                accountType: account.type,
+              ),
+        )
+        .toList(growable: false);
+  }
+
+  bool _selectedAccountIsCompatible() {
+    final accountId = _financialAccountId;
+    if (accountId == null) return true;
+    return _compatibleAccounts().any((account) => account.id == accountId);
+  }
+
+  FinancialAccount? get _selectedAccount {
+    final accountId = _financialAccountId;
+    if (accountId == null) return null;
+    for (final account in widget.financialAccounts) {
+      if (account.id == accountId) return account;
+    }
+    return null;
+  }
+
+  Widget _buildSettlementSummary(BuildContext context) {
+    final isCredit = _paymentMode == PurchasePaymentMode.credit;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isCredit
+            ? colorScheme.secondaryContainer.withAlpha(90)
+            : colorScheme.primaryContainer.withAlpha(90),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        isCredit
+            ? 'سيُضاف كامل إجمالي الفاتورة إلى مديونية المورد، ولن يتغير أي حساب مالي.'
+            : 'سيُسدد كامل إجمالي الفاتورة من الحساب المختار، ولن تبقى مديونية على المورد.',
+        key: const Key('purchase-settlement-summary'),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildAccountImpact(
+    BuildContext context,
+    FinancialAccount account,
+  ) {
+    final balance = widget.accountBalancesQirsh[account.id] ?? 0;
+    final total = _calculatedTotalQirsh;
+    final projected = total == null ? null : balance - total;
+    final hasDeficit = projected != null && projected < 0;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      key: const Key('purchase-account-impact-card'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: hasDeficit
+            ? colorScheme.errorContainer.withAlpha(100)
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('الرصيد الحالي: ${MoneyUtils.formatPiastersAsEgp(balance)}'),
+          if (total != null)
+            Text('قيمة السداد: ${MoneyUtils.formatPiastersAsEgp(total)}'),
+          if (projected != null)
+            Text(
+              'الرصيد بعد السداد: ${MoneyUtils.formatPiastersAsEgp(projected)}',
+              style: TextStyle(
+                color: hasDeficit ? colorScheme.error : null,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          if (hasDeficit)
+            Text(
+              account.allowNegativeBalance
+                  ? 'العجز ${MoneyUtils.formatPiastersAsEgp(-projected)} — يلزم اعتماد المالك قبل التسجيل.'
+                  : 'العجز ${MoneyUtils.formatPiastersAsEgp(-projected)} — الحساب لا يسمح بالرصيد السالب.',
+              style: TextStyle(
+                color: colorScheme.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

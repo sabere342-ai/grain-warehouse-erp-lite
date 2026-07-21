@@ -69,6 +69,9 @@ class PurchaseIntake {
     return paymentMode == PurchasePaymentMode.credit ? 0 : totalAmountPiasters;
   }
 
+  int get outstandingAmountQirsh =>
+      totalAmountPiasters - effectivePaidAmountQirsh;
+
   bool get hasValidId => id.trim().isNotEmpty;
   bool get isCancelled => cancellation != null;
 
@@ -146,4 +149,7 @@ class PurchaseIntakeDraft {
     if (paidAmountQirsh != null) return paidAmountQirsh!;
     return paymentMode == PurchasePaymentMode.credit ? 0 : totalAmountPiasters;
   }
+
+  int get outstandingAmountQirsh =>
+      totalAmountPiasters - effectivePaidAmountQirsh;
 }

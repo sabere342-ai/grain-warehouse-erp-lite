@@ -994,7 +994,6 @@ void main() {
             entryUnit: GrainUnit.kilogram,
             unitPricePiastersPerKg: 300,
             createdByUserId: 'user-1',
-            financialAccountId: accountId,
             paymentMode: PurchasePaymentMode.credit,
           ),
         );

@@ -54,7 +54,7 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
   final FinancialAccountRepository? _financialAccountRepository;
   final AuditLogRepository _auditLogRepository;
   final List<PurchaseIntake> _intakes = [];
-  final Map<String, String> _purchaseRequestFingerprints = {};
+  final Map<String, String> _purchaseRequestIntakeIds = {};
   int _generatedIdCounter = 0;
 
   @override
@@ -115,8 +115,18 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     return RepositoryTransaction.execute(snapshots, () async {
       final requestId = _normalizedOptionalText(draft.operationRequestId);
       if (requestId != null &&
-          _purchaseRequestFingerprints.containsKey(requestId)) {
-        throw StateError('Purchase request was already processed.');
+          _purchaseRequestIntakeIds.containsKey(requestId)) {
+        final existing = _intakes.firstWhere(
+          (value) => value.id == _purchaseRequestIntakeIds[requestId],
+          orElse: () => throw StateError(
+            'Purchase replay record is unavailable.',
+          ),
+        );
+        if (_purchaseFingerprintForIntake(existing) !=
+            _purchaseFingerprint(draft)) {
+          throw StateError('Purchase request payload does not match replay.');
+        }
+        return existing;
       }
 
       final movement = await _inventoryRepository.createMovement(
@@ -132,8 +142,11 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
 
       final postedIntake = intake.copyWith(stockMovementId: movement.id);
       _intakes.add(postedIntake);
-      await _supplierAccountRepository?.createPurchaseEntry(
-          purchase: postedIntake);
+      if (postedIntake.outstandingAmountQirsh > 0) {
+        await _supplierAccountRepository?.createPurchaseEntry(
+          purchase: postedIntake,
+        );
+      }
 
       final faRepo = _financialAccountRepository;
       if (faRepo != null &&
@@ -169,7 +182,7 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
         ),
       );
       if (requestId != null) {
-        _purchaseRequestFingerprints[requestId] = _purchaseFingerprint(draft);
+        _purchaseRequestIntakeIds[requestId] = postedIntake.id;
       }
 
       return postedIntake;
@@ -210,57 +223,78 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     }
     await _validatePurchaseCancellationStock(intake);
 
-    final reversal = await _inventoryRepository.createMovement(
-      StockMovementDraft(
-        productId: intake.productId,
-        movementType: StockMovementType.purchaseCancellation,
-        quantityKg: intake.quantityKg,
-        createdByUserId: userId,
-        note: 'إلغاء استلام شراء ${intake.id}: $reason',
-        reversedMovementId: intake.stockMovementId,
-        originalDocumentId: intake.id,
-      ),
-    );
-    final cancelled = intake.copyWith(
-      cancellation: CancellationMetadata(
-        cancelledAt: DateTime.now(),
-        cancelledByUserId: userId,
-        cancellationReason: reason,
-        originalDocumentId: intake.id,
-        reversalMovementIds: [reversal.id],
-      ),
-    );
-    _intakes[intakeIndex] = cancelled;
-    await _supplierAccountRepository?.reversePurchaseEntry(
-      cancelledPurchase: cancelled,
-      cancelledByUserId: userId,
-      cancellationReason: reason,
-    );
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    snapshots.add(_requiredSnapshot(_inventoryRepository, 'inventory'));
+    if (_supplierAccountRepository != null) {
+      snapshots.add(_requiredSnapshot(_supplierAccountRepository, 'supplier'));
+    }
+    if (_financialAccountRepository != null) {
+      snapshots
+          .add(_requiredSnapshot(_financialAccountRepository, 'financial'));
+    }
+    snapshots.add(_requiredSnapshot(_auditLogRepository, 'audit'));
 
-    final faRepo = _financialAccountRepository;
-    if (faRepo != null &&
-        cancelled.financialAccountId != null &&
-        cancelled.financialAccountId!.isNotEmpty &&
-        cancelled.paymentMode != PurchasePaymentMode.credit) {
-      final paidAmount = cancelled.effectivePaidAmountQirsh;
-      if (paidAmount > 0) {
-        await faRepo.createEntry(
-          accountId: cancelled.financialAccountId!,
-          direction: FinancialAccountEntryDirection.inflow,
-          amountQirsh: paidAmount,
-          sourceType: FinancialAccountEntrySource.cancellationReversal,
-          sourceDocumentId: cancelled.id,
-          effectiveDate: DateTime.now(),
+    return RepositoryTransaction.execute(snapshots, () async {
+      final reversal = await _inventoryRepository.createMovement(
+        StockMovementDraft(
+          productId: intake.productId,
+          movementType: StockMovementType.purchaseCancellation,
+          quantityKg: intake.quantityKg,
           createdByUserId: userId,
-          reversalOf: cancelled.id,
-          reference: 'عكس إلغاء استلام شراء ${cancelled.id}',
-          note: 'إلغاء استلام شراء: $reason',
-          paymentMethod: cancelled.paymentMethod,
+          note: 'إلغاء استلام شراء ${intake.id}: $reason',
+          reversedMovementId: intake.stockMovementId,
+          originalDocumentId: intake.id,
+        ),
+      );
+      final cancelled = intake.copyWith(
+        cancellation: CancellationMetadata(
+          cancelledAt: DateTime.now(),
+          cancelledByUserId: userId,
+          cancellationReason: reason,
+          originalDocumentId: intake.id,
+          reversalMovementIds: [reversal.id],
+        ),
+      );
+      _intakes[intakeIndex] = cancelled;
+      if (cancelled.outstandingAmountQirsh > 0) {
+        await _supplierAccountRepository?.reversePurchaseEntry(
+          cancelledPurchase: cancelled,
+          cancelledByUserId: userId,
+          cancellationReason: reason,
         );
       }
-    }
 
-    return cancelled;
+      final faRepo = _financialAccountRepository;
+      if (faRepo != null &&
+          cancelled.financialAccountId != null &&
+          cancelled.financialAccountId!.isNotEmpty &&
+          cancelled.paymentMode != PurchasePaymentMode.credit) {
+        final paidAmount = cancelled.effectivePaidAmountQirsh;
+        if (paidAmount > 0) {
+          await faRepo.createEntry(
+            accountId: cancelled.financialAccountId!,
+            direction: FinancialAccountEntryDirection.inflow,
+            amountQirsh: paidAmount,
+            sourceType: FinancialAccountEntrySource.cancellationReversal,
+            sourceDocumentId: cancelled.id,
+            effectiveDate: DateTime.now(),
+            createdByUserId: userId,
+            reversalOf: cancelled.id,
+            reference: 'عكس إلغاء استلام شراء ${cancelled.id}',
+            note: 'إلغاء استلام شراء: $reason',
+            paymentMethod: cancelled.paymentMethod,
+          );
+        }
+      }
+      await _auditLogRepository.record(
+        AuditLogDraft(
+          actionType: 'purchase.cancelled',
+          descriptionAr: 'تم إلغاء استلام شراء.',
+          referenceId: cancelled.id,
+        ),
+      );
+      return cancelled;
+    });
   }
 
   Future<void> _validatePurchaseCancellationStock(PurchaseIntake intake) async {
@@ -294,7 +328,7 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
   @override
   Future<void> clearForOwnerDataWipe() async {
     _intakes.clear();
-    _purchaseRequestFingerprints.clear();
+    _purchaseRequestIntakeIds.clear();
     _generatedIdCounter = 0;
   }
 
@@ -304,14 +338,14 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
         (List<PurchaseIntake>, Map<String, String>, int)>(
       captureState: () => (
         List<PurchaseIntake>.from(_intakes),
-        Map<String, String>.from(_purchaseRequestFingerprints),
+        Map<String, String>.from(_purchaseRequestIntakeIds),
         _generatedIdCounter,
       ),
       restoreState: (state) {
         _intakes
           ..clear()
           ..addAll(state.$1);
-        _purchaseRequestFingerprints
+        _purchaseRequestIntakeIds
           ..clear()
           ..addAll(state.$2);
         _generatedIdCounter = state.$3;
@@ -399,6 +433,23 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
         'Credit purchases cannot include an immediate payment.',
       );
     }
+    if (draft.paymentMode == PurchasePaymentMode.credit &&
+        (draft.financialAccountId?.trim().isNotEmpty == true ||
+            draft.paymentMethod != null ||
+            draft.negativeBalanceApprovalId?.trim().isNotEmpty == true)) {
+      throw ArgumentError(
+        'Credit purchases cannot include a payment route or approval.',
+      );
+    }
+    if (draft.paymentMode == PurchasePaymentMode.paid &&
+        paid != null &&
+        paid != draft.totalAmountPiasters) {
+      throw ArgumentError.value(
+        paid,
+        'paidAmountQirsh',
+        'Paid purchases must settle the full total.',
+      );
+    }
     if (draft.paymentMode == PurchasePaymentMode.partial &&
         (paid == null || paid <= 0 || paid >= draft.totalAmountPiasters)) {
       throw ArgumentError.value(
@@ -414,8 +465,6 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
         draft.effectivePaidAmountQirsh <= 0) {
       return;
     }
-    final repository = _financialAccountRepository;
-    if (repository == null) return;
     final accountId = _normalizedOptionalText(draft.financialAccountId);
     if (accountId == null) {
       throw StateError('الحساب المالي مطلوب لسداد الشراء.');
@@ -423,6 +472,10 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     final paymentMethod = draft.paymentMethod;
     if (paymentMethod == null) {
       throw StateError('طريقة الدفع مطلوبة لسداد الشراء.');
+    }
+    final repository = _financialAccountRepository;
+    if (repository == null) {
+      throw StateError('مستودع الحسابات المالية غير مهيأ لسداد الشراء.');
     }
     final account = await repository.accountById(accountId);
     PaymentRoutingPolicy.validateAccount(
@@ -474,6 +527,21 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
       draft.paymentMethod?.name ?? '',
       draft.negativeBalanceApprovalId?.trim() ?? '',
       draft.createdByUserId.trim(),
+    ].join('|');
+  }
+
+  String _purchaseFingerprintForIntake(PurchaseIntake intake) {
+    return [
+      intake.supplierId.trim(),
+      intake.productId.trim(),
+      intake.quantityKg,
+      intake.unitPricePiastersPerKg,
+      intake.paymentMode.name,
+      intake.effectivePaidAmountQirsh,
+      intake.financialAccountId?.trim() ?? '',
+      intake.paymentMethod?.name ?? '',
+      intake.negativeBalanceApprovalId?.trim() ?? '',
+      intake.createdByUserId.trim(),
     ].join('|');
   }
 
