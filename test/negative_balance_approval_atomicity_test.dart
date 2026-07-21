@@ -225,6 +225,7 @@ void main() {
             category: 'Utilities',
             amountQirsh: 1500,
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
             negativeBalanceApprovalId: approvalId,
             operationRequestId: 'expense-request-atomic',
           ),

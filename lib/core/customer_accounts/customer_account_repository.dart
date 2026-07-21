@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
@@ -281,6 +282,10 @@ class LocalCustomerAccountRepository
       includeInactive: true,
     );
     _validateCollectionDraft(draft);
+    await _validateNewPaymentRoute(
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
+    );
     final balance = await balanceForCustomer(customer.id);
     final settledAmountQirsh = balance <= 0
         ? 0
@@ -552,15 +557,23 @@ class LocalCustomerAccountRepository
       throw StateError(
           'Financial account repository is required and must be transaction-safe.');
     }
+    final paymentMethod = draft.paymentMethod ?? advance.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لرد سلفة العميل.');
+    }
+    final account = await financialRepository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
     final financialSnapshotProvider =
         financialRepository as TransactionSnapshotProvider;
     return RepositoryTransaction.execute(<SnapshotHolder>[
       createTransactionSnapshot(),
       financialSnapshotProvider.createTransactionSnapshot(),
     ], () async {
-      final paymentMethod = draft.paymentMethod ?? advance.paymentMethod;
       final fingerprint =
-          'refund|${draft.advanceId}|${draft.amountQirsh}|$accountId|${paymentMethod?.name ?? ''}|${draft.date.toUtc().toIso8601String()}';
+          'refund|${draft.advanceId}|${draft.amountQirsh}|$accountId|${paymentMethod.name}|${draft.date.toUtc().toIso8601String()}';
       final replay = _advanceRequestFingerprints[requestId];
       if (replay != null) {
         if (replay != fingerprint) {
@@ -1277,6 +1290,29 @@ class LocalCustomerAccountRepository
         'Collection amount must be positive.',
       );
     }
+  }
+
+  Future<void> _validateNewPaymentRoute({
+    required String? financialAccountId,
+    required PaymentMethod? paymentMethod,
+  }) async {
+    final repository = _financialAccountRepository;
+    // Legacy ledger-only adapters deliberately have no financial repository.
+    // The production graph always supplies one and therefore enforces the
+    // complete route before any collection state is mutated.
+    if (repository == null) return;
+    final accountId = _normalizedOptionalText(financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لتسجيل التحصيل.');
+    }
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لتسجيل التحصيل.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
   }
 
   void _validateEntry(CustomerAccountEntry entry) {

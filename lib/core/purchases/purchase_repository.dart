@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -31,8 +32,7 @@ abstract class DurablePurchaseRepository
   Future<void> clearForOwnerDataWipe();
 }
 
-class LocalPurchaseRepository
-    implements DurablePurchaseRepository {
+class LocalPurchaseRepository implements DurablePurchaseRepository {
   LocalPurchaseRepository({
     required SupplierRepository supplierRepository,
     required ProductRepository productRepository,
@@ -64,6 +64,7 @@ class LocalPurchaseRepository
     final supplier = await _validateSupplier(draft.supplierId);
     final product = await _validateProduct(draft.productId);
     _validateDraft(draft);
+    await _validateNewPaymentRoute(draft);
 
     final now = DateTime.now();
     final intake = PurchaseIntake(
@@ -388,6 +389,46 @@ class LocalPurchaseRepository
         'Unit price must be positive.',
       );
     }
+    final paid = draft.paidAmountQirsh;
+    if (draft.paymentMode == PurchasePaymentMode.credit &&
+        paid != null &&
+        paid != 0) {
+      throw ArgumentError.value(
+        paid,
+        'paidAmountQirsh',
+        'Credit purchases cannot include an immediate payment.',
+      );
+    }
+    if (draft.paymentMode == PurchasePaymentMode.partial &&
+        (paid == null || paid <= 0 || paid >= draft.totalAmountPiasters)) {
+      throw ArgumentError.value(
+        paid,
+        'paidAmountQirsh',
+        'Partial purchase payment must be positive and below the total.',
+      );
+    }
+  }
+
+  Future<void> _validateNewPaymentRoute(PurchaseIntakeDraft draft) async {
+    if (draft.paymentMode == PurchasePaymentMode.credit ||
+        draft.effectivePaidAmountQirsh <= 0) {
+      return;
+    }
+    final repository = _financialAccountRepository;
+    if (repository == null) return;
+    final accountId = _normalizedOptionalText(draft.financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لسداد الشراء.');
+    }
+    final paymentMethod = draft.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لسداد الشراء.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
   }
 
   void _validateUniqueRestoredIntakes(List<PurchaseIntake> intakes) {
@@ -430,6 +471,7 @@ class LocalPurchaseRepository
       draft.paymentMode.name,
       draft.effectivePaidAmountQirsh,
       draft.financialAccountId?.trim() ?? '',
+      draft.paymentMethod?.name ?? '',
       draft.negativeBalanceApprovalId?.trim() ?? '',
       draft.createdByUserId.trim(),
     ].join('|');

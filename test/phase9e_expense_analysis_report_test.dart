@@ -27,9 +27,9 @@ void main() {
 
   setUp(() {
     repo = LocalFinancialAccountRepository();
-    expenseRepo = LocalExpenseRepository(
-      financialAccountRepository: repo,
-    );
+    // Report tests seed both current and legacy records. Transaction routing
+    // is covered separately; this ledger-only adapter preserves v1-v5 nulls.
+    expenseRepo = LocalExpenseRepository();
     service = FinancialReportService(
       repository: repo,
       expenseRepository: expenseRepo,

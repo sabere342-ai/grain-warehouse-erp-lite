@@ -125,6 +125,19 @@ void main() {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
     final finances = LocalFinancialAccountRepository();
+    final account = await finances.createAccount(
+      const FinancialAccountDraft(
+        name: 'خزينة',
+        type: FinancialAccountType.treasury,
+        createdByUserId: 'owner',
+      ),
+    );
+    await finances.setOpeningBalance(
+      accountId: account.id,
+      amountQirsh: 10,
+      effectiveDate: DateTime.utc(2026),
+      createdByUserId: 'owner',
+    );
     final repository = DriftExpenseRepository(
       database,
       financialAccountRepository: finances,
@@ -135,12 +148,19 @@ void main() {
         category: 'فشل مالي',
         amountQirsh: 1,
         financialAccountId: 'missing',
+        paymentMethod: PaymentMethod.cash,
       )),
       throwsStateError,
     );
     expect(await repository.listExpenses(), isEmpty);
     final after = await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'بعد', amountQirsh: 1),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'بعد',
+        amountQirsh: 1,
+        financialAccountId: account.id,
+        paymentMethod: PaymentMethod.cash,
+      ),
     );
     expect(after.id.endsWith('-1'), isTrue);
   });

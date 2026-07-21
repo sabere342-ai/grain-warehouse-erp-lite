@@ -272,6 +272,7 @@ void main() {
           category: 'مصاريف إدارية',
           amountQirsh: 5000,
           financialAccountId: treasury.id,
+          paymentMethod: PaymentMethod.cash,
         )),
         throwsStateError,
       );
@@ -303,6 +304,7 @@ void main() {
         category: 'مصاريف إدارية',
         amountQirsh: 5000,
         financialAccountId: treasury.id,
+        paymentMethod: PaymentMethod.cash,
         negativeBalanceApprovalId: approvalId,
         operationRequestId: operationRequestId,
       ));
@@ -545,6 +547,7 @@ void main() {
         category: 'مصاريف',
         amountQirsh: 5000,
         financialAccountId: treasury.id,
+        paymentMethod: PaymentMethod.cash,
       ));
 
       expect(expense.id, isNotEmpty);

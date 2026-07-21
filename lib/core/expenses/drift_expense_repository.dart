@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
@@ -35,6 +36,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
   @override
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
+    await _validateNewPaymentRoute(draft);
     final financialRepository = _financialAccountRepository;
     final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
     if (financialRepository != null &&
@@ -200,6 +202,24 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         'Expense amount must be positive.',
       );
     }
+  }
+
+  Future<void> _validateNewPaymentRoute(ExpenseDraft draft) async {
+    final repository = _financialAccountRepository;
+    if (repository == null) return;
+    final accountId = _optional(draft.financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لتسجيل المصروف.');
+    }
+    final paymentMethod = draft.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لتسجيل المصروف.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
   }
 
   void _validateRestored(List<ExpenseRecord> expenses) {

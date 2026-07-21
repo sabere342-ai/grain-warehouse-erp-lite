@@ -1,9 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -115,9 +118,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     BuildContext context, {
     required AppUser user,
   }) async {
+    final financialAccounts =
+        await AppRepositories.financialAccountRepository.listAccounts();
+    if (!context.mounted) return;
     final draft = await showDialog<ExpenseDraft>(
       context: context,
-      builder: (context) => const _ExpenseFormDialog(),
+      builder: (context) => _ExpenseFormDialog(
+        financialAccounts: financialAccounts,
+      ),
     );
     if (draft == null) {
       return;
@@ -140,7 +148,8 @@ class _ExpenseCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(expense.category, style: textTheme.titleLarge)),
+              Expanded(
+                  child: Text(expense.category, style: textTheme.titleLarge)),
               Text(
                 MoneyUtils.formatPiastersAsEgp(expense.amountQirsh),
                 style: textTheme.titleMedium?.copyWith(
@@ -151,6 +160,10 @@ class _ExpenseCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text('التاريخ: ${_formatDate(expense.date)}'),
+          if (expense.paymentMethod != null) ...[
+            const SizedBox(height: 4),
+            Text('طريقة الدفع: ${expense.paymentMethod!.labelAr}'),
+          ],
           if (expense.notes != null) ...[
             const SizedBox(height: 8),
             Text(expense.notes!),
@@ -166,7 +179,9 @@ class _ExpenseCard extends StatelessWidget {
 }
 
 class _ExpenseFormDialog extends StatefulWidget {
-  const _ExpenseFormDialog();
+  const _ExpenseFormDialog({required this.financialAccounts});
+
+  final List<FinancialAccount> financialAccounts;
 
   @override
   State<_ExpenseFormDialog> createState() => _ExpenseFormDialogState();
@@ -178,6 +193,8 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   final _notesController = TextEditingController();
   DateTime _date = DateTime.now();
   String? _errorMessage;
+  PaymentMethod? _selectedPaymentMethod;
+  String? _selectedAccountId;
 
   @override
   void dispose() {
@@ -208,15 +225,53 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _categoryController,
-              decoration: const InputDecoration(labelText: 'اسم أو تصنيف المصروف'),
+              decoration:
+                  const InputDecoration(labelText: 'اسم أو تصنيف المصروف'),
               textDirection: TextDirection.rtl,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _amountController,
               decoration: const InputDecoration(labelText: 'المبلغ بالجنيه'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<PaymentMethod>(
+              value: _selectedPaymentMethod,
+              decoration: const InputDecoration(labelText: 'طريقة الدفع *'),
+              items: PaymentRoutingPolicy.selectablePaymentMethods
+                  .map((method) => DropdownMenuItem(
+                        value: method,
+                        child: Text(method.labelAr),
+                      ))
+                  .toList(),
+              onChanged: (method) {
+                setState(() {
+                  _selectedPaymentMethod = method;
+                  if (!_selectedAccountIsCompatible()) {
+                    _selectedAccountId = null;
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedAccountId,
+              decoration: const InputDecoration(labelText: 'الحساب المالي *'),
+              items: _compatibleAccounts()
+                  .map((account) => DropdownMenuItem(
+                        value: account.id,
+                        child: Text(
+                          '${account.type.iconEmoji} ${account.name} (${account.type.labelAr})',
+                        ),
+                      ))
+                  .toList(),
+              onChanged: _selectedPaymentMethod == null
+                  ? null
+                  : (accountId) =>
+                      setState(() => _selectedAccountId = accountId),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -269,17 +324,46 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         allowZero: false,
         allowNegative: false,
       );
+      if (_selectedPaymentMethod == null) {
+        setState(() => _errorMessage = 'اختر طريقة الدفع.');
+        return;
+      }
+      if (_selectedAccountId == null) {
+        setState(() => _errorMessage = 'اختر الحساب المالي للمصروف.');
+        return;
+      }
       Navigator.of(context).pop(
         ExpenseDraft(
           date: _date,
           category: _categoryController.text,
           amountQirsh: amountQirsh,
           notes: _notesController.text,
+          financialAccountId: _selectedAccountId,
+          paymentMethod: _selectedPaymentMethod,
         ),
       );
     } on FormatException {
       setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
     }
+  }
+
+  List<FinancialAccount> _compatibleAccounts() {
+    final method = _selectedPaymentMethod;
+    if (method == null) return const [];
+    return widget.financialAccounts
+        .where((account) =>
+            account.isActive &&
+            PaymentRoutingPolicy.isCompatible(
+              paymentMethod: method,
+              accountType: account.type,
+            ))
+        .toList(growable: false);
+  }
+
+  bool _selectedAccountIsCompatible() {
+    final accountId = _selectedAccountId;
+    if (accountId == null) return true;
+    return _compatibleAccounts().any((account) => account.id == accountId);
   }
 
   String _formatDate(DateTime value) {

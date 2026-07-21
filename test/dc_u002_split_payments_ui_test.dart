@@ -38,7 +38,7 @@ void main() {
         await tester.pumpWidget(await fixture.buildApp());
         await tester.pumpAndSettle();
         await _openDialog(tester);
-        expect(find.text('تقسيم الدفع على حسابات متعددة'), findsOneWidget);
+        expect(find.text('تحديد الحساب وطريقة الدفع'), findsOneWidget);
         expect(find.byType(SwitchListTile), findsOneWidget);
       });
 
@@ -51,7 +51,7 @@ void main() {
         await _openDialog(tester);
         await tester.tap(find.text('دفع جزئي'));
         await tester.pumpAndSettle();
-        expect(find.text('تقسيم الدفع على حسابات متعددة'), findsOneWidget);
+        expect(find.text('تحديد الحساب وطريقة الدفع'), findsOneWidget);
       });
 
       testWidgets('split payments toggle does NOT appear for credit mode',
@@ -63,7 +63,7 @@ void main() {
         await _openDialog(tester);
         await tester.tap(find.text('آجل'));
         await tester.pumpAndSettle();
-        expect(find.text('تقسيم الدفع على حسابات متعددة'), findsNothing);
+        expect(find.text('تحديد الحساب وطريقة الدفع'), findsNothing);
       });
 
       testWidgets('enabling split shows allocation row with fields',
@@ -224,6 +224,9 @@ void main() {
         await tester.enterText(_findFieldByLabel(_qtyLabel), '10');
         await tester.enterText(_findFieldByLabel(_priceLabel), '100');
         await tester.pumpAndSettle();
+        await _selectAccount(tester, fixture.treasury.name);
+        await tester.enterText(_findFieldByLabel(_amountLabel), '1000');
+        await tester.pumpAndSettle();
         await _tapSave(tester);
         await tester.pumpAndSettle();
         expect(fixture.controller.sales, isNotEmpty);
@@ -298,8 +301,6 @@ Future<void> _selectAccount(WidgetTester tester, String name) async {
 
 Future<void> _enableSplit(WidgetTester tester) async {
   await tester.ensureVisible(find.byType(SwitchListTile));
-  await tester.pumpAndSettle();
-  await tester.tap(find.byType(SwitchListTile));
   await tester.pumpAndSettle();
 }
 

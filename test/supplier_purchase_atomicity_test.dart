@@ -4,6 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
@@ -53,6 +54,7 @@ void main() {
       amountQirsh: 100,
       createdByUserId: 'cashier',
       financialAccountId: cash.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'pay-1',
     );
     await ledger.createPayment(draft);
@@ -68,6 +70,7 @@ void main() {
       amountQirsh: 50,
       createdByUserId: 'cashier',
       financialAccountId: cash.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'pay-concurrent',
     );
     Future<Object?> guarded(Future<Object?> future) async {
@@ -139,6 +142,7 @@ void main() {
           createdByUserId: 'cashier',
           paymentMode: PurchasePaymentMode.paid,
           financialAccountId: cash.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: 'purchase-1',
         ),
       ),
@@ -202,6 +206,7 @@ void main() {
           paymentMode: mode,
           paidAmountQirsh: paid,
           financialAccountId: cash.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: request,
         ),
       );

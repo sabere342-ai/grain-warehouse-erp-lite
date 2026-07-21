@@ -38,7 +38,9 @@ void main() {
     });
 
     test('rejects an end date before the inclusive start date', () async {
-      final account = await fixture.createAccount();
+      final account = await fixture.createAccount(
+        type: FinancialAccountType.bank,
+      );
       await expectLater(
         report(
           accountId: account.id,
@@ -210,7 +212,9 @@ void main() {
 
     test('includes an inactive customer and exposes only approved identity',
         () async {
-      final account = await fixture.createAccount();
+      final account = await fixture.createAccount(
+        type: FinancialAccountType.bank,
+      );
       final customer = await fixture.createCustomer(name: 'Inactive customer');
       final collection = await fixture.record(
         customer: customer,
@@ -235,10 +239,10 @@ void main() {
     test('preserves a null recorded payment method', () async {
       final account = await fixture.createAccount();
       final customer = await fixture.createCustomer();
-      await fixture.record(
+      await fixture.recordHistorical(
         customer: customer,
-        account: account,
         date: DateTime(2026, 4, 10),
+        financialAccountId: account.id,
       );
 
       final value = await report(accountId: account.id);
@@ -431,10 +435,11 @@ final class _Fixture {
 
   Future<FinancialAccount> createAccount({
     String name = 'Account',
+    FinancialAccountType type = FinancialAccountType.treasury,
   }) =>
       accounts.createAccount(FinancialAccountDraft(
         name: name,
-        type: FinancialAccountType.treasury,
+        type: type,
         createdByUserId: _owner.id,
       ));
 
@@ -443,7 +448,7 @@ final class _Fixture {
     required FinancialAccount account,
     required DateTime date,
     int amountQirsh = 100,
-    PaymentMethod? paymentMethod,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
   }) async {
     if (_openedCustomers.add(customer.id)) {
       await customerAccounts.createOpeningBalanceEntry(
@@ -467,18 +472,34 @@ final class _Fixture {
     required DateTime date,
     int amountQirsh = 100,
   }) async {
-    if (_openedCustomers.add(customer.id)) {
-      await customerAccounts.createOpeningBalanceEntry(
-        customerId: customer.id,
-        amountQirsh: 100000,
-        createdByUserId: _owner.id,
-      );
-    }
-    return customerAccounts.createCollection(CustomerCollectionDraft(
+    return recordHistorical(
+      customer: customer,
+      date: date,
+      amountQirsh: amountQirsh,
+    );
+  }
+
+  Future<CustomerCollectionRecord> recordHistorical({
+    required Customer customer,
+    required DateTime date,
+    int amountQirsh = 100,
+    String? financialAccountId,
+    PaymentMethod? paymentMethod,
+  }) async {
+    final record = CustomerCollectionRecord(
+      id: 'historical-${date.microsecondsSinceEpoch}',
       customerId: customer.id,
       date: date,
       amountQirsh: amountQirsh,
+      createdAt: date,
       createdByUserId: _owner.id,
-    ));
+      financialAccountId: financialAccountId,
+      paymentMethod: paymentMethod,
+    );
+    await customerAccounts.restoreCustomerAccountsIntoEmpty(
+      entries: const [],
+      collections: [record],
+    );
+    return record;
   }
 }

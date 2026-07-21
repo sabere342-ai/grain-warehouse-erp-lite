@@ -35,7 +35,9 @@ void main() {
     test('requires a non-blank account id and a valid inclusive interval',
         () async {
       await expectLater(report(accountId: ' '), throwsA(isA<ArgumentError>()));
-      final account = await fixture.createAccount();
+      final account = await fixture.createAccount(
+        type: FinancialAccountType.bank,
+      );
       await expectLater(
         report(
           accountId: account.id,
@@ -51,7 +53,9 @@ void main() {
         report(accountId: 'missing-account'),
         throwsA(isA<StateError>()),
       );
-      final account = await fixture.createAccount();
+      final account = await fixture.createAccount(
+        type: FinancialAccountType.bank,
+      );
       await expectLater(
         report(accountId: account.id, supplierId: 'missing-supplier'),
         throwsA(isA<StateError>()),
@@ -107,6 +111,10 @@ void main() {
       final selected = await fixture.createAccount(name: 'Treasury');
       final other = await fixture.createAccount(name: 'Bank');
       final supplier = await fixture.createSupplier();
+      await fixture.recordWithoutFinancialAccount(
+        supplier: supplier,
+        date: DateTime(2026, 4, 10),
+      );
       await fixture.record(
         supplier: supplier,
         account: selected,
@@ -121,10 +129,6 @@ void main() {
       await fixture.record(
         supplier: supplier,
         account: other,
-        date: DateTime(2026, 4, 10),
-      );
-      await fixture.recordWithoutFinancialAccount(
-        supplier: supplier,
         date: DateTime(2026, 4, 10),
       );
       final cancelled = await fixture.record(
@@ -148,7 +152,9 @@ void main() {
 
     test('applies optional supplier filter and preserves inactive suppliers',
         () async {
-      final account = await fixture.createAccount();
+      final account = await fixture.createAccount(
+        type: FinancialAccountType.bank,
+      );
       final selected = await fixture.createSupplier(name: 'Selected');
       final other = await fixture.createSupplier(name: 'Other');
       final payment = await fixture.record(
@@ -161,6 +167,7 @@ void main() {
         supplier: other,
         account: account,
         date: DateTime(2026, 4, 10),
+        paymentMethod: PaymentMethod.bankTransfer,
       );
       await fixture.suppliers.setSupplierActive(
         supplierId: selected.id,
@@ -181,10 +188,10 @@ void main() {
         () async {
       final account = await fixture.createAccount();
       final supplier = await fixture.createSupplier();
-      await fixture.record(
+      await fixture.recordHistorical(
         supplier: supplier,
-        account: account,
         date: DateTime(2026, 4, 10),
+        financialAccountId: account.id,
       );
       await fixture.accounts.deactivateAccount(account.id, _owner.id);
 
@@ -355,10 +362,13 @@ final class _Fixture {
   Future<Supplier> createSupplier({String name = 'Supplier'}) =>
       suppliers.createSupplier(SupplierDraft(name: name));
 
-  Future<FinancialAccount> createAccount({String name = 'Account'}) async {
+  Future<FinancialAccount> createAccount({
+    String name = 'Account',
+    FinancialAccountType type = FinancialAccountType.treasury,
+  }) async {
     final account = await accounts.createAccount(FinancialAccountDraft(
       name: name,
-      type: FinancialAccountType.treasury,
+      type: type,
       createdByUserId: _owner.id,
     ));
     await accounts.setOpeningBalance(
@@ -375,7 +385,7 @@ final class _Fixture {
     required FinancialAccount account,
     required DateTime date,
     int amountQirsh = 100,
-    PaymentMethod? paymentMethod,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
   }) async {
     if (_openedSuppliers.add(supplier.id)) {
       await supplierAccounts.createOpeningBalanceEntry(
@@ -398,18 +408,29 @@ final class _Fixture {
     required Supplier supplier,
     required DateTime date,
   }) async {
-    if (_openedSuppliers.add(supplier.id)) {
-      await supplierAccounts.createOpeningBalanceEntry(
-        supplierId: supplier.id,
-        amountQirsh: 100000,
-        createdByUserId: _owner.id,
-      );
-    }
-    return supplierAccounts.createPayment(SupplierPaymentDraft(
+    return recordHistorical(supplier: supplier, date: date);
+  }
+
+  Future<SupplierPaymentRecord> recordHistorical({
+    required Supplier supplier,
+    required DateTime date,
+    String? financialAccountId,
+    PaymentMethod? paymentMethod,
+  }) async {
+    final record = SupplierPaymentRecord(
+      id: 'historical-${date.microsecondsSinceEpoch}',
       supplierId: supplier.id,
       date: date,
       amountQirsh: 100,
+      createdAt: date,
       createdByUserId: _owner.id,
-    ));
+      financialAccountId: financialAccountId,
+      paymentMethod: paymentMethod,
+    );
+    await supplierAccounts.restoreSupplierAccountsIntoEmpty(
+      entries: const [],
+      payments: [record],
+    );
+    return record;
   }
 }

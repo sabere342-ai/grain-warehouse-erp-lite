@@ -327,17 +327,30 @@ class _Fixture {
         createdByUserId: _owner.id,
       ),
     );
-    fixture.accountA = await fixture._account('خزينة');
-    fixture.accountB = await fixture._account('بنك');
-    fixture.accountC = await fixture._account('محفظة');
+    fixture.accountA = await fixture._account(
+      'خزينة',
+      FinancialAccountType.treasury,
+    );
+    fixture.accountB = await fixture._account(
+      'بنك',
+      FinancialAccountType.bank,
+    );
+    fixture.accountC = await fixture._account(
+      'محفظة',
+      FinancialAccountType.electronicWallet,
+    );
     await fixture.controller.load(_owner);
     return fixture;
   }
 
-  Future<FinancialAccount> _account(String name) => accounts.createAccount(
+  Future<FinancialAccount> _account(
+    String name,
+    FinancialAccountType type,
+  ) =>
+      accounts.createAccount(
         FinancialAccountDraft(
           name: name,
-          type: FinancialAccountType.treasury,
+          type: type,
           createdByUserId: _owner.id,
         ),
       );

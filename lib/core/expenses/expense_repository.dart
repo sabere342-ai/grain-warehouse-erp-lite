@@ -2,6 +2,7 @@ import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class ExpenseRepository {
@@ -46,6 +47,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
   @override
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
+    await _validateNewPaymentRoute(draft);
     final now = DateTime.now();
     final expense = ExpenseRecord(
       id: _generateExpenseId(now),
@@ -161,6 +163,24 @@ class LocalExpenseRepository implements DurableExpenseRepository {
       throw ArgumentError.value(
           draft.amountQirsh, 'amountQirsh', 'Expense amount must be positive.');
     }
+  }
+
+  Future<void> _validateNewPaymentRoute(ExpenseDraft draft) async {
+    final repository = _financialAccountRepository;
+    if (repository == null) return;
+    final accountId = _normalizedOptionalText(draft.financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لتسجيل المصروف.');
+    }
+    final paymentMethod = draft.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لتسجيل المصروف.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
   }
 
   void _validateUniqueRestoredExpenses(List<ExpenseRecord> expenses) {

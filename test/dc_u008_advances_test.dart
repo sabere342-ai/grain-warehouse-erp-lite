@@ -39,6 +39,7 @@ void main() {
         amountQirsh: 1200,
         createdByUserId: fixture.ownerId,
         financialAccountId: fixture.account.id,
+        paymentMethod: PaymentMethod.cash,
         operationRequestId: requestId,
         overpaymentApprovalId: approvalId,
       ),
@@ -118,6 +119,7 @@ void main() {
       amountQirsh: 1200,
       createdByUserId: fixture.ownerId,
       financialAccountId: fixture.account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: requestId,
       overpaymentApprovalId: approvalId,
     ));
@@ -223,6 +225,7 @@ void main() {
         amountQirsh: 1200,
         createdByUserId: owner.id,
         financialAccountId: account.id,
+        paymentMethod: PaymentMethod.cash,
         operationRequestId: 'supplier-overpay',
         overpaymentApprovalId: approvalId));
     final advance = (await ledger.listAdvances()).single;
@@ -287,6 +290,7 @@ void main() {
         amountQirsh: 1200,
         createdByUserId: fixture.ownerId,
         financialAccountId: fixture.account.id,
+        paymentMethod: PaymentMethod.cash,
         operationRequestId: overpayRequest,
         overpaymentApprovalId: approvalId));
     final advance = (await fixture.ledger.listAdvances()).single;
@@ -393,6 +397,7 @@ void main() {
         amountQirsh: 1200,
         createdByUserId: owner.id,
         financialAccountId: account.id,
+        paymentMethod: PaymentMethod.cash,
         operationRequestId: 'supplier-concurrent-overpay',
         overpaymentApprovalId: approvalId));
     final advance = (await ledger.listAdvances()).single;
@@ -1205,6 +1210,7 @@ class _CustomerRefundReversalFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'refund-customer-overpay',
       overpaymentApprovalId: cApprovalId,
     ));
@@ -1324,6 +1330,7 @@ class _SupplierRefundReversalFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'refund-supplier-overpay',
       overpaymentApprovalId: overpayApprovalId,
       negativeBalanceApprovalId: settlementApprovalId,
@@ -1433,6 +1440,7 @@ class _BothRefundReversalFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'ns-refund-cust',
       overpaymentApprovalId: cApprovalId,
     ));
@@ -1479,6 +1487,7 @@ class _BothRefundReversalFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'ns-refund-supp',
       overpaymentApprovalId: sApprovalId,
       negativeBalanceApprovalId: sApprovalId,
@@ -1707,6 +1716,7 @@ class _NamespaceIsolationFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: financialAccount.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'ns-customer-overpay',
       overpaymentApprovalId: customerApprovalId,
     ));
@@ -1780,6 +1790,7 @@ class _NamespaceIsolationFixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: financialAccount.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: 'ns-supplier-overpay',
       overpaymentApprovalId: supplierApprovalId,
       negativeBalanceApprovalId: supplierApprovalId,

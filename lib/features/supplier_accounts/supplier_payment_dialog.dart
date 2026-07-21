@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
@@ -117,6 +118,47 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                   textDirection: TextDirection.ltr,
                   onChanged: (_) => setDialogState(() {}),
                 ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<PaymentMethod>(
+                  value: _selectedPaymentMethod,
+                  decoration: const InputDecoration(
+                    labelText: 'طريقة الدفع *',
+                  ),
+                  items: PaymentRoutingPolicy.selectablePaymentMethods
+                      .map((method) => DropdownMenuItem(
+                            value: method,
+                            child: Text(method.labelAr),
+                          ))
+                      .toList(),
+                  onChanged: (method) {
+                    setDialogState(() {
+                      _selectedPaymentMethod = method;
+                      if (!_selectedAccountIsCompatible()) {
+                        _selectedAccountId = null;
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _selectedAccountId,
+                  decoration: const InputDecoration(
+                    labelText: 'الحساب المالي *',
+                  ),
+                  items: _compatibleAccounts()
+                      .map((account) => DropdownMenuItem(
+                            value: account.id,
+                            child: Text(
+                              '${account.type.iconEmoji} ${account.name} (${account.type.labelAr})',
+                            ),
+                          ))
+                      .toList(),
+                  onChanged: _selectedPaymentMethod == null
+                      ? null
+                      : (accountId) => setDialogState(
+                            () => _selectedAccountId = accountId,
+                          ),
+                ),
                 if (isOverpayment) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -142,38 +184,6 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                             MoneyUtils.formatPiastersAsEgp(advance)),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _selectedAccountId,
-                    decoration: const InputDecoration(
-                      labelText: 'الحساب المالي للسلفة *',
-                    ),
-                    items: widget.financialAccounts
-                        .where((a) => a.isActive)
-                        .map((a) => DropdownMenuItem(
-                              value: a.id,
-                              child: Text(
-                                  '${a.type.iconEmoji} ${a.name} (${a.type.labelAr})'),
-                            ))
-                        .toList(),
-                    onChanged: (v) =>
-                        setDialogState(() => _selectedAccountId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<PaymentMethod>(
-                    value: _selectedPaymentMethod,
-                    decoration: const InputDecoration(
-                      labelText: 'طريقة الدفع (اختياري)',
-                    ),
-                    items: PaymentMethod.values
-                        .map((m) => DropdownMenuItem(
-                              value: m,
-                              child: Text(m.labelAr),
-                            ))
-                        .toList(),
-                    onChanged: (v) =>
-                        setDialogState(() => _selectedPaymentMethod = v),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -276,6 +286,15 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
       return;
     }
 
+    if (_selectedPaymentMethod == null) {
+      setState(() => _errorMessage = 'اختر طريقة الدفع.');
+      return;
+    }
+    if (_selectedAccountId == null) {
+      setState(() => _errorMessage = 'اختر الحساب المالي للسداد.');
+      return;
+    }
+
     final isOverpayment = amount > widget.balanceQirsh;
 
     if (isOverpayment) {
@@ -300,8 +319,29 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
         amountQirsh: amount,
         date: _date,
         notes: _notesController.text,
+        financialAccountId: _selectedAccountId,
+        paymentMethod: _selectedPaymentMethod,
       ));
     }
+  }
+
+  List<FinancialAccount> _compatibleAccounts() {
+    final method = _selectedPaymentMethod;
+    if (method == null) return const [];
+    return widget.financialAccounts
+        .where((account) =>
+            account.isActive &&
+            PaymentRoutingPolicy.isCompatible(
+              paymentMethod: method,
+              accountType: account.type,
+            ))
+        .toList(growable: false);
+  }
+
+  bool _selectedAccountIsCompatible() {
+    final accountId = _selectedAccountId;
+    if (accountId == null) return true;
+    return _compatibleAccounts().any((account) => account.id == accountId);
   }
 
   Future<_ApprovalResult?> _requestApproval(int amount) async {

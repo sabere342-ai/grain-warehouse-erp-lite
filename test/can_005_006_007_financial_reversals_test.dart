@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collect
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
@@ -27,6 +28,7 @@ void main() {
           amountQirsh: 300,
           createdByUserId: _owner.id,
           financialAccountId: fixture.account.id,
+          paymentMethod: PaymentMethod.cash,
         ),
       );
 
@@ -70,6 +72,7 @@ void main() {
           amountQirsh: 300,
           createdByUserId: _owner.id,
           financialAccountId: fixture.account.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: 'payment-1',
         ),
       );
@@ -105,6 +108,8 @@ void main() {
           date: DateTime(2026, 7, 13),
           amountQirsh: 300,
           createdByUserId: _owner.id,
+          financialAccountId: fixture.account.id,
+          paymentMethod: PaymentMethod.cash,
         ),
       );
       await expectLater(
@@ -160,6 +165,7 @@ void main() {
           amountQirsh: 300,
           createdByUserId: _owner.id,
           financialAccountId: fixture.account.id,
+          paymentMethod: PaymentMethod.cash,
         ),
       );
 

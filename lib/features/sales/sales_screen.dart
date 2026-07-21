@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -586,7 +587,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
 
   String? _paidAmountText;
 
-  bool _useSplitPayments = false;
+  bool _useSplitPayments = true;
   final List<_AllocationEntry> _allocationEntries = [];
 
   @override
@@ -597,6 +598,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       productId: initialId,
       products: widget.products,
     ));
+    _allocationEntries.add(_AllocationEntry());
   }
 
   String _initialProductId() {
@@ -694,9 +696,12 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         _customerId != null && _customerId!.trim().isNotEmpty;
     final canUseSplit = _paymentMode != SalePaymentMode.credit &&
         widget.financialAccounts.isNotEmpty;
-    final splitValid = !_useSplitPayments || _isSplitBalanced();
-    final canSubmit =
-        customerSelected && hasValidItems && splitValid && !_isSubmitting;
+    final paymentRouteValid = _paymentMode == SalePaymentMode.credit ||
+        (canUseSplit && _useSplitPayments && _isSplitBalanced());
+    final canSubmit = customerSelected &&
+        hasValidItems &&
+        paymentRouteValid &&
+        !_isSubmitting;
 
     return AlertDialog(
       title: const Text(
@@ -799,6 +804,11 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                   }
                   if (_paymentMode == SalePaymentMode.credit) {
                     _useSplitPayments = false;
+                  } else {
+                    _useSplitPayments = true;
+                    if (_allocationEntries.isEmpty) {
+                      _allocationEntries.add(_AllocationEntry());
+                    }
                   }
                 });
               },
@@ -855,22 +865,15 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
-                  '\u062a\u0642\u0633\u064a\u0645 \u0627\u0644\u062f\u0641\u0639 \u0639\u0644\u0649 \u062d\u0633\u0627\u0628\u0627\u062a \u0645\u062a\u0639\u062f\u062f\u0629',
+                  '\u062a\u062d\u062f\u064a\u062f \u0627\u0644\u062d\u0633\u0627\u0628 \u0648\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u062f\u0641\u0639',
                   style: TextStyle(fontSize: 14),
                 ),
                 subtitle: const Text(
-                  '\u0644\u0644\u0645\u0633\u0627\u0639\u062f\u0629 \u062a\u0642\u0633\u064a\u0645 \u0627\u0644\u0645\u0628\u0644\u063a \u0639\u0644\u0649 \u0623\u0643\u062b\u0631 \u0645\u0646 \u062d\u0633\u0627\u0628.',
+                  '\u064a\u062c\u0628 \u0631\u0628\u0637 \u0643\u0644 \u0645\u0628\u0644\u063a \u0645\u062f\u0641\u0648\u0639 \u0628\u062d\u0633\u0627\u0628 \u0645\u0627\u0644\u064a \u0645\u062a\u0648\u0627\u0641\u0642.',
                   style: TextStyle(fontSize: 12, color: AppColors.mutedText),
                 ),
                 value: _useSplitPayments,
-                onChanged: (value) {
-                  setState(() {
-                    _useSplitPayments = value;
-                    if (value && _allocationEntries.isEmpty) {
-                      _allocationEntries.add(_AllocationEntry());
-                    }
-                  });
-                },
+                onChanged: null,
               ),
               if (_useSplitPayments) ...[
                 if (widget.financialAccounts.isEmpty)
@@ -950,7 +953,12 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
   Widget _buildAllocationRow(int index) {
     final entry = _allocationEntries[index];
     final activeAccounts = widget.financialAccounts
-        .where((a) => a.isActive)
+        .where((account) =>
+            account.isActive &&
+            PaymentRoutingPolicy.isCompatible(
+              paymentMethod: entry.paymentMethod,
+              accountType: account.type,
+            ))
         .toList(growable: false);
     final usedAccountIds = <String>{
       for (int i = 0; i < _allocationEntries.length; i++)
@@ -1030,29 +1038,27 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                       labelText: '\u0637\u0631\u064a\u0642\u0629',
                       isDense: true,
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: PaymentMethod.cash,
-                        child: Text('\u0646\u0642\u062f\u064a'),
-                      ),
-                      DropdownMenuItem(
-                        value: PaymentMethod.bankTransfer,
-                        child: Text(
-                            '\u062a\u062d\u0648\u064a\u0644 \u0628\u0646\u0643\u064a'),
-                      ),
-                      DropdownMenuItem(
-                        value: PaymentMethod.mobileWallet,
-                        child: Text(
-                            '\u0645\u062d\u0641\u0638\u0629 \u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629'),
-                      ),
-                      DropdownMenuItem(
-                        value: PaymentMethod.check,
-                        child: Text('\u0634\u064a\u0643'),
-                      ),
-                    ],
+                    items: PaymentRoutingPolicy.selectablePaymentMethods
+                        .map((method) => DropdownMenuItem(
+                              value: method,
+                              child: Text(method.labelAr),
+                            ))
+                        .toList(),
                     onChanged: (value) {
                       if (value != null) {
-                        setState(() => entry.paymentMethod = value);
+                        setState(() {
+                          entry.paymentMethod = value;
+                          final accountId = entry.accountId;
+                          if (accountId != null &&
+                              !widget.financialAccounts.any((account) =>
+                                  account.id == accountId &&
+                                  PaymentRoutingPolicy.isCompatible(
+                                    paymentMethod: value,
+                                    accountType: account.type,
+                                  ))) {
+                            entry.accountId = null;
+                          }
+                        });
                       }
                     },
                   ),

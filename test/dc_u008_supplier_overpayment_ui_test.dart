@@ -34,7 +34,9 @@ void main() {
         audit = LocalAuditLogRepository();
         final auth = LocalAuthRepository.empty();
         final owner = await auth.createFirstOwner(
-          name: 'Owner', phone: '01000000001', password: 'secret',
+          name: 'Owner',
+          phone: '01000000001',
+          password: 'secret',
         );
         ownerId = owner.id;
         approvals = NegativeBalanceApprovalService(
@@ -47,12 +49,16 @@ void main() {
           negativeBalanceApprovalService: approvals,
         );
         account = await accounts.createAccount(FinancialAccountDraft(
-          name: 'Cash', type: FinancialAccountType.treasury,
-          createdByUserId: ownerId, allowNegativeBalance: true,
+          name: 'Cash',
+          type: FinancialAccountType.treasury,
+          createdByUserId: ownerId,
+          allowNegativeBalance: true,
         ));
         await accounts.setOpeningBalance(
-          accountId: account.id, amountQirsh: 10000,
-          effectiveDate: DateTime(2026, 1, 1), createdByUserId: ownerId,
+          accountId: account.id,
+          amountQirsh: 10000,
+          effectiveDate: DateTime(2026, 1, 1),
+          createdByUserId: ownerId,
         );
         supplierRepo = LocalSupplierRepository();
         supplier = await supplierRepo.createSupplier(
@@ -64,32 +70,44 @@ void main() {
           financialAccountRepository: accounts,
           negativeBalanceApprovalService: approvals,
         );
-        await repo.createPurchaseEntry(purchase: PurchaseIntake(
-          id: 'test-purchase-1', supplierId: supplier.id,
-          productId: 'prod-1', quantityKg: 100,
-          entryUnit: GrainUnit.kilogram, unitPricePiastersPerKg: 1000,
-          totalAmountPiasters: 100000, createdByUserId: ownerId,
-          createdAt: DateTime(2026, 7, 1), stockMovementId: 'mov-1',
+        await repo.createPurchaseEntry(
+            purchase: PurchaseIntake(
+          id: 'test-purchase-1',
+          supplierId: supplier.id,
+          productId: 'prod-1',
+          quantityKg: 100,
+          entryUnit: GrainUnit.kilogram,
+          unitPricePiastersPerKg: 1000,
+          totalAmountPiasters: 100000,
+          createdByUserId: ownerId,
+          createdAt: DateTime(2026, 7, 1),
+          stockMovementId: 'mov-1',
         ));
       });
 
       test('normal payment with no overpayment succeeds', () async {
         final payment = await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 50000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 5000,
+          createdByUserId: ownerId,
+          financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
         ));
-        expect(payment.amountQirsh, 50000);
-        expect(payment.settledAmountQirsh, 50000);
+        expect(payment.amountQirsh, 5000);
+        expect(payment.settledAmountQirsh, 5000);
         expect(payment.advanceAmountQirsh, 0);
-        expect(await repo.balanceForSupplier(supplier.id), 50000);
+        expect(await repo.balanceForSupplier(supplier.id), 95000);
       });
 
       test('overpayment creates advance with correct breakdown', () async {
         const requestId = 'supplier-overpay-1';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 2000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 2000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -97,13 +115,17 @@ void main() {
             expectedBalanceAfterQirsh: -92000,
             reason: 'Test overpayment',
           ),
-          ownerPhone: '01000000001', ownerPassword: 'secret',
+          ownerPhone: '01000000001',
+          ownerPassword: 'secret',
         );
 
         final payment = await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 102000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 102000,
+          createdByUserId: ownerId,
           financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
           negativeBalanceApprovalId: approvalId,
@@ -124,8 +146,10 @@ void main() {
         const requestId = 'supplier-overpay-no-account';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 2000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 2000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -133,33 +157,40 @@ void main() {
             expectedBalanceAfterQirsh: 8000,
             reason: 'Test',
           ),
-          ownerPhone: '01000000001', ownerPassword: 'secret',
+          ownerPhone: '01000000001',
+          ownerPassword: 'secret',
         );
 
         expect(
           () => repo.createPayment(SupplierPaymentDraft(
-            supplierId: supplier.id, date: DateTime(2026, 7, 2),
-            amountQirsh: 102000, createdByUserId: ownerId,
+            supplierId: supplier.id,
+            date: DateTime(2026, 7, 2),
+            amountQirsh: 102000,
+            createdByUserId: ownerId,
+            paymentMethod: PaymentMethod.cash,
             operationRequestId: requestId,
             overpaymentApprovalId: approvalId,
             negativeBalanceApprovalId: approvalId,
           )),
-          throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('requires'),
-          )),
+          throwsA(isA<StateError>()),
         );
       });
 
       test('overpayment without overpaymentApprovalId is rejected', () async {
         expect(
           () => repo.createPayment(SupplierPaymentDraft(
-            supplierId: supplier.id, date: DateTime(2026, 7, 2),
-            amountQirsh: 102000, createdByUserId: ownerId,
+            supplierId: supplier.id,
+            date: DateTime(2026, 7, 2),
+            amountQirsh: 102000,
+            createdByUserId: ownerId,
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
             operationRequestId: 'supplier-overpay-no-approval',
           )),
           throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('requires'),
+            (e) => e.message,
+            'message',
+            contains('requires'),
           )),
         );
       });
@@ -168,8 +199,10 @@ void main() {
         const requestId = 'supplier-replay-1';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 2000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 2000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -177,13 +210,17 @@ void main() {
             expectedBalanceAfterQirsh: -92000,
             reason: 'Test replay',
           ),
-          ownerPhone: '01000000001', ownerPassword: 'secret',
+          ownerPhone: '01000000001',
+          ownerPassword: 'secret',
         );
 
         await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 102000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 102000,
+          createdByUserId: ownerId,
           financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
           negativeBalanceApprovalId: approvalId,
@@ -191,8 +228,10 @@ void main() {
 
         final approvalId2 = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 2000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 2000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -200,25 +239,32 @@ void main() {
             expectedBalanceAfterQirsh: -94000,
             reason: 'Test replay 2',
           ),
-          ownerPhone: '01000000001', ownerPassword: 'secret',
+          ownerPhone: '01000000001',
+          ownerPassword: 'secret',
         );
 
         expect(
           () => repo.createPayment(SupplierPaymentDraft(
-            supplierId: supplier.id, date: DateTime(2026, 7, 2),
-            amountQirsh: 102000, createdByUserId: ownerId,
+            supplierId: supplier.id,
+            date: DateTime(2026, 7, 2),
+            amountQirsh: 102000,
+            createdByUserId: ownerId,
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
             operationRequestId: requestId,
             overpaymentApprovalId: approvalId2,
             negativeBalanceApprovalId: approvalId2,
           )),
           throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('already processed'),
+            (e) => e.message,
+            'message',
+            contains('already processed'),
           )),
         );
       });
 
-      test('overpayment advances and settlements have no partial state on failure',
+      test(
+          'overpayment advances and settlements have no partial state on failure',
           () async {
         final balanceBefore = await repo.balanceForSupplier(supplier.id);
         final accountBefore =
@@ -226,8 +272,10 @@ void main() {
 
         expect(
           () => repo.createPayment(SupplierPaymentDraft(
-            supplierId: supplier.id, date: DateTime(2026, 7, 2),
-            amountQirsh: 102000, createdByUserId: ownerId,
+            supplierId: supplier.id,
+            date: DateTime(2026, 7, 2),
+            amountQirsh: 102000,
+            createdByUserId: ownerId,
           )),
           throwsA(isA<StateError>()),
         );
@@ -257,7 +305,9 @@ void main() {
         audit = LocalAuditLogRepository();
         auth = LocalAuthRepository.empty();
         owner = await auth.createFirstOwner(
-          name: 'Owner', phone: '01000000002', password: 'secret',
+          name: 'Owner',
+          phone: '01000000002',
+          password: 'secret',
         );
         approvals = NegativeBalanceApprovalService(
           authRepository: auth,
@@ -269,12 +319,16 @@ void main() {
           negativeBalanceApprovalService: approvals,
         );
         financialAccount = await accounts.createAccount(FinancialAccountDraft(
-          name: 'Cash', type: FinancialAccountType.treasury,
-          createdByUserId: owner.id, allowNegativeBalance: true,
+          name: 'Cash',
+          type: FinancialAccountType.treasury,
+          createdByUserId: owner.id,
+          allowNegativeBalance: true,
         ));
         await accounts.setOpeningBalance(
-          accountId: financialAccount.id, amountQirsh: 10000,
-          effectiveDate: DateTime(2026, 1, 1), createdByUserId: owner.id,
+          accountId: financialAccount.id,
+          amountQirsh: 10000,
+          effectiveDate: DateTime(2026, 1, 1),
+          createdByUserId: owner.id,
         );
         supplierRepo = LocalSupplierRepository();
         supplier = await supplierRepo.createSupplier(
@@ -286,12 +340,18 @@ void main() {
           financialAccountRepository: accounts,
           negativeBalanceApprovalService: approvals,
         );
-        await accountRepo.createPurchaseEntry(purchase: PurchaseIntake(
-          id: 'ctrl-purchase-1', supplierId: supplier.id,
-          productId: 'prod-1', quantityKg: 50,
-          entryUnit: GrainUnit.kilogram, unitPricePiastersPerKg: 1000,
-          totalAmountPiasters: 50000, createdByUserId: owner.id,
-          createdAt: DateTime(2026, 7, 1), stockMovementId: 'mov-ctrl-1',
+        await accountRepo.createPurchaseEntry(
+            purchase: PurchaseIntake(
+          id: 'ctrl-purchase-1',
+          supplierId: supplier.id,
+          productId: 'prod-1',
+          quantityKg: 50,
+          entryUnit: GrainUnit.kilogram,
+          unitPricePiastersPerKg: 1000,
+          totalAmountPiasters: 50000,
+          createdByUserId: owner.id,
+          createdAt: DateTime(2026, 7, 1),
+          stockMovementId: 'mov-ctrl-1',
         ));
         controller = SupplierController(
           repository: supplierRepo,
@@ -304,20 +364,26 @@ void main() {
           user: owner,
           supplierId: supplier.id,
           date: DateTime(2026, 7, 2),
-          amountQirsh: 20000,
+          amountQirsh: 5000,
           notes: 'دفعة نقدية',
+          financialAccountId: financialAccount.id,
+          paymentMethod: PaymentMethod.cash,
         );
         expect(result, isTrue);
         expect(controller.errorMessage, isNull);
-        expect(await accountRepo.balanceForSupplier(supplier.id), 30000);
+        expect(await accountRepo.balanceForSupplier(supplier.id), 45000);
       });
 
       test('recordPayment returns false and sets error for unauthorized user',
           () async {
         final employee = AppUser(
-          id: 'emp-test', name: 'Employee', phone: '01000000003',
-          role: UserRole.employee, isActive: true,
-          createdAt: DateTime(2026), updatedAt: DateTime(2026),
+          id: 'emp-test',
+          name: 'Employee',
+          phone: '01000000003',
+          role: UserRole.employee,
+          isActive: true,
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
         );
         final result = await controller.recordPayment(
           user: employee,
@@ -333,8 +399,10 @@ void main() {
         const requestId = 'ctrl-overpay-1';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: owner.id, approvedByOwnerUserId: owner.id,
-            accountId: financialAccount.id, amountQirsh: 5000,
+            requestedByUserId: owner.id,
+            approvedByOwnerUserId: owner.id,
+            accountId: financialAccount.id,
+            amountQirsh: 5000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -342,7 +410,8 @@ void main() {
             expectedBalanceAfterQirsh: -45000,
             reason: 'Test',
           ),
-          ownerPhone: '01000000002', ownerPassword: 'secret',
+          ownerPhone: '01000000002',
+          ownerPassword: 'secret',
         );
 
         final result = await controller.recordPayment(
@@ -351,7 +420,7 @@ void main() {
           date: DateTime(2026, 7, 2),
           amountQirsh: 55000,
           financialAccountId: financialAccount.id,
-          paymentMethod: PaymentMethod.bankTransfer,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
           negativeBalanceApprovalId: approvalId,
@@ -367,16 +436,35 @@ void main() {
       });
 
       test('recordPayment sets specific error on balance changed', () async {
+        final settlementAccount = await accounts.createAccount(
+          FinancialAccountDraft(
+            name: 'Settlement cash',
+            type: FinancialAccountType.treasury,
+            createdByUserId: owner.id,
+          ),
+        );
+        await accounts.setOpeningBalance(
+          accountId: settlementAccount.id,
+          amountQirsh: 50000,
+          effectiveDate: DateTime(2026, 1, 1),
+          createdByUserId: owner.id,
+        );
         await accountRepo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 50000, createdByUserId: owner.id,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 50000,
+          createdByUserId: owner.id,
+          financialAccountId: settlementAccount.id,
+          paymentMethod: PaymentMethod.cash,
         ));
 
         const requestId = 'ctrl-balance-changed';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: owner.id, approvedByOwnerUserId: owner.id,
-            accountId: financialAccount.id, amountQirsh: 5000,
+            requestedByUserId: owner.id,
+            approvedByOwnerUserId: owner.id,
+            accountId: financialAccount.id,
+            amountQirsh: 5000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -384,7 +472,8 @@ void main() {
             expectedBalanceAfterQirsh: -5000,
             reason: 'Test',
           ),
-          ownerPhone: '01000000002', ownerPassword: 'secret',
+          ownerPhone: '01000000002',
+          ownerPassword: 'secret',
         );
 
         final result = await controller.recordPayment(
@@ -393,6 +482,7 @@ void main() {
           date: DateTime(2026, 7, 2),
           amountQirsh: 55000,
           financialAccountId: financialAccount.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
         );
@@ -433,9 +523,13 @@ void main() {
 
       test('SupplierPaymentRecord carries overpayment split fields', () {
         final record = SupplierPaymentRecord(
-          id: 'r1', supplierId: 's1', date: DateTime(2026),
-          amountQirsh: 12000, createdAt: DateTime(2026),
-          createdByUserId: 'u1', settledAmountQirsh: 10000,
+          id: 'r1',
+          supplierId: 's1',
+          date: DateTime(2026),
+          amountQirsh: 12000,
+          createdAt: DateTime(2026),
+          createdByUserId: 'u1',
+          settledAmountQirsh: 10000,
           advanceAmountQirsh: 2000,
         );
         expect(record.settledAmountQirsh, 10000);
@@ -458,7 +552,9 @@ void main() {
         audit = LocalAuditLogRepository();
         final auth = LocalAuthRepository.empty();
         final owner = await auth.createFirstOwner(
-          name: 'Owner', phone: '01000000003', password: 'secret',
+          name: 'Owner',
+          phone: '01000000003',
+          password: 'secret',
         );
         ownerId = owner.id;
         approvals = NegativeBalanceApprovalService(
@@ -471,12 +567,16 @@ void main() {
           negativeBalanceApprovalService: approvals,
         );
         account = await accounts.createAccount(FinancialAccountDraft(
-          name: 'Cash', type: FinancialAccountType.treasury,
-          createdByUserId: ownerId, allowNegativeBalance: true,
+          name: 'Cash',
+          type: FinancialAccountType.treasury,
+          createdByUserId: ownerId,
+          allowNegativeBalance: true,
         ));
         await accounts.setOpeningBalance(
-          accountId: account.id, amountQirsh: 20000,
-          effectiveDate: DateTime(2026, 1, 1), createdByUserId: ownerId,
+          accountId: account.id,
+          amountQirsh: 20000,
+          effectiveDate: DateTime(2026, 1, 1),
+          createdByUserId: ownerId,
         );
         supplierRepo = LocalSupplierRepository();
         supplier = await supplierRepo.createSupplier(
@@ -488,12 +588,18 @@ void main() {
           financialAccountRepository: accounts,
           negativeBalanceApprovalService: approvals,
         );
-        await repo.createPurchaseEntry(purchase: PurchaseIntake(
-          id: 'adv-purchase-1', supplierId: supplier.id,
-          productId: 'prod-1', quantityKg: 100,
-          entryUnit: GrainUnit.kilogram, unitPricePiastersPerKg: 1000,
-          totalAmountPiasters: 100000, createdByUserId: ownerId,
-          createdAt: DateTime(2026, 7, 1), stockMovementId: 'mov-adv-1',
+        await repo.createPurchaseEntry(
+            purchase: PurchaseIntake(
+          id: 'adv-purchase-1',
+          supplierId: supplier.id,
+          productId: 'prod-1',
+          quantityKg: 100,
+          entryUnit: GrainUnit.kilogram,
+          unitPricePiastersPerKg: 1000,
+          totalAmountPiasters: 100000,
+          createdByUserId: ownerId,
+          createdAt: DateTime(2026, 7, 1),
+          stockMovementId: 'mov-adv-1',
         ));
       });
 
@@ -502,8 +608,10 @@ void main() {
         const requestId = 'adv-overpay-1';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 3000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 3000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -511,13 +619,17 @@ void main() {
             expectedBalanceAfterQirsh: -83000,
             reason: 'Advance for future purchases',
           ),
-          ownerPhone: '01000000003', ownerPassword: 'secret',
+          ownerPhone: '01000000003',
+          ownerPassword: 'secret',
         );
 
         final payment = await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 103000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 103000,
+          createdByUserId: ownerId,
           financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
           negativeBalanceApprovalId: approvalId,
@@ -530,19 +642,27 @@ void main() {
         final advance = (await repo.listAdvances()).single;
         expect(await repo.remainingAdvanceQirsh(advance.id), 3000);
 
-        await repo.createPurchaseEntry(purchase: PurchaseIntake(
-          id: 'adv-purchase-2', supplierId: supplier.id,
-          productId: 'prod-2', quantityKg: 50,
-          entryUnit: GrainUnit.kilogram, unitPricePiastersPerKg: 200,
-          totalAmountPiasters: 10000, createdByUserId: ownerId,
-          createdAt: DateTime(2026, 7, 3), stockMovementId: 'mov-adv-2',
+        await repo.createPurchaseEntry(
+            purchase: PurchaseIntake(
+          id: 'adv-purchase-2',
+          supplierId: supplier.id,
+          productId: 'prod-2',
+          quantityKg: 50,
+          entryUnit: GrainUnit.kilogram,
+          unitPricePiastersPerKg: 200,
+          totalAmountPiasters: 10000,
+          createdByUserId: ownerId,
+          createdAt: DateTime(2026, 7, 3),
+          stockMovementId: 'mov-adv-2',
         ));
         expect(await repo.balanceForSupplier(supplier.id), 10000);
 
         final application = await repo.applyAdvance(
           SupplierAdvanceApplicationDraft(
-            advanceId: advance.id, supplierId: supplier.id,
-            amountQirsh: 3000, date: DateTime(2026, 7, 3),
+            advanceId: advance.id,
+            supplierId: supplier.id,
+            amountQirsh: 3000,
+            date: DateTime(2026, 7, 3),
             createdByUserId: ownerId,
             operationRequestId: 'adv-apply-1',
           ),
@@ -554,17 +674,36 @@ void main() {
       });
 
       test('overpayment with zero balance creates advance only', () async {
+        final settlementAccount = await accounts.createAccount(
+          FinancialAccountDraft(
+            name: 'Settlement cash',
+            type: FinancialAccountType.treasury,
+            createdByUserId: ownerId,
+          ),
+        );
+        await accounts.setOpeningBalance(
+          accountId: settlementAccount.id,
+          amountQirsh: 100000,
+          effectiveDate: DateTime(2026, 1, 1),
+          createdByUserId: ownerId,
+        );
         await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 2),
-          amountQirsh: 100000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 2),
+          amountQirsh: 100000,
+          createdByUserId: ownerId,
+          financialAccountId: settlementAccount.id,
+          paymentMethod: PaymentMethod.cash,
         ));
         expect(await repo.balanceForSupplier(supplier.id), 0);
 
         const requestId = 'adv-overpay-zero';
         final approvalId = await approvals.requestApproval(
           draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: ownerId, approvedByOwnerUserId: ownerId,
-            accountId: account.id, amountQirsh: 5000,
+            requestedByUserId: ownerId,
+            approvedByOwnerUserId: ownerId,
+            accountId: account.id,
+            amountQirsh: 5000,
             operationType: NegativeBalanceOperationType.supplierOverpayment,
             sourceDocumentId: requestId,
             sourceDocumentType: 'supplierOverpayment',
@@ -572,13 +711,17 @@ void main() {
             expectedBalanceAfterQirsh: 15000,
             reason: 'Advance on zero balance',
           ),
-          ownerPhone: '01000000003', ownerPassword: 'secret',
+          ownerPhone: '01000000003',
+          ownerPassword: 'secret',
         );
 
         final payment2 = await repo.createPayment(SupplierPaymentDraft(
-          supplierId: supplier.id, date: DateTime(2026, 7, 3),
-          amountQirsh: 5000, createdByUserId: ownerId,
+          supplierId: supplier.id,
+          date: DateTime(2026, 7, 3),
+          amountQirsh: 5000,
+          createdByUserId: ownerId,
           financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
           operationRequestId: requestId,
           overpaymentApprovalId: approvalId,
           negativeBalanceApprovalId: approvalId,

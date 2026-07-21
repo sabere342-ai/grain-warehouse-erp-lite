@@ -265,35 +265,41 @@ void main() {
         expect(statement.lines.first.entry.paymentMethod, PaymentMethod.cash);
       });
 
-      test('does NOT create FA entry when financialAccountId is null',
-          () async {
+      test('rejects expense when financialAccountId is null', () async {
         final accountId = (await faRepo.listAccounts()).first.id;
-        await expenseRepo.createExpense(
-          ExpenseDraft(
-            date: DateTime(2026, 1, 15),
-            category: 'مصاريف إدارية',
-            amountQirsh: 2500,
+        await expectLater(
+          expenseRepo.createExpense(
+            ExpenseDraft(
+              date: DateTime(2026, 1, 15),
+              category: 'مصاريف إدارية',
+              amountQirsh: 2500,
+            ),
           ),
+          throwsA(isA<StateError>()),
         );
 
         final balance = await faRepo.currentBalanceForAccount(accountId);
         expect(balance, 0);
+        expect(await expenseRepo.listExpenses(), isEmpty);
       });
 
-      test('does NOT create FA entry when financialAccountId is empty',
-          () async {
+      test('rejects expense when financialAccountId is empty', () async {
         final accountId = (await faRepo.listAccounts()).first.id;
-        await expenseRepo.createExpense(
-          ExpenseDraft(
-            date: DateTime(2026, 1, 15),
-            category: 'مصاريف إدارية',
-            amountQirsh: 2500,
-            financialAccountId: '',
+        await expectLater(
+          expenseRepo.createExpense(
+            ExpenseDraft(
+              date: DateTime(2026, 1, 15),
+              category: 'مصاريف إدارية',
+              amountQirsh: 2500,
+              financialAccountId: '',
+            ),
           ),
+          throwsA(isA<StateError>()),
         );
 
         final balance = await faRepo.currentBalanceForAccount(accountId);
         expect(balance, 0);
+        expect(await expenseRepo.listExpenses(), isEmpty);
       });
     });
 
@@ -382,8 +388,7 @@ void main() {
         );
       });
 
-      test('does NOT create FA entry when financialAccountId is null',
-          () async {
+      test('rejects collection when financialAccountId is null', () async {
         final customer = (await customerRepo.listCustomers()).first;
 
         await customerAccountRepo.createCreditSaleEntry(
@@ -402,18 +407,25 @@ void main() {
           customerId: customer.id,
         );
 
-        await customerAccountRepo.createCollection(
-          CustomerCollectionDraft(
-            customerId: customer.id,
-            date: DateTime(2026, 2, 1),
-            amountQirsh: 20000,
-            createdByUserId: 'user-1',
+        await expectLater(
+          customerAccountRepo.createCollection(
+            CustomerCollectionDraft(
+              customerId: customer.id,
+              date: DateTime(2026, 2, 1),
+              amountQirsh: 20000,
+              createdByUserId: 'user-1',
+            ),
           ),
+          throwsA(isA<StateError>()),
         );
 
         final faAccountId = (await faRepo.listAccounts()).first.id;
         final faBalance = await faRepo.currentBalanceForAccount(faAccountId);
         expect(faBalance, 0);
+        expect(
+          await customerAccountRepo.balanceForCustomer(customer.id),
+          50000,
+        );
       });
     });
 
@@ -517,7 +529,7 @@ void main() {
         expect(statement.lines.first.entry.paymentMethod, PaymentMethod.cash);
       });
 
-      test('does NOT create FA entry when financialAccountId is null',
+      test('rejects supplier payment when financialAccountId is null',
           () async {
         final supplier = (await supplierRepo.listSuppliers()).first;
 
@@ -537,18 +549,25 @@ void main() {
           ),
         );
 
-        await supplierAccountRepo.createPayment(
-          SupplierPaymentDraft(
-            supplierId: supplier.id,
-            date: DateTime(2026, 2, 1),
-            amountQirsh: 30000,
-            createdByUserId: 'user-1',
+        await expectLater(
+          supplierAccountRepo.createPayment(
+            SupplierPaymentDraft(
+              supplierId: supplier.id,
+              date: DateTime(2026, 2, 1),
+              amountQirsh: 30000,
+              createdByUserId: 'user-1',
+            ),
           ),
+          throwsA(isA<StateError>()),
         );
 
         final faAccountId = (await faRepo.listAccounts()).first.id;
         final faBalance = await faRepo.currentBalanceForAccount(faAccountId);
         expect(faBalance, 0);
+        expect(
+          await supplierAccountRepo.balanceForSupplier(supplier.id),
+          60000,
+        );
       });
     });
 
@@ -682,7 +701,7 @@ void main() {
           paymentMode: SalePaymentMode.partial,
           paidAmountQirsh: 20000,
           financialAccountId: accountId,
-          paymentMethod: PaymentMethod.bankTransfer,
+          paymentMethod: PaymentMethod.cash,
         );
         expect(result, true);
 
@@ -694,7 +713,7 @@ void main() {
         expect(statement.lines.first.entry.amountQirsh, 20000);
         expect(
           statement.lines.first.entry.paymentMethod,
-          PaymentMethod.bankTransfer,
+          PaymentMethod.cash,
         );
       });
 
@@ -726,8 +745,7 @@ void main() {
         expect(balance, 0);
       });
 
-      test('sale without financialAccountId does NOT create FA entry',
-          () async {
+      test('paid sale without financialAccountId is rejected', () async {
         final accountId = (await faRepo.listAccounts()).first.id;
         final customerId = (await customerRepo.listCustomers()).first.id;
 
@@ -748,7 +766,8 @@ void main() {
           customerId: customerId,
           paymentMode: SalePaymentMode.cash,
         );
-        expect(result, true);
+        expect(result, false);
+        expect(saleController.sales, isEmpty);
 
         final balance = await faRepo.currentBalanceForAccount(accountId);
         expect(balance, 0);
@@ -943,7 +962,7 @@ void main() {
             unitPricePiastersPerKg: 300,
             createdByUserId: 'user-1',
             financialAccountId: account.id,
-            paymentMethod: PaymentMethod.bankTransfer,
+            paymentMethod: PaymentMethod.cash,
             paymentMode: PurchasePaymentMode.partial,
             paidAmountQirsh: 20000,
             negativeBalanceApprovalId: approvalId,
@@ -959,7 +978,7 @@ void main() {
         expect(statement.lines.first.entry.amountQirsh, 20000);
         expect(
           statement.lines.first.entry.paymentMethod,
-          PaymentMethod.bankTransfer,
+          PaymentMethod.cash,
         );
       });
 
@@ -984,25 +1003,28 @@ void main() {
         expect(balance, 0);
       });
 
-      test('purchase without financialAccountId does NOT create FA entry',
-          () async {
+      test('paid purchase without financialAccountId is rejected', () async {
         final supplier = (await supplierRepo.listSuppliers()).first;
         final accountId = (await faRepo.listAccounts()).first.id;
 
-        await purchaseRepo.createPurchaseIntake(
-          PurchaseIntakeDraft(
-            supplierId: supplier.id,
-            productId: product.id,
-            quantityKg: 200,
-            entryUnit: GrainUnit.kilogram,
-            unitPricePiastersPerKg: 300,
-            createdByUserId: 'user-1',
-            paymentMode: PurchasePaymentMode.paid,
+        await expectLater(
+          purchaseRepo.createPurchaseIntake(
+            PurchaseIntakeDraft(
+              supplierId: supplier.id,
+              productId: product.id,
+              quantityKg: 200,
+              entryUnit: GrainUnit.kilogram,
+              unitPricePiastersPerKg: 300,
+              createdByUserId: 'user-1',
+              paymentMode: PurchasePaymentMode.paid,
+            ),
           ),
+          throwsA(isA<StateError>()),
         );
 
         final balance = await faRepo.currentBalanceForAccount(accountId);
         expect(balance, 0);
+        expect(await purchaseRepo.listPurchaseIntakes(), isEmpty);
       });
     });
 

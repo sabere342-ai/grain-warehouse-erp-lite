@@ -552,6 +552,7 @@ class _Fixture {
       amountQirsh: 1200,
       createdByUserId: owner.id,
       financialAccountId: account.id,
+      paymentMethod: PaymentMethod.cash,
       operationRequestId: overpaymentRequest,
       overpaymentApprovalId: overpaymentApproval,
     ));

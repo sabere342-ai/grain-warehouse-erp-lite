@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -114,11 +115,19 @@ class SaleController extends ChangeNotifier {
             'Split payments require the financial accounts repository.');
       }
 
+      await _validateNewSalePaymentRoutes(
+        paymentMode: paymentMode,
+        financialAccountId: financialAccountId,
+        paymentMethod: paymentMethod,
+        paymentAllocations: paymentAllocations,
+      );
+
       await _runWithinAtomicBoundary(
         // Existing one-account callers may use older adapters that do not
         // expose snapshots. New allocation-based requests fail closed unless
         // every participant can join the same rollback boundary.
-        requireAtomic: paymentAllocations.isNotEmpty,
+        requireAtomic: paymentMode != SalePaymentMode.credit &&
+            _financialAccountRepository != null,
         operation: () async {
           final sale = await _saleRepository.createSale(
             SaleDraft(
@@ -302,6 +311,42 @@ class SaleController extends ChangeNotifier {
     }
   }
 
+  Future<void> _validateNewSalePaymentRoutes({
+    required SalePaymentMode paymentMode,
+    required String? financialAccountId,
+    required PaymentMethod? paymentMethod,
+    required List<SalePaymentAllocation> paymentAllocations,
+  }) async {
+    if (paymentMode == SalePaymentMode.credit) return;
+    final repository = _financialAccountRepository;
+    if (repository == null) return;
+    final allocations = paymentAllocations.isNotEmpty
+        ? paymentAllocations
+        : <SalePaymentAllocation>[
+            if (financialAccountId?.trim().isNotEmpty == true &&
+                paymentMethod != null)
+              SalePaymentAllocation(
+                financialAccountId: financialAccountId!.trim(),
+                amountQirsh: 1,
+                paymentMethod: paymentMethod,
+              ),
+          ];
+    if (allocations.isEmpty) {
+      throw StateError(
+        'يجب تحديد طريقة الدفع والحساب المالي قبل حفظ البيع المدفوع.',
+      );
+    }
+    for (final allocation in allocations) {
+      final account = await repository.accountById(
+        allocation.financialAccountId,
+      );
+      PaymentRoutingPolicy.validateAccount(
+        account: account,
+        paymentMethod: allocation.paymentMethod,
+      );
+    }
+  }
+
   Future<void> _reverseSalePaymentAllocations({
     required SaleRecord cancelledSale,
     required AppUser user,
@@ -365,11 +410,15 @@ class SaleController extends ChangeNotifier {
     }
     final amount = sale.effectivePaidAmountQirsh;
     if (amount <= 0) return const [];
+    final paymentMethod = sale.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('Sale payment method is missing.');
+    }
     return [
       SalePaymentAllocation(
         financialAccountId: accountId,
         amountQirsh: amount,
-        paymentMethod: sale.paymentMethod ?? PaymentMethod.cash,
+        paymentMethod: paymentMethod,
       ),
     ];
   }

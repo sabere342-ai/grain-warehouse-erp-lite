@@ -8,10 +8,12 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
-import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart' as db;
+import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
+    as db;
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
@@ -48,6 +50,7 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     final supplier = await _validateSupplier(draft.supplierId);
     final product = await _validateProduct(draft.productId);
     _validateDraft(draft);
+    await _validateNewPaymentRoute(draft);
     final requestId = _optional(draft.operationRequestId);
     final fingerprint = _fingerprint(draft);
     if (requestId != null) {
@@ -137,7 +140,9 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     if (intake.isCancelled) return intake;
     final userId = cancelledByUserId.trim();
     final reason = _optional(cancellationReason);
-    if (userId.isEmpty) throw ArgumentError('Cancelled by user id is required.');
+    if (userId.isEmpty) {
+      throw ArgumentError('Cancelled by user id is required.');
+    }
     if (reason == null) throw ArgumentError('Cancellation reason is required.');
     if (await _inventoryRepository.currentStockKg(intake.productId) <
         intake.quantityKg) {
@@ -167,10 +172,10 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
       await (_database.update(_database.purchases)
             ..where((value) => value.id.equals(intake.id)))
           .write(_companion(
-            cancelled,
-            requestId: row.operationRequestId,
-            fingerprint: row.requestFingerprint,
-          ));
+        cancelled,
+        requestId: row.operationRequestId,
+        fingerprint: row.requestFingerprint,
+      ));
       await _supplierAccountRepository?.reversePurchaseEntry(
         cancelledPurchase: cancelled,
         cancelledByUserId: userId,
@@ -254,7 +259,8 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
 
   SnapshotHolder _requiredSnapshot(Object repository, String name) {
     if (repository is! TransactionSnapshotProvider) {
-      throw StateError('Purchase $name repository cannot participate in a transaction.');
+      throw StateError(
+          'Purchase $name repository cannot participate in a transaction.');
     }
     return repository.createTransactionSnapshot();
   }
@@ -278,15 +284,19 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
       ));
 
   Future<Supplier> _validateSupplier(String id) async {
-    final suppliers = await _supplierRepository.listSuppliers(includeInactive: true);
+    final suppliers =
+        await _supplierRepository.listSuppliers(includeInactive: true);
     final supplier = suppliers.where((value) => value.id == id).firstOrNull;
     if (supplier == null) throw StateError('Supplier was not found.');
-    if (!supplier.isActive) throw StateError('Inactive supplier cannot be used.');
+    if (!supplier.isActive) {
+      throw StateError('Inactive supplier cannot be used.');
+    }
     return supplier;
   }
 
   Future<Product> _validateProduct(String id) async {
-    final products = await _productRepository.listProducts(includeInactive: true);
+    final products =
+        await _productRepository.listProducts(includeInactive: true);
     final product = products.where((value) => value.id == id).firstOrNull;
     if (product == null) throw StateError('Product was not found.');
     if (!product.isActive) throw StateError('Inactive product cannot be used.');
@@ -294,24 +304,65 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   }
 
   Future<void> _validateSupplierExists(String id) async {
-    final values = await _supplierRepository.listSuppliers(includeInactive: true);
-    if (!values.any((value) => value.id == id)) throw StateError('Supplier was not found.');
+    final values =
+        await _supplierRepository.listSuppliers(includeInactive: true);
+    if (!values.any((value) => value.id == id)) {
+      throw StateError('Supplier was not found.');
+    }
   }
 
   Future<void> _validateProductExists(String id) async {
     final values = await _productRepository.listProducts(includeInactive: true);
-    if (!values.any((value) => value.id == id)) throw StateError('Product was not found.');
-  }
-
-  void _validateDraft(PurchaseIntakeDraft draft) {
-    if (draft.createdByUserId.trim().isEmpty || draft.quantityKg <= 0 || draft.unitPricePiastersPerKg <= 0) {
-      throw ArgumentError('Invalid purchase intake draft.');
+    if (!values.any((value) => value.id == id)) {
+      throw StateError('Product was not found.');
     }
   }
 
-  Future<void> _createFinancialPayment(PurchaseIntake intake, PurchaseIntakeDraft draft) async {
+  void _validateDraft(PurchaseIntakeDraft draft) {
+    if (draft.createdByUserId.trim().isEmpty ||
+        draft.quantityKg <= 0 ||
+        draft.unitPricePiastersPerKg <= 0) {
+      throw ArgumentError('Invalid purchase intake draft.');
+    }
+    final paid = draft.paidAmountQirsh;
+    if (draft.paymentMode == PurchasePaymentMode.credit &&
+        paid != null &&
+        paid != 0) {
+      throw ArgumentError(
+          'Credit purchases cannot include an immediate payment.');
+    }
+    if (draft.paymentMode == PurchasePaymentMode.partial &&
+        (paid == null || paid <= 0 || paid >= draft.totalAmountPiasters)) {
+      throw ArgumentError(
+          'Partial purchase payment must be positive and below the total.');
+    }
+  }
+
+  Future<void> _validateNewPaymentRoute(PurchaseIntakeDraft draft) async {
+    if (draft.paymentMode == PurchasePaymentMode.credit ||
+        draft.effectivePaidAmountQirsh <= 0) return;
     final repository = _financialAccountRepository;
-    if (repository == null || intake.financialAccountId == null || intake.paymentMode == PurchasePaymentMode.credit || intake.effectivePaidAmountQirsh <= 0) return;
+    if (repository == null) return;
+    final accountId = _optional(draft.financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لسداد الشراء.');
+    }
+    final paymentMethod = draft.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لسداد الشراء.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+        account: account, paymentMethod: paymentMethod);
+  }
+
+  Future<void> _createFinancialPayment(
+      PurchaseIntake intake, PurchaseIntakeDraft draft) async {
+    final repository = _financialAccountRepository;
+    if (repository == null ||
+        intake.financialAccountId == null ||
+        intake.paymentMode == PurchasePaymentMode.credit ||
+        intake.effectivePaidAmountQirsh <= 0) return;
     await repository.createEntry(
       accountId: intake.financialAccountId!,
       direction: FinancialAccountEntryDirection.outflow,
@@ -327,9 +378,13 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     );
   }
 
-  Future<void> _createFinancialReversal(PurchaseIntake intake, String userId, String reason) async {
+  Future<void> _createFinancialReversal(
+      PurchaseIntake intake, String userId, String reason) async {
     final repository = _financialAccountRepository;
-    if (repository == null || intake.financialAccountId == null || intake.paymentMode == PurchasePaymentMode.credit || intake.effectivePaidAmountQirsh <= 0) return;
+    if (repository == null ||
+        intake.financialAccountId == null ||
+        intake.paymentMode == PurchasePaymentMode.credit ||
+        intake.effectivePaidAmountQirsh <= 0) return;
     await repository.createEntry(
       accountId: intake.financialAccountId!,
       direction: FinancialAccountEntryDirection.inflow,
@@ -344,39 +399,104 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     );
   }
 
-  db.PurchasesCompanion _companion(PurchaseIntake value, {String? requestId, String? fingerprint}) {
+  db.PurchasesCompanion _companion(PurchaseIntake value,
+      {String? requestId, String? fingerprint}) {
     final cancellation = value.cancellation;
     return db.PurchasesCompanion(
-      id: Value(value.id), supplierId: Value(value.supplierId), supplierName: Value(value.supplierName),
-      supplierPhone: Value(value.supplierPhone), supplierAddress: Value(value.supplierAddress), productId: Value(value.productId),
-      quantityKg: Value(value.quantityKg), entryUnit: Value(value.entryUnit.name), unitPricePiastersPerKg: Value(value.unitPricePiastersPerKg),
-      totalAmountPiasters: Value(value.totalAmountPiasters), createdByUserId: Value(value.createdByUserId), createdAt: Value(value.createdAt),
-      stockMovementId: Value(value.stockMovementId), notes: Value(value.notes), financialAccountId: Value(value.financialAccountId),
-      paymentMethod: Value(value.paymentMethod?.name), paymentMode: Value(value.paymentMode.name), paidAmountQirsh: Value(value.paidAmountQirsh),
-      negativeBalanceApprovalId: Value(value.negativeBalanceApprovalId), operationRequestId: Value(requestId), requestFingerprint: Value(fingerprint),
-      cancelledAt: Value(cancellation?.cancelledAt), cancelledByUserId: Value(cancellation?.cancelledByUserId),
-      cancellationReason: Value(cancellation?.cancellationReason), reversalMovementIds: Value(cancellation == null ? null : jsonEncode(cancellation.reversalMovementIds)),
+      id: Value(value.id),
+      supplierId: Value(value.supplierId),
+      supplierName: Value(value.supplierName),
+      supplierPhone: Value(value.supplierPhone),
+      supplierAddress: Value(value.supplierAddress),
+      productId: Value(value.productId),
+      quantityKg: Value(value.quantityKg),
+      entryUnit: Value(value.entryUnit.name),
+      unitPricePiastersPerKg: Value(value.unitPricePiastersPerKg),
+      totalAmountPiasters: Value(value.totalAmountPiasters),
+      createdByUserId: Value(value.createdByUserId),
+      createdAt: Value(value.createdAt),
+      stockMovementId: Value(value.stockMovementId),
+      notes: Value(value.notes),
+      financialAccountId: Value(value.financialAccountId),
+      paymentMethod: Value(value.paymentMethod?.name),
+      paymentMode: Value(value.paymentMode.name),
+      paidAmountQirsh: Value(value.paidAmountQirsh),
+      negativeBalanceApprovalId: Value(value.negativeBalanceApprovalId),
+      operationRequestId: Value(requestId),
+      requestFingerprint: Value(fingerprint),
+      cancelledAt: Value(cancellation?.cancelledAt),
+      cancelledByUserId: Value(cancellation?.cancelledByUserId),
+      cancellationReason: Value(cancellation?.cancellationReason),
+      reversalMovementIds: Value(cancellation == null
+          ? null
+          : jsonEncode(cancellation.reversalMovementIds)),
     );
   }
 
   PurchaseIntake _toDomain(db.Purchase row) => PurchaseIntake(
-    id: row.id, supplierId: row.supplierId, supplierName: row.supplierName, supplierPhone: row.supplierPhone, supplierAddress: row.supplierAddress,
-    productId: row.productId, quantityKg: row.quantityKg, entryUnit: GrainUnit.values.byName(row.entryUnit),
-    unitPricePiastersPerKg: row.unitPricePiastersPerKg, totalAmountPiasters: row.totalAmountPiasters, createdByUserId: row.createdByUserId,
-    createdAt: row.createdAt, stockMovementId: row.stockMovementId, notes: row.notes, financialAccountId: row.financialAccountId,
-    paymentMethod: row.paymentMethod == null ? null : PaymentMethod.values.byName(row.paymentMethod!), paymentMode: PurchasePaymentMode.values.byName(row.paymentMode),
-    paidAmountQirsh: row.paidAmountQirsh, negativeBalanceApprovalId: row.negativeBalanceApprovalId,
-    cancellation: row.cancelledAt == null ? null : CancellationMetadata(cancelledAt: row.cancelledAt!, cancelledByUserId: row.cancelledByUserId!, cancellationReason: row.cancellationReason!, originalDocumentId: row.id, reversalMovementIds: (jsonDecode(row.reversalMovementIds!) as List).cast<String>()),
-  );
+        id: row.id,
+        supplierId: row.supplierId,
+        supplierName: row.supplierName,
+        supplierPhone: row.supplierPhone,
+        supplierAddress: row.supplierAddress,
+        productId: row.productId,
+        quantityKg: row.quantityKg,
+        entryUnit: GrainUnit.values.byName(row.entryUnit),
+        unitPricePiastersPerKg: row.unitPricePiastersPerKg,
+        totalAmountPiasters: row.totalAmountPiasters,
+        createdByUserId: row.createdByUserId,
+        createdAt: row.createdAt,
+        stockMovementId: row.stockMovementId,
+        notes: row.notes,
+        financialAccountId: row.financialAccountId,
+        paymentMethod: row.paymentMethod == null
+            ? null
+            : PaymentMethod.values.byName(row.paymentMethod!),
+        paymentMode: PurchasePaymentMode.values.byName(row.paymentMode),
+        paidAmountQirsh: row.paidAmountQirsh,
+        negativeBalanceApprovalId: row.negativeBalanceApprovalId,
+        cancellation: row.cancelledAt == null
+            ? null
+            : CancellationMetadata(
+                cancelledAt: row.cancelledAt!,
+                cancelledByUserId: row.cancelledByUserId!,
+                cancellationReason: row.cancellationReason!,
+                originalDocumentId: row.id,
+                reversalMovementIds:
+                    (jsonDecode(row.reversalMovementIds!) as List)
+                        .cast<String>()),
+      );
 
-  String _fingerprint(PurchaseIntakeDraft draft) => [draft.supplierId.trim(), draft.productId.trim(), draft.quantityKg, draft.unitPricePiastersPerKg, draft.paymentMode.name, draft.effectivePaidAmountQirsh, draft.financialAccountId?.trim() ?? '', draft.negativeBalanceApprovalId?.trim() ?? '', draft.createdByUserId.trim()].join('|');
-  String? _optional(String? value) { final result = value?.trim(); return result == null || result.isEmpty ? null : result; }
+  String _fingerprint(PurchaseIntakeDraft draft) => [
+        draft.supplierId.trim(),
+        draft.productId.trim(),
+        draft.quantityKg,
+        draft.unitPricePiastersPerKg,
+        draft.paymentMode.name,
+        draft.effectivePaidAmountQirsh,
+        draft.financialAccountId?.trim() ?? '',
+        draft.paymentMethod?.name ?? '',
+        draft.negativeBalanceApprovalId?.trim() ?? '',
+        draft.createdByUserId.trim()
+      ].join('|');
+  String? _optional(String? value) {
+    final result = value?.trim();
+    return result == null || result.isEmpty ? null : result;
+  }
 }
 
 class _DriftPurchaseSnapshot extends SnapshotHolder {
   _DriftPurchaseSnapshot(this.repository);
   final DriftPurchaseRepository repository;
   List<PurchaseIntake>? values;
-  @override Future<void> capture() async => values = await repository.listPurchaseIntakes();
-  @override Future<void> rollback() async { final state = values; if (state == null) return; await repository.clearForOwnerDataWipe(); await repository.restorePurchaseIntakesIntoEmpty(state); }
+  @override
+  Future<void> capture() async =>
+      values = await repository.listPurchaseIntakes();
+  @override
+  Future<void> rollback() async {
+    final state = values;
+    if (state == null) return;
+    await repository.clearForOwnerDataWipe();
+    await repository.restorePurchaseIntakesIntoEmpty(state);
+  }
 }

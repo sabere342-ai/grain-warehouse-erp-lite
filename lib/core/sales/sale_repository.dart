@@ -1,7 +1,6 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
@@ -38,8 +37,7 @@ abstract class DurableSaleRepository
   Future<void> clearForOwnerDataWipe();
 }
 
-class LocalSaleRepository
-    implements DurableSaleRepository {
+class LocalSaleRepository implements DurableSaleRepository {
   LocalSaleRepository({
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
@@ -373,11 +371,19 @@ class LocalSaleRepository
       if (draft.paymentMode == SalePaymentMode.credit || paidAmountQirsh <= 0) {
         return const [];
       }
+      final paymentMethod = draft.paymentMethod;
+      if (paymentMethod == null) {
+        throw ArgumentError.value(
+          paymentMethod,
+          'paymentMethod',
+          'A payment method is required when a financial account is selected.',
+        );
+      }
       return [
         SalePaymentAllocation(
           financialAccountId: accountId,
           amountQirsh: paidAmountQirsh,
-          paymentMethod: draft.paymentMethod ?? PaymentMethod.cash,
+          paymentMethod: paymentMethod,
         ),
       ];
     }

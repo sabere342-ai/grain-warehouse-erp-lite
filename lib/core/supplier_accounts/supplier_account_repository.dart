@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
@@ -218,6 +219,10 @@ class LocalSupplierAccountRepository
       includeInactive: true,
     );
     _validatePaymentDraft(draft);
+    await _validateNewPaymentRoute(
+      financialAccountId: draft.financialAccountId,
+      paymentMethod: draft.paymentMethod,
+    );
     final balance = await balanceForSupplier(supplier.id);
     final settledAmountQirsh = balance <= 0
         ? 0
@@ -507,13 +512,22 @@ class LocalSupplierAccountRepository
       throw StateError(
           'Financial account repository is required and must be transaction-safe.');
     }
+    final paymentMethod = draft.paymentMethod ?? advance.paymentMethod;
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لاسترداد سلفة المورد.');
+    }
+    final account = await financialRepository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
     final snapshotProvider = financialRepository as TransactionSnapshotProvider;
     return RepositoryTransaction.execute(<SnapshotHolder>[
       createTransactionSnapshot(),
       snapshotProvider.createTransactionSnapshot()
     ], () async {
       final fingerprint =
-          'refund|${draft.advanceId}|${draft.amountQirsh}|$accountId|${draft.date.toUtc().toIso8601String()}';
+          'refund|${draft.advanceId}|${draft.amountQirsh}|$accountId|${paymentMethod.name}|${draft.date.toUtc().toIso8601String()}';
       final replay = _advanceRequestFingerprints[requestId];
       if (replay != null) {
         if (replay != fingerprint) {
@@ -535,7 +549,7 @@ class LocalSupplierAccountRepository
         sourceDocumentId: requestId,
         effectiveDate: draft.date,
         createdByUserId: draft.createdByUserId.trim(),
-        paymentMethod: draft.paymentMethod ?? advance.paymentMethod,
+        paymentMethod: paymentMethod,
         reference: 'استرداد سلفة من المورد',
       );
       final refund = SupplierAdvanceRefund(
@@ -1207,6 +1221,26 @@ class LocalSupplierAccountRepository
         'Payment amount must be positive.',
       );
     }
+  }
+
+  Future<void> _validateNewPaymentRoute({
+    required String? financialAccountId,
+    required PaymentMethod? paymentMethod,
+  }) async {
+    final repository = _financialAccountRepository;
+    if (repository == null) return;
+    final accountId = _normalizedOptionalText(financialAccountId);
+    if (accountId == null) {
+      throw StateError('الحساب المالي مطلوب لتسجيل سداد المورد.');
+    }
+    if (paymentMethod == null) {
+      throw StateError('طريقة الدفع مطلوبة لتسجيل سداد المورد.');
+    }
+    final account = await repository.accountById(accountId);
+    PaymentRoutingPolicy.validateAccount(
+      account: account,
+      paymentMethod: paymentMethod,
+    );
   }
 
   String _paymentFingerprint(SupplierPaymentDraft draft) {

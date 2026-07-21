@@ -292,9 +292,7 @@ void main() {
         );
       });
 
-      test(
-          'policy true + owner without approval → blocked',
-          () async {
+      test('policy true + owner without approval → blocked', () async {
         expect(
           () => repo.createEntry(
             accountId: account.id,
@@ -309,9 +307,7 @@ void main() {
         );
       });
 
-      test(
-          'policy true + non-owner without approval → blocked',
-          () async {
+      test('policy true + non-owner without approval → blocked', () async {
         expect(
           () => repo.createEntry(
             accountId: account.id,
@@ -359,9 +355,12 @@ void main() {
 
       test('policy true + owner approval → succeeds', () async {
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 15000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 15000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-5', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-5',
+          sourceDocumentType: 'expense',
           requesterUserId: 'emp-1',
         );
         final entry = await repo.createEntry(
@@ -381,9 +380,12 @@ void main() {
 
       test('policy true + multiple outflows each need approval', () async {
         final firstApproval = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 15000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 15000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-10', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-10',
+          sourceDocumentType: 'expense',
           requesterUserId: 'u1',
         );
         await repo.createEntry(
@@ -399,9 +401,12 @@ void main() {
         expect(await repo.currentBalanceForAccount(account.id), -5000);
 
         final secondApproval = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 5000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 5000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-11', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-11',
+          sourceDocumentType: 'expense',
           requesterUserId: 'u1',
         );
         await repo.createEntry(
@@ -419,9 +424,12 @@ void main() {
 
       test('second outflow without new approval → blocked', () async {
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 15000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 15000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-12', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-12',
+          sourceDocumentType: 'expense',
           requesterUserId: 'u1',
         );
         await repo.createEntry(
@@ -515,9 +523,12 @@ void main() {
           updatedByUserId: 'u1',
         );
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 15000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 15000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-8', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-8',
+          sourceDocumentType: 'expense',
           requesterUserId: 'u1',
         );
         await repo.createEntry(
@@ -625,9 +636,12 @@ void main() {
           updatedByUserId: 'u1',
         );
         final approvalId = await approvals.approve(
-          accounts: repo, account: source, amountQirsh: 10000,
+          accounts: repo,
+          account: source,
+          amountQirsh: 10000,
           operationType: NegativeBalanceOperationType.transfer,
-          sourceDocumentId: 'tr-2', sourceDocumentType: 'transfer',
+          sourceDocumentId: 'tr-2',
+          sourceDocumentType: 'transfer',
           requesterUserId: owner.id,
         );
         final transfer = await repo.createTransfer(
@@ -639,8 +653,8 @@ void main() {
             destinationAccountId: dest.id,
             amountQirsh: 10000,
             effectiveDate: DateTime(2026, 1, 2),
-              createdByUserId: 'owner-1',
-              negativeBalanceApprovalId: approvalId,
+            createdByUserId: 'owner-1',
+            negativeBalanceApprovalId: approvalId,
           ),
         );
         expect(transfer.amountQirsh, 10000);
@@ -652,7 +666,8 @@ void main() {
     group('Audit trail for negative-balance approval', () {
       test('negative-balance outflow records approval audit', () async {
         final auditRepo = LocalAuditLogRepository();
-        final approvals = _ApprovalHarness(owner, auditLogRepository: auditRepo);
+        final approvals =
+            _ApprovalHarness(owner, auditLogRepository: auditRepo);
         final repo = LocalFinancialAccountRepository(
           auditLogRepository: auditRepo,
           negativeBalanceApprovalService: approvals.service,
@@ -676,9 +691,12 @@ void main() {
           updatedByUserId: 'u1',
         );
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 10000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 10000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-audit-1', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-audit-1',
+          sourceDocumentType: 'expense',
           requesterUserId: 'emp-1',
         );
         await repo.createEntry(
@@ -703,7 +721,8 @@ void main() {
 
       test('normal outflow does NOT record approval audit', () async {
         final auditRepo = LocalAuditLogRepository();
-        final repo = LocalFinancialAccountRepository(auditLogRepository: auditRepo);
+        final repo =
+            LocalFinancialAccountRepository(auditLogRepository: auditRepo);
         final account = await repo.createAccount(
           const FinancialAccountDraft(
             name: 'خزينة',
@@ -744,9 +763,8 @@ void main() {
             createdByUserId: 'u1',
           ),
         );
-        final entriesBefore = (await repo.statementForAccount(account.id))
-            .lines
-            .length;
+        final entriesBefore =
+            (await repo.statementForAccount(account.id)).lines.length;
         expect(
           () => repo.createEntry(
             accountId: account.id,
@@ -759,9 +777,8 @@ void main() {
           ),
           throwsA(isA<StateError>()),
         );
-        final entriesAfter = (await repo.statementForAccount(account.id))
-            .lines
-            .length;
+        final entriesAfter =
+            (await repo.statementForAccount(account.id)).lines.length;
         expect(entriesAfter, entriesBefore);
       });
     });
@@ -792,12 +809,14 @@ void main() {
             category: 'نقل',
             amountQirsh: 5000,
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
           )),
           throwsA(isA<StateError>()),
         );
       });
 
-      test('expense posting allowed when account permits negative with approval',
+      test(
+          'expense posting allowed when account permits negative with approval',
           () async {
         final approvals = _ApprovalHarness(owner);
         final faRepo = LocalFinancialAccountRepository(
@@ -826,9 +845,12 @@ void main() {
         );
 
         final approvalId = await approvals.approve(
-          accounts: faRepo, account: account, amountQirsh: 5000,
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 5000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'expense-negative-1', sourceDocumentType: 'expense',
+          sourceDocumentId: 'expense-negative-1',
+          sourceDocumentType: 'expense',
           requesterUserId: 'system',
         );
         final expense = await expenseRepo.createExpense(ExpenseDraft(
@@ -836,6 +858,7 @@ void main() {
           category: 'نقل',
           amountQirsh: 5000,
           financialAccountId: account.id,
+          paymentMethod: PaymentMethod.cash,
           negativeBalanceApprovalId: approvalId,
           operationRequestId: 'expense-negative-1',
         ));
@@ -843,7 +866,8 @@ void main() {
         expect(await faRepo.currentBalanceForAccount(account.id), -4000);
       });
 
-      test('expense posting blocked when policy true but no approval', () async {
+      test('expense posting blocked when policy true but no approval',
+          () async {
         final faRepo = LocalFinancialAccountRepository();
         final expenseRepo = LocalExpenseRepository(
           financialAccountRepository: faRepo,
@@ -873,22 +897,27 @@ void main() {
             category: 'نقل',
             amountQirsh: 5000,
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
           )),
           throwsA(isA<StateError>()),
         );
       });
 
-      test('expense without financial account is not affected', () async {
+      test('expense without financial account is rejected before mutation',
+          () async {
         final faRepo = LocalFinancialAccountRepository();
         final expenseRepo = LocalExpenseRepository(
           financialAccountRepository: faRepo,
         );
-        final expense = await expenseRepo.createExpense(ExpenseDraft(
-          date: DateTime(2026, 1, 2),
-          category: 'نقل',
-          amountQirsh: 5000,
-        ));
-        expect(expense.amountQirsh, 5000);
+        await expectLater(
+          expenseRepo.createExpense(ExpenseDraft(
+            date: DateTime(2026, 1, 2),
+            category: 'نقل',
+            amountQirsh: 5000,
+          )),
+          throwsA(isA<StateError>()),
+        );
+        expect(await expenseRepo.listExpenses(), isEmpty);
       });
     });
 
@@ -930,13 +959,15 @@ void main() {
               amountQirsh: 5000,
               createdByUserId: 'u1',
               financialAccountId: account.id,
+              paymentMethod: PaymentMethod.cash,
             ),
           ),
           throwsA(isA<StateError>()),
         );
       });
 
-      test('supplier payment allowed when account permits negative with approval',
+      test(
+          'supplier payment allowed when account permits negative with approval',
           () async {
         final approvals = _ApprovalHarness(owner);
         final faRepo = LocalFinancialAccountRepository(
@@ -975,10 +1006,13 @@ void main() {
         );
 
         final approvalId = await approvals.approve(
-          accounts: faRepo, account: account, amountQirsh: 5000,
+          accounts: faRepo,
+          account: account,
+          amountQirsh: 5000,
           operationType: NegativeBalanceOperationType.supplierPayment,
           sourceDocumentId: 'supplier-payment-negative-1',
-          sourceDocumentType: 'supplierSettlement', requesterUserId: 'u1',
+          sourceDocumentType: 'supplierSettlement',
+          requesterUserId: 'u1',
         );
         final payment = await supplierAccountRepo.createPayment(
           SupplierPaymentDraft(
@@ -987,6 +1021,7 @@ void main() {
             amountQirsh: 5000,
             createdByUserId: 'u1',
             financialAccountId: account.id,
+            paymentMethod: PaymentMethod.cash,
             negativeBalanceApprovalId: approvalId,
             operationRequestId: 'supplier-payment-negative-1',
           ),
@@ -995,7 +1030,8 @@ void main() {
         expect(await faRepo.currentBalanceForAccount(account.id), -4000);
       });
 
-      test('supplier payment blocked when policy true but no approval', () async {
+      test('supplier payment blocked when policy true but no approval',
+          () async {
         final faRepo = LocalFinancialAccountRepository();
         final supplierRepo = LocalSupplierRepository();
         final supplierAccountRepo = LocalSupplierAccountRepository(
@@ -1037,6 +1073,7 @@ void main() {
               amountQirsh: 5000,
               createdByUserId: 'u1',
               financialAccountId: account.id,
+              paymentMethod: PaymentMethod.cash,
             ),
           ),
           throwsA(isA<StateError>()),
@@ -1045,7 +1082,8 @@ void main() {
     });
 
     group('Backup roundtrip — entry preserves approvedByUserId', () {
-      test('entry with approvedByUserId survives in-memory roundtrip', () async {
+      test('entry with approvedByUserId survives in-memory roundtrip',
+          () async {
         final approvals = _ApprovalHarness(owner);
         final repo = LocalFinancialAccountRepository(
           negativeBalanceApprovalService: approvals.service,
@@ -1065,9 +1103,12 @@ void main() {
           createdByUserId: 'u1',
         );
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 10000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 10000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-bk', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-bk',
+          sourceDocumentType: 'expense',
           requesterUserId: 'emp-1',
         );
         final entry = await repo.createEntry(
@@ -1186,9 +1227,12 @@ void main() {
           createdByUserId: 'u1',
         );
         final approvalId = await approvals.approve(
-          accounts: repo, account: account, amountQirsh: 10000,
+          accounts: repo,
+          account: account,
+          amountQirsh: 10000,
           operationType: NegativeBalanceOperationType.expense,
-          sourceDocumentId: 'exp-100', sourceDocumentType: 'expense',
+          sourceDocumentId: 'exp-100',
+          sourceDocumentType: 'expense',
           requesterUserId: 'emp-1',
         );
         final entry = await repo.createEntry(
