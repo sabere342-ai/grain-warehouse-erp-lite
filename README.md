@@ -130,4 +130,4 @@ Repository: [sabere342-ai/grain-warehouse-erp-lite](https://github.com/sabere342
 
 ## License
 
-No repository license has been added in this documentation-only update.
+This project is licensed under the [MIT License](LICENSE).
