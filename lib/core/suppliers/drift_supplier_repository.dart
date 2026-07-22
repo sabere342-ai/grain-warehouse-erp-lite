@@ -63,7 +63,7 @@ class DriftSupplierRepository implements SupplierDataRepository {
         notes: _optional(draft.notes),
         isActive: current.isActive,
         createdAt: current.createdAt,
-        updatedAt: DateTime.now(),
+        updatedAt: _nextUpdatedAt(current.updatedAt),
       );
       await (_database.update(_database.suppliers)
             ..where((row) => row.id.equals(supplierId)))
@@ -78,8 +78,10 @@ class DriftSupplierRepository implements SupplierDataRepository {
     required bool isActive,
   }) async {
     final current = await _find(supplierId);
-    final updated =
-        current.copyWith(isActive: isActive, updatedAt: DateTime.now());
+    final updated = current.copyWith(
+      isActive: isActive,
+      updatedAt: _nextUpdatedAt(current.updatedAt),
+    );
     await (_database.update(_database.suppliers)
           ..where((row) => row.id.equals(supplierId)))
         .write(_companion(updated));
@@ -102,8 +104,9 @@ class DriftSupplierRepository implements SupplierDataRepository {
         final value = int.tryParse(supplier.id.split('-').last) ?? 0;
         if (value > maximum) maximum = value;
       }
-      await _database.into(_database.repositorySequences).insertOnConflictUpdate(
-          db.RepositorySequencesCompanion.insert(
+      await _database
+          .into(_database.repositorySequences)
+          .insertOnConflictUpdate(db.RepositorySequencesCompanion.insert(
               repository: _sequenceKey, nextValue: maximum + 1));
     });
   }
@@ -118,6 +121,11 @@ class DriftSupplierRepository implements SupplierDataRepository {
 
   @override
   SnapshotHolder createTransactionSnapshot() => _DriftSupplierSnapshot(this);
+
+  DateTime _nextUpdatedAt(DateTime current) {
+    final now = DateTime.now();
+    return now.isAfter(current) ? now : current.add(const Duration(seconds: 1));
+  }
 
   Future<int> _takeSequence() async {
     final row = await (_database.select(_database.repositorySequences)
@@ -142,8 +150,8 @@ class DriftSupplierRepository implements SupplierDataRepository {
       {String? exceptId}) async {
     final rows = await _database.select(_database.suppliers).get();
     final normalizedPhone = _optional(phone);
-    if (rows.any((row) =>
-        row.id != exceptId && row.normalizedName == _key(name))) {
+    if (rows
+        .any((row) => row.id != exceptId && row.normalizedName == _key(name))) {
       throw StateError('Duplicate supplier name.');
     }
     if (normalizedPhone != null &&

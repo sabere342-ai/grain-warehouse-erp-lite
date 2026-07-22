@@ -90,6 +90,7 @@ class AppThemePreset {
   );
 
   static const values = [olive, blue, wheat, highContrast];
+  static const accentValues = [olive, blue, wheat];
 
   static AppThemePreset byId(String id) {
     for (final preset in values) {

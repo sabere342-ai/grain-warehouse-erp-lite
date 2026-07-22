@@ -553,7 +553,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('إضافة مورد'), findsNothing);
-      expect(find.text('عرض الموردين النشطين فقط.'), findsOneWidget);
+      expect(find.text('عرض الموردين النشطين وفق صلاحياتك.'), findsOneWidget);
     });
 
     testWidgets('purchase intake create action visible for owner',
@@ -615,7 +615,8 @@ void main() {
         return (auth: auth, fixture: fixture);
       });
       if (setup == null) {
-        throw StateError('The supplier purchase UI fixture did not initialize.');
+        throw StateError(
+            'The supplier purchase UI fixture did not initialize.');
       }
       final auth = setup.auth;
       final fixture = setup.fixture;
@@ -716,7 +717,7 @@ Widget _supplierHarness({
         textDirection: TextDirection.rtl,
         child: child ?? const SizedBox.shrink(),
       ),
-      home: SuppliersScreen(controller: controller),
+      home: Scaffold(body: SuppliersScreen(controller: controller)),
     ),
   );
 }

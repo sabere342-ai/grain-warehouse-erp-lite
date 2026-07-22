@@ -14,6 +14,34 @@ import 'package:sqlite3/sqlite3.dart';
 const _draft = ProductDraft(name: 'Wheat', code: 'WH', unit: GrainUnit.ton);
 
 void main() {
+  test('durable product revisions advance beyond restored timestamps',
+      () async {
+    final database = openInMemoryTestDatabase();
+    addTearDown(database.close);
+    final repository = DriftProductRepository(database);
+    final future = DateTime.now().add(const Duration(days: 1));
+    await repository.restoreProductsIntoEmpty([
+      Product(
+        id: 'prd-restored-1',
+        name: 'Restored product',
+        unit: GrainUnit.kilogram,
+        isActive: true,
+        createdAt: future.subtract(const Duration(days: 2)),
+        updatedAt: future,
+      ),
+    ]);
+
+    final updated = await repository.updateProduct(
+      productId: 'prd-restored-1',
+      draft: const ProductDraft(
+        name: 'Updated restored product',
+        unit: GrainUnit.kilogram,
+      ),
+    );
+
+    expect(updated.updatedAt.isAfter(future), isTrue);
+  });
+
   test('v1 migrates to v2 without losing foundation probes', () async {
     final directory =
         await Directory.systemTemp.createTemp('phase8b-migration-');

@@ -41,8 +41,7 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
     super.initState();
     _ownsAuthController = widget.authController == null;
     _ownsThemeController = widget.themeController == null;
-    _ownsBusinessIdentityController =
-        widget.businessIdentityController == null;
+    _ownsBusinessIdentityController = widget.businessIdentityController == null;
     _authController = widget.authController ??
         AuthController(repository: AppRepositories.authRepository);
     _themeController = widget.themeController ??
@@ -96,7 +95,9 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
               return MaterialApp(
                 title: _businessIdentityController.identity.displayName,
                 debugShowCheckedModeBanner: false,
-                theme: AppTheme.fromPreset(_themeController.preset),
+                theme: AppTheme.lightFor(_themeController.preset),
+                darkTheme: AppTheme.darkFor(_themeController.preset),
+                themeMode: _themeController.mode.materialMode,
                 locale: const Locale('ar'),
                 supportedLocales: const [Locale('ar')],
                 localizationsDelegates: GlobalMaterialLocalizations.delegates,

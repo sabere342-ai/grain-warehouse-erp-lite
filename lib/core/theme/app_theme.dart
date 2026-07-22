@@ -1,75 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_semantic_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 
 class AppTheme {
-  static ThemeData get light => fromPreset(AppThemePreset.olive);
+  static ThemeData get light => lightFor(AppThemePreset.olive);
 
-  static ThemeData fromPreset(AppThemePreset preset) {
-    final brightness = preset.isDark ? Brightness.dark : Brightness.light;
-    final colorScheme = ColorScheme.fromSeed(
+  static ThemeData get dark => darkFor(AppThemePreset.olive);
+
+  static ThemeData lightFor(AppThemePreset preset) =>
+      fromPreset(preset, brightness: Brightness.light);
+
+  static ThemeData darkFor(AppThemePreset preset) =>
+      fromPreset(preset, brightness: Brightness.dark);
+
+  static ThemeData fromPreset(
+    AppThemePreset preset, {
+    Brightness? brightness,
+  }) {
+    final resolvedBrightness =
+        brightness ?? (preset.isDark ? Brightness.dark : Brightness.light);
+    final generatedScheme = ColorScheme.fromSeed(
       seedColor: preset.seed,
-      brightness: brightness,
-      surface: preset.surface,
+      brightness: resolvedBrightness,
     );
-
-    final baseTextTheme = Typography.material2021(
-      platform: TargetPlatform.windows,
-    ).black.apply(
-          fontFamily: 'Arial',
-          bodyColor: preset.text,
-          displayColor: preset.text,
-        );
+    final usePresetSurfaces = resolvedBrightness == Brightness.light ||
+        (preset.isDark && resolvedBrightness == Brightness.dark);
+    final surface =
+        usePresetSurfaces ? preset.surface : generatedScheme.surface;
+    final background =
+        usePresetSurfaces ? preset.background : generatedScheme.surface;
+    final text = usePresetSurfaces ? preset.text : generatedScheme.onSurface;
+    final mutedText =
+        usePresetSurfaces ? preset.mutedText : generatedScheme.onSurfaceVariant;
+    final border = usePresetSurfaces ? preset.border : generatedScheme.outline;
+    final surfaceAlt = usePresetSurfaces
+        ? preset.surfaceAlt
+        : generatedScheme.surfaceContainerHighest;
+    final semantic = AppSemanticColors.forBrightness(resolvedBrightness);
+    final textTheme = AppTypography.build(
+      brightness: resolvedBrightness,
+      textColor: text,
+    );
 
     return ThemeData(
       useMaterial3: true,
-      brightness: brightness,
-      colorScheme: colorScheme.copyWith(
+      brightness: resolvedBrightness,
+      colorScheme: generatedScheme.copyWith(
         primary: preset.seed,
         secondary: preset.secondary,
         tertiary: preset.tertiary,
-        surface: preset.surface,
-        onSurface: preset.text,
-        outline: preset.border,
+        surface: surface,
+        onSurface: text,
+        outline: border,
       ),
-      scaffoldBackgroundColor: preset.background,
-      textTheme: baseTextTheme.copyWith(
-        headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w900,
-          height: 1.2,
-          color: preset.text,
-        ),
-        headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w900,
-          color: preset.text,
-        ),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w900,
-          height: 1.25,
-          color: preset.text,
-        ),
-        titleMedium: baseTextTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: preset.text,
-        ),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(height: 1.5),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: preset.text),
-      ),
+      scaffoldBackgroundColor: background,
+      textTheme: textTheme,
+      extensions: [semantic],
       cardTheme: CardTheme(
-        color: preset.surface,
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(preset.isDark ? 0.35 : 0.16),
+        color: surface,
+        elevation: 0,
+        shadowColor: Colors.black.withOpacity(
+          resolvedBrightness == Brightness.dark ? 0.24 : 0.08,
+        ),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: preset.border, width: 1.2),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: BorderSide(color: border.withOpacity(0.72)),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: preset.seed,
-          foregroundColor: preset.isDark ? const Color(0xFF10140D) : Colors.white,
+          foregroundColor: generatedScheme.onPrimary,
           textStyle: const TextStyle(fontWeight: FontWeight.w900),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          minimumSize: const Size(0, AppComponentSizes.minimumTouchTarget),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         ),
       ),
@@ -78,7 +86,10 @@ class AppTheme {
           foregroundColor: preset.seed,
           side: BorderSide(color: preset.seed, width: 1.4),
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          minimumSize: const Size(0, AppComponentSizes.minimumTouchTarget),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         ),
       ),
@@ -91,60 +102,67 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 1,
-        backgroundColor: preset.surface,
-        foregroundColor: preset.text,
+        backgroundColor: surface,
+        foregroundColor: text,
         shadowColor: Colors.black.withOpacity(0.12),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: preset.surface,
-        labelStyle: TextStyle(color: preset.mutedText, fontWeight: FontWeight.w700),
-        helperStyle: TextStyle(color: preset.mutedText),
+        fillColor: surface,
+        labelStyle: TextStyle(color: mutedText, fontWeight: FontWeight.w700),
+        helperStyle: TextStyle(color: mutedText),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: preset.border, width: 1.2),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: preset.border, width: 1.2),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: preset.seed, width: 2),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: preset.surface,
-        indicatorColor: preset.surfaceAlt,
+        backgroundColor: surface,
+        indicatorColor: surfaceAlt,
         selectedIconTheme: IconThemeData(color: preset.seed),
-        unselectedIconTheme: IconThemeData(color: preset.mutedText),
+        unselectedIconTheme: IconThemeData(color: mutedText),
         selectedLabelTextStyle: TextStyle(
           color: preset.seed,
           fontWeight: FontWeight.w900,
         ),
         unselectedLabelTextStyle: TextStyle(
-          color: preset.mutedText,
+          color: mutedText,
           fontWeight: FontWeight.w700,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: preset.surface,
-        indicatorColor: preset.surfaceAlt,
+        backgroundColor: surface,
+        indicatorColor: surfaceAlt,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           return TextStyle(
-            color: states.contains(WidgetState.selected)
-                ? preset.seed
-                : preset.mutedText,
+            color:
+                states.contains(WidgetState.selected) ? preset.seed : mutedText,
             fontWeight: FontWeight.w800,
           );
         }),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: preset.surfaceAlt,
-        selectedColor: preset.surfaceAlt,
-        labelStyle: TextStyle(color: preset.text, fontWeight: FontWeight.w700),
-        side: BorderSide(color: preset.border),
+        backgroundColor: surfaceAlt,
+        selectedColor: surfaceAlt,
+        labelStyle: TextStyle(color: text, fontWeight: FontWeight.w700),
+        side: BorderSide(color: border),
       ),
+      dividerTheme: DividerThemeData(color: border.withOpacity(0.7)),
+      dialogTheme: DialogTheme(
+        backgroundColor: semantic.elevatedSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+      ),
+      focusColor: preset.seed.withOpacity(0.18),
     );
   }
 }

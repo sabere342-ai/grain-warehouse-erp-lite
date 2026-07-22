@@ -1,16 +1,35 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_theme_mode.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 
-abstract class ThemeSettingsRepository {
-  Future<AppThemePreset> loadThemePreset();
+class AppThemeSettings {
+  const AppThemeSettings({
+    required this.mode,
+    required this.preset,
+  });
 
-  Future<void> saveThemePreset(AppThemePreset preset);
+  final AppThemeMode mode;
+  final AppThemePreset preset;
+
+  Map<String, Object?> toJson() => {
+        'version': 1,
+        'mode': mode.id,
+        'accent': preset.id,
+      };
+}
+
+abstract class ThemeSettingsRepository {
+  Future<AppThemeSettings> loadSettings();
+
+  Future<void> saveSettings(AppThemeSettings settings);
 }
 
 class LocalThemeSettingsRepository implements ThemeSettingsRepository {
-  LocalThemeSettingsRepository({String? filePath, AuditLogRepository? auditLogRepository})
+  LocalThemeSettingsRepository(
+      {String? filePath, AuditLogRepository? auditLogRepository})
       : _filePath = filePath,
         _auditLogRepository = auditLogRepository;
 
@@ -18,30 +37,62 @@ class LocalThemeSettingsRepository implements ThemeSettingsRepository {
   final AuditLogRepository? _auditLogRepository;
 
   @override
-  Future<AppThemePreset> loadThemePreset() async {
+  Future<AppThemeSettings> loadSettings() async {
     try {
       final file = File(_resolvedFilePath());
       if (!await file.exists()) {
-        return AppThemePreset.olive;
+        return const AppThemeSettings(
+          mode: AppThemeMode.system,
+          preset: AppThemePreset.olive,
+        );
       }
-      final id = (await file.readAsString()).trim();
-      return AppThemePreset.byId(id);
+      final content = (await file.readAsString()).trim();
+      if (content.startsWith('{')) {
+        final decoded = jsonDecode(content);
+        if (decoded is Map) {
+          final map = Map<String, Object?>.from(decoded);
+          return AppThemeSettings(
+            mode: AppThemeMode.byId(map['mode'] as String?),
+            preset: AppThemePreset.byId(map['accent'] as String? ?? ''),
+          );
+        }
+      }
+
+      // Phase 67 stored only the preset id. Keep that file readable.
+      final legacyPreset = AppThemePreset.byId(content);
+      return AppThemeSettings(
+        mode: legacyPreset.isDark ? AppThemeMode.dark : AppThemeMode.system,
+        preset: legacyPreset.isDark ? AppThemePreset.olive : legacyPreset,
+      );
     } catch (_) {
-      return AppThemePreset.olive;
+      return const AppThemeSettings(
+        mode: AppThemeMode.system,
+        preset: AppThemePreset.olive,
+      );
     }
   }
 
   @override
-  Future<void> saveThemePreset(AppThemePreset preset) async {
+  Future<void> saveSettings(AppThemeSettings settings) async {
     final file = File(_resolvedFilePath());
     await file.parent.create(recursive: true);
-    await file.writeAsString(preset.id);
+    await file.writeAsString(jsonEncode(settings.toJson()), flush: true);
     await _auditLogRepository?.record(
       AuditLogDraft(
         actionType: 'settings.theme.changed',
-        descriptionAr: 'تم تغيير مظهر التطبيق إلى ${preset.labelAr}.',
+        descriptionAr:
+            'تم تغيير مظهر التطبيق إلى ${settings.mode.labelAr} بلمسة ${settings.preset.labelAr}.',
       ),
     );
+  }
+
+  Future<AppThemePreset> loadThemePreset() async {
+    return (await loadSettings()).preset;
+  }
+
+  Future<void> saveThemePreset(AppThemePreset preset) async {
+    final current = await loadSettings();
+    await saveSettings(AppThemeSettings(mode: current.mode, preset: preset));
   }
 
   String _resolvedFilePath() {

@@ -22,6 +22,30 @@ const _draft = SupplierDraft(
 );
 
 void main() {
+  test('durable supplier revisions advance beyond restored timestamps',
+      () async {
+    final database = openInMemoryTestDatabase();
+    addTearDown(database.close);
+    final repository = DriftSupplierRepository(database);
+    final future = DateTime.now().add(const Duration(days: 1));
+    await repository.restoreSuppliersIntoEmpty([
+      Supplier(
+        id: 'sup-restored-1',
+        name: 'Restored supplier',
+        isActive: true,
+        createdAt: future.subtract(const Duration(days: 2)),
+        updatedAt: future,
+      ),
+    ]);
+
+    final updated = await repository.updateSupplier(
+      supplierId: 'sup-restored-1',
+      draft: const SupplierDraft(name: 'Updated restored supplier'),
+    );
+
+    expect(updated.updatedAt.isAfter(future), isTrue);
+  });
+
   test('v3 migrates to v4 preserving prior tables, rows and sequences',
       () async {
     final directory = await Directory.systemTemp.createTemp('phase8d-migrate-');
@@ -56,7 +80,8 @@ void main() {
 
     final database = openDatabaseFile(file);
     expect(await database.readProbe('legacy'), 'kept');
-    expect(await DriftCustomerRepository(database).listCustomers(), hasLength(1));
+    expect(
+        await DriftCustomerRepository(database).listCustomers(), hasLength(1));
     final nextCustomer = await DriftCustomerRepository(database)
         .createCustomer(const CustomerDraft(name: 'Next'));
     expect(nextCustomer.id, endsWith('-5'));
@@ -86,9 +111,10 @@ void main() {
     repository = DriftSupplierRepository(database);
     expect((await repository.listSuppliers()).map((value) => value.name),
         ['Ahmed Ali', 'Mona']);
-    expect(await repository.listSuppliers(includeInactive: false), hasLength(1));
-    final third = await repository.createSupplier(
-        const SupplierDraft(name: 'Third supplier'));
+    expect(
+        await repository.listSuppliers(includeInactive: false), hasLength(1));
+    final third = await repository
+        .createSupplier(const SupplierDraft(name: 'Third supplier'));
     expect(third.id, endsWith('-3'));
     await database.close();
   });
@@ -114,8 +140,7 @@ void main() {
           throwsStateError);
       await expectLater(
           repository.updateSupplier(
-              supplierId: 'missing',
-              draft: const SupplierDraft(name: 'Other')),
+              supplierId: 'missing', draft: const SupplierDraft(name: 'Other')),
           throwsStateError);
     }
   });
@@ -168,12 +193,12 @@ void main() {
     addTearDown(() async {
       if (directory.existsSync()) await directory.delete(recursive: true);
     });
-    final first = openDatabaseFile(File(
-        '${directory.path}${Platform.pathSeparator}first.sqlite3'));
+    final first = openDatabaseFile(
+        File('${directory.path}${Platform.pathSeparator}first.sqlite3'));
     await DriftSupplierRepository(first).createSupplier(_draft);
     await first.close();
-    final second = openDatabaseFile(File(
-        '${directory.path}${Platform.pathSeparator}second.sqlite3'));
+    final second = openDatabaseFile(
+        File('${directory.path}${Platform.pathSeparator}second.sqlite3'));
     expect(await DriftSupplierRepository(second).listSuppliers(), isEmpty);
     await second.close();
   });

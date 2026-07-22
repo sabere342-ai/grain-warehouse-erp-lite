@@ -7,9 +7,12 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_account_statement_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_transfers_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_status_badge.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialAccountsScreen extends StatefulWidget {
@@ -73,23 +76,20 @@ class _FinancialAccountsScreenState extends State<FinancialAccountsScreen> {
 
         return ListView(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('الحسابات المالية', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        'إدارة الخزائن والحسابات البنكية والمحافظ الإلكترونية.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
+            GhalalPageHeader(
+              title: 'الحسابات المالية',
+              subtitle: 'إدارة الخزائن والحسابات البنكية والمحافظ الإلكترونية.',
+              icon: Icons.account_balance_wallet_rounded,
+              actions: [
+                if (isOwner)
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                FinancialTransfersScreen(user: user))),
+                    icon: const Icon(Icons.swap_horiz_rounded),
+                    label: const Text('تحويل مالي'),
                   ),
-                ),
                 if (isOwner)
                   FilledButton.icon(
                     onPressed: () =>
@@ -99,73 +99,63 @@ class _FinancialAccountsScreenState extends State<FinancialAccountsScreen> {
                   ),
               ],
             ),
-            if (isOwner) ...[
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => FinancialTransfersScreen(user: user))),
-                  icon: const Icon(Icons.swap_horiz_rounded),
-                  label: const Text('تحويل مالي'),
-                ),
-              ),
-            ],
-            if (_controller.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _controller.errorMessage!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
             const SizedBox(height: 16),
-            PremiumCard(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'الرصيد الإجمالي: ${MoneyUtils.formatPiastersAsEgp(totalBalance)}',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (summaries.isEmpty)
-              const PremiumCard(
-                child: Text('لا توجد حسابات مالية مسجلة بعد.'),
+            if (_controller.errorMessage != null)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.loadAccounts(user),
               )
-            else
-              ...summaries.map(
-                (summary) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _AccountCard(
-                    summary: summary,
-                    isOwner: isOwner,
-                    onToggleActive: () => _toggleActive(
-                      context,
-                      user: user,
-                      account: summary.account,
+            else ...[
+              PremiumCard(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    onViewStatement: () => _viewStatement(
-                      context,
-                      user: user,
-                      accountId: summary.account.id,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'الرصيد الإجمالي: ${MoneyUtils.formatPiastersAsEgp(totalBalance)}',
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (_controller.isLoading)
+                const GhalalLoadingState(
+                    label: 'جاري تحميل الحسابات المالية...')
+              else if (summaries.isEmpty)
+                const GhalalEmptyState(
+                  title: 'لا توجد حسابات مالية',
+                  message: 'أضف خزينة أو حسابًا بنكيًا أو محفظة للبدء.',
+                  icon: Icons.account_balance_wallet_outlined,
+                )
+              else
+                ...summaries.map(
+                  (summary) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _AccountCard(
+                      summary: summary,
+                      isOwner: isOwner,
+                      onToggleActive: () => _toggleActive(
+                        context,
+                        user: user,
+                        account: summary.account,
+                      ),
+                      onViewStatement: () => _viewStatement(
+                        context,
+                        user: user,
+                        accountId: summary.account.id,
+                      ),
                     ),
                   ),
                 ),
-              ),
+            ],
           ],
         );
       },
@@ -178,7 +168,7 @@ class _FinancialAccountsScreenState extends State<FinancialAccountsScreen> {
   }) async {
     final draft = await showDialog<FinancialAccountDraft>(
       context: context,
-      builder: (context) => const _CreateAccountDialog(),
+      builder: (context) => _CreateAccountDialog(createdByUserId: user.id),
     );
     if (draft == null) return;
     await _controller.createAccount(user: user, draft: draft);
@@ -229,73 +219,84 @@ class _AccountCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final account = summary.account;
     final balanceColor = summary.currentBalanceQirsh >= 0
-        ? AppColors.mutedText
+        ? Theme.of(context).colorScheme.onSurface
         : Theme.of(context).colorScheme.error;
 
     return PremiumCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                account.type.iconEmoji,
-                style: const TextStyle(fontSize: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final accountIdentity = Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(account.type.iconEmoji,
+                      style: const TextStyle(fontSize: AppIconSizes.md)),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            account.name,
-                            style: textTheme.titleLarge,
+                        Text(account.name, style: textTheme.titleLarge),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          account.type.labelAr,
+                          style: textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: account.isActive
-                                ? Colors.green.withAlpha(30)
-                                : Colors.red.withAlpha(30),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            account.isActive ? 'نشط' : 'معطّل',
-                            style: textTheme.labelSmall?.copyWith(
-                              color: account.isActive
-                                  ? Colors.green[800]
-                                  : Colors.red[800],
-                            ),
-                          ),
+                        const SizedBox(height: AppSpacing.xs),
+                        GhalalStatusBadge(
+                          label: account.isActive ? 'نشط' : 'معطّل',
+                          icon: account.isActive
+                              ? Icons.check_circle_rounded
+                              : Icons.block_rounded,
+                          tone: account.isActive
+                              ? GhalalStatusTone.success
+                              : GhalalStatusTone.error,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      account.type.labelAr,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.mutedText,
-                      ),
+                  ),
+                ],
+              );
+              final amount = Semantics(
+                label:
+                    'رصيد الحساب ${MoneyUtils.formatPiastersAsEgp(summary.currentBalanceQirsh)}',
+                child: Text(
+                  MoneyUtils.formatPiastersAsEgp(
+                    summary.currentBalanceQirsh,
+                  ),
+                  textDirection: TextDirection.ltr,
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: balanceColor,
+                  ),
+                ),
+              );
+              if (constraints.maxWidth < 520) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    accountIdentity,
+                    const SizedBox(height: AppSpacing.sm),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: amount,
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                MoneyUtils.formatPiastersAsEgp(summary.currentBalanceQirsh),
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: balanceColor,
-                ),
-              ),
-            ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: accountIdentity),
+                  const SizedBox(width: AppSpacing.md),
+                  amount,
+                ],
+              );
+            },
           ),
           if (account.referenceInfo != null || account.notes != null) ...[
             const SizedBox(height: 8),
@@ -303,26 +304,27 @@ class _AccountCard extends StatelessWidget {
               Text(
                 'مرجع: ${account.referenceInfo}',
                 style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.mutedText,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             if (account.notes != null)
               Text(
                 account.notes!,
                 style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.mutedText,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
           ],
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
             children: [
               TextButton.icon(
                 onPressed: onViewStatement,
                 icon: const Icon(Icons.receipt_long_rounded, size: 18),
                 label: const Text('كشف حساب'),
               ),
-              const Spacer(),
               if (isOwner)
                 TextButton.icon(
                   onPressed: onToggleActive,
@@ -343,7 +345,9 @@ class _AccountCard extends StatelessWidget {
 }
 
 class _CreateAccountDialog extends StatefulWidget {
-  const _CreateAccountDialog();
+  const _CreateAccountDialog({required this.createdByUserId});
+
+  final String createdByUserId;
 
   @override
   State<_CreateAccountDialog> createState() => _CreateAccountDialogState();
@@ -380,6 +384,7 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<FinancialAccountType>(
               value: _selectedType,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'نوع الحساب'),
               items: FinancialAccountType.values.map((type) {
                 return DropdownMenuItem(
@@ -441,7 +446,7 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog> {
         type: _selectedType,
         referenceInfo: _referenceController.text,
         notes: _notesController.text,
-        createdByUserId: 'owner',
+        createdByUserId: widget.createdByUserId,
       ),
     );
   }

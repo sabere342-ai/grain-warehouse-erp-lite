@@ -7,11 +7,15 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/supplier_purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_statement_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/suppliers/supplier_advance_actions_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_search_field.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_status_badge.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SuppliersScreen extends StatefulWidget {
@@ -27,6 +31,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   late final SupplierController _controller;
   late final SupplierAccountRepository _accountRepo;
   late final bool _ownsController;
+  final _searchController = TextEditingController();
+  String _query = '';
   Map<String, int> _balances = const {};
   Set<String> _suppliersWithOpeningBalance = const {};
 
@@ -69,6 +75,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     if (_ownsController) {
       _controller.dispose();
     }
@@ -181,7 +188,6 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض الموردين.'));
@@ -192,27 +198,25 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
+        final normalizedQuery = _query.trim().toLowerCase();
+        final visibleSuppliers = _controller.suppliers.where((supplier) {
+          if (normalizedQuery.isEmpty) return true;
+          return [
+            supplier.name,
+            supplier.phone ?? '',
+            supplier.address ?? '',
+          ].join(' ').toLowerCase().contains(normalizedQuery);
+        }).toList(growable: false);
         return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('الموردون', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        canManage
-                            ? 'إدارة بيانات موردي الحبوب فقط.'
-                            : 'عرض الموردين النشطين فقط.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'الموردون',
+              subtitle: canManage
+                  ? 'إدارة بيانات موردي الحبوب وحساباتهم.'
+                  : 'عرض الموردين النشطين وفق صلاحياتك.',
+              icon: Icons.local_shipping_rounded,
+              actions: [
                 if (canManage)
                   FilledButton.icon(
                     onPressed: () => _showSupplierForm(context, user: user),
@@ -221,23 +225,35 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _controller.errorMessage!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
+            GhalalSearchField(
+              key: const Key('suppliers-search-field'),
+              controller: _searchController,
+              hintText: 'بحث باسم المورد أو الهاتف أو العنوان...',
+              onChanged: (value) => setState(() => _query = value),
+            ),
+            const SizedBox(height: AppSpacing.md),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل الموردين...')
+            else if (_controller.errorMessage != null)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.loadSuppliers(user),
+              )
             else if (_controller.suppliers.isEmpty)
-              const PremiumCard(child: Text('لا توجد بيانات موردين بعد.'))
+              const GhalalEmptyState(
+                title: 'لا توجد بيانات موردين',
+                message: 'أضف أول مورد حبوب لبدء تسجيل المشتريات والحسابات.',
+                icon: Icons.local_shipping_outlined,
+              )
+            else if (visibleSuppliers.isEmpty)
+              const GhalalEmptyState(
+                title: 'لا توجد نتائج مطابقة',
+                message: 'امسح البحث أو استخدم اسمًا أو هاتفًا مختلفًا.',
+                icon: Icons.search_off_rounded,
+              )
             else
-              ..._controller.suppliers.map(
+              ...visibleSuppliers.map(
                 (supplier) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _SupplierCard(
@@ -364,8 +380,8 @@ class _SupplierCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: balanceQirsh > 0
-                          ? AppColors.text
-                          : AppColors.mutedText,
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             ],
@@ -378,6 +394,7 @@ class _SupplierCard extends StatelessWidget {
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   onPressed: onEdit,
@@ -468,9 +485,10 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text(isActive ? 'نشط' : 'متوقف'),
-      backgroundColor: isActive ? AppColors.surfaceAlt : AppColors.border,
+    return GhalalStatusBadge(
+      label: isActive ? 'نشط' : 'متوقف',
+      icon: isActive ? Icons.check_circle_rounded : Icons.block_rounded,
+      tone: isActive ? GhalalStatusTone.success : GhalalStatusTone.cancelled,
     );
   }
 }

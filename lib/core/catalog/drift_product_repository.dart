@@ -67,7 +67,7 @@ class DriftProductRepository implements ProductDataRepository {
         referenceCostPricePiastersPerKg: draft.referenceCostPricePiastersPerKg,
         notes: _optional(draft.notes),
         createdAt: current.createdAt,
-        updatedAt: DateTime.now(),
+        updatedAt: _nextUpdatedAt(current.updatedAt),
       );
       await (_database.update(_database.products)
             ..where((row) => row.id.equals(productId)))
@@ -80,8 +80,10 @@ class DriftProductRepository implements ProductDataRepository {
   Future<domain.Product> setProductActive(
       {required String productId, required bool isActive}) async {
     final current = await _find(productId);
-    final updated =
-        current.copyWith(isActive: isActive, updatedAt: DateTime.now());
+    final updated = current.copyWith(
+      isActive: isActive,
+      updatedAt: _nextUpdatedAt(current.updatedAt),
+    );
     await (_database.update(_database.products)
           ..where((row) => row.id.equals(productId)))
         .write(_companion(updated));
@@ -120,6 +122,11 @@ class DriftProductRepository implements ProductDataRepository {
 
   @override
   SnapshotHolder createTransactionSnapshot() => _DriftProductSnapshot(this);
+
+  DateTime _nextUpdatedAt(DateTime current) {
+    final now = DateTime.now();
+    return now.isAfter(current) ? now : current.add(const Duration(seconds: 1));
+  }
 
   Future<int> _takeSequence() async {
     final row = await (_database.select(_database.repositorySequences)

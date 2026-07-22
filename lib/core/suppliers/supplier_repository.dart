@@ -23,8 +23,7 @@ abstract class SupplierDataRepository
   Future<void> clearForOwnerDataWipe();
 }
 
-class LocalSupplierRepository
-    implements SupplierDataRepository {
+class LocalSupplierRepository implements SupplierDataRepository {
   final List<Supplier> _suppliers = [];
   int _generatedIdCounter = 0;
 
@@ -82,7 +81,7 @@ class LocalSupplierRepository
       notes: _normalizedOptionalText(draft.notes),
       isActive: current.isActive,
       createdAt: current.createdAt,
-      updatedAt: DateTime.now(),
+      updatedAt: _nextUpdatedAt(current.updatedAt),
     );
 
     _suppliers[index] = updated;
@@ -98,7 +97,7 @@ class LocalSupplierRepository
     final current = _suppliers[index];
     final updated = current.copyWith(
       isActive: isActive,
-      updatedAt: DateTime.now(),
+      updatedAt: _nextUpdatedAt(current.updatedAt),
     );
     _suppliers[index] = updated;
     return updated;
@@ -208,6 +207,11 @@ class LocalSupplierRepository
   String _generateSupplierId(DateTime now) {
     _generatedIdCounter++;
     return 'sup-${now.microsecondsSinceEpoch}-$_generatedIdCounter';
+  }
+
+  DateTime _nextUpdatedAt(DateTime current) {
+    final now = DateTime.now();
+    return now.isAfter(current) ? now : current.add(const Duration(seconds: 1));
   }
 
   String _normalizedKey(String value) {

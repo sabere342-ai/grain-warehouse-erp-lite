@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/app/grain_warehouse_app.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -25,11 +25,12 @@ void main() {
     await tester.tap(find.text('إنشاء حساب المالك'));
     await tester.pumpAndSettle();
 
-    expect(find.text('لوحة متابعة المخزن'), findsOneWidget);
+    expect(find.text('لوحة متابعة غلال'), findsOneWidget);
     expect(find.text('المالك'), findsOneWidget);
   });
 
-  testWidgets('owner sees all functional owner navigation items', (tester) async {
+  testWidgets('owner sees all functional owner navigation items',
+      (tester) async {
     await _setDesktopSize(tester);
     final controller = await _signedInDemoController(
       phone: '01000000000',
@@ -44,11 +45,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('الإعدادات'), findsWidgets);
-    expect(find.text('التقارير'), findsWidgets);
-    expect(find.text('سجل التدقيق'), findsWidgets);
     expect(find.text('العملاء'), findsWidgets);
-    expect(find.text('المصروفات'), findsWidgets);
+    final sidebarScrollable = find.descendant(
+      of: find.byKey(const Key('desktop-navigation-sidebar')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('الإعدادات'),
+      300,
+      scrollable: sidebarScrollable,
+    );
+    expect(find.text('الإعدادات'), findsOneWidget);
+    expect(find.text('التقارير'), findsOneWidget);
+    expect(find.text('سجل التدقيق'), findsOneWidget);
+    expect(find.text('المصروفات'), findsOneWidget);
   });
 
   testWidgets('employee cannot see owner-only navigation items',

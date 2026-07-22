@@ -23,8 +23,7 @@ abstract class ProductDataRepository
   Future<void> clearForOwnerDataWipe();
 }
 
-class LocalProductRepository
-    implements ProductDataRepository {
+class LocalProductRepository implements ProductDataRepository {
   final List<Product> _products = [];
   int _generatedIdCounter = 0;
 
@@ -84,7 +83,7 @@ class LocalProductRepository
       referenceCostPricePiastersPerKg: draft.referenceCostPricePiastersPerKg,
       notes: _normalizedOptionalText(draft.notes),
       createdAt: current.createdAt,
-      updatedAt: DateTime.now(),
+      updatedAt: _nextUpdatedAt(current.updatedAt),
     );
 
     _products[index] = updated;
@@ -100,7 +99,7 @@ class LocalProductRepository
     final current = _products[index];
     final updated = current.copyWith(
       isActive: isActive,
-      updatedAt: DateTime.now(),
+      updatedAt: _nextUpdatedAt(current.updatedAt),
     );
     _products[index] = updated;
     return updated;
@@ -259,6 +258,11 @@ class LocalProductRepository
     }
 
     return index;
+  }
+
+  DateTime _nextUpdatedAt(DateTime current) {
+    final now = DateTime.now();
+    return now.isAfter(current) ? now : current.add(const Duration(seconds: 1));
   }
 
   String _generateProductId(DateTime now) {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class PageBackButton extends StatelessWidget {
-  const PageBackButton({super.key, this.onPressed});
+  const PageBackButton({super.key, this.onPressed, this.buttonKey});
 
   final VoidCallback? onPressed;
+  final Key? buttonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,7 @@ class PageBackButton extends StatelessWidget {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: OutlinedButton.icon(
+        key: buttonKey,
         onPressed: callback,
         icon: const Icon(Icons.arrow_forward_rounded),
         label: const Text('رجوع'),

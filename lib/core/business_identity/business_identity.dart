@@ -83,7 +83,7 @@ class BusinessIdentity {
     this.logo,
   });
 
-  static const defaultDisplayName = 'نظام إدارة مخازن الحبوب';
+  static const defaultDisplayName = 'غلال';
   static const empty = BusinessIdentity();
 
   final String? establishmentName;

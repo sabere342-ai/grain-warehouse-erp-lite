@@ -1,10 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/audit/audit_logs_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
@@ -32,6 +32,7 @@ class DashboardShell extends StatefulWidget {
 }
 
 class _DashboardShellState extends State<DashboardShell> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
   static const _destinations = [
@@ -117,98 +118,263 @@ class _DashboardShellState extends State<DashboardShell> {
         _selectedIndex >= visibleDestinations.length ? 0 : _selectedIndex;
     final selected = visibleDestinations[selectedIndex];
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final isCompact = ResponsiveLayout.isCompact(context);
+    final primaryDestinationCount =
+        visibleDestinations.length > 4 ? 4 : visibleDestinations.length;
+    final hasMoreDestinations =
+        visibleDestinations.length > primaryDestinationCount;
 
     final identityCtrl = BusinessIdentityScope.maybeOf(context);
     final identity = identityCtrl?.identity;
     final hasLogo = identity?.hasLogo ?? false;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hasLogo) ...[
-              _AppBarLogo(
-                  managedFileName: identity?.logo?.managedFileName ?? ''),
-              const SizedBox(width: 8),
-            ],
-            Flexible(
-              child: Text(
-                '${selected.label} - '
-                '${identity?.displayName ?? 'نظام إدارة مخازن الحبوب'}',
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(end: 8),
-            child: Center(child: Text(user.role.labelAr)),
-          ),
-          IconButton(
-            tooltip: 'تسجيل الخروج',
-            onPressed: () => auth.signOut(),
-            icon: const Icon(Icons.logout_rounded),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Row(
-        children: [
-          if (isDesktop)
-            NavigationRail(
-              selectedIndex: selectedIndex,
-              onDestinationSelected: _setSelectedIndex,
-              extended: true,
-              minWidth: 104,
-              minExtendedWidth: 170,
-              destinations: [
-                for (final destination in visibleDestinations)
-                  NavigationRailDestination(
-                    icon: Icon(destination.icon),
-                    label: Text(destination.label),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true):
+            _handleBack,
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          key: _scaffoldKey,
+          drawer: isDesktop
+              ? null
+              : _MobileNavigationDrawer(
+                  destinations: visibleDestinations,
+                  selectedIndex: selectedIndex,
+                  identityName: identity?.displayName ?? 'غلال',
+                  onSelected: (index) {
+                    Navigator.of(context).pop();
+                    _setSelectedIndex(index);
+                  },
+                ),
+          appBar: AppBar(
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasLogo) ...[
+                  _AppBarLogo(
+                    managedFileName: identity?.logo?.managedFileName ?? '',
                   ),
-              ],
-            ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: ResponsiveLayout.horizontalPadding(context),
-                vertical: 18,
-              ),
-              child: Column(
-                children: [
-                  if (selectedIndex != 0) ...[
-                    PageBackButton(onPressed: () => _setSelectedIndex(0)),
-                    const SizedBox(height: 12),
-                  ],
-                  Expanded(child: selected.screen),
+                  const SizedBox(width: AppSpacing.xs),
                 ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: isDesktop
-          ? null
-          : NavigationBar(
-              selectedIndex: selectedIndex > 4 ? 0 : selectedIndex,
-              onDestinationSelected: _setSelectedIndex,
-              indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
-              destinations: [
-                for (final destination in visibleDestinations.take(5))
-                  NavigationDestination(
-                    icon: Icon(destination.icon),
-                    label: destination.label,
+                Flexible(
+                  child: Text(
+                    '${identity?.displayName ?? 'غلال'} · ${selected.label}',
+                    overflow: TextOverflow.ellipsis,
                   ),
+                ),
               ],
             ),
+            actions: [
+              if (!isCompact)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
+                  child: Center(child: Text(user.role.labelAr)),
+                ),
+              IconButton(
+                tooltip: 'تسجيل الخروج',
+                onPressed: () => auth.signOut(),
+                icon: const Icon(Icons.logout_rounded),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+          ),
+          body: Row(
+            children: [
+              if (isDesktop)
+                _DesktopNavigationSidebar(
+                  key: const Key('desktop-navigation-sidebar'),
+                  destinations: visibleDestinations,
+                  selectedIndex: selectedIndex,
+                  onSelected: _setSelectedIndex,
+                ),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppBreakpoints.maxContentWidth,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveLayout.horizontalPadding(context),
+                        vertical: AppSpacing.md,
+                      ),
+                      child: Column(
+                        children: [
+                          if (selectedIndex != 0) ...[
+                            PageBackButton(
+                              buttonKey: const Key('shell-back-button'),
+                              onPressed: () => _setSelectedIndex(0),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                          Expanded(child: selected.screen),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: isDesktop
+              ? null
+              : NavigationBar(
+                  key: const Key('mobile-bottom-navigation'),
+                  selectedIndex: selectedIndex < primaryDestinationCount
+                      ? selectedIndex
+                      : primaryDestinationCount,
+                  onDestinationSelected: (index) {
+                    if (hasMoreDestinations &&
+                        index == primaryDestinationCount) {
+                      _scaffoldKey.currentState?.openDrawer();
+                      return;
+                    }
+                    _setSelectedIndex(index);
+                  },
+                  destinations: [
+                    for (final destination
+                        in visibleDestinations.take(primaryDestinationCount))
+                      NavigationDestination(
+                        icon: Icon(destination.icon),
+                        label: destination.label,
+                      ),
+                    if (hasMoreDestinations)
+                      const NavigationDestination(
+                        icon: Icon(Icons.menu_rounded),
+                        label: 'المزيد',
+                      ),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 
   void _setSelectedIndex(int index) {
     setState(() => _selectedIndex = index);
+  }
+
+  void _handleBack() {
+    if (_selectedIndex != 0) {
+      _setSelectedIndex(0);
+      return;
+    }
+    Navigator.of(context).maybePop();
+  }
+}
+
+class _DesktopNavigationSidebar extends StatelessWidget {
+  const _DesktopNavigationSidebar({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final List<_ShellDestination> destinations;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: AppComponentSizes.desktopSidebarWidth,
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        child: SafeArea(
+          top: false,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            itemCount: destinations.length,
+            itemBuilder: (context, index) {
+              final destination = destinations[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                child: ListTile(
+                  selected: selectedIndex == index,
+                  selectedTileColor:
+                      Theme.of(context).colorScheme.secondaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  leading: Icon(destination.icon),
+                  title: Text(destination.label),
+                  onTap: () => onSelected(index),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileNavigationDrawer extends StatelessWidget {
+  const _MobileNavigationDrawer({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.identityName,
+    required this.onSelected,
+  });
+
+  final List<_ShellDestination> destinations;
+  final int selectedIndex;
+  final String identityName;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      key: const Key('mobile-navigation-drawer'),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.warehouse_rounded,
+                    size: AppIconSizes.lg,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(identityName,
+                      style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'إدارة مخازن الحبوب',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                itemCount: destinations.length,
+                itemBuilder: (context, index) {
+                  final destination = destinations[index];
+                  return ListTile(
+                    selected: selectedIndex == index,
+                    leading: Icon(destination.icon),
+                    title: Text(destination.label),
+                    onTap: () => onSelected(index),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -25,6 +25,41 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 
 void main() {
   group('Phase 82 durable negative-balance workflow', () {
+    test('supplier and product revisions advance monotonically', () async {
+      final supplierSeed = LocalSupplierRepository();
+      final supplier = await supplierSeed.createSupplier(
+        const SupplierDraft(name: 'مورد البصمة'),
+      );
+      final supplierFuture = supplier.updatedAt.add(const Duration(days: 1));
+      final suppliers = LocalSupplierRepository();
+      await suppliers.restoreSuppliersIntoEmpty([
+        supplier.copyWith(updatedAt: supplierFuture),
+      ]);
+      final updatedSupplier = await suppliers.updateSupplier(
+        supplierId: supplier.id,
+        draft: const SupplierDraft(name: 'مورد البصمة المعدل'),
+      );
+      expect(updatedSupplier.updatedAt.isAfter(supplierFuture), isTrue);
+
+      final productSeed = LocalProductRepository();
+      final product = await productSeed.createProduct(
+        const ProductDraft(name: 'صنف البصمة', unit: GrainUnit.kilogram),
+      );
+      final productFuture = product.updatedAt.add(const Duration(days: 1));
+      final products = LocalProductRepository();
+      await products.restoreProductsIntoEmpty([
+        product.copyWith(updatedAt: productFuture),
+      ]);
+      final updatedProduct = await products.updateProduct(
+        productId: product.id,
+        draft: const ProductDraft(
+          name: 'صنف البصمة المعدل',
+          unit: GrainUnit.kilogram,
+        ),
+      );
+      expect(updatedProduct.updatedAt.isAfter(productFuture), isTrue);
+    });
+
     test(
         'all three operations create pending requests without business effects',
         () async {

@@ -1551,3 +1551,14 @@ Production startup now awaits the shared `FoundationDatabase` and wires `DriftPr
 # Phase 8C handoff
 
 Production startup now also wires `DriftCustomerRepository`. Schema version 3 adds only `customers`; the existing namespaced `repository_sequences` table allocates durable customer IDs independently from products. The v2 upgrade preserves probes, products, and all existing sequences. Customer ledgers, collections, advances/refunds, sales, reports, and the remaining repositories were not migrated. Phase 8D has not started and no deployment was performed.
+
+## Phase 83 — UI/UX design foundation handoff
+
+- Phase 83 adds a centralized token/semantic-theme layer and an adaptive application shell; it does not change schema, Backup v7, ledgers, payment routing, approvals, or report calculations.
+- Theme mode and accent are now separate persisted local settings. Legacy single-preset files remain readable; legacy high-contrast maps safely to dark mode with the Ghalal accent.
+- The mobile shell exposes every authorized destination through the More drawer; Windows uses the same destination model in a scrollable sidebar. Shell back and Alt+Left return to the dashboard without adding another dashboard route.
+- Migrated reference surfaces only: Login, Dashboard/Shell, approval list/details, Financial Accounts, Suppliers, and Settings/Appearance.
+- `FinancialAccountsScreen` now passes the signed-in user's real ID when constructing a new account draft; repository and authorization rules are unchanged.
+- Full-suite verification exposed a pre-existing timestamp-resolution race in Phase 82 stale detection. Supplier/product revisions now advance monotonically (at least one second when the clock is not later) in both Local and Drift repositories, matching Drift persistence precision; focused restore-future tests cover all four paths.
+- Use `docs/PHASE-83-DESIGN-SYSTEM-USAGE-GUIDE.md` for new UI and `docs/PHASE-83-SCREEN-MIGRATION-ROADMAP.md` for deferred screens.
+- Do not describe this as a complete application redesign. Transaction forms, most reports, backup/restore UI, and print previews remain on the migration roadmap.

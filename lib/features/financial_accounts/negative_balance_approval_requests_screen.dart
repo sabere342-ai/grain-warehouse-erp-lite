@@ -9,6 +9,11 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balanc
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_search_field.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_status_badge.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class NegativeBalanceApprovalRequestsScreen extends StatefulWidget {
@@ -42,6 +47,7 @@ class _NegativeBalanceApprovalRequestsScreenState
   Map<String, String> _actorNames = const {};
   NegativeBalanceApprovalRequestStatus? _statusFilter =
       NegativeBalanceApprovalRequestStatus.pending;
+  final _searchController = TextEditingController();
   String _query = '';
   String? _busyRequestId;
   String? _error;
@@ -58,6 +64,12 @@ class _NegativeBalanceApprovalRequestsScreenState
         AppRepositories.financialAccountRepository;
     _auth = widget.authRepository ?? AppRepositories.authRepository;
     _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -126,89 +138,97 @@ class _NegativeBalanceApprovalRequestsScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
+          GhalalPageHeader(
+            title: 'طلبات الموافقة',
+            subtitle:
+                'الطلب المعلّق لم ينفذ العملية بعد؛ الاعتماد الصحيح ينفذها فورًا.',
+            icon: Icons.approval_rounded,
+            onBack: Navigator.of(context).canPop()
+                ? () => Navigator.of(context).maybePop()
+                : null,
+            backButtonKey: const Key('approval-requests-back-button'),
+            actions: [
               IconButton(
-                key: const Key('approval-requests-back-button'),
-                tooltip: 'رجوع',
-                onPressed: Navigator.of(context).canPop()
-                    ? () => Navigator.of(context).maybePop()
-                    : null,
-                icon: const Icon(Icons.arrow_back_rounded),
-              ),
-              Expanded(
-                child: Text(
-                  'طلبات الموافقة',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
-              IconButton(
-                tooltip: 'تحديث',
+                tooltip: 'تحديث الطلبات',
                 onPressed: _loading ? null : _load,
                 icon: const Icon(Icons.refresh_rounded),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              SizedBox(
-                width: 320,
-                child: TextField(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search_rounded),
-                    hintText: 'بحث بالمعرف أو العملية أو الحساب...',
-                  ),
-                  onChanged: (value) => setState(() => _query = value),
-                ),
-              ),
-              SizedBox(
-                width: 220,
-                child: DropdownButtonFormField<
-                    NegativeBalanceApprovalRequestStatus?>(
-                  value: _statusFilter,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'الحالة'),
-                  items: [
-                    const DropdownMenuItem(value: null, child: Text('الكل')),
-                    ...NegativeBalanceApprovalRequestStatus.values.map(
-                      (status) => DropdownMenuItem(
-                        value: status,
-                        child: Text(status.labelAr),
-                      ),
-                    ),
-                  ],
-                  onChanged: (value) => setState(() => _statusFilter = value),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.sm),
+          _buildFilters(),
+          const SizedBox(height: AppSpacing.md),
           Expanded(child: _buildBody(user)),
         ],
       ),
     );
   }
 
-  Widget _buildBody(AppUser user) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: _load, child: const Text('إعادة المحاولة')),
-          ],
+  Widget _buildFilters() {
+    final search = GhalalSearchField(
+      controller: _searchController,
+      hintText: 'بحث بالمعرف أو العملية أو الحساب...',
+      onChanged: (value) => setState(() => _query = value),
+    );
+    final status =
+        DropdownButtonFormField<NegativeBalanceApprovalRequestStatus?>(
+      value: _statusFilter,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'الحالة'),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('كل الحالات')),
+        ...NegativeBalanceApprovalRequestStatus.values.map(
+          (value) => DropdownMenuItem(
+            value: value,
+            child: Text(value.labelAr),
+          ),
         ),
-      );
+      ],
+      onChanged: (value) => setState(() => _statusFilter = value),
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              search,
+              const SizedBox(height: AppSpacing.sm),
+              status,
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: search),
+            const SizedBox(width: AppSpacing.sm),
+            SizedBox(width: 230, child: status),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(AppUser user) {
+    if (_loading) {
+      return const GhalalLoadingState(label: 'جاري تحميل طلبات الموافقة...');
+    }
+    if (_error != null) {
+      return GhalalErrorState(message: _error!, onRetry: _load);
     }
     final items = _visibleItems;
     if (items.isEmpty) {
-      return const Center(child: Text('لا توجد طلبات تطابق الفلتر الحالي.'));
+      if (_items.isEmpty) {
+        return const GhalalEmptyState(
+          title: 'لا توجد طلبات موافقة',
+          message: 'ستظهر هنا الطلبات التي تحتاج اعتمادًا قبل التنفيذ.',
+          icon: Icons.approval_outlined,
+        );
+      }
+      return const GhalalEmptyState(
+        title: 'لا توجد نتائج مطابقة',
+        message: 'غيّر البحث أو الحالة لعرض طلبات أخرى.',
+        icon: Icons.search_off_rounded,
+      );
     }
     return ListView.separated(
       itemCount: items.length,
@@ -240,7 +260,7 @@ class _NegativeBalanceApprovalRequestsScreenState
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
-                  Chip(label: Text(request.status.labelAr)),
+                  _approvalStatusBadge(request.status),
                 ],
               ),
               const SizedBox(height: 8),
@@ -309,6 +329,38 @@ class _NegativeBalanceApprovalRequestsScreenState
     );
   }
 
+  Widget _approvalStatusBadge(
+    NegativeBalanceApprovalRequestStatus status,
+  ) {
+    return switch (status) {
+      NegativeBalanceApprovalRequestStatus.pending => GhalalStatusBadge(
+          label: status.labelAr,
+          icon: Icons.schedule_rounded,
+          tone: GhalalStatusTone.warning,
+        ),
+      NegativeBalanceApprovalRequestStatus.executed => GhalalStatusBadge(
+          label: status.labelAr,
+          icon: Icons.check_circle_rounded,
+          tone: GhalalStatusTone.success,
+        ),
+      NegativeBalanceApprovalRequestStatus.rejected => GhalalStatusBadge(
+          label: status.labelAr,
+          icon: Icons.block_rounded,
+          tone: GhalalStatusTone.error,
+        ),
+      NegativeBalanceApprovalRequestStatus.cancelled => GhalalStatusBadge(
+          label: status.labelAr,
+          icon: Icons.cancel_outlined,
+          tone: GhalalStatusTone.cancelled,
+        ),
+      NegativeBalanceApprovalRequestStatus.stale => GhalalStatusBadge(
+          label: status.labelAr,
+          icon: Icons.history_toggle_off_rounded,
+          tone: GhalalStatusTone.stale,
+        ),
+    };
+  }
+
   Future<void> _showDetails(NegativeBalanceApprovalRequest request) async {
     final transitions = await _requests.listTransitions(requestId: request.id);
     if (!mounted) return;
@@ -316,8 +368,11 @@ class _NegativeBalanceApprovalRequestsScreenState
       context: context,
       builder: (context) => AlertDialog(
         title: Text('تفاصيل ${request.operationType.labelAr}'),
-        content: SizedBox(
-          width: 560,
+        insetPadding: const EdgeInsets.all(AppSpacing.md),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppComponentSizes.dialogMaxWidth,
+          ),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,10 +4,14 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/layout/responsive_layout.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
@@ -75,7 +79,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final user = AuthScope.maybeOf(context)?.state.user;
     final canViewDashboardData =
         user?.permissions.canViewFinancialReports ?? false;
@@ -87,15 +90,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final data = _controller.data;
 
         return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
           children: [
-            Text('لوحة متابعة المخزن', style: textTheme.headlineMedium),
-            const SizedBox(height: 6),
-            Text(
-              'نظرة سريعة على حركة الحبوب والمخزون. استخدم التقارير للتفاصيل اليومية.',
-              style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            const GhalalPageHeader(
+              title: 'لوحة متابعة غلال',
+              subtitle:
+                  'نظرة سريعة على حركة الحبوب والمخزون والحسابات المصرح بها.',
+              icon: Icons.dashboard_rounded,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             if (ownerCanExport) ...[
               const _BackupExportCard(),
               const SizedBox(height: 16),
@@ -117,77 +120,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (!canViewDashboardData)
               const SizedBox.shrink()
             else if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل مؤشرات المخزن...')
             else if (_controller.errorMessage != null)
-              PremiumCard(child: Text(_controller.errorMessage!))
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: _controller.load,
+              )
             else ...[
+              Text(
+                'ملخص التشغيل اليومي',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.sm),
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final columns = constraints.maxWidth >= 900 ? 4 : 2;
-                  return GridView.count(
-                    crossAxisCount: columns,
-                    childAspectRatio: constraints.maxWidth >= 900 ? 1.35 : 1.15,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                  const gap = AppSpacing.sm;
+                  final columns = ResponsiveLayout.gridColumns(
+                    constraints.maxWidth,
+                    minimumItemWidth: 250,
+                  );
+                  final itemWidth =
+                      (constraints.maxWidth - gap * (columns - 1)) / columns;
+                  final cards = <Widget>[
+                    _MetricCard(
+                      'مبيعات اليوم',
+                      MoneyUtils.formatPiastersAsEgp(data.todaySalesQirsh),
+                      Icons.point_of_sale_rounded,
+                      subtitle: data.todayCashSalesQirsh > 0 ||
+                              data.todayCreditSalesQirsh > 0
+                          ? 'نقدي ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • آجل ${MoneyUtils.formatPiastersAsEgp(data.todayCreditSalesQirsh)}'
+                          : null,
+                    ),
+                    _MetricCard(
+                      'نقد داخل اليوم',
+                      MoneyUtils.formatPiastersAsEgp(data.todayCashInQirsh),
+                      Icons.payments_rounded,
+                      subtitle: data.todayCashSalesQirsh > 0 ||
+                              data.todayCollectionsQirsh > 0
+                          ? 'مبيعات نقدية ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • تحصيلات ${MoneyUtils.formatPiastersAsEgp(data.todayCollectionsQirsh)}'
+                          : null,
+                    ),
+                    _MetricCard(
+                      'المستحق على العملاء',
+                      MoneyUtils.formatPiastersAsEgp(
+                          data.customerReceivablesQirsh),
+                      Icons.account_balance_wallet_rounded,
+                      subtitle: 'إجمالي المبالغ المستحقة لنا على العملاء.',
+                    ),
+                    _MetricCard(
+                      'المستحق للموردين',
+                      MoneyUtils.formatPiastersAsEgp(
+                          data.supplierPayablesQirsh),
+                      Icons.account_balance_wallet_rounded,
+                      subtitle: 'إجمالي المبالغ المستحقة للموردين.',
+                    ),
+                    _MetricCard(
+                      'إجمالي أرصدة الحسابات المالية',
+                      MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
+                      Icons.savings_rounded,
+                      subtitle:
+                          'إجمالي الأرصدة الحالية للحسابات المالية، شاملاً الحسابات غير النشطة.',
+                    ),
+                    _MetricCard(
+                      'مخزون القمح',
+                      data.wheatStockKg > 0
+                          ? '${data.wheatStockKg} كجم'
+                          : '${data.totalStockKg} كجم',
+                      Icons.grain_rounded,
+                      subtitle: data.wheatStockKg > 0
+                          ? 'إجمالي المخزون: ${data.totalStockKg} كجم'
+                          : data.totalStockKg > 0
+                              ? 'إجمالي المخزون'
+                              : null,
+                    ),
+                    _MetricCard(
+                      'تنبيهات المخزون',
+                      '${data.stockAlertCount}',
+                      Icons.warning_amber_rounded,
+                    ),
+                  ];
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
                     children: [
-                      _MetricCard(
-                        'مبيعات اليوم',
-                        MoneyUtils.formatPiastersAsEgp(data.todaySalesQirsh),
-                        Icons.point_of_sale_rounded,
-                        subtitle: data.todayCashSalesQirsh > 0 ||
-                                data.todayCreditSalesQirsh > 0
-                            ? 'نقدي ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • آجل ${MoneyUtils.formatPiastersAsEgp(data.todayCreditSalesQirsh)}'
-                            : null,
-                      ),
-                      _MetricCard(
-                        'نقد داخل اليوم',
-                        MoneyUtils.formatPiastersAsEgp(data.todayCashInQirsh),
-                        Icons.payments_rounded,
-                        subtitle: data.todayCashSalesQirsh > 0 ||
-                                data.todayCollectionsQirsh > 0
-                            ? 'مبيعات نقدية ${MoneyUtils.formatPiastersAsEgp(data.todayCashSalesQirsh)} • تحصيلات ${MoneyUtils.formatPiastersAsEgp(data.todayCollectionsQirsh)}'
-                            : null,
-                      ),
-                      _MetricCard(
-                        'المستحق على العملاء',
-                        MoneyUtils.formatPiastersAsEgp(
-                            data.customerReceivablesQirsh),
-                        Icons.account_balance_wallet_rounded,
-                        subtitle: 'إجمالي المبالغ المستحقة لنا على العملاء.',
-                      ),
-                      _MetricCard(
-                        'المستحق للموردين',
-                        MoneyUtils.formatPiastersAsEgp(
-                            data.supplierPayablesQirsh),
-                        Icons.account_balance_wallet_rounded,
-                        subtitle: 'إجمالي المبالغ المستحقة للموردين.',
-                      ),
-                      _MetricCard(
-                        'إجمالي أرصدة الحسابات المالية',
-                        MoneyUtils.formatPiastersAsEgp(data.cashBalanceQirsh),
-                        Icons.savings_rounded,
-                        subtitle:
-                            'إجمالي الأرصدة الحالية للحسابات المالية، شاملاً الحسابات غير النشطة.',
-                      ),
-                      _MetricCard(
-                        'مخزون القمح',
-                        data.wheatStockKg > 0
-                            ? '${data.wheatStockKg} كجم'
-                            : '${data.totalStockKg} كجم',
-                        Icons.grain_rounded,
-                        subtitle: data.wheatStockKg > 0
-                            ? 'إجمالي المخزون: ${data.totalStockKg} كجم'
-                            : data.totalStockKg > 0
-                                ? 'إجمالي المخزون'
-                                : null,
-                      ),
-                      _MetricCard(
-                        'تنبيهات المخزون',
-                        '${data.stockAlertCount}',
-                        Icons.warning_amber_rounded,
-                      ),
+                      for (final card in cards)
+                        SizedBox(width: itemWidth, child: card),
                     ],
                   );
                 },
