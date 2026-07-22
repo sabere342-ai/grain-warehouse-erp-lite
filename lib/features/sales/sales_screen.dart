@@ -10,8 +10,12 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_sales_invoice_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SalesScreen extends StatefulWidget {
@@ -26,6 +30,8 @@ class SalesScreen extends StatefulWidget {
 class _SalesScreenState extends State<SalesScreen> {
   late final SaleController _controller;
   late final bool _ownsController;
+  bool _isSubmittingSale = false;
+  String? _cancellingSaleId;
 
   @override
   void initState() {
@@ -76,44 +82,38 @@ class _SalesScreenState extends State<SalesScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a',
-                          style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627\u060c \u0648\u062a\u062f\u0639\u0645 \u0623\u0643\u062b\u0631 \u0645\u0646 \u0635\u0646\u0641 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: '\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a',
+              subtitle:
+                  '\u0643\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639 \u062a\u062a\u0637\u0644\u0628 \u0639\u0645\u064a\u0644\u0627 \u0645\u0633\u062c\u0644\u0627\u060c \u0648\u062a\u062f\u0639\u0645 \u0623\u0643\u062b\u0631 \u0645\u0646 \u0635\u0646\u0641 \u0641\u064a \u0646\u0641\u0633 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629.',
+              icon: Icons.point_of_sale_rounded,
+              actions: [
                 OutlinedButton.icon(
                   onPressed: () => _openHistory(context),
                   icon: const Icon(Icons.manage_search_rounded),
                   label: const Text(
                       '\u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a'),
                 ),
-                const SizedBox(width: 8),
                 if (canCreate)
                   FilledButton.icon(
-                    onPressed: _controller.products.isEmpty ||
+                    onPressed: _isSubmittingSale ||
+                            _controller.products.isEmpty ||
                             _controller.customers.isEmpty
                         ? null
                         : () => _showSaleForm(context, user: user),
-                    icon: const Icon(Icons.point_of_sale_rounded),
+                    icon: _isSubmittingSale
+                        ? const SizedBox.square(
+                            dimension: AppIconSizes.sm,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.point_of_sale_rounded),
                     label: const Text(
                         '\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
                   ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
+            if (_controller.errorMessage != null &&
+                _controller.sales.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 _controller.errorMessage!,
@@ -125,7 +125,15 @@ class _SalesScreenState extends State<SalesScreen> {
             ],
             const SizedBox(height: 16),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(
+                  label:
+                      '\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a...')
+            else if (_controller.errorMessage != null &&
+                _controller.sales.isEmpty)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.load(user),
+              )
             else ...[
               if (canCreate) ...[
                 _ProductSaleCards(
@@ -140,10 +148,12 @@ class _SalesScreenState extends State<SalesScreen> {
                 const SizedBox(height: 16),
               ],
               if (_controller.sales.isEmpty)
-                const PremiumCard(
-                  child: Text(
-                    '\u0644\u0627 \u062a\u0648\u062c\u062f \u0641\u0648\u0627\u062a\u064a\u0631 \u0628\u064a\u0639 \u0645\u0633\u062c\u0644\u0629 \u0628\u0639\u062f. \u0633\u062a\u0638\u0647\u0631 \u0647\u0646\u0627 \u0641\u0648\u0627\u062a\u064a\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0639\u062f \u0627\u0644\u062d\u0641\u0638.',
-                  ),
+                const GhalalEmptyState(
+                  title:
+                      '\u0644\u0627 \u062a\u0648\u062c\u062f \u0641\u0648\u0627\u062a\u064a\u0631 \u0628\u064a\u0639',
+                  message:
+                      '\u0633\u062a\u0638\u0647\u0631 \u0647\u0646\u0627 \u0641\u0648\u0627\u062a\u064a\u0631 \u0627\u0644\u0628\u064a\u0639 \u0628\u0639\u062f \u062a\u0646\u0641\u064a\u0630\u0647\u0627.',
+                  icon: Icons.receipt_long_outlined,
                 )
               else
                 ..._controller.sales.reversed.map(
@@ -154,7 +164,8 @@ class _SalesScreenState extends State<SalesScreen> {
                       productName: _controller.productName(sale.productId),
                       customerName: _controller.customerName(sale.customerId),
                       canCancel: canCancel,
-                      onCancel: sale.isCancelled
+                      isCancelling: _cancellingSaleId == sale.id,
+                      onCancel: sale.isCancelled || _cancellingSaleId != null
                           ? null
                           : () => _confirmCancelSale(context, user, sale),
                       onPreview: () => _showSalePreview(context, sale),
@@ -196,6 +207,7 @@ class _SalesScreenState extends State<SalesScreen> {
     required user,
     String? initialProductId,
   }) async {
+    if (_isSubmittingSale) return;
     final result = await showDialog<_SaleFormResult>(
       context: context,
       builder: (context) => _SaleFormDialog(
@@ -210,19 +222,24 @@ class _SalesScreenState extends State<SalesScreen> {
       return;
     }
 
-    await _controller.createSale(
-      user: user,
-      productId: result.items.first.productId,
-      quantityKg: result.items.first.quantityKg,
-      salePriceQirshPerKg: result.items.first.salePriceQirshPerKg,
-      notes: result.notes,
-      paymentMode: result.paymentMode,
-      customerId: result.customerId,
-      items: result.items,
-      paidAmountQirsh: result.paidAmountQirsh,
-      paymentAllocations: result.paymentAllocations,
-      operationRequestId: result.operationRequestId,
-    );
+    setState(() => _isSubmittingSale = true);
+    try {
+      await _controller.createSale(
+        user: user,
+        productId: result.items.first.productId,
+        quantityKg: result.items.first.quantityKg,
+        salePriceQirshPerKg: result.items.first.salePriceQirshPerKg,
+        notes: result.notes,
+        paymentMode: result.paymentMode,
+        customerId: result.customerId,
+        items: result.items,
+        paidAmountQirsh: result.paidAmountQirsh,
+        paymentAllocations: result.paymentAllocations,
+        operationRequestId: result.operationRequestId,
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmittingSale = false);
+    }
   }
 
   Future<void> _confirmCancelSale(
@@ -233,50 +250,71 @@ class _SalesScreenState extends State<SalesScreen> {
     final reasonController = TextEditingController();
     final reason = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-            '\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0628\u064a\u0639'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '\u062a\u062d\u0630\u064a\u0631 \u0645\u0647\u0645: \u0633\u064a\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u062d\u0631\u0643\u0627\u062a \u0645\u062e\u0632\u0648\u0646 \u0639\u0643\u0633\u064a\u0629 \u0644\u0625\u0644\u063a\u0627\u0621 \u0623\u062b\u0631 \u0647\u0630\u0627 \u0627\u0644\u0628\u064a\u0639. \u0644\u0646 \u064a\u062a\u0645 \u062d\u0630\u0641 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0623\u0635\u0644\u064a \u0623\u0648 \u0627\u0644\u062d\u0631\u0643\u0629 \u0627\u0644\u0623\u0635\u0644\u064a\u0629\u060c \u0648\u0633\u064a\u0638\u0647\u0631 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 \u0641\u064a \u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0644\u0644\u0645\u0627\u0644\u0643.',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => GhalalResponsiveDialog(
+          isDirty: reasonController.text.trim().isNotEmpty,
+          icon: Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          title: const Text(
+              '\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0628\u064a\u0639'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '\u062a\u062d\u0630\u064a\u0631 \u0645\u0647\u0645: \u0633\u064a\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u062d\u0631\u0643\u0627\u062a \u0645\u062e\u0632\u0648\u0646 \u0639\u0643\u0633\u064a\u0629 \u0644\u0625\u0644\u063a\u0627\u0621 \u0623\u062b\u0631 \u0647\u0630\u0627 \u0627\u0644\u0628\u064a\u0639. \u0644\u0646 \u064a\u062a\u0645 \u062d\u0630\u0641 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639 \u0627\u0644\u0623\u0635\u0644\u064a \u0623\u0648 \u0627\u0644\u062d\u0631\u0643\u0629 \u0627\u0644\u0623\u0635\u0644\u064a\u0629\u060c \u0648\u0633\u064a\u0638\u0647\u0631 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 \u0641\u064a \u0633\u062c\u0644 \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0644\u0644\u0645\u0627\u0644\u0643.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                onChanged: (_) => setDialogState(() {}),
+                decoration: const InputDecoration(
+                    labelText:
+                        '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
+                maxLines: 2,
+                textDirection: TextDirection.rtl,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => GhalalResponsiveDialog.requestClose(
+                context,
+                isDirty: reasonController.text.trim().isNotEmpty,
+              ),
+              child: const Text('\u0631\u062c\u0648\u0639'),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              decoration: const InputDecoration(
-                  labelText:
-                      '\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
-              maxLines: 2,
-              textDirection: TextDirection.rtl,
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(reasonController.text),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+              ),
+              child: const Text(
+                  '\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('\u0631\u062c\u0648\u0639'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(reasonController.text),
-            child: const Text(
-                '\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621'),
-          ),
-        ],
       ),
     );
+    reasonController.dispose();
 
     if (reason == null || reason.trim().isEmpty) {
       return;
     }
 
-    await _controller.cancelSale(
-      user: user,
-      saleId: sale.id,
-      cancellationReason: reason,
-    );
+    setState(() => _cancellingSaleId = sale.id);
+    try {
+      await _controller.cancelSale(
+        user: user,
+        saleId: sale.id,
+        cancellationReason: reason,
+      );
+    } finally {
+      if (mounted) setState(() => _cancellingSaleId = null);
+    }
   }
 }
 
@@ -417,6 +455,7 @@ class _SaleCard extends StatelessWidget {
     required this.productName,
     required this.customerName,
     required this.canCancel,
+    required this.isCancelling,
     this.onCancel,
     this.onPreview,
   });
@@ -425,6 +464,7 @@ class _SaleCard extends StatelessWidget {
   final String productName;
   final String customerName;
   final bool canCancel;
+  final bool isCancelling;
   final VoidCallback? onCancel;
   final VoidCallback? onPreview;
 
@@ -534,9 +574,15 @@ class _SaleCard extends StatelessWidget {
               alignment: AlignmentDirectional.centerStart,
               child: OutlinedButton.icon(
                 onPressed: onCancel,
-                icon: const Icon(Icons.cancel_outlined),
-                label: const Text(
-                    '\u0625\u0644\u063a\u0627\u0621 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639'),
+                icon: isCancelling
+                    ? const SizedBox.square(
+                        dimension: AppIconSizes.sm,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cancel_outlined),
+                label: Text(isCancelling
+                    ? '\u062c\u0627\u0631\u064a \u0627\u0644\u0625\u0644\u063a\u0627\u0621...'
+                    : '\u0625\u0644\u063a\u0627\u0621 \u0645\u0633\u062a\u0646\u062f \u0627\u0644\u0628\u064a\u0639'),
               ),
             ),
           ],
@@ -703,7 +749,9 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
         paymentRouteValid &&
         !_isSubmitting;
 
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isSubmitting,
       title: const Text(
           '\u062a\u0633\u062c\u064a\u0644 \u0641\u0627\u062a\u0648\u0631\u0629 \u0628\u064a\u0639'),
       content: SingleChildScrollView(
@@ -720,6 +768,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _customerId,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText:
                     '\u0627\u062e\u062a\u0631 \u0627\u0644\u0639\u0645\u064a\u0644 *',
@@ -932,7 +981,12 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('\u0625\u0644\u063a\u0627\u0621'),
         ),
         FilledButton(
@@ -949,6 +1003,19 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       ],
     );
   }
+
+  bool get _isDirty =>
+      _customerId != null ||
+      _notesController.text.trim().isNotEmpty ||
+      _paymentMode != SalePaymentMode.cash ||
+      _paidAmountText?.trim().isNotEmpty == true ||
+      _lineItems.any((item) =>
+          item.quantityController.text.trim().isNotEmpty ||
+          item.priceController.text.trim().isNotEmpty) ||
+      _allocationEntries.any((entry) =>
+          entry.accountId != null ||
+          entry.amountController.text.trim().isNotEmpty ||
+          entry.paymentMethod != PaymentMethod.cash);
 
   Widget _buildAllocationRow(int index) {
     final entry = _allocationEntries[index];
@@ -972,7 +1039,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       elevation: 0,
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppSpacing.xs),
         child: Column(
           children: [
             Row(
@@ -981,6 +1048,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                   flex: 4,
                   child: DropdownButtonFormField<String>(
                     value: entry.accountId,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText:
                           '\u0627\u0644\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u064a',
@@ -1002,14 +1070,17 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 if (_allocationEntries.length > 1) ...[
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_outline_rounded,
-                        color: Colors.red, size: 20),
+                    tooltip:
+                        '\u062d\u0630\u0641 \u062a\u062e\u0635\u064a\u0635 \u0627\u0644\u062f\u0641\u0639',
+                    icon: Icon(
+                      Icons.remove_circle_outline_rounded,
+                      color: Theme.of(context).colorScheme.error,
+                      size: 20,
+                    ),
                     onPressed: () => setState(() {
                       entry.amountController.dispose();
                       _allocationEntries.removeAt(index);
                     }),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
                   ),
                 ],
               ],
@@ -1034,6 +1105,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                 Expanded(
                   child: DropdownButtonFormField<PaymentMethod>(
                     value: entry.paymentMethod,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: '\u0637\u0631\u064a\u0642\u0629',
                       isDense: true,
@@ -1102,7 +1174,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
       elevation: 0,
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           children: [
             _summaryRow(
@@ -1134,7 +1206,9 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
                     ? '\u2713 \u0645\u062a\u0648\u0627\u0641\u0642'
                     : '\u2717 \u063a\u064a\u0631 \u0645\u062a\u0648\u0627\u0641\u0642',
                 style: TextStyle(
-                  color: balanced ? Colors.green : Colors.red,
+                  color: balanced
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.error,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1170,6 +1244,7 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
               flex: 3,
               child: DropdownButtonFormField<String>(
                 value: item.productId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: '\u0627\u0644\u0635\u0646\u0641',
                   isDense: true,
@@ -1192,15 +1267,16 @@ class _SaleFormDialogState extends State<_SaleFormDialog> {
             if (_lineItems.length > 1) ...[
               const SizedBox(width: 4),
               IconButton(
-                icon: const Icon(Icons.remove_circle_outline_rounded,
-                    color: Colors.red),
+                tooltip: '\u062d\u0630\u0641 \u0627\u0644\u0635\u0646\u0641',
+                icon: Icon(
+                  Icons.remove_circle_outline_rounded,
+                  color: Theme.of(context).colorScheme.error,
+                ),
                 onPressed: () => setState(() {
                   item.quantityController.dispose();
                   item.priceController.dispose();
                   _lineItems.removeAt(index);
                 }),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
             ],
           ],

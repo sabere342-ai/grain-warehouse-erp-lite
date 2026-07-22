@@ -12,9 +12,13 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 class SupplierAdvanceActionsScreen extends StatefulWidget {
   const SupplierAdvanceActionsScreen({
@@ -101,33 +105,25 @@ class _SupplierAdvanceActionsScreenState
 
   Widget _body() {
     if (_loading) {
-      return const Center(
+      return const GhalalLoadingState(
         key: Key('supplier-advances-loading'),
-        child: CircularProgressIndicator(),
+        label: 'جاري تحميل سلف المورد...',
       );
     }
     if (_error != null) {
-      return Center(
+      return GhalalErrorState(
         key: const Key('supplier-advances-error'),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              key: const Key('supplier-advances-retry'),
-              onPressed: _load,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('إعادة المحاولة'),
-            ),
-          ]),
-        ),
+        message: _error!,
+        onRetry: _load,
+        retryButtonKey: const Key('supplier-advances-retry'),
       );
     }
     if (_advances.isEmpty) {
-      return const Center(
+      return const GhalalEmptyState(
         key: Key('supplier-advances-empty'),
-        child: PremiumCard(child: Text('لا توجد سلف مسجلة لهذا المورد')),
+        title: 'لا توجد سلف للمورد',
+        message: 'لا توجد سلف مسجلة لهذا المورد.',
+        icon: Icons.account_balance_wallet_outlined,
       );
     }
     return RefreshIndicator(
@@ -136,11 +132,11 @@ class _SupplierAdvanceActionsScreenState
         key: const Key('supplier-advances-list'),
         padding: const EdgeInsets.all(16),
         children: [
-          Text('سلف المورد', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 6),
-          const Text(
-            'يمكن تطبيق الرصيد على ذمة المورد أو استرداده منه إلى الحساب المالي الأصلي.',
-            style: TextStyle(color: AppColors.mutedText),
+          const GhalalPageHeader(
+            title: 'إدارة سلف المورد',
+            subtitle:
+                'يمكن تطبيق الرصيد على ذمة المورد أو استرداده منه إلى الحساب المالي الأصلي.',
+            icon: Icons.account_balance_wallet_rounded,
           ),
           const SizedBox(height: 16),
           for (final summary in _advances)
@@ -379,7 +375,13 @@ class _SupplierRefundReversalDialogState
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GhalalResponsiveDialog(
+          isDirty: _reason.text.trim().isNotEmpty,
+          isBusy: _submitting,
+          icon: Icon(
+            Icons.undo_rounded,
+            color: Theme.of(context).colorScheme.error,
+          ),
           title: Text('عكس استرداد سلفة المورد - ${widget.supplier.name}'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(
@@ -392,20 +394,34 @@ class _SupplierRefundReversalDialogState
                 key: const Key('supplier-refund-reversal-reason'),
                 controller: _reason,
                 enabled: !_submitting,
-                decoration: const InputDecoration(labelText: 'سبب العكس *')),
+                decoration: const InputDecoration(labelText: 'سبب العكس *'),
+                onChanged: (_) => setState(() {})),
             if (_error != null)
               Text(_error!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ]),
           actions: [
             TextButton(
-                onPressed:
-                    _submitting ? null : () => Navigator.pop(context, false),
+                onPressed: _submitting
+                    ? null
+                    : () => GhalalResponsiveDialog.requestClose(
+                          context,
+                          isDirty: _reason.text.trim().isNotEmpty,
+                        ),
                 child: const Text('إلغاء')),
             FilledButton(
                 key: const Key('supplier-refund-reversal-submit'),
                 onPressed: _submitting ? null : _submit,
-                child: const Text('تأكيد العكس')),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
+                ),
+                child: _submitting
+                    ? const SizedBox.square(
+                        dimension: AppIconSizes.sm,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('تأكيد العكس')),
           ]);
   Future<void> _submit() async {
     final reason = _reason.text.trim();
@@ -522,7 +538,9 @@ class _ApplyDialogState extends State<_ApplyDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GhalalResponsiveDialog(
+          isDirty: _amount.text.trim().isNotEmpty,
+          isBusy: _submitting,
           title: Text('تطبيق السلفة - ${widget.supplier.name}'),
           content: SingleChildScrollView(
               child: Column(
@@ -540,7 +558,8 @@ class _ApplyDialogState extends State<_ApplyDialog> {
                         const TextInputType.numberWithOptions(decimal: true),
                     textDirection: TextDirection.ltr,
                     decoration: const InputDecoration(
-                        labelText: 'مبلغ التطبيق بالجنيه')),
+                        labelText: 'مبلغ التطبيق بالجنيه'),
+                    onChanged: (_) => setState(() {})),
                 if (_error != null)
                   Text(_error!,
                       key: const Key('supplier-advance-application-error'),
@@ -549,8 +568,12 @@ class _ApplyDialogState extends State<_ApplyDialog> {
               ])),
           actions: [
             TextButton(
-                onPressed:
-                    _submitting ? null : () => Navigator.pop(context, false),
+                onPressed: _submitting
+                    ? null
+                    : () => GhalalResponsiveDialog.requestClose(
+                          context,
+                          isDirty: _amount.text.trim().isNotEmpty,
+                        ),
                 child: const Text('إلغاء')),
             FilledButton(
                 key: const Key('supplier-advance-application-submit'),
@@ -629,7 +652,9 @@ class _RefundDialogState extends State<_RefundDialog> {
   @override
   Widget build(BuildContext context) {
     final parsed = _parse(_amount.text);
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+        isDirty: _amount.text.trim().isNotEmpty || _accountId != null,
+        isBusy: _submitting,
         title: Text('استرداد السلفة من المورد - ${widget.supplier.name}'),
         content: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
@@ -644,6 +669,7 @@ class _RefundDialogState extends State<_RefundDialog> {
                   DropdownButtonFormField<String>(
                       key: const Key('supplier-advance-refund-account'),
                       value: _accountId,
+                      isExpanded: true,
                       decoration:
                           const InputDecoration(labelText: 'الحساب المالي *'),
                       items: widget.accounts
@@ -679,8 +705,13 @@ class _RefundDialogState extends State<_RefundDialog> {
                 ]))),
         actions: [
           TextButton(
-              onPressed:
-                  _submitting ? null : () => Navigator.pop(context, false),
+              onPressed: _submitting
+                  ? null
+                  : () => GhalalResponsiveDialog.requestClose(
+                        context,
+                        isDirty: _amount.text.trim().isNotEmpty ||
+                            _accountId != null,
+                      ),
               child: const Text('إلغاء')),
           FilledButton(
               key: const Key('supplier-advance-refund-submit'),

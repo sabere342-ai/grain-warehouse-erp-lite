@@ -208,8 +208,7 @@ void main() {
             find.byKey(const Key('advance-application-error')), findsOneWidget,
             reason: value);
         expect(controller.applyCalls, 0, reason: value);
-        await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
-        await tester.pumpAndSettle();
+        await _cancelTransactionDialog(tester);
       }
     });
 
@@ -345,8 +344,7 @@ void main() {
         expect(find.byKey(const Key('advance-refund-error')), findsOneWidget,
             reason: value);
         expect(controller.refundCalls, 0, reason: value);
-        await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
-        await tester.pumpAndSettle();
+        await _cancelTransactionDialog(tester);
       }
     });
 
@@ -544,8 +542,7 @@ void main() {
       expect(controller.refundCalls, 1);
       expect(find.text('تم إلغاء الاعتماد. لم يتم رد السلفة.'), findsOneWidget);
       expect(find.text('تم رد السلفة بنجاح.'), findsNothing);
-      await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
-      await tester.pumpAndSettle();
+      await _cancelTransactionDialog(tester);
     });
 
     testWidgets('approval prompt failure is mapped to a safe Arabic message',
@@ -584,8 +581,7 @@ void main() {
           find.text('تعذر طلب اعتماد المالك. حاول مرة أخرى.'), findsOneWidget);
       expect(find.textContaining('technical'), findsNothing);
       expect(controller.refundCalls, 1);
-      await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
-      await tester.pumpAndSettle();
+      await _cancelTransactionDialog(tester);
     });
 
     testWidgets('real Phase 4A approval is consumed exactly once in UI flow',
@@ -689,8 +685,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(controller.refundCalls, 1);
-      await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
-      await tester.pumpAndSettle();
+      await _cancelTransactionDialog(tester);
     });
   });
 }
@@ -794,6 +789,16 @@ Future<void> _openApplication(
 }) async {
   await tester.tap(find.byKey(Key('apply-advance-$advanceId')));
   await tester.pumpAndSettle();
+}
+
+Future<void> _cancelTransactionDialog(WidgetTester tester) async {
+  await tester.tap(find.widgetWithText(TextButton, 'إلغاء'));
+  await tester.pumpAndSettle();
+  final discard = find.byKey(const Key('confirm-discard-dialog-action'));
+  if (discard.evaluate().isNotEmpty) {
+    await tester.tap(discard);
+    await tester.pumpAndSettle();
+  }
 }
 
 Future<void> _openRefund(

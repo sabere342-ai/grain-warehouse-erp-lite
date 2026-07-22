@@ -80,10 +80,12 @@ class GhalalErrorState extends StatelessWidget {
     super.key,
     required this.message,
     required this.onRetry,
+    this.retryButtonKey,
   });
 
   final String message;
   final VoidCallback onRetry;
+  final Key? retryButtonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +95,7 @@ class GhalalErrorState extends StatelessWidget {
       message: message,
       icon: Icons.error_outline_rounded,
       action: FilledButton.icon(
+        key: retryButtonKey,
         onPressed: onRetry,
         icon: const Icon(Icons.refresh_rounded),
         label: const Text('إعادة المحاولة'),

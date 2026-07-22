@@ -9,7 +9,10 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class ExpensesScreen extends StatefulWidget {
@@ -27,6 +30,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   late final ExpenseController _controller;
   late final bool _ownsController;
   late final NegativeBalanceApprovalWorkflowService _approvalWorkflow;
+  bool _isSubmittingExpense = false;
 
   @override
   void initState() {
@@ -58,7 +62,11 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
-      return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض المصروفات.'));
+      return const GhalalEmptyState(
+        title: 'يلزم تسجيل الدخول',
+        message: 'سجل الدخول لعرض المصروفات.',
+        icon: Icons.lock_outline_rounded,
+      );
     }
 
     return AnimatedBuilder(
@@ -66,33 +74,29 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('المصروفات', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        'تسجيل المصروفات النقدية فقط، ولا تؤثر على كميات المخزون.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'المصروفات',
+              subtitle:
+                  'تسجيل المصروفات النقدية فقط، ولا تؤثر على كميات المخزون.',
+              icon: Icons.receipt_long_rounded,
+              actions: [
                 FilledButton.icon(
-                  onPressed: user.permissions.canCreateExpense
-                      ? () => _showExpenseForm(context, user: user)
-                      : null,
-                  icon: const Icon(Icons.add_card_rounded),
+                  onPressed:
+                      user.permissions.canCreateExpense && !_isSubmittingExpense
+                          ? () => _showExpenseForm(context, user: user)
+                          : null,
+                  icon: _isSubmittingExpense
+                      ? const SizedBox.square(
+                          dimension: AppIconSizes.sm,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add_card_rounded),
                   label: const Text('إضافة مصروف'),
                 ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
+            if (_controller.errorMessage != null &&
+                _controller.expenses.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 _controller.errorMessage!,
@@ -104,9 +108,19 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ],
             const SizedBox(height: 16),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل المصروفات...')
+            else if (_controller.errorMessage != null &&
+                _controller.expenses.isEmpty)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.loadExpenses(user),
+              )
             else if (_controller.expenses.isEmpty)
-              const PremiumCard(child: Text('لا توجد مصروفات مسجلة بعد.'))
+              const GhalalEmptyState(
+                title: 'لا توجد مصروفات',
+                message: 'ستظهر هنا المصروفات بعد تنفيذها.',
+                icon: Icons.receipt_long_outlined,
+              )
             else
               ..._controller.expenses.map(
                 (expense) => Padding(
@@ -124,13 +138,21 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     BuildContext context, {
     required AppUser user,
   }) async {
-    final financialAccounts =
-        await AppRepositories.financialAccountRepository.listAccounts();
+    if (_isSubmittingExpense) return;
+    final financialAccountRepository =
+        AppRepositories.financialAccountRepository;
+    final financialAccounts = await financialAccountRepository.listAccounts();
+    final accountBalancesQirsh = <String, int>{};
+    for (final account in financialAccounts) {
+      accountBalancesQirsh[account.id] =
+          await financialAccountRepository.currentBalanceForAccount(account.id);
+    }
     if (!context.mounted) return;
     final draft = await showDialog<ExpenseDraft>(
       context: context,
       builder: (context) => _ExpenseFormDialog(
         financialAccounts: financialAccounts,
+        accountBalancesQirsh: accountBalancesQirsh,
         userId: user.id,
         operationRequestId:
             'expense-ui-${DateTime.now().microsecondsSinceEpoch}-${user.id}',
@@ -139,6 +161,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     if (draft == null) {
       return;
     }
+    setState(() => _isSubmittingExpense = true);
     try {
       final result = await _approvalWorkflow.submitExpense(
         requester: user,
@@ -164,6 +187,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('تعذر تسجيل المصروف: $error')),
       );
+    } finally {
+      if (mounted) setState(() => _isSubmittingExpense = false);
     }
   }
 }
@@ -215,11 +240,13 @@ class _ExpenseCard extends StatelessWidget {
 class _ExpenseFormDialog extends StatefulWidget {
   const _ExpenseFormDialog({
     required this.financialAccounts,
+    required this.accountBalancesQirsh,
     required this.userId,
     required this.operationRequestId,
   });
 
   final List<FinancialAccount> financialAccounts;
+  final Map<String, int> accountBalancesQirsh;
   final String userId;
   final String operationRequestId;
 
@@ -235,6 +262,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   String? _errorMessage;
   PaymentMethod? _selectedPaymentMethod;
   String? _selectedAccountId;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -246,7 +274,9 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isSubmitting,
       title: const Text('إضافة مصروف'),
       content: SingleChildScrollView(
         child: Column(
@@ -280,6 +310,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<PaymentMethod>(
               value: _selectedPaymentMethod,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'طريقة الدفع *'),
               items: PaymentRoutingPolicy.selectablePaymentMethods
                   .map((method) => DropdownMenuItem(
@@ -299,6 +330,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _selectedAccountId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'الحساب المالي *'),
               items: _compatibleAccounts()
                   .map((account) => DropdownMenuItem(
@@ -313,6 +345,10 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   : (accountId) =>
                       setState(() => _selectedAccountId = accountId),
             ),
+            if (_selectedAccount != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              _buildAccountSummary(context, _selectedAccount!),
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
@@ -332,10 +368,23 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('حفظ')),
+        FilledButton(
+          onPressed: _isSubmitting ? null : _submit,
+          child: _isSubmitting
+              ? const SizedBox.square(
+                  dimension: AppIconSizes.sm,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('حفظ المصروف'),
+        ),
       ],
     );
   }
@@ -354,6 +403,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   }
 
   void _submit() {
+    if (_isSubmitting) return;
     if (_categoryController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'أدخل اسم المصروف.');
       return;
@@ -372,6 +422,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         setState(() => _errorMessage = 'اختر الحساب المالي للمصروف.');
         return;
       }
+      setState(() => _isSubmitting = true);
       Navigator.of(context).pop(
         ExpenseDraft(
           date: _date,
@@ -388,6 +439,85 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
       setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
     }
   }
+
+  bool get _isDirty =>
+      _categoryController.text.trim().isNotEmpty ||
+      _amountController.text.trim().isNotEmpty ||
+      _notesController.text.trim().isNotEmpty ||
+      _selectedPaymentMethod != null ||
+      _selectedAccountId != null ||
+      !_isSameDay(_date, DateTime.now());
+
+  FinancialAccount? get _selectedAccount {
+    final accountId = _selectedAccountId;
+    if (accountId == null) return null;
+    for (final account in widget.financialAccounts) {
+      if (account.id == accountId) return account;
+    }
+    return null;
+  }
+
+  Widget _buildAccountSummary(
+    BuildContext context,
+    FinancialAccount account,
+  ) {
+    final balance = widget.accountBalancesQirsh[account.id] ?? 0;
+    int? amount;
+    try {
+      amount = MoneyUtils.parseEgpToPiasters(
+        _amountController.text,
+        allowZero: false,
+        allowNegative: false,
+      );
+    } on Object {
+      amount = null;
+    }
+    final projected = amount == null ? null : balance - amount;
+    final hasDeficit = projected != null && projected < 0;
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      key: const Key('expense-account-impact-card'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: hasDeficit
+            ? colors.errorContainer.withOpacity(0.55)
+            : colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('الرصيد الحالي: ${MoneyUtils.formatPiastersAsEgp(balance)}'),
+          if (amount != null)
+            Text('قيمة المصروف: ${MoneyUtils.formatPiastersAsEgp(amount)}'),
+          if (projected != null)
+            Text(
+              'الرصيد المتوقع: ${MoneyUtils.formatPiastersAsEgp(projected)}',
+              style: TextStyle(
+                color: hasDeficit ? colors.error : null,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          if (hasDeficit)
+            Text(
+              account.allowNegativeBalance
+                  ? 'سيُنشأ طلب موافقة دائم، ولن يُنفذ المصروف قبل الاعتماد.'
+                  : 'الرصيد غير كافٍ وهذا الحساب لا يسمح بطلب تجاوز الرصيد.',
+              style: TextStyle(
+                color: colors.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
 
   List<FinancialAccount> _compatibleAccounts() {
     final method = _selectedPaymentMethod;

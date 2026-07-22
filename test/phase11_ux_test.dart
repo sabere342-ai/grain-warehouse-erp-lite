@@ -50,10 +50,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(find.text('لا توجد فواتير بيع'), findsOneWidget);
       expect(
-        find.text(
-          'لا توجد فواتير بيع مسجلة بعد. ستظهر هنا فواتير البيع بعد الحفظ.',
-        ),
+        find.text('ستظهر هنا فواتير البيع بعد تنفيذها.'),
         findsOneWidget,
       );
     });

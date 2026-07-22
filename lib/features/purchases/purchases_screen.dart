@@ -14,8 +14,11 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class PurchasesScreen extends StatefulWidget {
@@ -43,6 +46,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   late final FinancialAccountRepository _financialAccountRepo;
   late final NegativeBalanceApprovalWorkflowService _approvalWorkflow;
   Set<String> _supplierIdsWithPayments = {};
+  bool _isSubmittingPurchase = false;
+  String? _cancellingPurchaseId;
 
   @override
   void initState() {
@@ -110,42 +115,35 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
 
         return ListView(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('استلامات الشراء', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        canCreate
-                            ? 'استلام الحبوب من الموردين وزيادة المخزون بحركة مرحلة. الإلغاء للمالك فقط.'
-                            : 'عرض استلامات الشراء فقط. تسجيل الاستلام وإلغاء المستندات للمالك.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'استلامات الشراء',
+              subtitle: canCreate
+                  ? 'استلام الحبوب من الموردين وزيادة المخزون بحركة مرحلة. الإلغاء للمالك فقط.'
+                  : 'عرض استلامات الشراء فقط. تسجيل الاستلام وإلغاء المستندات للمالك.',
+              icon: Icons.shopping_bag_rounded,
+              actions: [
                 OutlinedButton.icon(
                   onPressed: () => _openHistory(context),
                   icon: const Icon(Icons.manage_search_rounded),
                   label: const Text('سجل المستندات'),
                 ),
-                const SizedBox(width: 8),
                 if (canCreate)
                   FilledButton.icon(
-                    onPressed: canOpenForm
+                    onPressed: canOpenForm && !_isSubmittingPurchase
                         ? () => _showPurchaseForm(user: user)
                         : null,
-                    icon: const Icon(Icons.add_business_rounded),
+                    icon: _isSubmittingPurchase
+                        ? const SizedBox.square(
+                            dimension: AppIconSizes.sm,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.add_business_rounded),
                     label: const Text('تسجيل استلام حبوب'),
                   ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
+            if (_controller.errorMessage != null &&
+                _controller.intakes.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 _controller.errorMessage!,
@@ -157,12 +155,21 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
             ],
             const SizedBox(height: 16),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل استلامات الشراء...')
+            else if (_controller.errorMessage != null &&
+                _controller.intakes.isEmpty)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () {
+                  _controller.load(user);
+                  _loadPaymentSuppliers();
+                },
+              )
             else if (_controller.intakes.isEmpty)
-              const PremiumCard(
-                child: Text(
-                  'لا توجد استلامات شراء مسجلة بعد. ستظهر هنا مستندات استلام الحبوب من الموردين.',
-                ),
+              const GhalalEmptyState(
+                title: 'لا توجد استلامات شراء',
+                message: 'ستظهر هنا مستندات استلام الحبوب المنفذة من الموردين.',
+                icon: Icons.inventory_2_outlined,
               )
             else
               ..._controller.intakes.reversed.map(
@@ -175,7 +182,9 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                     supplierName: _controller.displaySupplierName(intake),
                     productName: _controller.productName(intake.productId),
                     canCancel: canCancel,
-                    onCancel: intake.isCancelled
+                    isCancelling: _cancellingPurchaseId == intake.id,
+                    onCancel: intake.isCancelled ||
+                            _cancellingPurchaseId != null
                         ? null
                         : () => _confirmCancelPurchase(context, user, intake),
                   ),
@@ -196,6 +205,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   }
 
   Future<void> _showPurchaseForm({required AppUser user}) async {
+    if (_isSubmittingPurchase) return;
     final accounts = (await _financialAccountRepo.listAccounts())
         .where((account) => account.isActive)
         .toList(growable: false);
@@ -227,6 +237,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       return;
     }
 
+    setState(() => _isSubmittingPurchase = true);
     try {
       final result = await _approvalWorkflow.submitPurchase(
         requester: user,
@@ -253,6 +264,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('تعذر تسجيل الشراء: $error')),
       );
+    } finally {
+      if (mounted) setState(() => _isSubmittingPurchase = false);
     }
   }
 
@@ -264,46 +277,67 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     final reasonController = TextEditingController();
     final reason = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تأكيد إلغاء استلام الشراء'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا الاستلام. لن يتم حذف المستند الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => GhalalResponsiveDialog(
+          isDirty: reasonController.text.trim().isNotEmpty,
+          icon: Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          title: const Text('تأكيد إلغاء استلام الشراء'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'تحذير مهم: سيتم إنشاء حركة مخزون عكسية لإلغاء أثر هذا الاستلام. لن يتم حذف المستند الأصلي أو الحركة الأصلية، وسيظهر الإلغاء في سجل المستندات للمالك.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                onChanged: (_) => setDialogState(() {}),
+                decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
+                maxLines: 2,
+                textDirection: TextDirection.rtl,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => GhalalResponsiveDialog.requestClose(
+                context,
+                isDirty: reasonController.text.trim().isNotEmpty,
+              ),
+              child: const Text('رجوع'),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
-              maxLines: 2,
-              textDirection: TextDirection.rtl,
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(reasonController.text),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+              ),
+              child: const Text('تأكيد الإلغاء'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('رجوع'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(reasonController.text),
-            child: const Text('تأكيد الإلغاء'),
-          ),
-        ],
       ),
     );
+    reasonController.dispose();
 
     if (reason == null || reason.trim().isEmpty) {
       return;
     }
 
-    await _controller.cancelPurchaseIntake(
-      user: user,
-      purchaseIntakeId: intake.id,
-      cancellationReason: reason,
-    );
+    setState(() => _cancellingPurchaseId = intake.id);
+    try {
+      await _controller.cancelPurchaseIntake(
+        user: user,
+        purchaseIntakeId: intake.id,
+        cancellationReason: reason,
+      );
+    } finally {
+      if (mounted) setState(() => _cancellingPurchaseId = null);
+    }
   }
 }
 
@@ -314,6 +348,7 @@ class _PurchaseIntakeCard extends StatelessWidget {
     required this.supplierName,
     required this.productName,
     required this.canCancel,
+    required this.isCancelling,
     this.onCancel,
   });
 
@@ -322,6 +357,7 @@ class _PurchaseIntakeCard extends StatelessWidget {
   final String supplierName;
   final String productName;
   final bool canCancel;
+  final bool isCancelling;
   final VoidCallback? onCancel;
 
   @override
@@ -396,8 +432,14 @@ class _PurchaseIntakeCard extends StatelessWidget {
               alignment: AlignmentDirectional.centerStart,
               child: OutlinedButton.icon(
                 onPressed: onCancel,
-                icon: const Icon(Icons.cancel_outlined),
-                label: const Text('إلغاء مستند الاستلام'),
+                icon: isCancelling
+                    ? const SizedBox.square(
+                        dimension: AppIconSizes.sm,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cancel_outlined),
+                label: Text(
+                    isCancelling ? 'جاري الإلغاء...' : 'إلغاء مستند الاستلام'),
               ),
             ),
           ],
@@ -448,6 +490,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
   PaymentMethod? _paymentMethod;
   String? _financialAccountId;
   String? _errorMessage;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -459,7 +502,9 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isSubmitting,
       title: const Text('تسجيل استلام حبوب'),
       content: SingleChildScrollView(
         child: Column(
@@ -467,6 +512,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
           children: [
             DropdownButtonFormField<String>(
               value: _supplierId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'المورد'),
               items: [
                 for (final supplier in widget.suppliers)
@@ -484,6 +530,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _productId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'الصنف'),
               items: [
                 for (final product in widget.products)
@@ -499,45 +546,22 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
               },
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'الكمية',
-                      helperText: 'اكتب الكمية حسب الوحدة المختارة.',
-                    ),
-                    textDirection: TextDirection.ltr,
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 120,
-                  child: DropdownButtonFormField<GrainUnit>(
-                    value: _inputUnit,
-                    decoration: const InputDecoration(labelText: 'الوحدة'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: GrainUnit.kilogram,
-                        child: Text('كجم'),
-                      ),
-                      DropdownMenuItem(
-                        value: GrainUnit.ton,
-                        child: Text('طن'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _inputUnit = value);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
+            if (MediaQuery.sizeOf(context).width < AppBreakpoints.tablet)
+              Column(
+                children: [
+                  _buildQuantityField(),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildUnitField(),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Expanded(child: _buildQuantityField()),
+                  const SizedBox(width: AppSpacing.sm),
+                  SizedBox(width: 120, child: _buildUnitField()),
+                ],
+              ),
             const SizedBox(height: 12),
             TextField(
               controller: _unitPriceController,
@@ -664,18 +688,29 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
-          onPressed: _submit,
-          child: const Text('حفظ الاستلام'),
+          onPressed: _isSubmitting ? null : _submit,
+          child: _isSubmitting
+              ? const SizedBox.square(
+                  dimension: AppIconSizes.sm,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('حفظ الاستلام'),
         ),
       ],
     );
   }
 
   void _submit() {
+    if (_isSubmitting) return;
     final quantity = int.tryParse(_quantityController.text.trim());
     final unitPrice = _tryParsePrice(_unitPriceController.text);
     if (quantity == null || quantity <= 0) {
@@ -718,6 +753,7 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
       }
     }
 
+    setState(() => _isSubmitting = true);
     Navigator.of(context).pop(
       PurchaseIntakeDraft(
         supplierId: _supplierId,
@@ -742,6 +778,46 @@ class _PurchaseFormDialogState extends State<_PurchaseFormDialog> {
       ),
     );
   }
+
+  Widget _buildQuantityField() => TextField(
+        controller: _quantityController,
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(
+          labelText: 'الكمية',
+          helperText: 'اكتب الكمية حسب الوحدة المختارة.',
+        ),
+        textDirection: TextDirection.ltr,
+        onChanged: (_) => setState(() {}),
+      );
+
+  Widget _buildUnitField() => DropdownButtonFormField<GrainUnit>(
+        value: _inputUnit,
+        isExpanded: true,
+        decoration: const InputDecoration(labelText: 'الوحدة'),
+        items: const [
+          DropdownMenuItem(
+            value: GrainUnit.kilogram,
+            child: Text('كجم'),
+          ),
+          DropdownMenuItem(
+            value: GrainUnit.ton,
+            child: Text('طن'),
+          ),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _inputUnit = value);
+          }
+        },
+      );
+
+  bool get _isDirty =>
+      _quantityController.text.trim().isNotEmpty ||
+      _unitPriceController.text.trim().isNotEmpty ||
+      _notesController.text.trim().isNotEmpty ||
+      _paymentMode != PurchasePaymentMode.credit ||
+      _paymentMethod != null ||
+      _financialAccountId != null;
 
   int? _tryParsePrice(String value) {
     try {

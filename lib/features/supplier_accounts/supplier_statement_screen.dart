@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
@@ -11,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/features/prints/printable_supplier_stat
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 class SupplierStatementScreen extends StatefulWidget {
   const SupplierStatementScreen({super.key, required this.supplier});
@@ -28,6 +30,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
 
   SupplierStatement? _statement;
   bool _isLoading = true;
+  bool _isRecordingPayment = false;
   String? _error;
 
   @override
@@ -87,20 +90,33 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const GhalalLoadingState(label: 'جاري تحميل كشف المورد...')
           : _error != null
-              ? Center(child: Text(_error!))
+              ? GhalalErrorState(message: _error!, onRetry: _load)
               : _buildContent(textTheme),
     );
   }
 
   Future<void> _recordPayment() async {
+    if (_isRecordingPayment) return;
     final user = AuthScope.of(context).state.user;
     if (user == null) return;
+    setState(() => _isRecordingPayment = true);
     final balance = _statement?.finalBalanceQirsh ?? 0;
 
-    final financialAccounts =
-        await AppRepositories.financialAccountRepository.listAccounts();
+    List<FinancialAccount> financialAccounts;
+    try {
+      financialAccounts =
+          await AppRepositories.financialAccountRepository.listAccounts();
+    } on Object {
+      if (mounted) {
+        setState(() => _isRecordingPayment = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر تحميل الحسابات المالية.')),
+        );
+      }
+      return;
+    }
     if (!mounted) return;
 
     final result = await showDialog<SupplierPaymentResult>(
@@ -113,7 +129,10 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       ),
     );
 
-    if (result == null) return;
+    if (result == null) {
+      if (mounted) setState(() => _isRecordingPayment = false);
+      return;
+    }
 
     final draft = SupplierPaymentDraft(
       supplierId: widget.supplier.id,
@@ -132,6 +151,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       if (draft.overpaymentApprovalId != null) {
         await _repository.createPayment(draft);
         await _load();
+        if (mounted) setState(() => _isRecordingPayment = false);
         return;
       }
       final result = await AppRepositories
@@ -169,11 +189,15 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
+    } finally {
+      if (mounted) setState(() => _isRecordingPayment = false);
     }
   }
 
   Widget _buildContent(TextTheme textTheme) {
     final statement = _statement!;
+    final user = AuthScope.of(context).state.user;
+    final canRecordPayment = user?.permissions.canCreateSupplierPayment == true;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -193,9 +217,18 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
                       ),
                     ),
                     FilledButton.icon(
-                      onPressed: _recordPayment,
-                      icon: const Icon(Icons.payments_rounded),
-                      label: const Text('تسجيل دفعة'),
+                      onPressed: canRecordPayment && !_isRecordingPayment
+                          ? _recordPayment
+                          : null,
+                      icon: _isRecordingPayment
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.payments_rounded),
+                      label: Text(_isRecordingPayment
+                          ? 'جاري التسجيل...'
+                          : 'تسجيل دفعة'),
                     ),
                   ],
                 ),

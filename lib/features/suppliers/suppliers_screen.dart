@@ -35,6 +35,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   String _query = '';
   Map<String, int> _balances = const {};
   Set<String> _suppliersWithOpeningBalance = const {};
+  String? _activePaymentSupplierId;
 
   @override
   void initState() {
@@ -87,68 +88,74 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     required user,
     required Supplier supplier,
   }) async {
-    final balance = _balances[supplier.id] ?? 0;
-
-    final financialAccounts =
-        await AppRepositories.financialAccountRepository.listAccounts();
-    if (!mounted) return;
-
-    // ignore: use_build_context_synchronously
-    final result = await showDialog<SupplierPaymentResult>(
-      // ignore: use_build_context_synchronously
-      context: context,
-      builder: (_) => SupplierPaymentDialog(
-        supplier: supplier,
-        balanceQirsh: balance,
-        userId: user.id,
-        financialAccounts: financialAccounts,
-      ),
-    );
-
-    if (result == null) return;
-
-    final draft = SupplierPaymentDraft(
-      supplierId: supplier.id,
-      date: result.date,
-      amountQirsh: result.amountQirsh,
-      createdByUserId: user.id,
-      notes: result.notes,
-      financialAccountId: result.financialAccountId,
-      paymentMethod: result.paymentMethod,
-      operationRequestId: result.operationRequestId,
-      overpaymentApprovalId: result.overpaymentApprovalId,
-    );
-
+    if (_activePaymentSupplierId != null) return;
+    setState(() => _activePaymentSupplierId = supplier.id);
     try {
-      if (draft.overpaymentApprovalId != null) {
-        await _accountRepo.createPayment(draft);
-        await _loadBalances();
-        return;
-      }
-      final result = await AppRepositories
-          .negativeBalanceApprovalWorkflowService
-          .submitSupplierPayment(requester: user, draft: draft);
-      if (!context.mounted) return;
-      if (result.isPending) {
-        final request = result.request!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'تم إنشاء طلب الموافقة ${request.id}. لم يُنفذ السداد بعد. '
-              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
-              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
-            ),
-          ),
-        );
-      } else {
-        await _loadBalances();
-      }
-    } catch (_) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
+      final balance = _balances[supplier.id] ?? 0;
+
+      final financialAccounts =
+          await AppRepositories.financialAccountRepository.listAccounts();
+      if (!mounted) return;
+
+      // ignore: use_build_context_synchronously
+      final result = await showDialog<SupplierPaymentResult>(
+        // ignore: use_build_context_synchronously
+        context: context,
+        builder: (_) => SupplierPaymentDialog(
+          supplier: supplier,
+          balanceQirsh: balance,
+          userId: user.id,
+          financialAccounts: financialAccounts,
+        ),
       );
+
+      if (result == null) return;
+
+      final draft = SupplierPaymentDraft(
+        supplierId: supplier.id,
+        date: result.date,
+        amountQirsh: result.amountQirsh,
+        createdByUserId: user.id,
+        notes: result.notes,
+        financialAccountId: result.financialAccountId,
+        paymentMethod: result.paymentMethod,
+        operationRequestId: result.operationRequestId,
+        overpaymentApprovalId: result.overpaymentApprovalId,
+      );
+
+      try {
+        if (draft.overpaymentApprovalId != null) {
+          await _accountRepo.createPayment(draft);
+          await _loadBalances();
+          return;
+        }
+        final result = await AppRepositories
+            .negativeBalanceApprovalWorkflowService
+            .submitSupplierPayment(requester: user, draft: draft);
+        if (!context.mounted) return;
+        if (result.isPending) {
+          final request = result.request!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'تم إنشاء طلب الموافقة ${request.id}. لم يُنفذ السداد بعد. '
+                'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
+                'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
+              ),
+            ),
+          );
+        } else {
+          await _loadBalances();
+        }
+      } catch (_) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('تعذر تسجيل الدفع. تأكد من صحة البيانات.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _activePaymentSupplierId = null);
     }
   }
 
@@ -274,6 +281,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     ),
                     onPayment: () =>
                         _recordPayment(context, user: user, supplier: supplier),
+                    paymentBusy: _activePaymentSupplierId == supplier.id,
                     onOpeningBalance: () => _recordOpeningBalance(context,
                         user: user, supplier: supplier),
                     onAdvances: () async {
@@ -332,6 +340,7 @@ class _SupplierCard extends StatelessWidget {
     required this.onEdit,
     required this.onToggleActive,
     this.onPayment,
+    required this.paymentBusy,
     this.onOpeningBalance,
     required this.onAdvances,
   });
@@ -343,6 +352,7 @@ class _SupplierCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback? onPayment;
+  final bool paymentBusy;
   final VoidCallback? onOpeningBalance;
   final VoidCallback onAdvances;
 
@@ -418,9 +428,15 @@ class _SupplierCard extends StatelessWidget {
                   ),
                 if (balanceQirsh > 0)
                   OutlinedButton.icon(
-                    onPressed: onPayment,
-                    icon: const Icon(Icons.payments_rounded),
-                    label: const Text('تسجيل دفعة'),
+                    onPressed: paymentBusy ? null : onPayment,
+                    icon: paymentBusy
+                        ? const SizedBox.square(
+                            dimension: AppIconSizes.sm,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.payments_rounded),
+                    label: Text(
+                        paymentBusy ? 'جاري تسجيل الدفعة...' : 'تسجيل دفعة'),
                   ),
               ],
             ),

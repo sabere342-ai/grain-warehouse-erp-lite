@@ -13,7 +13,11 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balanc
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -119,40 +123,25 @@ class _CustomerAdvanceActionsScreenState
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
+      return const GhalalLoadingState(
         key: Key('customer-advances-loading'),
-        child: CircularProgressIndicator(),
+        label: 'جاري تحميل سلف العميل...',
       );
     }
     if (_errorMessage != null) {
-      return Center(
+      return GhalalErrorState(
         key: const Key('customer-advances-error'),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline_rounded, size: 40),
-              const SizedBox(height: 12),
-              Text(_errorMessage!, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                key: const Key('customer-advances-retry'),
-                onPressed: _loadAdvances,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('إعادة المحاولة'),
-              ),
-            ],
-          ),
-        ),
+        message: _errorMessage!,
+        onRetry: _loadAdvances,
+        retryButtonKey: const Key('customer-advances-retry'),
       );
     }
     if (_advances.isEmpty) {
-      return const Center(
+      return const GhalalEmptyState(
         key: Key('customer-advances-empty'),
-        child: PremiumCard(
-          child: Text('لا توجد سلف متاحة أو سابقة لهذا العميل.'),
-        ),
+        title: 'لا توجد سلف للعميل',
+        message: 'لا توجد سلف متاحة أو سابقة لهذا العميل.',
+        icon: Icons.account_balance_wallet_outlined,
       );
     }
     return RefreshIndicator(
@@ -161,14 +150,11 @@ class _CustomerAdvanceActionsScreenState
         key: const Key('customer-advances-list'),
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'سلف العميل',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'يمكن تطبيق الرصيد المتاح على ذمة العميل أو رده من حسابه المالي الأصلي.',
-            style: TextStyle(color: AppColors.mutedText),
+          const GhalalPageHeader(
+            title: 'إدارة سلف العميل',
+            subtitle:
+                'يمكن تطبيق الرصيد المتاح على ذمة العميل أو رده من حسابه المالي الأصلي.',
+            icon: Icons.account_balance_wallet_rounded,
           ),
           const SizedBox(height: 16),
           for (final summary in _advances)
@@ -448,7 +434,13 @@ class _CustomerRefundReversalDialogState
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GhalalResponsiveDialog(
+        isDirty: _reason.text.trim().isNotEmpty,
+        isBusy: _submitting,
+        icon: Icon(
+          Icons.undo_rounded,
+          color: Theme.of(context).colorScheme.error,
+        ),
         title: Text('عكس استرداد سلفة العميل - ${widget.customer.name}'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
@@ -462,6 +454,7 @@ class _CustomerRefundReversalDialogState
             controller: _reason,
             enabled: !_submitting,
             decoration: const InputDecoration(labelText: 'سبب العكس *'),
+            onChanged: (_) => setState(() {}),
           ),
           if (_error != null)
             Text(_error!,
@@ -469,13 +462,26 @@ class _CustomerRefundReversalDialogState
         ]),
         actions: [
           TextButton(
-              onPressed:
-                  _submitting ? null : () => Navigator.pop(context, false),
+              onPressed: _submitting
+                  ? null
+                  : () => GhalalResponsiveDialog.requestClose(
+                        context,
+                        isDirty: _reason.text.trim().isNotEmpty,
+                      ),
               child: const Text('إلغاء')),
           FilledButton(
               key: const Key('customer-refund-reversal-submit'),
               onPressed: _submitting ? null : _submit,
-              child: const Text('تأكيد العكس')),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+              ),
+              child: _submitting
+                  ? const SizedBox.square(
+                      dimension: AppIconSizes.sm,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('تأكيد العكس')),
         ],
       );
   Future<void> _submit() async {
@@ -573,7 +579,9 @@ class _AdvanceApplicationDialogState extends State<_AdvanceApplicationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _amountController.text.trim().isNotEmpty,
+      isBusy: _isSubmitting,
       title: Text('تطبيق السلفة - ${widget.customer.name}'),
       content: SingleChildScrollView(
         child: Column(
@@ -596,6 +604,7 @@ class _AdvanceApplicationDialogState extends State<_AdvanceApplicationDialog> {
               decoration: const InputDecoration(
                 labelText: 'مبلغ التطبيق بالجنيه',
               ),
+              onChanged: (_) => setState(() {}),
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: 12),
@@ -610,8 +619,12 @@ class _AdvanceApplicationDialogState extends State<_AdvanceApplicationDialog> {
       ),
       actions: [
         TextButton(
-          onPressed:
-              _isSubmitting ? null : () => Navigator.of(context).pop(false),
+          onPressed: _isSubmitting
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _amountController.text.trim().isNotEmpty,
+                  ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
@@ -747,7 +760,9 @@ class _AdvanceRefundDialogState extends State<_AdvanceRefundDialog> {
   Widget build(BuildContext context) {
     final parsed = _tryParseAmount(_amountController.text);
     final account = _selectedAccount;
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isSubmitting || _isLoadingBalance,
       title: Text('رد السلفة - ${widget.customer.name}'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
@@ -765,6 +780,7 @@ class _AdvanceRefundDialogState extends State<_AdvanceRefundDialog> {
               DropdownButtonFormField<String>(
                 key: const Key('advance-refund-account'),
                 value: _selectedAccountId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'الحساب المالي *',
                 ),
@@ -807,6 +823,7 @@ class _AdvanceRefundDialogState extends State<_AdvanceRefundDialog> {
               DropdownButtonFormField<PaymentMethod>(
                 key: const Key('advance-refund-payment-method'),
                 value: _selectedPaymentMethod,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'طريقة الدفع (اختياري)',
                 ),
@@ -844,8 +861,12 @@ class _AdvanceRefundDialogState extends State<_AdvanceRefundDialog> {
       ),
       actions: [
         TextButton(
-          onPressed:
-              _isSubmitting ? null : () => Navigator.of(context).pop(false),
+          onPressed: _isSubmitting
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
@@ -863,6 +884,9 @@ class _AdvanceRefundDialogState extends State<_AdvanceRefundDialog> {
       ],
     );
   }
+
+  bool get _isDirty =>
+      _amountController.text.trim().isNotEmpty || _selectedAccountId != null;
 
   Future<void> _selectAccount(String? accountId) async {
     setState(() {

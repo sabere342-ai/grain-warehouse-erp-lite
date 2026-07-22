@@ -6,8 +6,9 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
 
 class SupplierPaymentDialog extends StatefulWidget {
   const SupplierPaymentDialog({
@@ -83,11 +84,13 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
     final settled = isOverpayment ? widget.balanceQirsh : (amount ?? 0);
     final advance = isOverpayment ? amount - widget.balanceQirsh : 0;
 
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isLoading,
       title: Text('تسجيل دفعة لـ ${widget.supplier.name}'),
       content: SingleChildScrollView(
         child: StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (context, _) {
             return Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +99,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                   'الرصيد المستحق: ${MoneyUtils.formatPiastersAsEgp(widget.balanceQirsh)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.text,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
                 const SizedBox(height: 12),
@@ -116,11 +119,12 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                         'يمكن تسجيل دفعة أكبر من الرصيد — سيُنشأ سلفة للمورد.',
                   ),
                   textDirection: TextDirection.ltr,
-                  onChanged: (_) => setDialogState(() {}),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<PaymentMethod>(
                   value: _selectedPaymentMethod,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'طريقة الدفع *',
                   ),
@@ -131,7 +135,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                           ))
                       .toList(),
                   onChanged: (method) {
-                    setDialogState(() {
+                    setState(() {
                       _selectedPaymentMethod = method;
                       if (!_selectedAccountIsCompatible()) {
                         _selectedAccountId = null;
@@ -142,6 +146,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _selectedAccountId,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'الحساب المالي *',
                   ),
@@ -155,17 +160,17 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                       .toList(),
                   onChanged: _selectedPaymentMethod == null
                       ? null
-                      : (accountId) => setDialogState(
+                      : (accountId) => setState(
                             () => _selectedAccountId = accountId,
                           ),
                 ),
                 if (isOverpayment) ...[
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: colorScheme.primaryContainer.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,6 +217,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                   ),
                   maxLines: 2,
                   textDirection: TextDirection.rtl,
+                  onChanged: (_) => setState(() {}),
                 ),
                 if (_errorMessage != null) ...[
                   const SizedBox(height: 12),
@@ -227,7 +233,12 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          onPressed: _isLoading
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
@@ -247,8 +258,10 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
   Widget _summaryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.xxs,
         children: [
           Text(label, style: Theme.of(context).textTheme.bodySmall),
           Text(value,
@@ -260,6 +273,18 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
       ),
     );
   }
+
+  bool get _isDirty =>
+      _amountController.text.trim().isNotEmpty ||
+      _notesController.text.trim().isNotEmpty ||
+      _selectedAccountId != null ||
+      _selectedPaymentMethod != null ||
+      !_isSameDay(_date, DateTime.now());
+
+  bool _isSameDay(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
 
   Future<void> _pickDate() async {
     final selected = await showDatePicker(
