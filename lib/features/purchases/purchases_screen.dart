@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
@@ -18,7 +16,6 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
-import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class PurchasesScreen extends StatefulWidget {
@@ -27,15 +24,13 @@ class PurchasesScreen extends StatefulWidget {
     this.controller,
     this.supplierAccountRepository,
     this.financialAccountRepository,
-    this.authRepository,
-    this.negativeBalanceApprovalService,
+    this.approvalWorkflowService,
   });
 
   final PurchaseController? controller;
   final SupplierAccountRepository? supplierAccountRepository;
   final FinancialAccountRepository? financialAccountRepository;
-  final AuthRepository? authRepository;
-  final NegativeBalanceApprovalService? negativeBalanceApprovalService;
+  final NegativeBalanceApprovalWorkflowService? approvalWorkflowService;
 
   @override
   State<PurchasesScreen> createState() => _PurchasesScreenState();
@@ -46,8 +41,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   late final bool _ownsController;
   late final SupplierAccountRepository _accountRepo;
   late final FinancialAccountRepository _financialAccountRepo;
-  late final AuthRepository _authRepo;
-  late final NegativeBalanceApprovalService _approvalService;
+  late final NegativeBalanceApprovalWorkflowService _approvalWorkflow;
   Set<String> _supplierIdsWithPayments = {};
 
   @override
@@ -57,9 +51,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
         AppRepositories.supplierAccountRepository;
     _financialAccountRepo = widget.financialAccountRepository ??
         AppRepositories.financialAccountRepository;
-    _authRepo = widget.authRepository ?? AppRepositories.authRepository;
-    _approvalService = widget.negativeBalanceApprovalService ??
-        AppRepositories.negativeBalanceApprovalService;
+    _approvalWorkflow = widget.approvalWorkflowService ??
+        AppRepositories.negativeBalanceApprovalWorkflowService;
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
         PurchaseController(
@@ -234,72 +227,33 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       return;
     }
 
-    var preparedDraft = draft;
-    if (draft.paymentMode == PurchasePaymentMode.paid) {
-      final accountId = draft.financialAccountId!;
-      final account = accounts.firstWhere((value) => value.id == accountId);
-      final currentBalance =
-          await _financialAccountRepo.currentBalanceForAccount(accountId);
-      if (currentBalance < draft.totalAmountPiasters) {
-        if (!mounted) return;
-        final deficit = draft.totalAmountPiasters - currentBalance;
-        if (!account.allowNegativeBalance) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'الرصيد غير كافٍ بمقدار ${MoneyUtils.formatPiastersAsEgp(deficit)}. '
-                'الحساب لا يسمح بالرصيد السالب، ولم يتم تسجيل الشراء.',
-              ),
+    try {
+      final result = await _approvalWorkflow.submitPurchase(
+        requester: user,
+        draft: draft,
+      );
+      if (!mounted) return;
+      if (result.isPending) {
+        final request = result.request!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم إنشاء طلب الموافقة ${request.id}. لم يُنفذ الشراء بعد. '
+              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
+              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
             ),
-          );
-          return;
-        }
-        final approvalId = await NegativeBalanceApprovalDialog.show(
-          context: context,
-          authRepository: _authRepo,
-          accountName: account.name,
-          currentBalanceQirsh: currentBalance,
-          requestedAmountQirsh: draft.totalAmountPiasters,
-          operationDescription: 'سداد شراء مدفوع بالكامل',
-          approvalService: _approvalService,
-          approvalDraft: NegativeBalanceApprovalDraft(
-            requestedByUserId: user.id,
-            approvedByOwnerUserId: '',
-            accountId: account.id,
-            amountQirsh: draft.totalAmountPiasters,
-            operationType: NegativeBalanceOperationType.purchasePayment,
-            sourceDocumentId: requestId,
-            sourceDocumentType:
-                FinancialAccountEntrySource.purchasePayment.name,
-            balanceBeforeQirsh: currentBalance,
-            expectedBalanceAfterQirsh:
-                currentBalance - draft.totalAmountPiasters,
-            reason: 'سداد شراء يتجاوز رصيد الحساب المالي',
           ),
         );
-        if (approvalId == null || !mounted) return;
-        preparedDraft = PurchaseIntakeDraft(
-          supplierId: draft.supplierId,
-          supplierName: draft.supplierName,
-          supplierPhone: draft.supplierPhone,
-          supplierAddress: draft.supplierAddress,
-          productId: draft.productId,
-          quantityKg: draft.quantityKg,
-          entryUnit: draft.entryUnit,
-          unitPricePiastersPerKg: draft.unitPricePiastersPerKg,
-          createdByUserId: draft.createdByUserId,
-          notes: draft.notes,
-          financialAccountId: draft.financialAccountId,
-          paymentMethod: draft.paymentMethod,
-          paymentMode: draft.paymentMode,
-          paidAmountQirsh: draft.paidAmountQirsh,
-          negativeBalanceApprovalId: approvalId,
-          operationRequestId: draft.operationRequestId,
-        );
+      } else {
+        await _controller.load(user);
+        await _loadPaymentSuppliers();
       }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر تسجيل الشراء: $error')),
+      );
     }
-
-    await _controller.createPurchaseIntake(user: user, draft: preparedDraft);
   }
 
   Future<void> _confirmCancelPurchase(

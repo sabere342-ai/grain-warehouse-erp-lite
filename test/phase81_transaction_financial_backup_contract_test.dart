@@ -19,6 +19,8 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -31,14 +33,14 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
 void main() {
-  test('v6 export writes financial linkage for all five transaction types',
+  test('v7 export writes financial linkage for all five transaction types',
       () async {
     final source = await _Fixture.seeded();
     final backup = await source.exportService.createBackup();
     final decoded = jsonDecode(backup.jsonText) as Map<String, Object?>;
     final data = decoded['data'] as Map<String, Object?>;
 
-    expect((decoded['metadata'] as Map<String, Object?>)['backupVersion'], 6);
+    expect((decoded['metadata'] as Map<String, Object?>)['backupVersion'], 7);
     _expectLink(data, 'sales', PaymentMethod.cash);
     _expectLink(data, 'purchases', PaymentMethod.bankTransfer);
     _expectLink(data, 'customerCollections', PaymentMethod.mobileWallet);
@@ -46,7 +48,7 @@ void main() {
     _expectLink(data, 'expenses', PaymentMethod.cash);
   });
 
-  test('v6 service round trip preserves linkage for all five types', () async {
+  test('v7 service round trip preserves linkage for all five types', () async {
     final source = await _Fixture.seeded();
     final target = await _Fixture.empty();
     final beforeBalance =
@@ -72,6 +74,76 @@ void main() {
     expect(await target.financialAccounts.currentBalanceForAccount(_account.id),
         beforeBalance);
     expect(await target.inventory.currentStockKg(_product.id), beforeStock);
+  });
+
+  test('v7 round trip preserves pending and terminal approval requests',
+      () async {
+    final source = await _Fixture.seeded();
+    final target = await _Fixture.empty();
+    final backup = await source.exportService.createBackup();
+    final decoded = jsonDecode(backup.jsonText) as Map<String, Object?>;
+    final counts = decoded['counts'] as Map<String, Object?>;
+    expect(counts['negativeBalanceApprovalRequests'], 2);
+    expect(counts['negativeBalanceApprovalRequestTransitions'], 3);
+    expect(backup.jsonText, isNot(contains('owner123')));
+
+    final result = await target.restoreService.restoreToEmpty(
+      user: _owner,
+      jsonText: backup.jsonText,
+    );
+    expect(result.success, isTrue);
+    expect((await target.approvalRequests.findById('request-pending'))!.status,
+        NegativeBalanceApprovalRequestStatus.pending);
+    expect((await target.approvalRequests.findById('request-executed'))!.status,
+        NegativeBalanceApprovalRequestStatus.executed);
+    expect(await target.approvalRequests.listTransitions(), hasLength(3));
+    expect(await target.expenses.listExpenses(), hasLength(1));
+  });
+
+  test('v6 without approval collections restores an empty request repository',
+      () async {
+    final source = await _Fixture.seeded();
+    final target = await _Fixture.empty();
+    final decoded =
+        jsonDecode((await source.exportService.createBackup()).jsonText)
+            as Map<String, Object?>;
+    (decoded['metadata'] as Map<String, Object?>)['backupVersion'] = 6;
+    (decoded['counts'] as Map<String, Object?>)
+      ..remove('negativeBalanceApprovalRequests')
+      ..remove('negativeBalanceApprovalRequestTransitions');
+    (decoded['data'] as Map<String, Object?>)
+      ..remove('negativeBalanceApprovalRequests')
+      ..remove('negativeBalanceApprovalRequestTransitions');
+
+    final result = await target.restoreService.restoreToEmpty(
+      user: _owner,
+      jsonText: _withChecksum(decoded),
+    );
+    expect(result.success, isTrue);
+    expect(await target.approvalRequests.listAll(), isEmpty);
+    expect(await target.approvalRequests.listTransitions(), isEmpty);
+  });
+
+  test('corrupt approval account reference fails before any restore write',
+      () async {
+    final source = await _Fixture.seeded();
+    final target = await _Fixture.empty();
+    final decoded =
+        jsonDecode((await source.exportService.createBackup()).jsonText)
+            as Map<String, Object?>;
+    final requests = (decoded['data']
+            as Map<String, Object?>)['negativeBalanceApprovalRequests']
+        as List<Object?>;
+    (requests.first as Map<String, Object?>)['financialAccountId'] = 'missing';
+
+    final result = await target.restoreService.restoreToEmpty(
+      user: _owner,
+      jsonText: _withChecksum(decoded),
+    );
+    expect(result.success, isFalse);
+    expect(await target.products.listProducts(), isEmpty);
+    expect(await target.financialAccounts.listAccounts(), isEmpty);
+    expect(await target.approvalRequests.listAll(), isEmpty);
   });
 
   test('v5 without linkage restores nulls without invented values', () async {
@@ -126,12 +198,12 @@ void main() {
     expect(await target.financialAccounts.listAccounts(), isEmpty);
   });
 
-  test('all v1 through v5 remain accepted by preview', () async {
+  test('all v1 through v6 remain accepted by preview', () async {
     final source = await _Fixture.seeded();
     final decoded =
         jsonDecode((await source.exportService.createBackup()).jsonText)
             as Map<String, Object?>;
-    for (var version = 1; version <= 5; version++) {
+    for (var version = 1; version <= 6; version++) {
       (decoded['metadata'] as Map<String, Object?>)['backupVersion'] = version;
       final target = await _Fixture.empty();
       final result = await target.restoreService
@@ -226,6 +298,7 @@ class _Fixture {
     required this.financialAccounts,
     required this.history,
     required this.audit,
+    required this.approvalRequests,
   });
 
   final LocalProductRepository products;
@@ -240,6 +313,7 @@ class _Fixture {
   final LocalFinancialAccountRepository financialAccounts;
   final LocalDocumentHistoryRepository history;
   final LocalAuditLogRepository audit;
+  final LocalNegativeBalanceApprovalRequestRepository approvalRequests;
 
   static Future<_Fixture> empty() async {
     final products = LocalProductRepository();
@@ -268,6 +342,7 @@ class _Fixture {
         saleRepository: sales,
         productRepository: products,
         inventoryRepository: inventory);
+    final approvalRequests = LocalNegativeBalanceApprovalRequestRepository();
     return _Fixture._(
         products: products,
         suppliers: suppliers,
@@ -280,7 +355,8 @@ class _Fixture {
         expenses: expenses,
         financialAccounts: financialAccounts,
         history: history,
-        audit: LocalAuditLogRepository());
+        audit: LocalAuditLogRepository(),
+        approvalRequests: approvalRequests);
   }
 
   static Future<_Fixture> seeded() async {
@@ -369,6 +445,77 @@ class _Fixture {
           financialAccountId: _account.id,
           paymentMethod: PaymentMethod.cash)
     ]);
+    final pending = NegativeBalanceApprovalRequest(
+      id: 'request-pending',
+      idempotencyKey: 'pending-key',
+      operationType: NegativeBalanceApprovalRequestOperationType.expense,
+      status: NegativeBalanceApprovalRequestStatus.pending,
+      financialAccountId: _account.id,
+      paymentMethod: PaymentMethod.cash,
+      amountQirsh: 500,
+      sourceDocumentId: 'pending-source',
+      payloadJson: '{"kind":"expense"}',
+      payloadFingerprint: 'pending-fingerprint',
+      requesterActorId: 'employee-1',
+      requestedAt: _now,
+      balanceAtRequestQirsh: 100,
+      expectedBalanceAtRequestQirsh: -400,
+      deficitAtRequestQirsh: 400,
+      reason: 'pending backup test',
+    );
+    final executed = NegativeBalanceApprovalRequest(
+      id: 'request-executed',
+      idempotencyKey: 'executed-key',
+      operationType: NegativeBalanceApprovalRequestOperationType.expense,
+      status: NegativeBalanceApprovalRequestStatus.executed,
+      financialAccountId: _account.id,
+      paymentMethod: PaymentMethod.cash,
+      amountQirsh: 100,
+      sourceDocumentId: 'executed-source',
+      payloadJson: '{"kind":"expense"}',
+      payloadFingerprint: 'executed-fingerprint',
+      requesterActorId: _owner.id,
+      requestedAt: _now,
+      balanceAtRequestQirsh: 0,
+      expectedBalanceAtRequestQirsh: -100,
+      deficitAtRequestQirsh: 100,
+      reason: 'executed backup test',
+      resolverActorId: _owner.id,
+      resolvedAt: _now.add(const Duration(minutes: 1)),
+      resolutionReason: 'executed',
+      ownerVerificationReference: 'verification-reference',
+      resultDocumentId: 'expense-1',
+    );
+    await value.approvalRequests.restoreIntoEmpty(
+      requests: [pending, executed],
+      transitions: [
+        NegativeBalanceApprovalRequestTransition(
+          id: 'transition-1',
+          requestId: pending.id,
+          toStatus: NegativeBalanceApprovalRequestStatus.pending,
+          actorId: pending.requesterActorId,
+          occurredAt: _now,
+          reason: pending.reason,
+        ),
+        NegativeBalanceApprovalRequestTransition(
+          id: 'transition-2',
+          requestId: executed.id,
+          toStatus: NegativeBalanceApprovalRequestStatus.pending,
+          actorId: executed.requesterActorId,
+          occurredAt: _now,
+          reason: executed.reason,
+        ),
+        NegativeBalanceApprovalRequestTransition(
+          id: 'transition-3',
+          requestId: executed.id,
+          fromStatus: NegativeBalanceApprovalRequestStatus.pending,
+          toStatus: NegativeBalanceApprovalRequestStatus.executed,
+          actorId: _owner.id,
+          occurredAt: _now.add(const Duration(minutes: 1)),
+          reason: 'executed',
+        ),
+      ],
+    );
     return value;
   }
 
@@ -385,6 +532,7 @@ class _Fixture {
       expenseRepository: expenses,
       auditLogRepository: audit,
       financialAccountRepository: financialAccounts,
+      negativeBalanceApprovalRequestRepository: approvalRequests,
       now: () => _now);
 
   BackupRestoreService get restoreService => BackupRestoreService(
@@ -399,7 +547,8 @@ class _Fixture {
       supplierAccountRepository: supplierAccounts,
       expenseRepository: expenses,
       auditLogRepository: audit,
-      financialAccountRepository: financialAccounts);
+      financialAccountRepository: financialAccounts,
+      negativeBalanceApprovalRequestRepository: approvalRequests);
 }
 
 final _fixedDate = DateTime.utc(2026, 7, 11);

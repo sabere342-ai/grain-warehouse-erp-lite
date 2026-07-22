@@ -33,6 +33,7 @@ class DriftAuditLogRepository implements DurableAuditLogRepository {
         timestamp: timestamp,
         actionType: draft.actionType.trim(),
         descriptionAr: draft.descriptionAr.trim(),
+        actorId: _optional(draft.actorId),
         referenceId: _optional(draft.referenceId),
         metadata: Map<String, Object?>.unmodifiable(draft.metadata),
       );
@@ -95,6 +96,7 @@ class DriftAuditLogRepository implements DurableAuditLogRepository {
         timestamp: entry.timestamp,
         actionType: entry.actionType,
         descriptionAr: entry.descriptionAr,
+        actorId: Value(entry.actorId),
         referenceId: Value(entry.referenceId),
         metadataJson: jsonEncode(_canonicalJsonMap(entry.metadata)),
       );
@@ -104,6 +106,7 @@ class DriftAuditLogRepository implements DurableAuditLogRepository {
         timestamp: row.timestamp,
         actionType: row.actionType,
         descriptionAr: row.descriptionAr,
+        actorId: row.actorId,
         referenceId: row.referenceId,
         metadata: Map<String, Object?>.unmodifiable(
           _decodeMetadata(row.metadataJson),

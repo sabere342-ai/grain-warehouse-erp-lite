@@ -136,6 +136,8 @@ void main() {
           date: _pilotDay,
           category: 'Ù†Ù‚Ù„',
           amountQirsh: 12500,
+          createdByUserId: _owner.id,
+          operationRequestId: 'phase32-expense-pilot',
           notes: 'Ù†Ù‚Ù„ Ù…Ù† Ø§Ù„Ù…ÙˆØ±Ø¯',
         ),
       );

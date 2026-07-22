@@ -27,6 +27,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -55,6 +57,8 @@ class BackupRestoreService {
     DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
+    DurableNegativeBalanceApprovalRequestRepository?
+        negativeBalanceApprovalRequestRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _productRepository = productRepository,
@@ -76,6 +80,9 @@ class BackupRestoreService {
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _financialAccountRepository =
             financialAccountRepository ?? LocalFinancialAccountRepository(),
+        _negativeBalanceApprovalRequestRepository =
+            negativeBalanceApprovalRequestRepository ??
+                LocalNegativeBalanceApprovalRequestRepository(),
         _previewService = previewService;
 
   final ProductDataRepository _productRepository;
@@ -91,6 +98,8 @@ class BackupRestoreService {
   final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
+  final DurableNegativeBalanceApprovalRequestRepository
+      _negativeBalanceApprovalRequestRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BackupRestoreResult> restoreToEmpty({
@@ -137,6 +146,7 @@ class BackupRestoreService {
         _expenseRepository.createTransactionSnapshot(),
         _auditLogRepository.createTransactionSnapshot(),
         _financialAccountRepository.createTransactionSnapshot(),
+        _negativeBalanceApprovalRequestRepository.createTransactionSnapshot(),
       ];
 
       await RepositoryTransaction.execute(snapshots, () async {
@@ -170,6 +180,10 @@ class BackupRestoreService {
           entries: restored.financialAccountEntries,
           transfers: restored.financialTransfers,
           closings: restored.financialClosings,
+        );
+        await _negativeBalanceApprovalRequestRepository.restoreIntoEmpty(
+          requests: restored.negativeBalanceApprovalRequests,
+          transitions: restored.negativeBalanceApprovalRequestTransitions,
         );
         if (_businessIdentityRepository != null) {
           await _businessIdentityRepository.saveIdentity(
@@ -222,6 +236,8 @@ class BackupRestoreService {
     final auditLogs = await _auditLogRepository.listLogs();
     final financialAccounts =
         await _financialAccountRepository.listAccounts(includeInactive: true);
+    final negativeBalanceApprovalRequests =
+        await _negativeBalanceApprovalRequestRepository.listAll();
 
     if (products.isNotEmpty ||
         movements.isNotEmpty ||
@@ -236,7 +252,8 @@ class BackupRestoreService {
         supplierPayments.isNotEmpty ||
         expenses.isNotEmpty ||
         auditLogs.isNotEmpty ||
-        financialAccounts.isNotEmpty) {
+        financialAccounts.isNotEmpty ||
+        negativeBalanceApprovalRequests.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
     }
 
@@ -301,6 +318,14 @@ class BackupRestoreService {
     final financialClosings = _optionalList(data, 'financialClosings')
         .map(_parseFinancialClosing)
         .toList();
+    final negativeBalanceApprovalRequests =
+        _optionalList(data, 'negativeBalanceApprovalRequests')
+            .map(_parseNegativeBalanceApprovalRequest)
+            .toList();
+    final negativeBalanceApprovalRequestTransitions =
+        _optionalList(data, 'negativeBalanceApprovalRequestTransitions')
+            .map(_parseNegativeBalanceApprovalRequestTransition)
+            .toList();
     final settings = data['settings'];
     final settingsMap =
         settings is Map<String, Object?> ? settings : <String, Object?>{};
@@ -347,6 +372,9 @@ class BackupRestoreService {
       financialAccountEntries: financialAccountEntries,
       financialTransfers: financialTransfers,
       financialClosings: financialClosings,
+      negativeBalanceApprovalRequests: negativeBalanceApprovalRequests,
+      negativeBalanceApprovalRequestTransitions:
+          negativeBalanceApprovalRequestTransitions,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
       logoRestoreWarning: _logoRestoreWarning,
@@ -746,6 +774,10 @@ class BackupRestoreService {
       createdAt: _date(map, 'createdAt'),
       financialAccountId: _optionalString(map, 'financialAccountId'),
       paymentMethod: _optionalPaymentMethod(map),
+      createdByUserId: _optionalString(map, 'createdByUserId'),
+      operationRequestId: _optionalString(map, 'operationRequestId'),
+      operationRequestFingerprint:
+          _optionalString(map, 'operationRequestFingerprint'),
     );
   }
 
@@ -760,6 +792,59 @@ class BackupRestoreService {
       metadata: map['metadata'] == null
           ? const <String, Object?>{}
           : Map<String, Object?>.from(_map(map['metadata'])),
+      actorId: _optionalString(map, 'actorId'),
+    );
+  }
+
+  NegativeBalanceApprovalRequest _parseNegativeBalanceApprovalRequest(
+    Object? value,
+  ) {
+    final map = _map(value);
+    return NegativeBalanceApprovalRequest(
+      id: _string(map, 'id'),
+      idempotencyKey: _string(map, 'idempotencyKey'),
+      operationType: NegativeBalanceApprovalRequestOperationType.values
+          .byName(_string(map, 'operationType')),
+      status: NegativeBalanceApprovalRequestStatus.values
+          .byName(_string(map, 'status')),
+      financialAccountId: _string(map, 'financialAccountId'),
+      paymentMethod: PaymentMethod.values.byName(_string(map, 'paymentMethod')),
+      amountQirsh: _int(map, 'amountQirsh'),
+      sourceDocumentId: _string(map, 'sourceDocumentId'),
+      payloadJson: _string(map, 'payloadJson'),
+      payloadFingerprint: _string(map, 'payloadFingerprint'),
+      relatedPartyId: _optionalString(map, 'relatedPartyId'),
+      requesterActorId: _string(map, 'requesterActorId'),
+      requestedAt: _date(map, 'requestedAt'),
+      balanceAtRequestQirsh: _int(map, 'balanceAtRequestQirsh'),
+      expectedBalanceAtRequestQirsh: _int(map, 'expectedBalanceAtRequestQirsh'),
+      deficitAtRequestQirsh: _int(map, 'deficitAtRequestQirsh'),
+      reason: _string(map, 'reason'),
+      resolverActorId: _optionalString(map, 'resolverActorId'),
+      resolvedAt: map['resolvedAt'] == null ? null : _date(map, 'resolvedAt'),
+      resolutionReason: _optionalString(map, 'resolutionReason'),
+      ownerVerificationReference:
+          _optionalString(map, 'ownerVerificationReference'),
+      resultDocumentId: _optionalString(map, 'resultDocumentId'),
+      recordVersion: _optionalInt(map, 'recordVersion') ?? 1,
+    );
+  }
+
+  NegativeBalanceApprovalRequestTransition
+      _parseNegativeBalanceApprovalRequestTransition(Object? value) {
+    final map = _map(value);
+    final fromStatus = _optionalString(map, 'fromStatus');
+    return NegativeBalanceApprovalRequestTransition(
+      id: _string(map, 'id'),
+      requestId: _string(map, 'requestId'),
+      fromStatus: fromStatus == null
+          ? null
+          : NegativeBalanceApprovalRequestStatus.values.byName(fromStatus),
+      toStatus: NegativeBalanceApprovalRequestStatus.values
+          .byName(_string(map, 'toStatus')),
+      actorId: _string(map, 'actorId'),
+      occurredAt: _date(map, 'occurredAt'),
+      reason: _string(map, 'reason'),
     );
   }
 
@@ -883,11 +968,43 @@ class BackupRestoreService {
     final movementIds = data.movements.map((movement) => movement.id).toSet();
     final financialAccountIds =
         data.financialAccounts.map((account) => account.id).toSet();
+    final requestIds = data.negativeBalanceApprovalRequests
+        .map((request) => request.id)
+        .toSet();
 
     if (productIds.length != data.products.length ||
         supplierIds.length != data.suppliers.length ||
         movementIds.length != data.movements.length) {
       throw StateError('Duplicate backup ids.');
+    }
+    if (requestIds.length != data.negativeBalanceApprovalRequests.length) {
+      throw StateError('Duplicate approval request ids.');
+    }
+    final transitionIds = <String>{};
+    for (final transition in data.negativeBalanceApprovalRequestTransitions) {
+      if (!transitionIds.add(transition.id) ||
+          !requestIds.contains(transition.requestId)) {
+        throw StateError('Invalid approval transition reference.');
+      }
+    }
+    for (final request in data.negativeBalanceApprovalRequests) {
+      if (!financialAccountIds.contains(request.financialAccountId)) {
+        throw StateError('Approval request references missing account.');
+      }
+      if (request.status == NegativeBalanceApprovalRequestStatus.executed) {
+        final resultId = request.resultDocumentId!;
+        final resultExists = switch (request.operationType) {
+          NegativeBalanceApprovalRequestOperationType.supplierPayment =>
+            data.supplierPayments.any((value) => value.id == resultId),
+          NegativeBalanceApprovalRequestOperationType.expense =>
+            data.expenses.any((value) => value.id == resultId),
+          NegativeBalanceApprovalRequestOperationType.paidPurchase =>
+            data.purchases.any((value) => value.id == resultId),
+        };
+        if (!resultExists) {
+          throw StateError('Executed approval references missing result.');
+        }
+      }
     }
     for (final movement in data.movements) {
       if (!productIds.contains(movement.productId)) {
@@ -1294,6 +1411,8 @@ class _RestoredBackupData {
     required this.financialAccountEntries,
     required this.financialTransfers,
     required this.financialClosings,
+    required this.negativeBalanceApprovalRequests,
+    required this.negativeBalanceApprovalRequestTransitions,
     required this.businessIdentity,
     required this.documentHistoryCount,
     this.logoRestoreWarning,
@@ -1321,6 +1440,9 @@ class _RestoredBackupData {
   final List<FinancialAccountEntry> financialAccountEntries;
   final List<FinancialTransfer> financialTransfers;
   final List<FinancialClosing> financialClosings;
+  final List<NegativeBalanceApprovalRequest> negativeBalanceApprovalRequests;
+  final List<NegativeBalanceApprovalRequestTransition>
+      negativeBalanceApprovalRequestTransitions;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
   final String? logoRestoreWarning;

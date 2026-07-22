@@ -258,6 +258,7 @@ class AuditLogs extends Table {
   DateTimeColumn get timestamp => dateTime()();
   TextColumn get actionType => text()();
   TextColumn get descriptionAr => text()();
+  TextColumn get actorId => text().nullable()();
   TextColumn get referenceId => text().nullable()();
   TextColumn get metadataJson => text()();
 
@@ -270,6 +271,11 @@ class AuditLogs extends Table {
   name: 'expenses_date_created_at_idx',
   columns: {#date, #createdAt, #id},
 )
+@TableIndex(
+  name: 'expenses_operation_request_uq',
+  columns: {#operationRequestId},
+  unique: true,
+)
 class Expenses extends Table {
   TextColumn get id => text()();
   DateTimeColumn get date => dateTime()();
@@ -279,6 +285,9 @@ class Expenses extends Table {
   IntColumn get createdAt => integer()();
   TextColumn get financialAccountId => text().nullable()();
   TextColumn get paymentMethod => text().nullable()();
+  TextColumn get createdByUserId => text().nullable()();
+  TextColumn get operationRequestId => text().nullable()();
+  TextColumn get operationRequestFingerprint => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -403,6 +412,66 @@ class AuthAccounts extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@TableIndex(
+  name: 'negative_balance_approval_requests_status_requested_idx',
+  columns: {#status, #requestedAt},
+)
+@TableIndex(
+  name: 'negative_balance_approval_requests_account_idx',
+  columns: {#financialAccountId, #requestedAt},
+)
+@DataClassName('NegativeBalanceApprovalRequest')
+class NegativeBalanceApprovalRequests extends Table {
+  TextColumn get id => text()();
+  TextColumn get idempotencyKey => text().unique()();
+  TextColumn get operationType => text()();
+  TextColumn get status => text()();
+  TextColumn get financialAccountId => text()();
+  TextColumn get paymentMethod => text()();
+  IntColumn get amountQirsh => integer()();
+  TextColumn get sourceDocumentId => text()();
+  TextColumn get payloadJson => text()();
+  TextColumn get payloadFingerprint => text()();
+  TextColumn get relatedPartyId => text().nullable()();
+  TextColumn get requesterActorId => text()();
+  DateTimeColumn get requestedAt => dateTime()();
+  IntColumn get balanceAtRequestQirsh => integer()();
+  IntColumn get expectedBalanceAtRequestQirsh => integer()();
+  IntColumn get deficitAtRequestQirsh => integer()();
+  TextColumn get reason => text()();
+  TextColumn get resolverActorId => text().nullable()();
+  DateTimeColumn get resolvedAt => dateTime().nullable()();
+  TextColumn get resolutionReason => text().nullable()();
+  TextColumn get ownerVerificationReference => text().nullable()();
+  TextColumn get resultDocumentId => text().nullable()();
+  IntColumn get recordVersion => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'negative_balance_request_transitions_request_time_idx',
+  columns: {#requestId, #occurredAt},
+)
+@DataClassName('NegativeBalanceApprovalRequestTransition')
+class NegativeBalanceApprovalRequestTransitions extends Table {
+  TextColumn get id => text()();
+  TextColumn get requestId => text().references(
+        NegativeBalanceApprovalRequests,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
+  TextColumn get fromStatus => text().nullable()();
+  TextColumn get toStatus => text()();
+  TextColumn get actorId => text()();
+  DateTimeColumn get occurredAt => dateTime()();
+  TextColumn get reason => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(tables: [
   FoundationProbes,
   Products,
@@ -429,12 +498,14 @@ class AuthAccounts extends Table {
   SupplierAdvanceApplications,
   SupplierAdvanceRefunds,
   AuthAccounts,
+  NegativeBalanceApprovalRequests,
+  NegativeBalanceApprovalRequestTransitions,
 ])
 class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

@@ -7,14 +7,17 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class ExpensesScreen extends StatefulWidget {
-  const ExpensesScreen({super.key, this.controller});
+  const ExpensesScreen(
+      {super.key, this.controller, this.approvalWorkflowService});
 
   final ExpenseController? controller;
+  final NegativeBalanceApprovalWorkflowService? approvalWorkflowService;
 
   @override
   State<ExpensesScreen> createState() => _ExpensesScreenState();
@@ -23,6 +26,7 @@ class ExpensesScreen extends StatefulWidget {
 class _ExpensesScreenState extends State<ExpensesScreen> {
   late final ExpenseController _controller;
   late final bool _ownsController;
+  late final NegativeBalanceApprovalWorkflowService _approvalWorkflow;
 
   @override
   void initState() {
@@ -30,6 +34,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
         ExpenseController(repository: AppRepositories.expenseRepository);
+    _approvalWorkflow = widget.approvalWorkflowService ??
+        AppRepositories.negativeBalanceApprovalWorkflowService;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
@@ -125,12 +131,40 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       context: context,
       builder: (context) => _ExpenseFormDialog(
         financialAccounts: financialAccounts,
+        userId: user.id,
+        operationRequestId:
+            'expense-ui-${DateTime.now().microsecondsSinceEpoch}-${user.id}',
       ),
     );
     if (draft == null) {
       return;
     }
-    await _controller.createExpense(user: user, draft: draft);
+    try {
+      final result = await _approvalWorkflow.submitExpense(
+        requester: user,
+        draft: draft,
+      );
+      if (!context.mounted) return;
+      if (result.isPending) {
+        final request = result.request!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم إنشاء طلب الموافقة ${request.id}. لم يُسجل المصروف بعد. '
+              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
+              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
+            ),
+          ),
+        );
+      } else {
+        await _controller.loadExpenses(user);
+      }
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر تسجيل المصروف: $error')),
+      );
+    }
   }
 }
 
@@ -179,9 +213,15 @@ class _ExpenseCard extends StatelessWidget {
 }
 
 class _ExpenseFormDialog extends StatefulWidget {
-  const _ExpenseFormDialog({required this.financialAccounts});
+  const _ExpenseFormDialog({
+    required this.financialAccounts,
+    required this.userId,
+    required this.operationRequestId,
+  });
 
   final List<FinancialAccount> financialAccounts;
+  final String userId;
+  final String operationRequestId;
 
   @override
   State<_ExpenseFormDialog> createState() => _ExpenseFormDialogState();
@@ -337,9 +377,11 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
           date: _date,
           category: _categoryController.text,
           amountQirsh: amountQirsh,
+          createdByUserId: widget.userId,
           notes: _notesController.text,
           financialAccountId: _selectedAccountId,
           paymentMethod: _selectedPaymentMethod,
+          operationRequestId: widget.operationRequestId,
         ),
       );
     } on FormatException {

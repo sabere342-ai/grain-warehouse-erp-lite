@@ -7,9 +7,12 @@ class ExpenseRecord {
     required this.category,
     required this.amountQirsh,
     required this.createdAt,
+    this.createdByUserId,
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
+    this.operationRequestId,
+    this.operationRequestFingerprint,
   });
 
   final String id;
@@ -18,8 +21,11 @@ class ExpenseRecord {
   final int amountQirsh;
   final String? notes;
   final DateTime createdAt;
+  final String? createdByUserId;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+  final String? operationRequestId;
+  final String? operationRequestFingerprint;
 
   bool get hasValidId => id.trim().isNotEmpty;
 }
@@ -29,17 +35,19 @@ class ExpenseDraft {
     required this.date,
     required this.category,
     required this.amountQirsh,
+    required this.createdByUserId,
+    required this.operationRequestId,
     this.notes,
     this.financialAccountId,
     this.paymentMethod,
     this.approvedByUserId,
     this.negativeBalanceApprovalId,
-    this.operationRequestId,
   });
 
   final DateTime date;
   final String category;
   final int amountQirsh;
+  final String createdByUserId;
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
@@ -48,5 +56,5 @@ class ExpenseDraft {
 
   /// Stable client-side request identity used when an approval is needed
   /// before the repository generates the final expense id.
-  final String? operationRequestId;
+  final String operationRequestId;
 }

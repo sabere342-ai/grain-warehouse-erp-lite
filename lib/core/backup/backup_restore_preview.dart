@@ -3,7 +3,7 @@ import 'dart:convert';
 class BackupRestorePreviewService {
   const BackupRestorePreviewService();
 
-  static const supportedBackupVersions = {1, 2, 3, 4, 5, 6};
+  static const supportedBackupVersions = {1, 2, 3, 4, 5, 6, 7};
   static const _appName = 'grain-warehouse-erp-lite';
   static const _requiredCountKeys = [
     'products',
@@ -25,6 +25,8 @@ class BackupRestorePreviewService {
     'financialAccountEntries',
     'financialTransfers',
     'financialClosings',
+    'negativeBalanceApprovalRequests',
+    'negativeBalanceApprovalRequestTransitions',
   ];
   static const _sensitiveKeys = {
     'password',
@@ -267,6 +269,8 @@ class BackupRestorePreviewCounts {
     this.financialAccountEntries = 0,
     this.financialTransfers = 0,
     this.financialClosings = 0,
+    this.negativeBalanceApprovalRequests = 0,
+    this.negativeBalanceApprovalRequestTransitions = 0,
   });
 
   factory BackupRestorePreviewCounts.fromMap(Map<String, int> counts) {
@@ -288,6 +292,10 @@ class BackupRestorePreviewCounts {
       financialAccountEntries: counts['financialAccountEntries'] ?? 0,
       financialTransfers: counts['financialTransfers'] ?? 0,
       financialClosings: counts['financialClosings'] ?? 0,
+      negativeBalanceApprovalRequests:
+          counts['negativeBalanceApprovalRequests'] ?? 0,
+      negativeBalanceApprovalRequestTransitions:
+          counts['negativeBalanceApprovalRequestTransitions'] ?? 0,
     );
   }
 
@@ -308,4 +316,6 @@ class BackupRestorePreviewCounts {
   final int financialAccountEntries;
   final int financialTransfers;
   final int financialClosings;
+  final int negativeBalanceApprovalRequests;
+  final int negativeBalanceApprovalRequestTransitions;
 }

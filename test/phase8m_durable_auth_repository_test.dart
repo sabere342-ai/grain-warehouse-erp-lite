@@ -85,7 +85,7 @@ void main() {
   test('fresh v13 schema has secure auth shape and indexes', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 13);
+    expect(database.schemaVersion, 14);
     final columns =
         (await database.customSelect('PRAGMA table_info(auth_accounts)').get())
             .map((row) => row.read<String>('name'))

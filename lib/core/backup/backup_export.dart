@@ -21,6 +21,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -49,6 +51,8 @@ class BackupExportService {
     ExpenseRepository? expenseRepository,
     AuditLogRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
+    NegativeBalanceApprovalRequestRepository?
+        negativeBalanceApprovalRequestRepository,
     DateTime Function()? now,
   })  : _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
@@ -63,9 +67,12 @@ class BackupExportService {
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _financialAccountRepository = financialAccountRepository,
+        _negativeBalanceApprovalRequestRepository =
+            negativeBalanceApprovalRequestRepository ??
+                LocalNegativeBalanceApprovalRequestRepository(),
         _now = now;
 
-  static const int backupVersion = 6;
+  static const int backupVersion = 7;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -80,6 +87,8 @@ class BackupExportService {
   final ExpenseRepository _expenseRepository;
   final AuditLogRepository _auditLogRepository;
   final FinancialAccountRepository? _financialAccountRepository;
+  final NegativeBalanceApprovalRequestRepository
+      _negativeBalanceApprovalRequestRepository;
   final DateTime Function()? _now;
 
   Future<BackupExportResult> createBackup() async {
@@ -135,6 +144,10 @@ class BackupExportService {
     final financialClosings =
         await _financialAccountRepository?.listClosings() ??
             const <FinancialClosing>[];
+    final negativeBalanceApprovalRequests =
+        await _negativeBalanceApprovalRequestRepository.listAll();
+    final negativeBalanceApprovalRequestTransitions =
+        await _negativeBalanceApprovalRequestRepository.listTransitions();
     final businessIdentity =
         await _businessIdentityRepository?.loadIdentity() ??
             BusinessIdentity.empty;
@@ -157,6 +170,9 @@ class BackupExportService {
       financialAccountEntries: financialAccountEntries.length,
       financialTransfers: financialTransfers.length,
       financialClosings: financialClosings.length,
+      negativeBalanceApprovalRequests: negativeBalanceApprovalRequests.length,
+      negativeBalanceApprovalRequestTransitions:
+          negativeBalanceApprovalRequestTransitions.length,
     );
     final fileName = BackupFileName.forGeneratedAt(generatedAt);
 
@@ -225,6 +241,13 @@ class BackupExportService {
         'financialClosings': financialClosings
             .map(_financialClosingToJson)
             .toList(growable: false),
+        'negativeBalanceApprovalRequests': negativeBalanceApprovalRequests
+            .map(_negativeBalanceApprovalRequestToJson)
+            .toList(growable: false),
+        'negativeBalanceApprovalRequestTransitions':
+            negativeBalanceApprovalRequestTransitions
+                .map(_negativeBalanceApprovalRequestTransitionToJson)
+                .toList(growable: false),
         'settings': {
           'businessIdentity': await _identityWithLogoJson(businessIdentity),
         },
@@ -620,6 +643,9 @@ class BackupExportService {
       'createdAt': expense.createdAt.toUtc().toIso8601String(),
       'financialAccountId': expense.financialAccountId,
       'paymentMethod': expense.paymentMethod?.name,
+      'createdByUserId': expense.createdByUserId,
+      'operationRequestId': expense.operationRequestId,
+      'operationRequestFingerprint': expense.operationRequestFingerprint,
     };
   }
 
@@ -631,8 +657,51 @@ class BackupExportService {
       'descriptionAr': entry.descriptionAr,
       'referenceId': entry.referenceId,
       'metadata': entry.metadata,
+      'actorId': entry.actorId,
     };
   }
+
+  Map<String, Object?> _negativeBalanceApprovalRequestToJson(
+    NegativeBalanceApprovalRequest request,
+  ) =>
+      {
+        'id': request.id,
+        'idempotencyKey': request.idempotencyKey,
+        'operationType': request.operationType.name,
+        'status': request.status.name,
+        'financialAccountId': request.financialAccountId,
+        'paymentMethod': request.paymentMethod.name,
+        'amountQirsh': request.amountQirsh,
+        'sourceDocumentId': request.sourceDocumentId,
+        'payloadJson': request.payloadJson,
+        'payloadFingerprint': request.payloadFingerprint,
+        'relatedPartyId': request.relatedPartyId,
+        'requesterActorId': request.requesterActorId,
+        'requestedAt': request.requestedAt.toUtc().toIso8601String(),
+        'balanceAtRequestQirsh': request.balanceAtRequestQirsh,
+        'expectedBalanceAtRequestQirsh': request.expectedBalanceAtRequestQirsh,
+        'deficitAtRequestQirsh': request.deficitAtRequestQirsh,
+        'reason': request.reason,
+        'resolverActorId': request.resolverActorId,
+        'resolvedAt': request.resolvedAt?.toUtc().toIso8601String(),
+        'resolutionReason': request.resolutionReason,
+        'ownerVerificationReference': request.ownerVerificationReference,
+        'resultDocumentId': request.resultDocumentId,
+        'recordVersion': request.recordVersion,
+      };
+
+  Map<String, Object?> _negativeBalanceApprovalRequestTransitionToJson(
+    NegativeBalanceApprovalRequestTransition transition,
+  ) =>
+      {
+        'id': transition.id,
+        'requestId': transition.requestId,
+        'fromStatus': transition.fromStatus?.name,
+        'toStatus': transition.toStatus.name,
+        'actorId': transition.actorId,
+        'occurredAt': transition.occurredAt.toUtc().toIso8601String(),
+        'reason': transition.reason,
+      };
 
   Map<String, Object?>? _cancellationToJson(CancellationMetadata? metadata) {
     if (metadata == null) {
@@ -826,6 +895,8 @@ class BackupExportCounts {
     this.financialAccountEntries = 0,
     this.financialTransfers = 0,
     this.financialClosings = 0,
+    this.negativeBalanceApprovalRequests = 0,
+    this.negativeBalanceApprovalRequestTransitions = 0,
   });
 
   final int products;
@@ -845,6 +916,8 @@ class BackupExportCounts {
   final int financialAccountEntries;
   final int financialTransfers;
   final int financialClosings;
+  final int negativeBalanceApprovalRequests;
+  final int negativeBalanceApprovalRequestTransitions;
 
   Map<String, int> toJson() {
     return {
@@ -865,6 +938,9 @@ class BackupExportCounts {
       'financialAccountEntries': financialAccountEntries,
       'financialTransfers': financialTransfers,
       'financialClosings': financialClosings,
+      'negativeBalanceApprovalRequests': negativeBalanceApprovalRequests,
+      'negativeBalanceApprovalRequestTransitions':
+          negativeBalanceApprovalRequestTransitions,
     };
   }
 }

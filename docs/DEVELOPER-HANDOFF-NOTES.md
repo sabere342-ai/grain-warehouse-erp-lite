@@ -1,5 +1,32 @@
 # Developer Handoff Notes — Grain Warehouse ERP Lite
 
+## Phase 82 — Durable Negative-Balance Approval Closure Candidate
+
+- Branch/start: `phase9e-expense-analysis-report` from
+  `1ebac3d1482df0b15f5a5c34025cf41a9c2fd31e`.
+- Supplier payment, expense, and paid purchase use one durable
+  `NegativeBalanceApprovalWorkflowService` whenever an account permits an
+  owner-approved negative balance but current funds are insufficient.
+- Request creation has no completed document, stock, supplier, account, or
+  ledger effect. Approval and execution share one rollback boundary and finish
+  directly as `executed`; reject/cancel/stale are terminal and effect-free.
+- Owner self-approval requires explicit credential re-authentication. New
+  writes require real requester/resolver/audit actors; nullable actors remain a
+  legacy restore compatibility allowance only.
+- Drift schema is 14 with durable request/transition tables and duplicate
+  pending protection. Backup is v7; restore compatibility with v1–v6 is
+  preserved and does not replay executed requests.
+- The focused Arabic RTL approval queue is reachable from the dashboard and
+  provides detail, filters, approve/execute, reject, and requester-cancel flows.
+- Do not restore the former immediate paid-purchase approval dialog. The legacy
+  one-use approval token is an internal repository guard only when an approved
+  durable request still crosses below zero.
+- Phase 82 is not closed until the same working tree passes the final full test,
+  analyzer, Windows release build, diff review, closure commit, annotated tag,
+  and clean-tree checks. No Phase 83 or remote push belongs to this work.
+- Canonical contract:
+  `docs/PHASE-82-PAID-PURCHASE-UI-NEGATIVE-BALANCE-APPROVAL-DECISION-GATE.md`.
+
 ## Phase 8A — Durable Persistence Foundation
 
 - Drift/SQLite foundation is implemented at schema version 1 behind

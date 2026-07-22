@@ -701,6 +701,22 @@ DC-005 (Multi-device)
 
 ---
 
+## Phase 82 — Durable Negative-Balance Approval Decisions
+
+| ID | Adopted owner decision | Status |
+|---|---|---|
+| **OD-82-01 — Request Model** | Insufficient funds create only a durable approval request. No completed financial document, stock movement, ledger entry, or balance mutation exists before approved execution. | IMPLEMENTED — Phase 82 |
+| **OD-82-02 — Self-Approval** | Ordinary users cannot self-approve. An owner may self-approve only after explicit credential re-authentication, enforced in the domain. | IMPLEMENTED — Phase 82 |
+| **OD-82-03 — Approve and Execute** | Approval and execution are one atomic transaction. There is no durable Approved-waiting state: the request is Pending before and Executed only after complete success. | IMPLEMENTED — Phase 82 |
+| **OD-82-04 — Stale Requests** | Financial payloads are immutable and revalidated. Material change makes the request Stale; balance-only drift does not, and a newly sufficient balance executes normally through the request. | IMPLEMENTED — Phase 82 |
+| **OD-82-05 — Rejection and Cancellation** | An owner may reject Pending and its requester may cancel Pending. Rejected, Cancelled, and Stale are terminal and effect-free; retry uses a new ID. | IMPLEMENTED — Phase 82 |
+| **OD-82-06 — Durable Storage** | Requests and transitions are database-backed, idempotent, duplicate-protected, and included in Backup v7. Restore remains compatible with v1–v6. | IMPLEMENTED — Phase 82 |
+| **OD-82-07 — Actor Identity** | Every new request/resolution/execution/expense/audit action carries a real actor. Null is accepted only when reading/restoring compatible legacy data. | IMPLEMENTED — Phase 82 |
+
+The detailed state machine, atomicity, fingerprint, migration, backup, UI, and
+test contracts are in
+`PHASE-82-PAID-PURCHASE-UI-NEGATIVE-BALANCE-APPROVAL-DECISION-GATE.md`.
+
 ## Phase Deadlines
 
 | Deadline | Decisions Due |

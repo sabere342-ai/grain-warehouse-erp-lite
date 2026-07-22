@@ -10,6 +10,7 @@ import 'package:grain_warehouse_erp_lite/features/customers/customers_screen.dar
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/financial_accounts_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_requests_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_reports_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
@@ -48,6 +49,11 @@ class _DashboardShellState extends State<DashboardShell> {
       Icons.account_balance_wallet_rounded,
       FinancialAccountsScreen(),
       requiresFinancialAccounts: true,
+    ),
+    _ShellDestination(
+      'طلبات الموافقة',
+      Icons.approval_rounded,
+      NegativeBalanceApprovalRequestsScreen(),
     ),
     _ShellDestination(
       'التقارير المالية',

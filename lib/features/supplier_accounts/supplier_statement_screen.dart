@@ -129,8 +129,29 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     );
 
     try {
-      await _repository.createPayment(draft);
-      await _load();
+      if (draft.overpaymentApprovalId != null) {
+        await _repository.createPayment(draft);
+        await _load();
+        return;
+      }
+      final result = await AppRepositories
+          .negativeBalanceApprovalWorkflowService
+          .submitSupplierPayment(requester: user, draft: draft);
+      if (!mounted) return;
+      if (result.isPending) {
+        final request = result.request!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم إنشاء طلب الموافقة ${request.id}. لم يُنفذ السداد بعد. '
+              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
+              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
+            ),
+          ),
+        );
+      } else {
+        await _load();
+      }
     } catch (e) {
       if (!mounted) return;
       String message = 'تعذر تسجيل الدفع. تأكد من صحة البيانات.';
@@ -223,8 +244,7 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
       SupplierAccountEntryType.payment => 'دفعة للمورد',
       SupplierAccountEntryType.paymentCancellation => 'عكس دفعة للمورد',
       SupplierAccountEntryType.openingBalance => 'رصيد افتتاحي',
-      SupplierAccountEntryType.advanceApplication =>
-        'تطبيق سلفة المورد',
+      SupplierAccountEntryType.advanceApplication => 'تطبيق سلفة المورد',
       SupplierAccountEntryType.advanceApplicationReversal =>
         'عكس تطبيق سلفة المورد',
       SupplierAccountEntryType.advanceRefundReversal =>

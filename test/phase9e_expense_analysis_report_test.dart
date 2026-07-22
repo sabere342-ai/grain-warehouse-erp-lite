@@ -71,6 +71,9 @@ void main() {
       date: date,
       category: category,
       amountQirsh: amount,
+      createdByUserId: owner.id,
+      operationRequestId:
+          'phase9e-${date.microsecondsSinceEpoch}-${category.hashCode}-$amount',
       notes: notes,
       financialAccountId: financialAccountId,
       paymentMethod: paymentMethod,

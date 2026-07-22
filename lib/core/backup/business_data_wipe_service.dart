@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -31,6 +32,8 @@ class BusinessDataWipeService {
     DurableExpenseRepository? expenseRepository,
     DurableAuditLogRepository? auditLogRepository,
     LocalFinancialAccountRepository? financialAccountRepository,
+    DurableNegativeBalanceApprovalRequestRepository?
+        negativeBalanceApprovalRequestRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _backupExportService = backupExportService,
@@ -53,6 +56,9 @@ class BusinessDataWipeService {
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository(),
         _financialAccountRepository =
             financialAccountRepository ?? LocalFinancialAccountRepository(),
+        _negativeBalanceApprovalRequestRepository =
+            negativeBalanceApprovalRequestRepository ??
+                LocalNegativeBalanceApprovalRequestRepository(),
         _previewService = previewService;
 
   static const confirmationPhrase =
@@ -72,6 +78,8 @@ class BusinessDataWipeService {
   final DurableExpenseRepository _expenseRepository;
   final DurableAuditLogRepository _auditLogRepository;
   final LocalFinancialAccountRepository _financialAccountRepository;
+  final DurableNegativeBalanceApprovalRequestRepository
+      _negativeBalanceApprovalRequestRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BusinessDataWipeResult> wipeBusinessData({
@@ -112,6 +120,7 @@ class BusinessDataWipeService {
 
       // This is a destructive operational reset after a completed backup.
       // It intentionally does not create cancellation documents or reversals.
+      await _negativeBalanceApprovalRequestRepository.clearForOwnerDataWipe();
       await _auditLogRepository.clearForOwnerDataWipe();
       await _expenseRepository.clearForOwnerDataWipe();
       await _customerRepository.clearForOwnerDataWipe();

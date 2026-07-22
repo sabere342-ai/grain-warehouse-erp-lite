@@ -26,11 +26,13 @@ void main() {
     });
     var database = openDatabaseFile(file);
     var repository = DriftExpenseRepository(database);
-    expect(database.schemaVersion, 13);
+    expect(database.schemaVersion, 14);
     final created = await repository.createExpense(ExpenseDraft(
       date: DateTime.utc(2026, 7, 15, 18),
       category: ' نقل ',
       amountQirsh: 12550,
+      createdByUserId: 'owner',
+      operationRequestId: 'phase8j-reopen-1',
       notes: ' عاجل ',
       financialAccountId: 'cash-1',
       paymentMethod: PaymentMethod.cash,
@@ -77,7 +79,13 @@ void main() {
       _expense('exp-100-41', DateTime.utc(2026), DateTime.utc(2026)),
     ]);
     final created = await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'وقود', amountQirsh: 1),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'وقود',
+        amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-sequence-1',
+      ),
     );
     expect(created.id.endsWith('-42'), isTrue);
   });
@@ -87,7 +95,13 @@ void main() {
     addTearDown(database.close);
     final repository = DriftExpenseRepository(database);
     final first = await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'أول', amountQirsh: 1),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'أول',
+        amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-snapshot-first',
+      ),
     );
     final snapshot = repository.createTransactionSnapshot();
     await snapshot.capture();
@@ -96,12 +110,20 @@ void main() {
         date: DateTime.utc(2026),
         category: 'يلغى',
         amountQirsh: 2,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-snapshot-rollback',
       ),
     );
     await snapshot.rollback();
     expect((await repository.listExpenses()).single.id, first.id);
     final after = await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'بعد', amountQirsh: 3),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'بعد',
+        amountQirsh: 3,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-snapshot-after',
+      ),
     );
     expect(after.id.endsWith('-2'), isTrue);
   });
@@ -111,12 +133,24 @@ void main() {
     addTearDown(database.close);
     final repository = DriftExpenseRepository(database);
     await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'قبل', amountQirsh: 1),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'قبل',
+        amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-wipe-before',
+      ),
     );
     await repository.clearForOwnerDataWipe();
     expect(await repository.listExpenses(), isEmpty);
     final after = await repository.createExpense(
-      ExpenseDraft(date: DateTime.utc(2026), category: 'بعد', amountQirsh: 1),
+      ExpenseDraft(
+        date: DateTime.utc(2026),
+        category: 'بعد',
+        amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-wipe-after',
+      ),
     );
     expect(after.id.endsWith('-1'), isTrue);
   });
@@ -147,6 +181,8 @@ void main() {
         date: DateTime.utc(2026),
         category: 'فشل مالي',
         amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-financial-failure',
         financialAccountId: 'missing',
         paymentMethod: PaymentMethod.cash,
       )),
@@ -158,6 +194,8 @@ void main() {
         date: DateTime.utc(2026),
         category: 'بعد',
         amountQirsh: 1,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-financial-after',
         financialAccountId: account.id,
         paymentMethod: PaymentMethod.cash,
       ),
@@ -185,6 +223,8 @@ void main() {
         date: DateTime.utc(2026),
         category: 'فشل تدقيق',
         amountQirsh: 10,
+        createdByUserId: 'owner',
+        operationRequestId: 'phase8j-audit-failure',
         financialAccountId: account.id,
         paymentMethod: PaymentMethod.cash,
       )),

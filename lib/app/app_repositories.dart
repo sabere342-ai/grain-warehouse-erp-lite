@@ -16,7 +16,9 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/drift_customer_a
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/drift_customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
@@ -56,6 +58,13 @@ class AppRepositories {
     approvalRepository: negativeBalanceApprovalRepository,
     auditLogRepository: auditLogRepository,
   );
+
+  static DurableNegativeBalanceApprovalRequestRepository
+      _negativeBalanceApprovalRequestRepository =
+      LocalNegativeBalanceApprovalRequestRepository();
+  static DurableNegativeBalanceApprovalRequestRepository
+      get negativeBalanceApprovalRequestRepository =>
+          _negativeBalanceApprovalRequestRepository;
 
   static LocalBusinessIdentityRepository businessIdentityRepository =
       LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
@@ -103,6 +112,8 @@ class AppRepositories {
       approvalRepository: negativeBalanceApprovalRepository,
       auditLogRepository: auditLogRepository,
     );
+    _negativeBalanceApprovalRequestRepository =
+        DriftNegativeBalanceApprovalRequestRepository(database);
     businessIdentityRepository =
         LocalBusinessIdentityRepository(auditLogRepository: auditLogRepository);
     _financialAccountRepository = await DriftFinancialAccountRepository.open(
@@ -219,9 +230,29 @@ class AppRepositories {
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
         financialAccountRepository: financialAccountRepository,
+        negativeBalanceApprovalRequestRepository:
+            negativeBalanceApprovalRequestRepository,
       );
   static DurablePurchaseRepository get purchaseRepository =>
       _purchaseRepository;
+
+  static NegativeBalanceApprovalWorkflowService
+      get negativeBalanceApprovalWorkflowService =>
+          NegativeBalanceApprovalWorkflowService(
+            authRepository: authRepository,
+            requestRepository: negativeBalanceApprovalRequestRepository,
+            legacyApprovalService: negativeBalanceApprovalService,
+            auditLogRepository: auditLogRepository,
+            financialAccountRepository: financialAccountRepository,
+            supplierRepository: supplierRepository,
+            supplierAccountRepository: supplierAccountRepository,
+            expenseRepository: expenseRepository,
+            purchaseRepository: purchaseRepository,
+            productRepository: productRepository,
+            inventoryRepository: inventoryRepository,
+            durableTransactionRunner: (operation) =>
+                database.inTransaction(operation),
+          );
 
   static BackupRestoreService get backupRestoreService => BackupRestoreService(
         businessIdentityRepository: businessIdentityRepository,
@@ -237,6 +268,8 @@ class AppRepositories {
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
         financialAccountRepository: financialAccountRepository,
+        negativeBalanceApprovalRequestRepository:
+            negativeBalanceApprovalRequestRepository,
       );
 
   static BusinessDataWipeService get businessDataWipeService =>
@@ -255,5 +288,7 @@ class AppRepositories {
         expenseRepository: expenseRepository,
         auditLogRepository: auditLogRepository,
         financialAccountRepository: financialAccountRepository,
+        negativeBalanceApprovalRequestRepository:
+            negativeBalanceApprovalRequestRepository,
       );
 }

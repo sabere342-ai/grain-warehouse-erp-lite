@@ -296,6 +296,8 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
     }
 
     final isOverpayment = amount > widget.balanceQirsh;
+    final operationRequestId =
+        'supplier-payment-ui-${DateTime.now().microsecondsSinceEpoch}-${widget.userId}';
 
     if (isOverpayment) {
       if (_selectedAccountId == null) {
@@ -321,6 +323,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
         notes: _notesController.text,
         financialAccountId: _selectedAccountId,
         paymentMethod: _selectedPaymentMethod,
+        operationRequestId: operationRequestId,
       ));
     }
   }
@@ -368,7 +371,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
         operationDescription: 'تسجيل سلفة للمورد ${widget.supplier.name}',
         approvalService: AppRepositories.negativeBalanceApprovalService,
         approvalDraft: NegativeBalanceApprovalDraft(
-          requestedByUserId: '',
+          requestedByUserId: widget.userId,
           approvedByOwnerUserId: '',
           accountId: account.id,
           amountQirsh: amount - widget.balanceQirsh,

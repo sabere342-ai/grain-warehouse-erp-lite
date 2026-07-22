@@ -57,9 +57,11 @@ void main() {
       expect(cornPurchase.totalAmountPiasters, 360000);
       expect(await fixture.inventory.currentStockKg(fixture.wheat.id), 500);
       expect(await fixture.inventory.currentStockKg(fixture.corn.id), 300);
-      expect(await fixture.supplierAccounts.balanceForSupplier(
-        fixture.supplier.id,
-      ), 1110000);
+      expect(
+          await fixture.supplierAccounts.balanceForSupplier(
+            fixture.supplier.id,
+          ),
+          1110000);
 
       final creditSale = await fixture.sales.createSale(
         fixture.saleDraft(
@@ -89,9 +91,11 @@ void main() {
 
       expect(await fixture.inventory.currentStockKg(fixture.wheat.id), 300);
       expect(await fixture.inventory.currentStockKg(fixture.corn.id), 200);
-      expect(await fixture.customerAccounts.balanceForCustomer(
-        fixture.customer.id,
-      ), 440000);
+      expect(
+          await fixture.customerAccounts.balanceForCustomer(
+            fixture.customer.id,
+          ),
+          440000);
 
       final collection = await fixture.customerAccounts.createCollection(
         CustomerCollectionDraft(
@@ -116,18 +120,24 @@ void main() {
           date: today,
           category: 'Phase 51 synthetic operating expense',
           amountQirsh: 25000,
+          createdByUserId: _owner.id,
+          operationRequestId: 'phase51-expense',
         ),
       );
 
       expect(collection.amountQirsh, 200000);
       expect(supplierPayment.amountQirsh, 300000);
       expect(expense.amountQirsh, 25000);
-      expect(await fixture.customerAccounts.balanceForCustomer(
-        fixture.customer.id,
-      ), 240000);
-      expect(await fixture.supplierAccounts.balanceForSupplier(
-        fixture.supplier.id,
-      ), 810000);
+      expect(
+          await fixture.customerAccounts.balanceForCustomer(
+            fixture.customer.id,
+          ),
+          240000);
+      expect(
+          await fixture.supplierAccounts.balanceForSupplier(
+            fixture.supplier.id,
+          ),
+          810000);
 
       final inventoryController = InventoryController(
         inventoryRepository: fixture.inventory,
@@ -143,12 +153,16 @@ void main() {
 
       expect(adjusted, isTrue);
       expect(await fixture.inventory.currentStockKg(fixture.rice.id), 50);
-      expect(await fixture.customerAccounts.balanceForCustomer(
-        fixture.customer.id,
-      ), 240000);
-      expect(await fixture.supplierAccounts.balanceForSupplier(
-        fixture.supplier.id,
-      ), 810000);
+      expect(
+          await fixture.customerAccounts.balanceForCustomer(
+            fixture.customer.id,
+          ),
+          240000);
+      expect(
+          await fixture.supplierAccounts.balanceForSupplier(
+            fixture.supplier.id,
+          ),
+          810000);
 
       final movements = await fixture.inventory.listAllMovements();
       expect(
@@ -246,8 +260,8 @@ void main() {
       await controller.load(_owner);
       await tester.pumpAndSettle();
 
-      expect(await fixture.inventory.currentStockKg(fixture.rice.id),
-          beforeStock);
+      expect(
+          await fixture.inventory.currentStockKg(fixture.rice.id), beforeStock);
       expect(await fixture.inventory.listAllMovements(), beforeMovements);
     });
 

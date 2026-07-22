@@ -125,8 +125,8 @@ void main() {
         expect(statement.lines.length, 1);
         expect(statement.lines.first.entry.type,
             SupplierAccountEntryType.openingBalance);
-        expect(statement.lines.first.entry.descriptionAr,
-            'رصيد افتتاحي للمورد');
+        expect(
+            statement.lines.first.entry.descriptionAr, 'رصيد افتتاحي للمورد');
         expect(statement.lines.first.runningBalanceQirsh, 300000);
         expect(statement.finalBalanceQirsh, 300000);
       });
@@ -161,8 +161,8 @@ void main() {
         expect(statement.lines[0].entry.type,
             SupplierAccountEntryType.openingBalance);
         expect(statement.lines[0].runningBalanceQirsh, 100000);
-        expect(statement.lines[1].entry.type,
-            SupplierAccountEntryType.purchase);
+        expect(
+            statement.lines[1].entry.type, SupplierAccountEntryType.purchase);
         expect(statement.lines[1].runningBalanceQirsh, 300000);
         expect(statement.finalBalanceQirsh, 300000);
       });
@@ -219,7 +219,7 @@ void main() {
         );
 
         final result = await service.createBackup();
-        expect(result.backupVersion, 6);
+        expect(result.backupVersion, 7);
       });
 
       test('v1 backup is accepted by preview service', () async {
@@ -364,8 +364,7 @@ void main() {
           },
         });
 
-        final result =
-            const BackupRestorePreviewService().preview(v1Json);
+        final result = const BackupRestorePreviewService().preview(v1Json);
 
         expect(result.isValid, isTrue);
         expect(result.summary!.backupVersion, 1);
@@ -419,7 +418,7 @@ void main() {
             const BackupRestorePreviewService().preview(result.jsonText);
 
         expect(preview.isValid, isTrue);
-        expect(preview.summary!.backupVersion, 6);
+        expect(preview.summary!.backupVersion, 7);
       });
 
       test('unsupported version 99 is rejected', () {
@@ -449,8 +448,7 @@ void main() {
           },
         });
 
-        final result =
-            const BackupRestorePreviewService().preview(badJson);
+        final result = const BackupRestorePreviewService().preview(badJson);
 
         expect(result.isValid, isFalse);
         expect(result.technicalReason, 'unsupported-version');

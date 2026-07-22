@@ -34,6 +34,7 @@ class LocalAuditLogRepository implements DurableAuditLogRepository {
       timestamp: timestamp,
       actionType: draft.actionType.trim(),
       descriptionAr: draft.descriptionAr.trim(),
+      actorId: _normalizedOptionalText(draft.actorId),
       referenceId: _normalizedOptionalText(draft.referenceId),
       metadata: Map<String, Object?>.unmodifiable(draft.metadata),
     );

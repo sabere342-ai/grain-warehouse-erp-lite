@@ -6,12 +6,15 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -243,7 +246,7 @@ void main() {
 
       final approvalId = await fixture.approvalService.requestApproval(
         draft: NegativeBalanceApprovalDraft(
-          requestedByUserId: 'owner-1',
+          requestedByUserId: 'owner-demo',
           approvedByOwnerUserId: '',
           accountId: fixture.cash.id,
           amountQirsh: 500,
@@ -391,7 +394,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('insufficient paid form shows approval before any mutation',
+    testWidgets('insufficient paid form creates durable request only',
         (tester) async {
       final fixture = await _fixture(cashOpeningQirsh: 100);
       await fixture.accounts.updateAccountPolicy(
@@ -436,19 +439,24 @@ void main() {
       await tester.ensureVisible(find.text('حفظ الاستلام'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('حفظ الاستلام'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.runAsync(() async {
+        final deadline = DateTime.now().add(const Duration(seconds: 5));
+        while ((await fixture.workflowService.requests.listAll()).isEmpty &&
+            DateTime.now().isBefore(deadline)) {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+      });
+      await tester.pump();
 
-      expect(find.text('موافقة المالك مطلوبة'), findsOneWidget);
-      expect(find.textContaining('الرصيد الحالي:'), findsOneWidget);
-      expect(find.textContaining('المبلغ المطلوب:'), findsOneWidget);
-      expect(find.textContaining('الرصيد المتوقع:'), findsOneWidget);
+      expect(find.textContaining('تم إنشاء طلب الموافقة'), findsOneWidget);
+      expect(find.textContaining('لم يُنفذ الشراء بعد'), findsOneWidget);
       expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
       expect(await fixture.inventory.listAllMovements(), isEmpty);
       expect(await fixture.ledger.listEntries(), isEmpty);
       expect(await fixture.accounts.currentBalanceForAccount(fixture.cash.id),
           100);
-      await tester.tap(find.text('إلغاء'));
-      await tester.pumpAndSettle();
+      expect(await fixture.workflowService.requests.listAll(), hasLength(1));
     });
   });
 }
@@ -520,6 +528,23 @@ Future<_Fixture> _fixture({int cashOpeningQirsh = 2000}) async {
     supplierRepository: suppliers,
     productRepository: products,
   );
+  final requestRepository = LocalNegativeBalanceApprovalRequestRepository();
+  final workflowService = NegativeBalanceApprovalWorkflowService(
+    authRepository: auth,
+    requestRepository: requestRepository,
+    legacyApprovalService: approvalService,
+    auditLogRepository: audit,
+    financialAccountRepository: accounts,
+    supplierRepository: suppliers,
+    supplierAccountRepository: ledger,
+    expenseRepository: LocalExpenseRepository(
+      auditLogRepository: audit,
+      financialAccountRepository: accounts,
+    ),
+    purchaseRepository: purchases,
+    productRepository: products,
+    inventoryRepository: inventory,
+  );
   return _Fixture(
     authRepository: auth,
     approvalService: approvalService,
@@ -536,6 +561,7 @@ Future<_Fixture> _fixture({int cashOpeningQirsh = 2000}) async {
     ledger: ledger,
     purchases: purchases,
     controller: controller,
+    workflowService: workflowService,
   );
 }
 
@@ -556,6 +582,7 @@ class _Fixture {
     required this.ledger,
     required this.purchases,
     required this.controller,
+    required this.workflowService,
   });
 
   final LocalAuthRepository authRepository;
@@ -573,6 +600,7 @@ class _Fixture {
   final LocalSupplierAccountRepository ledger;
   final LocalPurchaseRepository purchases;
   final PurchaseController controller;
+  final NegativeBalanceApprovalWorkflowService workflowService;
 
   PurchaseIntakeDraft draft({
     required String requestId,
@@ -589,7 +617,7 @@ class _Fixture {
       quantityKg: quantityKg,
       entryUnit: GrainUnit.kilogram,
       unitPricePiastersPerKg: 100,
-      createdByUserId: 'owner-1',
+      createdByUserId: 'owner-demo',
       paymentMode: paymentMode,
       paidAmountQirsh:
           paymentMode == PurchasePaymentMode.paid ? quantityKg * 100 : null,
@@ -618,12 +646,13 @@ Widget _harness(_Fixture fixture, AuthController auth) {
         textDirection: TextDirection.rtl,
         child: child ?? const SizedBox.shrink(),
       ),
-      home: PurchasesScreen(
-        controller: fixture.controller,
-        supplierAccountRepository: fixture.ledger,
-        financialAccountRepository: fixture.accounts,
-        authRepository: fixture.authRepository,
-        negativeBalanceApprovalService: fixture.approvalService,
+      home: Scaffold(
+        body: PurchasesScreen(
+          controller: fixture.controller,
+          supplierAccountRepository: fixture.ledger,
+          financialAccountRepository: fixture.accounts,
+          approvalWorkflowService: fixture.workflowService,
+        ),
       ),
     ),
   );

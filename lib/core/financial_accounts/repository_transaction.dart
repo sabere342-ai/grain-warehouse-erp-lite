@@ -13,7 +13,11 @@ class RepositoryTransaction {
     Future<T> Function() operation,
   ) async {
     if (isActive) {
-      throw StateError('Nested repository transactions are not supported.');
+      // A workflow coordinator may own the outer rollback boundary while an
+      // operation repository retains its own characterized boundary. Nested
+      // snapshots are safe here because the outer boundary is serialized and
+      // remains responsible for rolling back effects after an inner success.
+      return _executeWithinBoundary(snapshots, operation);
     }
     final completion = Completer<void>();
     final previous = _tail;

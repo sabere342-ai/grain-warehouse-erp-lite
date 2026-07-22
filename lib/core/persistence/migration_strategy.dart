@@ -4,7 +4,10 @@ import 'foundation_database.dart';
 
 MigrationStrategy foundationMigrationStrategy(FoundationDatabase database) {
   return MigrationStrategy(
-    onCreate: (migrator) => migrator.createAll(),
+    onCreate: (migrator) async {
+      await migrator.createAll();
+      await _createNegativeBalancePendingSignatureIndex(database);
+    },
     onUpgrade: (migrator, from, to) async {
       for (var version = from + 1; version <= to; version++) {
         final step = _migrationSteps(database)[version];
@@ -72,4 +75,71 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
           ['auth_accounts', 1],
         );
       },
+      14: (migrator) async {
+        if (!await _columnExists(database, 'audit_logs', 'actor_id')) {
+          await migrator.addColumn(
+            database.auditLogs,
+            database.auditLogs.actorId,
+          );
+        }
+        if (!await _columnExists(
+          database,
+          'expenses',
+          'created_by_user_id',
+        )) {
+          await migrator.addColumn(
+            database.expenses,
+            database.expenses.createdByUserId,
+          );
+        }
+        if (!await _columnExists(
+          database,
+          'expenses',
+          'operation_request_id',
+        )) {
+          await migrator.addColumn(
+            database.expenses,
+            database.expenses.operationRequestId,
+          );
+        }
+        if (!await _columnExists(
+          database,
+          'expenses',
+          'operation_request_fingerprint',
+        )) {
+          await migrator.addColumn(
+            database.expenses,
+            database.expenses.operationRequestFingerprint,
+          );
+        }
+        await database.customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS expenses_operation_request_uq '
+          'ON expenses (operation_request_id)',
+        );
+        await migrator.createTable(database.negativeBalanceApprovalRequests);
+        await migrator
+            .createTable(database.negativeBalanceApprovalRequestTransitions);
+        await _createNegativeBalancePendingSignatureIndex(database);
+      },
     };
+
+Future<void> _createNegativeBalancePendingSignatureIndex(
+  FoundationDatabase database,
+) =>
+    database.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS negative_balance_pending_signature_uq '
+      'ON negative_balance_approval_requests ('
+      'operation_type, source_document_id, financial_account_id, '
+      'payment_method, amount_qirsh, payload_fingerprint) '
+      "WHERE status = 'pending'",
+    );
+
+Future<bool> _columnExists(
+  FoundationDatabase database,
+  String tableName,
+  String columnName,
+) async {
+  final columns =
+      await database.customSelect('PRAGMA table_info("$tableName")').get();
+  return columns.any((row) => row.data['name'] == columnName);
+}

@@ -48,6 +48,15 @@ class LocalExpenseRepository implements DurableExpenseRepository {
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
     await _validateNewPaymentRoute(draft);
+    final requestId = _normalizedOptionalText(draft.operationRequestId)!;
+    final fingerprint = _expenseFingerprint(draft);
+    for (final existing in _expenses) {
+      if (existing.operationRequestId != requestId) continue;
+      if (existing.operationRequestFingerprint != fingerprint) {
+        throw StateError('Expense request payload does not match replay.');
+      }
+      return existing;
+    }
     final now = DateTime.now();
     final expense = ExpenseRecord(
       id: _generateExpenseId(now),
@@ -56,8 +65,11 @@ class LocalExpenseRepository implements DurableExpenseRepository {
       amountQirsh: draft.amountQirsh,
       notes: _normalizedOptionalText(draft.notes),
       createdAt: now,
+      createdByUserId: draft.createdByUserId.trim(),
       financialAccountId: draft.financialAccountId,
       paymentMethod: draft.paymentMethod,
+      operationRequestId: requestId,
+      operationRequestFingerprint: fingerprint,
     );
     if (!expense.hasValidId) {
       throw StateError('Expense id is required.');
@@ -86,7 +98,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
           sourceType: FinancialAccountEntrySource.expense,
           sourceDocumentId: expense.id,
           effectiveDate: expense.date,
-          createdByUserId: 'system',
+          createdByUserId: expense.createdByUserId!,
           reference: 'مصروف: ${expense.category}',
           note: 'مصروف ${expense.amountQirsh} قيرش - ${expense.category}',
           paymentMethod: expense.paymentMethod,
@@ -100,6 +112,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
           actionType: 'expense.created',
           descriptionAr: 'تم تسجيل مصروف ${expense.category}.',
           referenceId: expense.id,
+          actorId: expense.createdByUserId,
         ),
       );
       return expense;
@@ -163,6 +176,20 @@ class LocalExpenseRepository implements DurableExpenseRepository {
       throw ArgumentError.value(
           draft.amountQirsh, 'amountQirsh', 'Expense amount must be positive.');
     }
+    if (draft.createdByUserId.trim().isEmpty) {
+      throw ArgumentError.value(
+        draft.createdByUserId,
+        'createdByUserId',
+        'Expense actor identity is required.',
+      );
+    }
+    if (_normalizedOptionalText(draft.operationRequestId) == null) {
+      throw ArgumentError.value(
+        draft.operationRequestId,
+        'operationRequestId',
+        'Expense operation request id is required.',
+      );
+    }
   }
 
   Future<void> _validateNewPaymentRoute(ExpenseDraft draft) async {
@@ -201,6 +228,16 @@ class LocalExpenseRepository implements DurableExpenseRepository {
     _generatedIdCounter++;
     return 'exp-${now.microsecondsSinceEpoch}-$_generatedIdCounter';
   }
+
+  String _expenseFingerprint(ExpenseDraft draft) => [
+        draft.date.toUtc().toIso8601String(),
+        draft.category.trim(),
+        draft.amountQirsh,
+        draft.notes?.trim() ?? '',
+        draft.financialAccountId?.trim() ?? '',
+        draft.paymentMethod?.name ?? '',
+        draft.createdByUserId.trim(),
+      ].join('|');
 
   String? _normalizedOptionalText(String? value) {
     final normalized = value?.trim();

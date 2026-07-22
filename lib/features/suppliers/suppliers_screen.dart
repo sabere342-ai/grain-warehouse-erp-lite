@@ -113,8 +113,29 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     );
 
     try {
-      await _accountRepo.createPayment(draft);
-      await _loadBalances();
+      if (draft.overpaymentApprovalId != null) {
+        await _accountRepo.createPayment(draft);
+        await _loadBalances();
+        return;
+      }
+      final result = await AppRepositories
+          .negativeBalanceApprovalWorkflowService
+          .submitSupplierPayment(requester: user, draft: draft);
+      if (!context.mounted) return;
+      if (result.isPending) {
+        final request = result.request!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم إنشاء طلب الموافقة ${request.id}. لم يُنفذ السداد بعد. '
+              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
+              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
+            ),
+          ),
+        );
+      } else {
+        await _loadBalances();
+      }
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

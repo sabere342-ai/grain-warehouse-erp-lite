@@ -19,7 +19,7 @@ void main() {
   test('fresh schema is v11 with the five customer account tables', () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 13);
+    expect(database.schemaVersion, 14);
     final names = (await database
             .customSelect(
               "SELECT name FROM sqlite_master WHERE type = 'table'",
@@ -61,7 +61,7 @@ void main() {
     legacy.dispose();
 
     final upgraded = openDatabaseFile(file);
-    expect(upgraded.schemaVersion, 13);
+    expect(upgraded.schemaVersion, 14);
     expect(await upgraded.readProbe('v10-data'), 'preserved');
     final count = await upgraded
         .customSelect(

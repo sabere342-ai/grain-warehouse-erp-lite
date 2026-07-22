@@ -209,6 +209,8 @@ void main() {
           date: DateTime.now(),
           category: 'إيجار',
           amountQirsh: 5000,
+          createdByUserId: 'owner-1',
+          operationRequestId: 'phase37-expense-today',
         ));
 
         final data = await service.load();
@@ -303,6 +305,8 @@ void main() {
           date: oldDate,
           category: 'قديم',
           amountQirsh: 99999,
+          createdByUserId: 'owner-1',
+          operationRequestId: 'phase37-expense-old',
         ));
 
         final data = await service.load();

@@ -37,6 +37,17 @@ class DriftExpenseRepository implements DurableExpenseRepository {
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
     await _validateNewPaymentRoute(draft);
+    final requestId = _optional(draft.operationRequestId)!;
+    final fingerprint = _expenseFingerprint(draft);
+    final replay = await (_database.select(_database.expenses)
+          ..where((row) => row.operationRequestId.equals(requestId)))
+        .getSingleOrNull();
+    if (replay != null) {
+      if (replay.operationRequestFingerprint != fingerprint) {
+        throw StateError('Expense request payload does not match replay.');
+      }
+      return _toDomain(replay);
+    }
     final financialRepository = _financialAccountRepository;
     final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
     if (financialRepository != null &&
@@ -63,8 +74,11 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         amountQirsh: draft.amountQirsh,
         notes: _optional(draft.notes),
         createdAt: now,
+        createdByUserId: draft.createdByUserId.trim(),
         financialAccountId: draft.financialAccountId,
         paymentMethod: draft.paymentMethod,
+        operationRequestId: requestId,
+        operationRequestFingerprint: fingerprint,
       );
       await _database.into(_database.expenses).insert(_companion(expense));
       if (financialRepository != null &&
@@ -77,7 +91,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
           sourceType: FinancialAccountEntrySource.expense,
           sourceDocumentId: expense.id,
           effectiveDate: expense.date,
-          createdByUserId: 'system',
+          createdByUserId: expense.createdByUserId!,
           reference: 'مصروف: ${expense.category}',
           note: 'مصروف ${expense.amountQirsh} قرش - ${expense.category}',
           paymentMethod: expense.paymentMethod,
@@ -90,6 +104,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         actionType: 'expense.created',
         descriptionAr: 'تم تسجيل مصروف ${expense.category}.',
         referenceId: expense.id,
+        actorId: expense.createdByUserId,
       ));
       return expense;
     });
@@ -166,6 +181,9 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         createdAt: expense.createdAt.microsecondsSinceEpoch,
         financialAccountId: Value(expense.financialAccountId),
         paymentMethod: Value(expense.paymentMethod?.name),
+        createdByUserId: Value(expense.createdByUserId),
+        operationRequestId: Value(expense.operationRequestId),
+        operationRequestFingerprint: Value(expense.operationRequestFingerprint),
       );
 
   ExpenseRecord _toDomain(db.ExpenseRow row) => ExpenseRecord(
@@ -175,8 +193,11 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         amountQirsh: row.amountQirsh,
         notes: row.notes,
         createdAt: DateTime.fromMicrosecondsSinceEpoch(row.createdAt),
+        createdByUserId: row.createdByUserId,
         financialAccountId: row.financialAccountId,
         paymentMethod: _decodePaymentMethod(row.paymentMethod),
+        operationRequestId: row.operationRequestId,
+        operationRequestFingerprint: row.operationRequestFingerprint,
       );
 
   PaymentMethod? _decodePaymentMethod(String? value) {
@@ -200,6 +221,20 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         draft.amountQirsh,
         'amountQirsh',
         'Expense amount must be positive.',
+      );
+    }
+    if (draft.createdByUserId.trim().isEmpty) {
+      throw ArgumentError.value(
+        draft.createdByUserId,
+        'createdByUserId',
+        'Expense actor identity is required.',
+      );
+    }
+    if (_optional(draft.operationRequestId) == null) {
+      throw ArgumentError.value(
+        draft.operationRequestId,
+        'operationRequestId',
+        'Expense operation request id is required.',
       );
     }
   }
@@ -238,6 +273,16 @@ class DriftExpenseRepository implements DurableExpenseRepository {
     final normalized = value?.trim();
     return normalized == null || normalized.isEmpty ? null : normalized;
   }
+
+  String _expenseFingerprint(ExpenseDraft draft) => [
+        draft.date.toUtc().toIso8601String(),
+        draft.category.trim(),
+        draft.amountQirsh,
+        draft.notes?.trim() ?? '',
+        draft.financialAccountId?.trim() ?? '',
+        draft.paymentMethod?.name ?? '',
+        draft.createdByUserId.trim(),
+      ].join('|');
 }
 
 class _DriftExpenseSnapshot extends SnapshotHolder {

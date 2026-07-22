@@ -224,6 +224,7 @@ void main() {
             date: DateTime(2026, 1, 2),
             category: 'Utilities',
             amountQirsh: 1500,
+            createdByUserId: 'system',
             financialAccountId: account.id,
             paymentMethod: PaymentMethod.cash,
             negativeBalanceApprovalId: approvalId,
@@ -255,13 +256,20 @@ void main() {
       expect(restored.consumedByTransactionId, isNull);
     });
 
-    test('rejects nested transaction boundaries', () async {
+    test('nested repository boundaries participate in the outer rollback',
+        () async {
+      final values = <int>[1];
       await expectLater(
-        RepositoryTransaction.execute(<SnapshotHolder>[], () async {
-          await RepositoryTransaction.execute(<SnapshotHolder>[], () async {});
+        RepositoryTransaction.execute([ListSnapshot(values)], () async {
+          values.add(2);
+          await RepositoryTransaction.execute([ListSnapshot(values)], () async {
+            values.add(3);
+          });
+          throw StateError('outer failure');
         }),
-        throwsA(isA<StateError>()),
+        throwsStateError,
       );
+      expect(values, [1]);
     });
 
     test('serializes concurrent transaction boundaries', () async {

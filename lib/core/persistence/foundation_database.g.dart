@@ -7913,6 +7913,12 @@ class $AuditLogsTable extends AuditLogs
   late final GeneratedColumn<String> descriptionAr = GeneratedColumn<String>(
       'description_ar', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _actorIdMeta =
+      const VerificationMeta('actorId');
+  @override
+  late final GeneratedColumn<String> actorId = GeneratedColumn<String>(
+      'actor_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _referenceIdMeta =
       const VerificationMeta('referenceId');
   @override
@@ -7926,8 +7932,15 @@ class $AuditLogsTable extends AuditLogs
       'metadata_json', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, timestamp, actionType, descriptionAr, referenceId, metadataJson];
+  List<GeneratedColumn> get $columns => [
+        id,
+        timestamp,
+        actionType,
+        descriptionAr,
+        actorId,
+        referenceId,
+        metadataJson
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -7965,6 +7978,10 @@ class $AuditLogsTable extends AuditLogs
     } else if (isInserting) {
       context.missing(_descriptionArMeta);
     }
+    if (data.containsKey('actor_id')) {
+      context.handle(_actorIdMeta,
+          actorId.isAcceptableOrUnknown(data['actor_id']!, _actorIdMeta));
+    }
     if (data.containsKey('reference_id')) {
       context.handle(
           _referenceIdMeta,
@@ -7996,6 +8013,8 @@ class $AuditLogsTable extends AuditLogs
           .read(DriftSqlType.string, data['${effectivePrefix}action_type'])!,
       descriptionAr: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description_ar'])!,
+      actorId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}actor_id']),
       referenceId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}reference_id']),
       metadataJson: attachedDatabase.typeMapping
@@ -8014,6 +8033,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
   final DateTime timestamp;
   final String actionType;
   final String descriptionAr;
+  final String? actorId;
   final String? referenceId;
   final String metadataJson;
   const AuditLogRow(
@@ -8021,6 +8041,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       required this.timestamp,
       required this.actionType,
       required this.descriptionAr,
+      this.actorId,
       this.referenceId,
       required this.metadataJson});
   @override
@@ -8030,6 +8051,9 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
     map['timestamp'] = Variable<DateTime>(timestamp);
     map['action_type'] = Variable<String>(actionType);
     map['description_ar'] = Variable<String>(descriptionAr);
+    if (!nullToAbsent || actorId != null) {
+      map['actor_id'] = Variable<String>(actorId);
+    }
     if (!nullToAbsent || referenceId != null) {
       map['reference_id'] = Variable<String>(referenceId);
     }
@@ -8043,6 +8067,9 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       timestamp: Value(timestamp),
       actionType: Value(actionType),
       descriptionAr: Value(descriptionAr),
+      actorId: actorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(actorId),
       referenceId: referenceId == null && nullToAbsent
           ? const Value.absent()
           : Value(referenceId),
@@ -8058,6 +8085,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       timestamp: serializer.fromJson<DateTime>(json['timestamp']),
       actionType: serializer.fromJson<String>(json['actionType']),
       descriptionAr: serializer.fromJson<String>(json['descriptionAr']),
+      actorId: serializer.fromJson<String?>(json['actorId']),
       referenceId: serializer.fromJson<String?>(json['referenceId']),
       metadataJson: serializer.fromJson<String>(json['metadataJson']),
     );
@@ -8070,6 +8098,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       'timestamp': serializer.toJson<DateTime>(timestamp),
       'actionType': serializer.toJson<String>(actionType),
       'descriptionAr': serializer.toJson<String>(descriptionAr),
+      'actorId': serializer.toJson<String?>(actorId),
       'referenceId': serializer.toJson<String?>(referenceId),
       'metadataJson': serializer.toJson<String>(metadataJson),
     };
@@ -8080,6 +8109,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
           DateTime? timestamp,
           String? actionType,
           String? descriptionAr,
+          Value<String?> actorId = const Value.absent(),
           Value<String?> referenceId = const Value.absent(),
           String? metadataJson}) =>
       AuditLogRow(
@@ -8087,6 +8117,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
         timestamp: timestamp ?? this.timestamp,
         actionType: actionType ?? this.actionType,
         descriptionAr: descriptionAr ?? this.descriptionAr,
+        actorId: actorId.present ? actorId.value : this.actorId,
         referenceId: referenceId.present ? referenceId.value : this.referenceId,
         metadataJson: metadataJson ?? this.metadataJson,
       );
@@ -8099,6 +8130,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
       descriptionAr: data.descriptionAr.present
           ? data.descriptionAr.value
           : this.descriptionAr,
+      actorId: data.actorId.present ? data.actorId.value : this.actorId,
       referenceId:
           data.referenceId.present ? data.referenceId.value : this.referenceId,
       metadataJson: data.metadataJson.present
@@ -8114,6 +8146,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
           ..write('timestamp: $timestamp, ')
           ..write('actionType: $actionType, ')
           ..write('descriptionAr: $descriptionAr, ')
+          ..write('actorId: $actorId, ')
           ..write('referenceId: $referenceId, ')
           ..write('metadataJson: $metadataJson')
           ..write(')'))
@@ -8121,8 +8154,8 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, timestamp, actionType, descriptionAr, referenceId, metadataJson);
+  int get hashCode => Object.hash(id, timestamp, actionType, descriptionAr,
+      actorId, referenceId, metadataJson);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8131,6 +8164,7 @@ class AuditLogRow extends DataClass implements Insertable<AuditLogRow> {
           other.timestamp == this.timestamp &&
           other.actionType == this.actionType &&
           other.descriptionAr == this.descriptionAr &&
+          other.actorId == this.actorId &&
           other.referenceId == this.referenceId &&
           other.metadataJson == this.metadataJson);
 }
@@ -8140,6 +8174,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
   final Value<DateTime> timestamp;
   final Value<String> actionType;
   final Value<String> descriptionAr;
+  final Value<String?> actorId;
   final Value<String?> referenceId;
   final Value<String> metadataJson;
   final Value<int> rowid;
@@ -8148,6 +8183,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     this.timestamp = const Value.absent(),
     this.actionType = const Value.absent(),
     this.descriptionAr = const Value.absent(),
+    this.actorId = const Value.absent(),
     this.referenceId = const Value.absent(),
     this.metadataJson = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -8157,6 +8193,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     required DateTime timestamp,
     required String actionType,
     required String descriptionAr,
+    this.actorId = const Value.absent(),
     this.referenceId = const Value.absent(),
     required String metadataJson,
     this.rowid = const Value.absent(),
@@ -8170,6 +8207,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     Expression<DateTime>? timestamp,
     Expression<String>? actionType,
     Expression<String>? descriptionAr,
+    Expression<String>? actorId,
     Expression<String>? referenceId,
     Expression<String>? metadataJson,
     Expression<int>? rowid,
@@ -8179,6 +8217,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
       if (timestamp != null) 'timestamp': timestamp,
       if (actionType != null) 'action_type': actionType,
       if (descriptionAr != null) 'description_ar': descriptionAr,
+      if (actorId != null) 'actor_id': actorId,
       if (referenceId != null) 'reference_id': referenceId,
       if (metadataJson != null) 'metadata_json': metadataJson,
       if (rowid != null) 'rowid': rowid,
@@ -8190,6 +8229,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
       Value<DateTime>? timestamp,
       Value<String>? actionType,
       Value<String>? descriptionAr,
+      Value<String?>? actorId,
       Value<String?>? referenceId,
       Value<String>? metadataJson,
       Value<int>? rowid}) {
@@ -8198,6 +8238,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
       timestamp: timestamp ?? this.timestamp,
       actionType: actionType ?? this.actionType,
       descriptionAr: descriptionAr ?? this.descriptionAr,
+      actorId: actorId ?? this.actorId,
       referenceId: referenceId ?? this.referenceId,
       metadataJson: metadataJson ?? this.metadataJson,
       rowid: rowid ?? this.rowid,
@@ -8219,6 +8260,9 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
     if (descriptionAr.present) {
       map['description_ar'] = Variable<String>(descriptionAr.value);
     }
+    if (actorId.present) {
+      map['actor_id'] = Variable<String>(actorId.value);
+    }
     if (referenceId.present) {
       map['reference_id'] = Variable<String>(referenceId.value);
     }
@@ -8238,6 +8282,7 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLogRow> {
           ..write('timestamp: $timestamp, ')
           ..write('actionType: $actionType, ')
           ..write('descriptionAr: $descriptionAr, ')
+          ..write('actorId: $actorId, ')
           ..write('referenceId: $referenceId, ')
           ..write('metadataJson: $metadataJson, ')
           ..write('rowid: $rowid')
@@ -8297,6 +8342,25 @@ class $ExpensesTable extends Expenses
   late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
       'payment_method', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdByUserIdMeta =
+      const VerificationMeta('createdByUserId');
+  @override
+  late final GeneratedColumn<String> createdByUserId = GeneratedColumn<String>(
+      'created_by_user_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _operationRequestIdMeta =
+      const VerificationMeta('operationRequestId');
+  @override
+  late final GeneratedColumn<String> operationRequestId =
+      GeneratedColumn<String>('operation_request_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _operationRequestFingerprintMeta =
+      const VerificationMeta('operationRequestFingerprint');
+  @override
+  late final GeneratedColumn<String> operationRequestFingerprint =
+      GeneratedColumn<String>(
+          'operation_request_fingerprint', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -8306,7 +8370,10 @@ class $ExpensesTable extends Expenses
         notes,
         createdAt,
         financialAccountId,
-        paymentMethod
+        paymentMethod,
+        createdByUserId,
+        operationRequestId,
+        operationRequestFingerprint
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8365,6 +8432,25 @@ class $ExpensesTable extends Expenses
           paymentMethod.isAcceptableOrUnknown(
               data['payment_method']!, _paymentMethodMeta));
     }
+    if (data.containsKey('created_by_user_id')) {
+      context.handle(
+          _createdByUserIdMeta,
+          createdByUserId.isAcceptableOrUnknown(
+              data['created_by_user_id']!, _createdByUserIdMeta));
+    }
+    if (data.containsKey('operation_request_id')) {
+      context.handle(
+          _operationRequestIdMeta,
+          operationRequestId.isAcceptableOrUnknown(
+              data['operation_request_id']!, _operationRequestIdMeta));
+    }
+    if (data.containsKey('operation_request_fingerprint')) {
+      context.handle(
+          _operationRequestFingerprintMeta,
+          operationRequestFingerprint.isAcceptableOrUnknown(
+              data['operation_request_fingerprint']!,
+              _operationRequestFingerprintMeta));
+    }
     return context;
   }
 
@@ -8390,6 +8476,13 @@ class $ExpensesTable extends Expenses
           DriftSqlType.string, data['${effectivePrefix}financial_account_id']),
       paymentMethod: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}payment_method']),
+      createdByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}created_by_user_id']),
+      operationRequestId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}operation_request_id']),
+      operationRequestFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}operation_request_fingerprint']),
     );
   }
 
@@ -8408,6 +8501,9 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
   final int createdAt;
   final String? financialAccountId;
   final String? paymentMethod;
+  final String? createdByUserId;
+  final String? operationRequestId;
+  final String? operationRequestFingerprint;
   const ExpenseRow(
       {required this.id,
       required this.date,
@@ -8416,7 +8512,10 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       this.notes,
       required this.createdAt,
       this.financialAccountId,
-      this.paymentMethod});
+      this.paymentMethod,
+      this.createdByUserId,
+      this.operationRequestId,
+      this.operationRequestFingerprint});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -8433,6 +8532,16 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
     }
     if (!nullToAbsent || paymentMethod != null) {
       map['payment_method'] = Variable<String>(paymentMethod);
+    }
+    if (!nullToAbsent || createdByUserId != null) {
+      map['created_by_user_id'] = Variable<String>(createdByUserId);
+    }
+    if (!nullToAbsent || operationRequestId != null) {
+      map['operation_request_id'] = Variable<String>(operationRequestId);
+    }
+    if (!nullToAbsent || operationRequestFingerprint != null) {
+      map['operation_request_fingerprint'] =
+          Variable<String>(operationRequestFingerprint);
     }
     return map;
   }
@@ -8452,6 +8561,16 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       paymentMethod: paymentMethod == null && nullToAbsent
           ? const Value.absent()
           : Value(paymentMethod),
+      createdByUserId: createdByUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByUserId),
+      operationRequestId: operationRequestId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operationRequestId),
+      operationRequestFingerprint:
+          operationRequestFingerprint == null && nullToAbsent
+              ? const Value.absent()
+              : Value(operationRequestFingerprint),
     );
   }
 
@@ -8468,6 +8587,11 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       financialAccountId:
           serializer.fromJson<String?>(json['financialAccountId']),
       paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
+      createdByUserId: serializer.fromJson<String?>(json['createdByUserId']),
+      operationRequestId:
+          serializer.fromJson<String?>(json['operationRequestId']),
+      operationRequestFingerprint:
+          serializer.fromJson<String?>(json['operationRequestFingerprint']),
     );
   }
   @override
@@ -8482,6 +8606,10 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       'createdAt': serializer.toJson<int>(createdAt),
       'financialAccountId': serializer.toJson<String?>(financialAccountId),
       'paymentMethod': serializer.toJson<String?>(paymentMethod),
+      'createdByUserId': serializer.toJson<String?>(createdByUserId),
+      'operationRequestId': serializer.toJson<String?>(operationRequestId),
+      'operationRequestFingerprint':
+          serializer.toJson<String?>(operationRequestFingerprint),
     };
   }
 
@@ -8493,7 +8621,10 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           Value<String?> notes = const Value.absent(),
           int? createdAt,
           Value<String?> financialAccountId = const Value.absent(),
-          Value<String?> paymentMethod = const Value.absent()}) =>
+          Value<String?> paymentMethod = const Value.absent(),
+          Value<String?> createdByUserId = const Value.absent(),
+          Value<String?> operationRequestId = const Value.absent(),
+          Value<String?> operationRequestFingerprint = const Value.absent()}) =>
       ExpenseRow(
         id: id ?? this.id,
         date: date ?? this.date,
@@ -8506,6 +8637,15 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
             : this.financialAccountId,
         paymentMethod:
             paymentMethod.present ? paymentMethod.value : this.paymentMethod,
+        createdByUserId: createdByUserId.present
+            ? createdByUserId.value
+            : this.createdByUserId,
+        operationRequestId: operationRequestId.present
+            ? operationRequestId.value
+            : this.operationRequestId,
+        operationRequestFingerprint: operationRequestFingerprint.present
+            ? operationRequestFingerprint.value
+            : this.operationRequestFingerprint,
       );
   ExpenseRow copyWithCompanion(ExpensesCompanion data) {
     return ExpenseRow(
@@ -8522,6 +8662,15 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       paymentMethod: data.paymentMethod.present
           ? data.paymentMethod.value
           : this.paymentMethod,
+      createdByUserId: data.createdByUserId.present
+          ? data.createdByUserId.value
+          : this.createdByUserId,
+      operationRequestId: data.operationRequestId.present
+          ? data.operationRequestId.value
+          : this.operationRequestId,
+      operationRequestFingerprint: data.operationRequestFingerprint.present
+          ? data.operationRequestFingerprint.value
+          : this.operationRequestFingerprint,
     );
   }
 
@@ -8535,14 +8684,27 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('financialAccountId: $financialAccountId, ')
-          ..write('paymentMethod: $paymentMethod')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('operationRequestId: $operationRequestId, ')
+          ..write('operationRequestFingerprint: $operationRequestFingerprint')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, date, category, amountQirsh, notes,
-      createdAt, financialAccountId, paymentMethod);
+  int get hashCode => Object.hash(
+      id,
+      date,
+      category,
+      amountQirsh,
+      notes,
+      createdAt,
+      financialAccountId,
+      paymentMethod,
+      createdByUserId,
+      operationRequestId,
+      operationRequestFingerprint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8554,7 +8716,11 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
           other.financialAccountId == this.financialAccountId &&
-          other.paymentMethod == this.paymentMethod);
+          other.paymentMethod == this.paymentMethod &&
+          other.createdByUserId == this.createdByUserId &&
+          other.operationRequestId == this.operationRequestId &&
+          other.operationRequestFingerprint ==
+              this.operationRequestFingerprint);
 }
 
 class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
@@ -8566,6 +8732,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
   final Value<int> createdAt;
   final Value<String?> financialAccountId;
   final Value<String?> paymentMethod;
+  final Value<String?> createdByUserId;
+  final Value<String?> operationRequestId;
+  final Value<String?> operationRequestFingerprint;
   final Value<int> rowid;
   const ExpensesCompanion({
     this.id = const Value.absent(),
@@ -8576,6 +8745,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     this.createdAt = const Value.absent(),
     this.financialAccountId = const Value.absent(),
     this.paymentMethod = const Value.absent(),
+    this.createdByUserId = const Value.absent(),
+    this.operationRequestId = const Value.absent(),
+    this.operationRequestFingerprint = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ExpensesCompanion.insert({
@@ -8587,6 +8759,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     required int createdAt,
     this.financialAccountId = const Value.absent(),
     this.paymentMethod = const Value.absent(),
+    this.createdByUserId = const Value.absent(),
+    this.operationRequestId = const Value.absent(),
+    this.operationRequestFingerprint = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         date = Value(date),
@@ -8602,6 +8777,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     Expression<int>? createdAt,
     Expression<String>? financialAccountId,
     Expression<String>? paymentMethod,
+    Expression<String>? createdByUserId,
+    Expression<String>? operationRequestId,
+    Expression<String>? operationRequestFingerprint,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8614,6 +8792,11 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       if (financialAccountId != null)
         'financial_account_id': financialAccountId,
       if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (createdByUserId != null) 'created_by_user_id': createdByUserId,
+      if (operationRequestId != null)
+        'operation_request_id': operationRequestId,
+      if (operationRequestFingerprint != null)
+        'operation_request_fingerprint': operationRequestFingerprint,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8627,6 +8810,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       Value<int>? createdAt,
       Value<String?>? financialAccountId,
       Value<String?>? paymentMethod,
+      Value<String?>? createdByUserId,
+      Value<String?>? operationRequestId,
+      Value<String?>? operationRequestFingerprint,
       Value<int>? rowid}) {
     return ExpensesCompanion(
       id: id ?? this.id,
@@ -8637,6 +8823,10 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       createdAt: createdAt ?? this.createdAt,
       financialAccountId: financialAccountId ?? this.financialAccountId,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      createdByUserId: createdByUserId ?? this.createdByUserId,
+      operationRequestId: operationRequestId ?? this.operationRequestId,
+      operationRequestFingerprint:
+          operationRequestFingerprint ?? this.operationRequestFingerprint,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8668,6 +8858,16 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     if (paymentMethod.present) {
       map['payment_method'] = Variable<String>(paymentMethod.value);
     }
+    if (createdByUserId.present) {
+      map['created_by_user_id'] = Variable<String>(createdByUserId.value);
+    }
+    if (operationRequestId.present) {
+      map['operation_request_id'] = Variable<String>(operationRequestId.value);
+    }
+    if (operationRequestFingerprint.present) {
+      map['operation_request_fingerprint'] =
+          Variable<String>(operationRequestFingerprint.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8685,6 +8885,9 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
           ..write('createdAt: $createdAt, ')
           ..write('financialAccountId: $financialAccountId, ')
           ..write('paymentMethod: $paymentMethod, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('operationRequestId: $operationRequestId, ')
+          ..write('operationRequestFingerprint: $operationRequestFingerprint, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -12329,6 +12532,1566 @@ class AuthAccountsCompanion extends UpdateCompanion<AuthAccountRow> {
   }
 }
 
+class $NegativeBalanceApprovalRequestsTable
+    extends NegativeBalanceApprovalRequests
+    with
+        TableInfo<$NegativeBalanceApprovalRequestsTable,
+            NegativeBalanceApprovalRequest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NegativeBalanceApprovalRequestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _idempotencyKeyMeta =
+      const VerificationMeta('idempotencyKey');
+  @override
+  late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
+      'idempotency_key', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _operationTypeMeta =
+      const VerificationMeta('operationType');
+  @override
+  late final GeneratedColumn<String> operationType = GeneratedColumn<String>(
+      'operation_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _financialAccountIdMeta =
+      const VerificationMeta('financialAccountId');
+  @override
+  late final GeneratedColumn<String> financialAccountId =
+      GeneratedColumn<String>('financial_account_id', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _paymentMethodMeta =
+      const VerificationMeta('paymentMethod');
+  @override
+  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
+      'payment_method', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _amountQirshMeta =
+      const VerificationMeta('amountQirsh');
+  @override
+  late final GeneratedColumn<int> amountQirsh = GeneratedColumn<int>(
+      'amount_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _sourceDocumentIdMeta =
+      const VerificationMeta('sourceDocumentId');
+  @override
+  late final GeneratedColumn<String> sourceDocumentId = GeneratedColumn<String>(
+      'source_document_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadFingerprintMeta =
+      const VerificationMeta('payloadFingerprint');
+  @override
+  late final GeneratedColumn<String> payloadFingerprint =
+      GeneratedColumn<String>('payload_fingerprint', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _relatedPartyIdMeta =
+      const VerificationMeta('relatedPartyId');
+  @override
+  late final GeneratedColumn<String> relatedPartyId = GeneratedColumn<String>(
+      'related_party_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _requesterActorIdMeta =
+      const VerificationMeta('requesterActorId');
+  @override
+  late final GeneratedColumn<String> requesterActorId = GeneratedColumn<String>(
+      'requester_actor_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _requestedAtMeta =
+      const VerificationMeta('requestedAt');
+  @override
+  late final GeneratedColumn<DateTime> requestedAt = GeneratedColumn<DateTime>(
+      'requested_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _balanceAtRequestQirshMeta =
+      const VerificationMeta('balanceAtRequestQirsh');
+  @override
+  late final GeneratedColumn<int> balanceAtRequestQirsh = GeneratedColumn<int>(
+      'balance_at_request_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _expectedBalanceAtRequestQirshMeta =
+      const VerificationMeta('expectedBalanceAtRequestQirsh');
+  @override
+  late final GeneratedColumn<int> expectedBalanceAtRequestQirsh =
+      GeneratedColumn<int>(
+          'expected_balance_at_request_qirsh', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _deficitAtRequestQirshMeta =
+      const VerificationMeta('deficitAtRequestQirsh');
+  @override
+  late final GeneratedColumn<int> deficitAtRequestQirsh = GeneratedColumn<int>(
+      'deficit_at_request_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+      'reason', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _resolverActorIdMeta =
+      const VerificationMeta('resolverActorId');
+  @override
+  late final GeneratedColumn<String> resolverActorId = GeneratedColumn<String>(
+      'resolver_actor_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resolvedAtMeta =
+      const VerificationMeta('resolvedAt');
+  @override
+  late final GeneratedColumn<DateTime> resolvedAt = GeneratedColumn<DateTime>(
+      'resolved_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _resolutionReasonMeta =
+      const VerificationMeta('resolutionReason');
+  @override
+  late final GeneratedColumn<String> resolutionReason = GeneratedColumn<String>(
+      'resolution_reason', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _ownerVerificationReferenceMeta =
+      const VerificationMeta('ownerVerificationReference');
+  @override
+  late final GeneratedColumn<String> ownerVerificationReference =
+      GeneratedColumn<String>('owner_verification_reference', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resultDocumentIdMeta =
+      const VerificationMeta('resultDocumentId');
+  @override
+  late final GeneratedColumn<String> resultDocumentId = GeneratedColumn<String>(
+      'result_document_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _recordVersionMeta =
+      const VerificationMeta('recordVersion');
+  @override
+  late final GeneratedColumn<int> recordVersion = GeneratedColumn<int>(
+      'record_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        idempotencyKey,
+        operationType,
+        status,
+        financialAccountId,
+        paymentMethod,
+        amountQirsh,
+        sourceDocumentId,
+        payloadJson,
+        payloadFingerprint,
+        relatedPartyId,
+        requesterActorId,
+        requestedAt,
+        balanceAtRequestQirsh,
+        expectedBalanceAtRequestQirsh,
+        deficitAtRequestQirsh,
+        reason,
+        resolverActorId,
+        resolvedAt,
+        resolutionReason,
+        ownerVerificationReference,
+        resultDocumentId,
+        recordVersion
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'negative_balance_approval_requests';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<NegativeBalanceApprovalRequest> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('idempotency_key')) {
+      context.handle(
+          _idempotencyKeyMeta,
+          idempotencyKey.isAcceptableOrUnknown(
+              data['idempotency_key']!, _idempotencyKeyMeta));
+    } else if (isInserting) {
+      context.missing(_idempotencyKeyMeta);
+    }
+    if (data.containsKey('operation_type')) {
+      context.handle(
+          _operationTypeMeta,
+          operationType.isAcceptableOrUnknown(
+              data['operation_type']!, _operationTypeMeta));
+    } else if (isInserting) {
+      context.missing(_operationTypeMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('financial_account_id')) {
+      context.handle(
+          _financialAccountIdMeta,
+          financialAccountId.isAcceptableOrUnknown(
+              data['financial_account_id']!, _financialAccountIdMeta));
+    } else if (isInserting) {
+      context.missing(_financialAccountIdMeta);
+    }
+    if (data.containsKey('payment_method')) {
+      context.handle(
+          _paymentMethodMeta,
+          paymentMethod.isAcceptableOrUnknown(
+              data['payment_method']!, _paymentMethodMeta));
+    } else if (isInserting) {
+      context.missing(_paymentMethodMeta);
+    }
+    if (data.containsKey('amount_qirsh')) {
+      context.handle(
+          _amountQirshMeta,
+          amountQirsh.isAcceptableOrUnknown(
+              data['amount_qirsh']!, _amountQirshMeta));
+    } else if (isInserting) {
+      context.missing(_amountQirshMeta);
+    }
+    if (data.containsKey('source_document_id')) {
+      context.handle(
+          _sourceDocumentIdMeta,
+          sourceDocumentId.isAcceptableOrUnknown(
+              data['source_document_id']!, _sourceDocumentIdMeta));
+    } else if (isInserting) {
+      context.missing(_sourceDocumentIdMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('payload_fingerprint')) {
+      context.handle(
+          _payloadFingerprintMeta,
+          payloadFingerprint.isAcceptableOrUnknown(
+              data['payload_fingerprint']!, _payloadFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_payloadFingerprintMeta);
+    }
+    if (data.containsKey('related_party_id')) {
+      context.handle(
+          _relatedPartyIdMeta,
+          relatedPartyId.isAcceptableOrUnknown(
+              data['related_party_id']!, _relatedPartyIdMeta));
+    }
+    if (data.containsKey('requester_actor_id')) {
+      context.handle(
+          _requesterActorIdMeta,
+          requesterActorId.isAcceptableOrUnknown(
+              data['requester_actor_id']!, _requesterActorIdMeta));
+    } else if (isInserting) {
+      context.missing(_requesterActorIdMeta);
+    }
+    if (data.containsKey('requested_at')) {
+      context.handle(
+          _requestedAtMeta,
+          requestedAt.isAcceptableOrUnknown(
+              data['requested_at']!, _requestedAtMeta));
+    } else if (isInserting) {
+      context.missing(_requestedAtMeta);
+    }
+    if (data.containsKey('balance_at_request_qirsh')) {
+      context.handle(
+          _balanceAtRequestQirshMeta,
+          balanceAtRequestQirsh.isAcceptableOrUnknown(
+              data['balance_at_request_qirsh']!, _balanceAtRequestQirshMeta));
+    } else if (isInserting) {
+      context.missing(_balanceAtRequestQirshMeta);
+    }
+    if (data.containsKey('expected_balance_at_request_qirsh')) {
+      context.handle(
+          _expectedBalanceAtRequestQirshMeta,
+          expectedBalanceAtRequestQirsh.isAcceptableOrUnknown(
+              data['expected_balance_at_request_qirsh']!,
+              _expectedBalanceAtRequestQirshMeta));
+    } else if (isInserting) {
+      context.missing(_expectedBalanceAtRequestQirshMeta);
+    }
+    if (data.containsKey('deficit_at_request_qirsh')) {
+      context.handle(
+          _deficitAtRequestQirshMeta,
+          deficitAtRequestQirsh.isAcceptableOrUnknown(
+              data['deficit_at_request_qirsh']!, _deficitAtRequestQirshMeta));
+    } else if (isInserting) {
+      context.missing(_deficitAtRequestQirshMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(_reasonMeta,
+          reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta));
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('resolver_actor_id')) {
+      context.handle(
+          _resolverActorIdMeta,
+          resolverActorId.isAcceptableOrUnknown(
+              data['resolver_actor_id']!, _resolverActorIdMeta));
+    }
+    if (data.containsKey('resolved_at')) {
+      context.handle(
+          _resolvedAtMeta,
+          resolvedAt.isAcceptableOrUnknown(
+              data['resolved_at']!, _resolvedAtMeta));
+    }
+    if (data.containsKey('resolution_reason')) {
+      context.handle(
+          _resolutionReasonMeta,
+          resolutionReason.isAcceptableOrUnknown(
+              data['resolution_reason']!, _resolutionReasonMeta));
+    }
+    if (data.containsKey('owner_verification_reference')) {
+      context.handle(
+          _ownerVerificationReferenceMeta,
+          ownerVerificationReference.isAcceptableOrUnknown(
+              data['owner_verification_reference']!,
+              _ownerVerificationReferenceMeta));
+    }
+    if (data.containsKey('result_document_id')) {
+      context.handle(
+          _resultDocumentIdMeta,
+          resultDocumentId.isAcceptableOrUnknown(
+              data['result_document_id']!, _resultDocumentIdMeta));
+    }
+    if (data.containsKey('record_version')) {
+      context.handle(
+          _recordVersionMeta,
+          recordVersion.isAcceptableOrUnknown(
+              data['record_version']!, _recordVersionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NegativeBalanceApprovalRequest map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NegativeBalanceApprovalRequest(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      idempotencyKey: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}idempotency_key'])!,
+      operationType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation_type'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      financialAccountId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}financial_account_id'])!,
+      paymentMethod: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payment_method'])!,
+      amountQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amount_qirsh'])!,
+      sourceDocumentId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_document_id'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      payloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}payload_fingerprint'])!,
+      relatedPartyId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}related_party_id']),
+      requesterActorId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}requester_actor_id'])!,
+      requestedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}requested_at'])!,
+      balanceAtRequestQirsh: attachedDatabase.typeMapping.read(DriftSqlType.int,
+          data['${effectivePrefix}balance_at_request_qirsh'])!,
+      expectedBalanceAtRequestQirsh: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}expected_balance_at_request_qirsh'])!,
+      deficitAtRequestQirsh: attachedDatabase.typeMapping.read(DriftSqlType.int,
+          data['${effectivePrefix}deficit_at_request_qirsh'])!,
+      reason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reason'])!,
+      resolverActorId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}resolver_actor_id']),
+      resolvedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}resolved_at']),
+      resolutionReason: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}resolution_reason']),
+      ownerVerificationReference: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}owner_verification_reference']),
+      resultDocumentId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}result_document_id']),
+      recordVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}record_version'])!,
+    );
+  }
+
+  @override
+  $NegativeBalanceApprovalRequestsTable createAlias(String alias) {
+    return $NegativeBalanceApprovalRequestsTable(attachedDatabase, alias);
+  }
+}
+
+class NegativeBalanceApprovalRequest extends DataClass
+    implements Insertable<NegativeBalanceApprovalRequest> {
+  final String id;
+  final String idempotencyKey;
+  final String operationType;
+  final String status;
+  final String financialAccountId;
+  final String paymentMethod;
+  final int amountQirsh;
+  final String sourceDocumentId;
+  final String payloadJson;
+  final String payloadFingerprint;
+  final String? relatedPartyId;
+  final String requesterActorId;
+  final DateTime requestedAt;
+  final int balanceAtRequestQirsh;
+  final int expectedBalanceAtRequestQirsh;
+  final int deficitAtRequestQirsh;
+  final String reason;
+  final String? resolverActorId;
+  final DateTime? resolvedAt;
+  final String? resolutionReason;
+  final String? ownerVerificationReference;
+  final String? resultDocumentId;
+  final int recordVersion;
+  const NegativeBalanceApprovalRequest(
+      {required this.id,
+      required this.idempotencyKey,
+      required this.operationType,
+      required this.status,
+      required this.financialAccountId,
+      required this.paymentMethod,
+      required this.amountQirsh,
+      required this.sourceDocumentId,
+      required this.payloadJson,
+      required this.payloadFingerprint,
+      this.relatedPartyId,
+      required this.requesterActorId,
+      required this.requestedAt,
+      required this.balanceAtRequestQirsh,
+      required this.expectedBalanceAtRequestQirsh,
+      required this.deficitAtRequestQirsh,
+      required this.reason,
+      this.resolverActorId,
+      this.resolvedAt,
+      this.resolutionReason,
+      this.ownerVerificationReference,
+      this.resultDocumentId,
+      required this.recordVersion});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['idempotency_key'] = Variable<String>(idempotencyKey);
+    map['operation_type'] = Variable<String>(operationType);
+    map['status'] = Variable<String>(status);
+    map['financial_account_id'] = Variable<String>(financialAccountId);
+    map['payment_method'] = Variable<String>(paymentMethod);
+    map['amount_qirsh'] = Variable<int>(amountQirsh);
+    map['source_document_id'] = Variable<String>(sourceDocumentId);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['payload_fingerprint'] = Variable<String>(payloadFingerprint);
+    if (!nullToAbsent || relatedPartyId != null) {
+      map['related_party_id'] = Variable<String>(relatedPartyId);
+    }
+    map['requester_actor_id'] = Variable<String>(requesterActorId);
+    map['requested_at'] = Variable<DateTime>(requestedAt);
+    map['balance_at_request_qirsh'] = Variable<int>(balanceAtRequestQirsh);
+    map['expected_balance_at_request_qirsh'] =
+        Variable<int>(expectedBalanceAtRequestQirsh);
+    map['deficit_at_request_qirsh'] = Variable<int>(deficitAtRequestQirsh);
+    map['reason'] = Variable<String>(reason);
+    if (!nullToAbsent || resolverActorId != null) {
+      map['resolver_actor_id'] = Variable<String>(resolverActorId);
+    }
+    if (!nullToAbsent || resolvedAt != null) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt);
+    }
+    if (!nullToAbsent || resolutionReason != null) {
+      map['resolution_reason'] = Variable<String>(resolutionReason);
+    }
+    if (!nullToAbsent || ownerVerificationReference != null) {
+      map['owner_verification_reference'] =
+          Variable<String>(ownerVerificationReference);
+    }
+    if (!nullToAbsent || resultDocumentId != null) {
+      map['result_document_id'] = Variable<String>(resultDocumentId);
+    }
+    map['record_version'] = Variable<int>(recordVersion);
+    return map;
+  }
+
+  NegativeBalanceApprovalRequestsCompanion toCompanion(bool nullToAbsent) {
+    return NegativeBalanceApprovalRequestsCompanion(
+      id: Value(id),
+      idempotencyKey: Value(idempotencyKey),
+      operationType: Value(operationType),
+      status: Value(status),
+      financialAccountId: Value(financialAccountId),
+      paymentMethod: Value(paymentMethod),
+      amountQirsh: Value(amountQirsh),
+      sourceDocumentId: Value(sourceDocumentId),
+      payloadJson: Value(payloadJson),
+      payloadFingerprint: Value(payloadFingerprint),
+      relatedPartyId: relatedPartyId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(relatedPartyId),
+      requesterActorId: Value(requesterActorId),
+      requestedAt: Value(requestedAt),
+      balanceAtRequestQirsh: Value(balanceAtRequestQirsh),
+      expectedBalanceAtRequestQirsh: Value(expectedBalanceAtRequestQirsh),
+      deficitAtRequestQirsh: Value(deficitAtRequestQirsh),
+      reason: Value(reason),
+      resolverActorId: resolverActorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolverActorId),
+      resolvedAt: resolvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedAt),
+      resolutionReason: resolutionReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolutionReason),
+      ownerVerificationReference:
+          ownerVerificationReference == null && nullToAbsent
+              ? const Value.absent()
+              : Value(ownerVerificationReference),
+      resultDocumentId: resultDocumentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resultDocumentId),
+      recordVersion: Value(recordVersion),
+    );
+  }
+
+  factory NegativeBalanceApprovalRequest.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NegativeBalanceApprovalRequest(
+      id: serializer.fromJson<String>(json['id']),
+      idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
+      operationType: serializer.fromJson<String>(json['operationType']),
+      status: serializer.fromJson<String>(json['status']),
+      financialAccountId:
+          serializer.fromJson<String>(json['financialAccountId']),
+      paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
+      amountQirsh: serializer.fromJson<int>(json['amountQirsh']),
+      sourceDocumentId: serializer.fromJson<String>(json['sourceDocumentId']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      payloadFingerprint:
+          serializer.fromJson<String>(json['payloadFingerprint']),
+      relatedPartyId: serializer.fromJson<String?>(json['relatedPartyId']),
+      requesterActorId: serializer.fromJson<String>(json['requesterActorId']),
+      requestedAt: serializer.fromJson<DateTime>(json['requestedAt']),
+      balanceAtRequestQirsh:
+          serializer.fromJson<int>(json['balanceAtRequestQirsh']),
+      expectedBalanceAtRequestQirsh:
+          serializer.fromJson<int>(json['expectedBalanceAtRequestQirsh']),
+      deficitAtRequestQirsh:
+          serializer.fromJson<int>(json['deficitAtRequestQirsh']),
+      reason: serializer.fromJson<String>(json['reason']),
+      resolverActorId: serializer.fromJson<String?>(json['resolverActorId']),
+      resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
+      resolutionReason: serializer.fromJson<String?>(json['resolutionReason']),
+      ownerVerificationReference:
+          serializer.fromJson<String?>(json['ownerVerificationReference']),
+      resultDocumentId: serializer.fromJson<String?>(json['resultDocumentId']),
+      recordVersion: serializer.fromJson<int>(json['recordVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'idempotencyKey': serializer.toJson<String>(idempotencyKey),
+      'operationType': serializer.toJson<String>(operationType),
+      'status': serializer.toJson<String>(status),
+      'financialAccountId': serializer.toJson<String>(financialAccountId),
+      'paymentMethod': serializer.toJson<String>(paymentMethod),
+      'amountQirsh': serializer.toJson<int>(amountQirsh),
+      'sourceDocumentId': serializer.toJson<String>(sourceDocumentId),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'payloadFingerprint': serializer.toJson<String>(payloadFingerprint),
+      'relatedPartyId': serializer.toJson<String?>(relatedPartyId),
+      'requesterActorId': serializer.toJson<String>(requesterActorId),
+      'requestedAt': serializer.toJson<DateTime>(requestedAt),
+      'balanceAtRequestQirsh': serializer.toJson<int>(balanceAtRequestQirsh),
+      'expectedBalanceAtRequestQirsh':
+          serializer.toJson<int>(expectedBalanceAtRequestQirsh),
+      'deficitAtRequestQirsh': serializer.toJson<int>(deficitAtRequestQirsh),
+      'reason': serializer.toJson<String>(reason),
+      'resolverActorId': serializer.toJson<String?>(resolverActorId),
+      'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
+      'resolutionReason': serializer.toJson<String?>(resolutionReason),
+      'ownerVerificationReference':
+          serializer.toJson<String?>(ownerVerificationReference),
+      'resultDocumentId': serializer.toJson<String?>(resultDocumentId),
+      'recordVersion': serializer.toJson<int>(recordVersion),
+    };
+  }
+
+  NegativeBalanceApprovalRequest copyWith(
+          {String? id,
+          String? idempotencyKey,
+          String? operationType,
+          String? status,
+          String? financialAccountId,
+          String? paymentMethod,
+          int? amountQirsh,
+          String? sourceDocumentId,
+          String? payloadJson,
+          String? payloadFingerprint,
+          Value<String?> relatedPartyId = const Value.absent(),
+          String? requesterActorId,
+          DateTime? requestedAt,
+          int? balanceAtRequestQirsh,
+          int? expectedBalanceAtRequestQirsh,
+          int? deficitAtRequestQirsh,
+          String? reason,
+          Value<String?> resolverActorId = const Value.absent(),
+          Value<DateTime?> resolvedAt = const Value.absent(),
+          Value<String?> resolutionReason = const Value.absent(),
+          Value<String?> ownerVerificationReference = const Value.absent(),
+          Value<String?> resultDocumentId = const Value.absent(),
+          int? recordVersion}) =>
+      NegativeBalanceApprovalRequest(
+        id: id ?? this.id,
+        idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+        operationType: operationType ?? this.operationType,
+        status: status ?? this.status,
+        financialAccountId: financialAccountId ?? this.financialAccountId,
+        paymentMethod: paymentMethod ?? this.paymentMethod,
+        amountQirsh: amountQirsh ?? this.amountQirsh,
+        sourceDocumentId: sourceDocumentId ?? this.sourceDocumentId,
+        payloadJson: payloadJson ?? this.payloadJson,
+        payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+        relatedPartyId:
+            relatedPartyId.present ? relatedPartyId.value : this.relatedPartyId,
+        requesterActorId: requesterActorId ?? this.requesterActorId,
+        requestedAt: requestedAt ?? this.requestedAt,
+        balanceAtRequestQirsh:
+            balanceAtRequestQirsh ?? this.balanceAtRequestQirsh,
+        expectedBalanceAtRequestQirsh:
+            expectedBalanceAtRequestQirsh ?? this.expectedBalanceAtRequestQirsh,
+        deficitAtRequestQirsh:
+            deficitAtRequestQirsh ?? this.deficitAtRequestQirsh,
+        reason: reason ?? this.reason,
+        resolverActorId: resolverActorId.present
+            ? resolverActorId.value
+            : this.resolverActorId,
+        resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
+        resolutionReason: resolutionReason.present
+            ? resolutionReason.value
+            : this.resolutionReason,
+        ownerVerificationReference: ownerVerificationReference.present
+            ? ownerVerificationReference.value
+            : this.ownerVerificationReference,
+        resultDocumentId: resultDocumentId.present
+            ? resultDocumentId.value
+            : this.resultDocumentId,
+        recordVersion: recordVersion ?? this.recordVersion,
+      );
+  NegativeBalanceApprovalRequest copyWithCompanion(
+      NegativeBalanceApprovalRequestsCompanion data) {
+    return NegativeBalanceApprovalRequest(
+      id: data.id.present ? data.id.value : this.id,
+      idempotencyKey: data.idempotencyKey.present
+          ? data.idempotencyKey.value
+          : this.idempotencyKey,
+      operationType: data.operationType.present
+          ? data.operationType.value
+          : this.operationType,
+      status: data.status.present ? data.status.value : this.status,
+      financialAccountId: data.financialAccountId.present
+          ? data.financialAccountId.value
+          : this.financialAccountId,
+      paymentMethod: data.paymentMethod.present
+          ? data.paymentMethod.value
+          : this.paymentMethod,
+      amountQirsh:
+          data.amountQirsh.present ? data.amountQirsh.value : this.amountQirsh,
+      sourceDocumentId: data.sourceDocumentId.present
+          ? data.sourceDocumentId.value
+          : this.sourceDocumentId,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      payloadFingerprint: data.payloadFingerprint.present
+          ? data.payloadFingerprint.value
+          : this.payloadFingerprint,
+      relatedPartyId: data.relatedPartyId.present
+          ? data.relatedPartyId.value
+          : this.relatedPartyId,
+      requesterActorId: data.requesterActorId.present
+          ? data.requesterActorId.value
+          : this.requesterActorId,
+      requestedAt:
+          data.requestedAt.present ? data.requestedAt.value : this.requestedAt,
+      balanceAtRequestQirsh: data.balanceAtRequestQirsh.present
+          ? data.balanceAtRequestQirsh.value
+          : this.balanceAtRequestQirsh,
+      expectedBalanceAtRequestQirsh: data.expectedBalanceAtRequestQirsh.present
+          ? data.expectedBalanceAtRequestQirsh.value
+          : this.expectedBalanceAtRequestQirsh,
+      deficitAtRequestQirsh: data.deficitAtRequestQirsh.present
+          ? data.deficitAtRequestQirsh.value
+          : this.deficitAtRequestQirsh,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      resolverActorId: data.resolverActorId.present
+          ? data.resolverActorId.value
+          : this.resolverActorId,
+      resolvedAt:
+          data.resolvedAt.present ? data.resolvedAt.value : this.resolvedAt,
+      resolutionReason: data.resolutionReason.present
+          ? data.resolutionReason.value
+          : this.resolutionReason,
+      ownerVerificationReference: data.ownerVerificationReference.present
+          ? data.ownerVerificationReference.value
+          : this.ownerVerificationReference,
+      resultDocumentId: data.resultDocumentId.present
+          ? data.resultDocumentId.value
+          : this.resultDocumentId,
+      recordVersion: data.recordVersion.present
+          ? data.recordVersion.value
+          : this.recordVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NegativeBalanceApprovalRequest(')
+          ..write('id: $id, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('operationType: $operationType, ')
+          ..write('status: $status, ')
+          ..write('financialAccountId: $financialAccountId, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('amountQirsh: $amountQirsh, ')
+          ..write('sourceDocumentId: $sourceDocumentId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('relatedPartyId: $relatedPartyId, ')
+          ..write('requesterActorId: $requesterActorId, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('balanceAtRequestQirsh: $balanceAtRequestQirsh, ')
+          ..write(
+              'expectedBalanceAtRequestQirsh: $expectedBalanceAtRequestQirsh, ')
+          ..write('deficitAtRequestQirsh: $deficitAtRequestQirsh, ')
+          ..write('reason: $reason, ')
+          ..write('resolverActorId: $resolverActorId, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('resolutionReason: $resolutionReason, ')
+          ..write('ownerVerificationReference: $ownerVerificationReference, ')
+          ..write('resultDocumentId: $resultDocumentId, ')
+          ..write('recordVersion: $recordVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        id,
+        idempotencyKey,
+        operationType,
+        status,
+        financialAccountId,
+        paymentMethod,
+        amountQirsh,
+        sourceDocumentId,
+        payloadJson,
+        payloadFingerprint,
+        relatedPartyId,
+        requesterActorId,
+        requestedAt,
+        balanceAtRequestQirsh,
+        expectedBalanceAtRequestQirsh,
+        deficitAtRequestQirsh,
+        reason,
+        resolverActorId,
+        resolvedAt,
+        resolutionReason,
+        ownerVerificationReference,
+        resultDocumentId,
+        recordVersion
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NegativeBalanceApprovalRequest &&
+          other.id == this.id &&
+          other.idempotencyKey == this.idempotencyKey &&
+          other.operationType == this.operationType &&
+          other.status == this.status &&
+          other.financialAccountId == this.financialAccountId &&
+          other.paymentMethod == this.paymentMethod &&
+          other.amountQirsh == this.amountQirsh &&
+          other.sourceDocumentId == this.sourceDocumentId &&
+          other.payloadJson == this.payloadJson &&
+          other.payloadFingerprint == this.payloadFingerprint &&
+          other.relatedPartyId == this.relatedPartyId &&
+          other.requesterActorId == this.requesterActorId &&
+          other.requestedAt == this.requestedAt &&
+          other.balanceAtRequestQirsh == this.balanceAtRequestQirsh &&
+          other.expectedBalanceAtRequestQirsh ==
+              this.expectedBalanceAtRequestQirsh &&
+          other.deficitAtRequestQirsh == this.deficitAtRequestQirsh &&
+          other.reason == this.reason &&
+          other.resolverActorId == this.resolverActorId &&
+          other.resolvedAt == this.resolvedAt &&
+          other.resolutionReason == this.resolutionReason &&
+          other.ownerVerificationReference == this.ownerVerificationReference &&
+          other.resultDocumentId == this.resultDocumentId &&
+          other.recordVersion == this.recordVersion);
+}
+
+class NegativeBalanceApprovalRequestsCompanion
+    extends UpdateCompanion<NegativeBalanceApprovalRequest> {
+  final Value<String> id;
+  final Value<String> idempotencyKey;
+  final Value<String> operationType;
+  final Value<String> status;
+  final Value<String> financialAccountId;
+  final Value<String> paymentMethod;
+  final Value<int> amountQirsh;
+  final Value<String> sourceDocumentId;
+  final Value<String> payloadJson;
+  final Value<String> payloadFingerprint;
+  final Value<String?> relatedPartyId;
+  final Value<String> requesterActorId;
+  final Value<DateTime> requestedAt;
+  final Value<int> balanceAtRequestQirsh;
+  final Value<int> expectedBalanceAtRequestQirsh;
+  final Value<int> deficitAtRequestQirsh;
+  final Value<String> reason;
+  final Value<String?> resolverActorId;
+  final Value<DateTime?> resolvedAt;
+  final Value<String?> resolutionReason;
+  final Value<String?> ownerVerificationReference;
+  final Value<String?> resultDocumentId;
+  final Value<int> recordVersion;
+  final Value<int> rowid;
+  const NegativeBalanceApprovalRequestsCompanion({
+    this.id = const Value.absent(),
+    this.idempotencyKey = const Value.absent(),
+    this.operationType = const Value.absent(),
+    this.status = const Value.absent(),
+    this.financialAccountId = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.amountQirsh = const Value.absent(),
+    this.sourceDocumentId = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.payloadFingerprint = const Value.absent(),
+    this.relatedPartyId = const Value.absent(),
+    this.requesterActorId = const Value.absent(),
+    this.requestedAt = const Value.absent(),
+    this.balanceAtRequestQirsh = const Value.absent(),
+    this.expectedBalanceAtRequestQirsh = const Value.absent(),
+    this.deficitAtRequestQirsh = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.resolverActorId = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+    this.resolutionReason = const Value.absent(),
+    this.ownerVerificationReference = const Value.absent(),
+    this.resultDocumentId = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NegativeBalanceApprovalRequestsCompanion.insert({
+    required String id,
+    required String idempotencyKey,
+    required String operationType,
+    required String status,
+    required String financialAccountId,
+    required String paymentMethod,
+    required int amountQirsh,
+    required String sourceDocumentId,
+    required String payloadJson,
+    required String payloadFingerprint,
+    this.relatedPartyId = const Value.absent(),
+    required String requesterActorId,
+    required DateTime requestedAt,
+    required int balanceAtRequestQirsh,
+    required int expectedBalanceAtRequestQirsh,
+    required int deficitAtRequestQirsh,
+    required String reason,
+    this.resolverActorId = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+    this.resolutionReason = const Value.absent(),
+    this.ownerVerificationReference = const Value.absent(),
+    this.resultDocumentId = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        idempotencyKey = Value(idempotencyKey),
+        operationType = Value(operationType),
+        status = Value(status),
+        financialAccountId = Value(financialAccountId),
+        paymentMethod = Value(paymentMethod),
+        amountQirsh = Value(amountQirsh),
+        sourceDocumentId = Value(sourceDocumentId),
+        payloadJson = Value(payloadJson),
+        payloadFingerprint = Value(payloadFingerprint),
+        requesterActorId = Value(requesterActorId),
+        requestedAt = Value(requestedAt),
+        balanceAtRequestQirsh = Value(balanceAtRequestQirsh),
+        expectedBalanceAtRequestQirsh = Value(expectedBalanceAtRequestQirsh),
+        deficitAtRequestQirsh = Value(deficitAtRequestQirsh),
+        reason = Value(reason);
+  static Insertable<NegativeBalanceApprovalRequest> custom({
+    Expression<String>? id,
+    Expression<String>? idempotencyKey,
+    Expression<String>? operationType,
+    Expression<String>? status,
+    Expression<String>? financialAccountId,
+    Expression<String>? paymentMethod,
+    Expression<int>? amountQirsh,
+    Expression<String>? sourceDocumentId,
+    Expression<String>? payloadJson,
+    Expression<String>? payloadFingerprint,
+    Expression<String>? relatedPartyId,
+    Expression<String>? requesterActorId,
+    Expression<DateTime>? requestedAt,
+    Expression<int>? balanceAtRequestQirsh,
+    Expression<int>? expectedBalanceAtRequestQirsh,
+    Expression<int>? deficitAtRequestQirsh,
+    Expression<String>? reason,
+    Expression<String>? resolverActorId,
+    Expression<DateTime>? resolvedAt,
+    Expression<String>? resolutionReason,
+    Expression<String>? ownerVerificationReference,
+    Expression<String>? resultDocumentId,
+    Expression<int>? recordVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
+      if (operationType != null) 'operation_type': operationType,
+      if (status != null) 'status': status,
+      if (financialAccountId != null)
+        'financial_account_id': financialAccountId,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (amountQirsh != null) 'amount_qirsh': amountQirsh,
+      if (sourceDocumentId != null) 'source_document_id': sourceDocumentId,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (payloadFingerprint != null) 'payload_fingerprint': payloadFingerprint,
+      if (relatedPartyId != null) 'related_party_id': relatedPartyId,
+      if (requesterActorId != null) 'requester_actor_id': requesterActorId,
+      if (requestedAt != null) 'requested_at': requestedAt,
+      if (balanceAtRequestQirsh != null)
+        'balance_at_request_qirsh': balanceAtRequestQirsh,
+      if (expectedBalanceAtRequestQirsh != null)
+        'expected_balance_at_request_qirsh': expectedBalanceAtRequestQirsh,
+      if (deficitAtRequestQirsh != null)
+        'deficit_at_request_qirsh': deficitAtRequestQirsh,
+      if (reason != null) 'reason': reason,
+      if (resolverActorId != null) 'resolver_actor_id': resolverActorId,
+      if (resolvedAt != null) 'resolved_at': resolvedAt,
+      if (resolutionReason != null) 'resolution_reason': resolutionReason,
+      if (ownerVerificationReference != null)
+        'owner_verification_reference': ownerVerificationReference,
+      if (resultDocumentId != null) 'result_document_id': resultDocumentId,
+      if (recordVersion != null) 'record_version': recordVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NegativeBalanceApprovalRequestsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? idempotencyKey,
+      Value<String>? operationType,
+      Value<String>? status,
+      Value<String>? financialAccountId,
+      Value<String>? paymentMethod,
+      Value<int>? amountQirsh,
+      Value<String>? sourceDocumentId,
+      Value<String>? payloadJson,
+      Value<String>? payloadFingerprint,
+      Value<String?>? relatedPartyId,
+      Value<String>? requesterActorId,
+      Value<DateTime>? requestedAt,
+      Value<int>? balanceAtRequestQirsh,
+      Value<int>? expectedBalanceAtRequestQirsh,
+      Value<int>? deficitAtRequestQirsh,
+      Value<String>? reason,
+      Value<String?>? resolverActorId,
+      Value<DateTime?>? resolvedAt,
+      Value<String?>? resolutionReason,
+      Value<String?>? ownerVerificationReference,
+      Value<String?>? resultDocumentId,
+      Value<int>? recordVersion,
+      Value<int>? rowid}) {
+    return NegativeBalanceApprovalRequestsCompanion(
+      id: id ?? this.id,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      operationType: operationType ?? this.operationType,
+      status: status ?? this.status,
+      financialAccountId: financialAccountId ?? this.financialAccountId,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      amountQirsh: amountQirsh ?? this.amountQirsh,
+      sourceDocumentId: sourceDocumentId ?? this.sourceDocumentId,
+      payloadJson: payloadJson ?? this.payloadJson,
+      payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+      relatedPartyId: relatedPartyId ?? this.relatedPartyId,
+      requesterActorId: requesterActorId ?? this.requesterActorId,
+      requestedAt: requestedAt ?? this.requestedAt,
+      balanceAtRequestQirsh:
+          balanceAtRequestQirsh ?? this.balanceAtRequestQirsh,
+      expectedBalanceAtRequestQirsh:
+          expectedBalanceAtRequestQirsh ?? this.expectedBalanceAtRequestQirsh,
+      deficitAtRequestQirsh:
+          deficitAtRequestQirsh ?? this.deficitAtRequestQirsh,
+      reason: reason ?? this.reason,
+      resolverActorId: resolverActorId ?? this.resolverActorId,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      resolutionReason: resolutionReason ?? this.resolutionReason,
+      ownerVerificationReference:
+          ownerVerificationReference ?? this.ownerVerificationReference,
+      resultDocumentId: resultDocumentId ?? this.resultDocumentId,
+      recordVersion: recordVersion ?? this.recordVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (idempotencyKey.present) {
+      map['idempotency_key'] = Variable<String>(idempotencyKey.value);
+    }
+    if (operationType.present) {
+      map['operation_type'] = Variable<String>(operationType.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (financialAccountId.present) {
+      map['financial_account_id'] = Variable<String>(financialAccountId.value);
+    }
+    if (paymentMethod.present) {
+      map['payment_method'] = Variable<String>(paymentMethod.value);
+    }
+    if (amountQirsh.present) {
+      map['amount_qirsh'] = Variable<int>(amountQirsh.value);
+    }
+    if (sourceDocumentId.present) {
+      map['source_document_id'] = Variable<String>(sourceDocumentId.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (payloadFingerprint.present) {
+      map['payload_fingerprint'] = Variable<String>(payloadFingerprint.value);
+    }
+    if (relatedPartyId.present) {
+      map['related_party_id'] = Variable<String>(relatedPartyId.value);
+    }
+    if (requesterActorId.present) {
+      map['requester_actor_id'] = Variable<String>(requesterActorId.value);
+    }
+    if (requestedAt.present) {
+      map['requested_at'] = Variable<DateTime>(requestedAt.value);
+    }
+    if (balanceAtRequestQirsh.present) {
+      map['balance_at_request_qirsh'] =
+          Variable<int>(balanceAtRequestQirsh.value);
+    }
+    if (expectedBalanceAtRequestQirsh.present) {
+      map['expected_balance_at_request_qirsh'] =
+          Variable<int>(expectedBalanceAtRequestQirsh.value);
+    }
+    if (deficitAtRequestQirsh.present) {
+      map['deficit_at_request_qirsh'] =
+          Variable<int>(deficitAtRequestQirsh.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (resolverActorId.present) {
+      map['resolver_actor_id'] = Variable<String>(resolverActorId.value);
+    }
+    if (resolvedAt.present) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt.value);
+    }
+    if (resolutionReason.present) {
+      map['resolution_reason'] = Variable<String>(resolutionReason.value);
+    }
+    if (ownerVerificationReference.present) {
+      map['owner_verification_reference'] =
+          Variable<String>(ownerVerificationReference.value);
+    }
+    if (resultDocumentId.present) {
+      map['result_document_id'] = Variable<String>(resultDocumentId.value);
+    }
+    if (recordVersion.present) {
+      map['record_version'] = Variable<int>(recordVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NegativeBalanceApprovalRequestsCompanion(')
+          ..write('id: $id, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('operationType: $operationType, ')
+          ..write('status: $status, ')
+          ..write('financialAccountId: $financialAccountId, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('amountQirsh: $amountQirsh, ')
+          ..write('sourceDocumentId: $sourceDocumentId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('relatedPartyId: $relatedPartyId, ')
+          ..write('requesterActorId: $requesterActorId, ')
+          ..write('requestedAt: $requestedAt, ')
+          ..write('balanceAtRequestQirsh: $balanceAtRequestQirsh, ')
+          ..write(
+              'expectedBalanceAtRequestQirsh: $expectedBalanceAtRequestQirsh, ')
+          ..write('deficitAtRequestQirsh: $deficitAtRequestQirsh, ')
+          ..write('reason: $reason, ')
+          ..write('resolverActorId: $resolverActorId, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('resolutionReason: $resolutionReason, ')
+          ..write('ownerVerificationReference: $ownerVerificationReference, ')
+          ..write('resultDocumentId: $resultDocumentId, ')
+          ..write('recordVersion: $recordVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NegativeBalanceApprovalRequestTransitionsTable
+    extends NegativeBalanceApprovalRequestTransitions
+    with
+        TableInfo<$NegativeBalanceApprovalRequestTransitionsTable,
+            NegativeBalanceApprovalRequestTransition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NegativeBalanceApprovalRequestTransitionsTable(this.attachedDatabase,
+      [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _requestIdMeta =
+      const VerificationMeta('requestId');
+  @override
+  late final GeneratedColumn<String> requestId = GeneratedColumn<String>(
+      'request_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES negative_balance_approval_requests (id) ON DELETE CASCADE'));
+  static const VerificationMeta _fromStatusMeta =
+      const VerificationMeta('fromStatus');
+  @override
+  late final GeneratedColumn<String> fromStatus = GeneratedColumn<String>(
+      'from_status', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _toStatusMeta =
+      const VerificationMeta('toStatus');
+  @override
+  late final GeneratedColumn<String> toStatus = GeneratedColumn<String>(
+      'to_status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _actorIdMeta =
+      const VerificationMeta('actorId');
+  @override
+  late final GeneratedColumn<String> actorId = GeneratedColumn<String>(
+      'actor_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+      'reason', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, requestId, fromStatus, toStatus, actorId, occurredAt, reason];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'negative_balance_approval_request_transitions';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<NegativeBalanceApprovalRequestTransition> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('request_id')) {
+      context.handle(_requestIdMeta,
+          requestId.isAcceptableOrUnknown(data['request_id']!, _requestIdMeta));
+    } else if (isInserting) {
+      context.missing(_requestIdMeta);
+    }
+    if (data.containsKey('from_status')) {
+      context.handle(
+          _fromStatusMeta,
+          fromStatus.isAcceptableOrUnknown(
+              data['from_status']!, _fromStatusMeta));
+    }
+    if (data.containsKey('to_status')) {
+      context.handle(_toStatusMeta,
+          toStatus.isAcceptableOrUnknown(data['to_status']!, _toStatusMeta));
+    } else if (isInserting) {
+      context.missing(_toStatusMeta);
+    }
+    if (data.containsKey('actor_id')) {
+      context.handle(_actorIdMeta,
+          actorId.isAcceptableOrUnknown(data['actor_id']!, _actorIdMeta));
+    } else if (isInserting) {
+      context.missing(_actorIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(_reasonMeta,
+          reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta));
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NegativeBalanceApprovalRequestTransition map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NegativeBalanceApprovalRequestTransition(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      requestId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}request_id'])!,
+      fromStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}from_status']),
+      toStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}to_status'])!,
+      actorId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}actor_id'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      reason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reason'])!,
+    );
+  }
+
+  @override
+  $NegativeBalanceApprovalRequestTransitionsTable createAlias(String alias) {
+    return $NegativeBalanceApprovalRequestTransitionsTable(
+        attachedDatabase, alias);
+  }
+}
+
+class NegativeBalanceApprovalRequestTransition extends DataClass
+    implements Insertable<NegativeBalanceApprovalRequestTransition> {
+  final String id;
+  final String requestId;
+  final String? fromStatus;
+  final String toStatus;
+  final String actorId;
+  final DateTime occurredAt;
+  final String reason;
+  const NegativeBalanceApprovalRequestTransition(
+      {required this.id,
+      required this.requestId,
+      this.fromStatus,
+      required this.toStatus,
+      required this.actorId,
+      required this.occurredAt,
+      required this.reason});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['request_id'] = Variable<String>(requestId);
+    if (!nullToAbsent || fromStatus != null) {
+      map['from_status'] = Variable<String>(fromStatus);
+    }
+    map['to_status'] = Variable<String>(toStatus);
+    map['actor_id'] = Variable<String>(actorId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['reason'] = Variable<String>(reason);
+    return map;
+  }
+
+  NegativeBalanceApprovalRequestTransitionsCompanion toCompanion(
+      bool nullToAbsent) {
+    return NegativeBalanceApprovalRequestTransitionsCompanion(
+      id: Value(id),
+      requestId: Value(requestId),
+      fromStatus: fromStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fromStatus),
+      toStatus: Value(toStatus),
+      actorId: Value(actorId),
+      occurredAt: Value(occurredAt),
+      reason: Value(reason),
+    );
+  }
+
+  factory NegativeBalanceApprovalRequestTransition.fromJson(
+      Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NegativeBalanceApprovalRequestTransition(
+      id: serializer.fromJson<String>(json['id']),
+      requestId: serializer.fromJson<String>(json['requestId']),
+      fromStatus: serializer.fromJson<String?>(json['fromStatus']),
+      toStatus: serializer.fromJson<String>(json['toStatus']),
+      actorId: serializer.fromJson<String>(json['actorId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      reason: serializer.fromJson<String>(json['reason']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'requestId': serializer.toJson<String>(requestId),
+      'fromStatus': serializer.toJson<String?>(fromStatus),
+      'toStatus': serializer.toJson<String>(toStatus),
+      'actorId': serializer.toJson<String>(actorId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'reason': serializer.toJson<String>(reason),
+    };
+  }
+
+  NegativeBalanceApprovalRequestTransition copyWith(
+          {String? id,
+          String? requestId,
+          Value<String?> fromStatus = const Value.absent(),
+          String? toStatus,
+          String? actorId,
+          DateTime? occurredAt,
+          String? reason}) =>
+      NegativeBalanceApprovalRequestTransition(
+        id: id ?? this.id,
+        requestId: requestId ?? this.requestId,
+        fromStatus: fromStatus.present ? fromStatus.value : this.fromStatus,
+        toStatus: toStatus ?? this.toStatus,
+        actorId: actorId ?? this.actorId,
+        occurredAt: occurredAt ?? this.occurredAt,
+        reason: reason ?? this.reason,
+      );
+  NegativeBalanceApprovalRequestTransition copyWithCompanion(
+      NegativeBalanceApprovalRequestTransitionsCompanion data) {
+    return NegativeBalanceApprovalRequestTransition(
+      id: data.id.present ? data.id.value : this.id,
+      requestId: data.requestId.present ? data.requestId.value : this.requestId,
+      fromStatus:
+          data.fromStatus.present ? data.fromStatus.value : this.fromStatus,
+      toStatus: data.toStatus.present ? data.toStatus.value : this.toStatus,
+      actorId: data.actorId.present ? data.actorId.value : this.actorId,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      reason: data.reason.present ? data.reason.value : this.reason,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NegativeBalanceApprovalRequestTransition(')
+          ..write('id: $id, ')
+          ..write('requestId: $requestId, ')
+          ..write('fromStatus: $fromStatus, ')
+          ..write('toStatus: $toStatus, ')
+          ..write('actorId: $actorId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('reason: $reason')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, requestId, fromStatus, toStatus, actorId, occurredAt, reason);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NegativeBalanceApprovalRequestTransition &&
+          other.id == this.id &&
+          other.requestId == this.requestId &&
+          other.fromStatus == this.fromStatus &&
+          other.toStatus == this.toStatus &&
+          other.actorId == this.actorId &&
+          other.occurredAt == this.occurredAt &&
+          other.reason == this.reason);
+}
+
+class NegativeBalanceApprovalRequestTransitionsCompanion
+    extends UpdateCompanion<NegativeBalanceApprovalRequestTransition> {
+  final Value<String> id;
+  final Value<String> requestId;
+  final Value<String?> fromStatus;
+  final Value<String> toStatus;
+  final Value<String> actorId;
+  final Value<DateTime> occurredAt;
+  final Value<String> reason;
+  final Value<int> rowid;
+  const NegativeBalanceApprovalRequestTransitionsCompanion({
+    this.id = const Value.absent(),
+    this.requestId = const Value.absent(),
+    this.fromStatus = const Value.absent(),
+    this.toStatus = const Value.absent(),
+    this.actorId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NegativeBalanceApprovalRequestTransitionsCompanion.insert({
+    required String id,
+    required String requestId,
+    this.fromStatus = const Value.absent(),
+    required String toStatus,
+    required String actorId,
+    required DateTime occurredAt,
+    required String reason,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        requestId = Value(requestId),
+        toStatus = Value(toStatus),
+        actorId = Value(actorId),
+        occurredAt = Value(occurredAt),
+        reason = Value(reason);
+  static Insertable<NegativeBalanceApprovalRequestTransition> custom({
+    Expression<String>? id,
+    Expression<String>? requestId,
+    Expression<String>? fromStatus,
+    Expression<String>? toStatus,
+    Expression<String>? actorId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? reason,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (requestId != null) 'request_id': requestId,
+      if (fromStatus != null) 'from_status': fromStatus,
+      if (toStatus != null) 'to_status': toStatus,
+      if (actorId != null) 'actor_id': actorId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (reason != null) 'reason': reason,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NegativeBalanceApprovalRequestTransitionsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? requestId,
+      Value<String?>? fromStatus,
+      Value<String>? toStatus,
+      Value<String>? actorId,
+      Value<DateTime>? occurredAt,
+      Value<String>? reason,
+      Value<int>? rowid}) {
+    return NegativeBalanceApprovalRequestTransitionsCompanion(
+      id: id ?? this.id,
+      requestId: requestId ?? this.requestId,
+      fromStatus: fromStatus ?? this.fromStatus,
+      toStatus: toStatus ?? this.toStatus,
+      actorId: actorId ?? this.actorId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      reason: reason ?? this.reason,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (requestId.present) {
+      map['request_id'] = Variable<String>(requestId.value);
+    }
+    if (fromStatus.present) {
+      map['from_status'] = Variable<String>(fromStatus.value);
+    }
+    if (toStatus.present) {
+      map['to_status'] = Variable<String>(toStatus.value);
+    }
+    if (actorId.present) {
+      map['actor_id'] = Variable<String>(actorId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NegativeBalanceApprovalRequestTransitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('requestId: $requestId, ')
+          ..write('fromStatus: $fromStatus, ')
+          ..write('toStatus: $toStatus, ')
+          ..write('actorId: $actorId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('reason: $reason, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$FoundationDatabase extends GeneratedDatabase {
   _$FoundationDatabase(QueryExecutor e) : super(e);
   $FoundationDatabaseManager get managers => $FoundationDatabaseManager(this);
@@ -12374,6 +14137,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final $SupplierAdvanceRefundsTable supplierAdvanceRefunds =
       $SupplierAdvanceRefundsTable(this);
   late final $AuthAccountsTable authAccounts = $AuthAccountsTable(this);
+  late final $NegativeBalanceApprovalRequestsTable
+      negativeBalanceApprovalRequests =
+      $NegativeBalanceApprovalRequestsTable(this);
+  late final $NegativeBalanceApprovalRequestTransitionsTable
+      negativeBalanceApprovalRequestTransitions =
+      $NegativeBalanceApprovalRequestTransitionsTable(this);
   late final Index inventoryMovementsProductIdx = Index(
       'inventory_movements_product_idx',
       'CREATE INDEX inventory_movements_product_idx ON inventory_movements (product_id)');
@@ -12414,6 +14183,9 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index expensesDateCreatedAtIdx = Index(
       'expenses_date_created_at_idx',
       'CREATE INDEX expenses_date_created_at_idx ON expenses (date, created_at, id)');
+  late final Index expensesOperationRequestUq = Index(
+      'expenses_operation_request_uq',
+      'CREATE UNIQUE INDEX expenses_operation_request_uq ON expenses (operation_request_id)');
   late final Index customerAccountEntriesCustomerTimestampIdx = Index(
       'customer_account_entries_customer_timestamp_idx',
       'CREATE INDEX customer_account_entries_customer_timestamp_idx ON customer_account_entries (customer_id, occurred_at, id)');
@@ -12449,6 +14221,15 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       'CREATE INDEX auth_accounts_role_active_idx ON auth_accounts (role, is_active)');
   late final Index authAccountsCreatedIdx = Index('auth_accounts_created_idx',
       'CREATE INDEX auth_accounts_created_idx ON auth_accounts (created_at, id)');
+  late final Index negativeBalanceApprovalRequestsStatusRequestedIdx = Index(
+      'negative_balance_approval_requests_status_requested_idx',
+      'CREATE INDEX negative_balance_approval_requests_status_requested_idx ON negative_balance_approval_requests (status, requested_at)');
+  late final Index negativeBalanceApprovalRequestsAccountIdx = Index(
+      'negative_balance_approval_requests_account_idx',
+      'CREATE INDEX negative_balance_approval_requests_account_idx ON negative_balance_approval_requests (financial_account_id, requested_at)');
+  late final Index negativeBalanceRequestTransitionsRequestTimeIdx = Index(
+      'negative_balance_request_transitions_request_time_idx',
+      'CREATE INDEX negative_balance_request_transitions_request_time_idx ON negative_balance_approval_request_transitions (request_id, occurred_at)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12479,6 +14260,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         supplierAdvanceApplications,
         supplierAdvanceRefunds,
         authAccounts,
+        negativeBalanceApprovalRequests,
+        negativeBalanceApprovalRequestTransitions,
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
@@ -12496,6 +14279,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         auditLogsActionIdx,
         auditLogsReferenceIdx,
         expensesDateCreatedAtIdx,
+        expensesOperationRequestUq,
         customerAccountEntriesCustomerTimestampIdx,
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
@@ -12507,8 +14291,25 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         supplierAdvanceApplicationsAdvanceIdx,
         supplierAdvanceRefundsAdvanceIdx,
         authAccountsRoleActiveIdx,
-        authAccountsCreatedIdx
+        authAccountsCreatedIdx,
+        negativeBalanceApprovalRequestsStatusRequestedIdx,
+        negativeBalanceApprovalRequestsAccountIdx,
+        negativeBalanceRequestTransitionsRequestTimeIdx
       ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName(
+                'negative_balance_approval_requests',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('negative_balance_approval_request_transitions',
+                  kind: UpdateKind.delete),
+            ],
+          ),
+        ],
+      );
 }
 
 typedef $$FoundationProbesTableCreateCompanionBuilder
@@ -16424,6 +18225,7 @@ typedef $$AuditLogsTableCreateCompanionBuilder = AuditLogsCompanion Function({
   required DateTime timestamp,
   required String actionType,
   required String descriptionAr,
+  Value<String?> actorId,
   Value<String?> referenceId,
   required String metadataJson,
   Value<int> rowid,
@@ -16433,6 +18235,7 @@ typedef $$AuditLogsTableUpdateCompanionBuilder = AuditLogsCompanion Function({
   Value<DateTime> timestamp,
   Value<String> actionType,
   Value<String> descriptionAr,
+  Value<String?> actorId,
   Value<String?> referenceId,
   Value<String> metadataJson,
   Value<int> rowid,
@@ -16458,6 +18261,9 @@ class $$AuditLogsTableFilterComposer
 
   ColumnFilters<String> get descriptionAr => $composableBuilder(
       column: $table.descriptionAr, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get actorId => $composableBuilder(
+      column: $table.actorId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get referenceId => $composableBuilder(
       column: $table.referenceId, builder: (column) => ColumnFilters(column));
@@ -16488,6 +18294,9 @@ class $$AuditLogsTableOrderingComposer
       column: $table.descriptionAr,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get actorId => $composableBuilder(
+      column: $table.actorId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get referenceId => $composableBuilder(
       column: $table.referenceId, builder: (column) => ColumnOrderings(column));
 
@@ -16516,6 +18325,9 @@ class $$AuditLogsTableAnnotationComposer
 
   GeneratedColumn<String> get descriptionAr => $composableBuilder(
       column: $table.descriptionAr, builder: (column) => column);
+
+  GeneratedColumn<String> get actorId =>
+      $composableBuilder(column: $table.actorId, builder: (column) => column);
 
   GeneratedColumn<String> get referenceId => $composableBuilder(
       column: $table.referenceId, builder: (column) => column);
@@ -16554,6 +18366,7 @@ class $$AuditLogsTableTableManager extends RootTableManager<
             Value<DateTime> timestamp = const Value.absent(),
             Value<String> actionType = const Value.absent(),
             Value<String> descriptionAr = const Value.absent(),
+            Value<String?> actorId = const Value.absent(),
             Value<String?> referenceId = const Value.absent(),
             Value<String> metadataJson = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -16563,6 +18376,7 @@ class $$AuditLogsTableTableManager extends RootTableManager<
             timestamp: timestamp,
             actionType: actionType,
             descriptionAr: descriptionAr,
+            actorId: actorId,
             referenceId: referenceId,
             metadataJson: metadataJson,
             rowid: rowid,
@@ -16572,6 +18386,7 @@ class $$AuditLogsTableTableManager extends RootTableManager<
             required DateTime timestamp,
             required String actionType,
             required String descriptionAr,
+            Value<String?> actorId = const Value.absent(),
             Value<String?> referenceId = const Value.absent(),
             required String metadataJson,
             Value<int> rowid = const Value.absent(),
@@ -16581,6 +18396,7 @@ class $$AuditLogsTableTableManager extends RootTableManager<
             timestamp: timestamp,
             actionType: actionType,
             descriptionAr: descriptionAr,
+            actorId: actorId,
             referenceId: referenceId,
             metadataJson: metadataJson,
             rowid: rowid,
@@ -16616,6 +18432,9 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   required int createdAt,
   Value<String?> financialAccountId,
   Value<String?> paymentMethod,
+  Value<String?> createdByUserId,
+  Value<String?> operationRequestId,
+  Value<String?> operationRequestFingerprint,
   Value<int> rowid,
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
@@ -16627,6 +18446,9 @@ typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<int> createdAt,
   Value<String?> financialAccountId,
   Value<String?> paymentMethod,
+  Value<String?> createdByUserId,
+  Value<String?> operationRequestId,
+  Value<String?> operationRequestFingerprint,
   Value<int> rowid,
 });
 
@@ -16663,6 +18485,18 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get paymentMethod => $composableBuilder(
       column: $table.paymentMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationRequestFingerprint => $composableBuilder(
+      column: $table.operationRequestFingerprint,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$ExpensesTableOrderingComposer
@@ -16699,6 +18533,18 @@ class $$ExpensesTableOrderingComposer
   ColumnOrderings<String> get paymentMethod => $composableBuilder(
       column: $table.paymentMethod,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationRequestFingerprint => $composableBuilder(
+      column: $table.operationRequestFingerprint,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$ExpensesTableAnnotationComposer
@@ -16733,6 +18579,15 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<String> get paymentMethod => $composableBuilder(
       column: $table.paymentMethod, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get operationRequestId => $composableBuilder(
+      column: $table.operationRequestId, builder: (column) => column);
+
+  GeneratedColumn<String> get operationRequestFingerprint => $composableBuilder(
+      column: $table.operationRequestFingerprint, builder: (column) => column);
 }
 
 class $$ExpensesTableTableManager extends RootTableManager<
@@ -16769,6 +18624,9 @@ class $$ExpensesTableTableManager extends RootTableManager<
             Value<int> createdAt = const Value.absent(),
             Value<String?> financialAccountId = const Value.absent(),
             Value<String?> paymentMethod = const Value.absent(),
+            Value<String?> createdByUserId = const Value.absent(),
+            Value<String?> operationRequestId = const Value.absent(),
+            Value<String?> operationRequestFingerprint = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ExpensesCompanion(
@@ -16780,6 +18638,9 @@ class $$ExpensesTableTableManager extends RootTableManager<
             createdAt: createdAt,
             financialAccountId: financialAccountId,
             paymentMethod: paymentMethod,
+            createdByUserId: createdByUserId,
+            operationRequestId: operationRequestId,
+            operationRequestFingerprint: operationRequestFingerprint,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -16791,6 +18652,9 @@ class $$ExpensesTableTableManager extends RootTableManager<
             required int createdAt,
             Value<String?> financialAccountId = const Value.absent(),
             Value<String?> paymentMethod = const Value.absent(),
+            Value<String?> createdByUserId = const Value.absent(),
+            Value<String?> operationRequestId = const Value.absent(),
+            Value<String?> operationRequestFingerprint = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ExpensesCompanion.insert(
@@ -16802,6 +18666,9 @@ class $$ExpensesTableTableManager extends RootTableManager<
             createdAt: createdAt,
             financialAccountId: financialAccountId,
             paymentMethod: paymentMethod,
+            createdByUserId: createdByUserId,
+            operationRequestId: operationRequestId,
+            operationRequestFingerprint: operationRequestFingerprint,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -18813,6 +20680,932 @@ typedef $$AuthAccountsTableProcessedTableManager = ProcessedTableManager<
     ),
     AuthAccountRow,
     PrefetchHooks Function()>;
+typedef $$NegativeBalanceApprovalRequestsTableCreateCompanionBuilder
+    = NegativeBalanceApprovalRequestsCompanion Function({
+  required String id,
+  required String idempotencyKey,
+  required String operationType,
+  required String status,
+  required String financialAccountId,
+  required String paymentMethod,
+  required int amountQirsh,
+  required String sourceDocumentId,
+  required String payloadJson,
+  required String payloadFingerprint,
+  Value<String?> relatedPartyId,
+  required String requesterActorId,
+  required DateTime requestedAt,
+  required int balanceAtRequestQirsh,
+  required int expectedBalanceAtRequestQirsh,
+  required int deficitAtRequestQirsh,
+  required String reason,
+  Value<String?> resolverActorId,
+  Value<DateTime?> resolvedAt,
+  Value<String?> resolutionReason,
+  Value<String?> ownerVerificationReference,
+  Value<String?> resultDocumentId,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+typedef $$NegativeBalanceApprovalRequestsTableUpdateCompanionBuilder
+    = NegativeBalanceApprovalRequestsCompanion Function({
+  Value<String> id,
+  Value<String> idempotencyKey,
+  Value<String> operationType,
+  Value<String> status,
+  Value<String> financialAccountId,
+  Value<String> paymentMethod,
+  Value<int> amountQirsh,
+  Value<String> sourceDocumentId,
+  Value<String> payloadJson,
+  Value<String> payloadFingerprint,
+  Value<String?> relatedPartyId,
+  Value<String> requesterActorId,
+  Value<DateTime> requestedAt,
+  Value<int> balanceAtRequestQirsh,
+  Value<int> expectedBalanceAtRequestQirsh,
+  Value<int> deficitAtRequestQirsh,
+  Value<String> reason,
+  Value<String?> resolverActorId,
+  Value<DateTime?> resolvedAt,
+  Value<String?> resolutionReason,
+  Value<String?> ownerVerificationReference,
+  Value<String?> resultDocumentId,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+
+final class $$NegativeBalanceApprovalRequestsTableReferences
+    extends BaseReferences<_$FoundationDatabase,
+        $NegativeBalanceApprovalRequestsTable, NegativeBalanceApprovalRequest> {
+  $$NegativeBalanceApprovalRequestsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$NegativeBalanceApprovalRequestTransitionsTable,
+          List<NegativeBalanceApprovalRequestTransition>>
+      _negativeBalanceApprovalRequestTransitionsRefsTable(
+              _$FoundationDatabase db) =>
+          MultiTypedResultKey.fromTable(
+              db.negativeBalanceApprovalRequestTransitions,
+              aliasName: $_aliasNameGenerator(
+                  db.negativeBalanceApprovalRequests.id,
+                  db.negativeBalanceApprovalRequestTransitions.requestId));
+
+  $$NegativeBalanceApprovalRequestTransitionsTableProcessedTableManager
+      get negativeBalanceApprovalRequestTransitionsRefs {
+    final manager =
+        $$NegativeBalanceApprovalRequestTransitionsTableTableManager(
+                $_db, $_db.negativeBalanceApprovalRequestTransitions)
+            .filter((f) => f.requestId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(
+        _negativeBalanceApprovalRequestTransitionsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$NegativeBalanceApprovalRequestsTableFilterComposer extends Composer<
+    _$FoundationDatabase, $NegativeBalanceApprovalRequestsTable> {
+  $$NegativeBalanceApprovalRequestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationType => $composableBuilder(
+      column: $table.operationType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amountQirsh => $composableBuilder(
+      column: $table.amountQirsh, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get relatedPartyId => $composableBuilder(
+      column: $table.relatedPartyId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get requesterActorId => $composableBuilder(
+      column: $table.requesterActorId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get requestedAt => $composableBuilder(
+      column: $table.requestedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get balanceAtRequestQirsh => $composableBuilder(
+      column: $table.balanceAtRequestQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get expectedBalanceAtRequestQirsh => $composableBuilder(
+      column: $table.expectedBalanceAtRequestQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get deficitAtRequestQirsh => $composableBuilder(
+      column: $table.deficitAtRequestQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolverActorId => $composableBuilder(
+      column: $table.resolverActorId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get resolvedAt => $composableBuilder(
+      column: $table.resolvedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolutionReason => $composableBuilder(
+      column: $table.resolutionReason,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ownerVerificationReference => $composableBuilder(
+      column: $table.ownerVerificationReference,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resultDocumentId => $composableBuilder(
+      column: $table.resultDocumentId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> negativeBalanceApprovalRequestTransitionsRefs(
+      Expression<bool> Function(
+              $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer f)
+          f) {
+    final $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer
+        composer = $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.negativeBalanceApprovalRequestTransitions,
+            getReferencedColumn: (t) => t.requestId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.negativeBalanceApprovalRequestTransitions,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$NegativeBalanceApprovalRequestsTableOrderingComposer extends Composer<
+    _$FoundationDatabase, $NegativeBalanceApprovalRequestsTable> {
+  $$NegativeBalanceApprovalRequestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationType => $composableBuilder(
+      column: $table.operationType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amountQirsh => $composableBuilder(
+      column: $table.amountQirsh, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get relatedPartyId => $composableBuilder(
+      column: $table.relatedPartyId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get requesterActorId => $composableBuilder(
+      column: $table.requesterActorId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get requestedAt => $composableBuilder(
+      column: $table.requestedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get balanceAtRequestQirsh => $composableBuilder(
+      column: $table.balanceAtRequestQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get expectedBalanceAtRequestQirsh => $composableBuilder(
+      column: $table.expectedBalanceAtRequestQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get deficitAtRequestQirsh => $composableBuilder(
+      column: $table.deficitAtRequestQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolverActorId => $composableBuilder(
+      column: $table.resolverActorId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get resolvedAt => $composableBuilder(
+      column: $table.resolvedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolutionReason => $composableBuilder(
+      column: $table.resolutionReason,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ownerVerificationReference => $composableBuilder(
+      column: $table.ownerVerificationReference,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resultDocumentId => $composableBuilder(
+      column: $table.resultDocumentId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$NegativeBalanceApprovalRequestsTableAnnotationComposer extends Composer<
+    _$FoundationDatabase, $NegativeBalanceApprovalRequestsTable> {
+  $$NegativeBalanceApprovalRequestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey, builder: (column) => column);
+
+  GeneratedColumn<String> get operationType => $composableBuilder(
+      column: $table.operationType, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get financialAccountId => $composableBuilder(
+      column: $table.financialAccountId, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+      column: $table.paymentMethod, builder: (column) => column);
+
+  GeneratedColumn<int> get amountQirsh => $composableBuilder(
+      column: $table.amountQirsh, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get relatedPartyId => $composableBuilder(
+      column: $table.relatedPartyId, builder: (column) => column);
+
+  GeneratedColumn<String> get requesterActorId => $composableBuilder(
+      column: $table.requesterActorId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get requestedAt => $composableBuilder(
+      column: $table.requestedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get balanceAtRequestQirsh => $composableBuilder(
+      column: $table.balanceAtRequestQirsh, builder: (column) => column);
+
+  GeneratedColumn<int> get expectedBalanceAtRequestQirsh => $composableBuilder(
+      column: $table.expectedBalanceAtRequestQirsh,
+      builder: (column) => column);
+
+  GeneratedColumn<int> get deficitAtRequestQirsh => $composableBuilder(
+      column: $table.deficitAtRequestQirsh, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get resolverActorId => $composableBuilder(
+      column: $table.resolverActorId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get resolvedAt => $composableBuilder(
+      column: $table.resolvedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get resolutionReason => $composableBuilder(
+      column: $table.resolutionReason, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerVerificationReference => $composableBuilder(
+      column: $table.ownerVerificationReference, builder: (column) => column);
+
+  GeneratedColumn<String> get resultDocumentId => $composableBuilder(
+      column: $table.resultDocumentId, builder: (column) => column);
+
+  GeneratedColumn<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => column);
+
+  Expression<T> negativeBalanceApprovalRequestTransitionsRefs<T extends Object>(
+      Expression<T> Function(
+              $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer
+                  a)
+          f) {
+    final $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer
+        composer = $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.negativeBalanceApprovalRequestTransitions,
+            getReferencedColumn: (t) => t.requestId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.negativeBalanceApprovalRequestTransitions,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$NegativeBalanceApprovalRequestsTableTableManager
+    extends RootTableManager<
+        _$FoundationDatabase,
+        $NegativeBalanceApprovalRequestsTable,
+        NegativeBalanceApprovalRequest,
+        $$NegativeBalanceApprovalRequestsTableFilterComposer,
+        $$NegativeBalanceApprovalRequestsTableOrderingComposer,
+        $$NegativeBalanceApprovalRequestsTableAnnotationComposer,
+        $$NegativeBalanceApprovalRequestsTableCreateCompanionBuilder,
+        $$NegativeBalanceApprovalRequestsTableUpdateCompanionBuilder,
+        (
+          NegativeBalanceApprovalRequest,
+          $$NegativeBalanceApprovalRequestsTableReferences
+        ),
+        NegativeBalanceApprovalRequest,
+        PrefetchHooks Function(
+            {bool negativeBalanceApprovalRequestTransitionsRefs})> {
+  $$NegativeBalanceApprovalRequestsTableTableManager(
+      _$FoundationDatabase db, $NegativeBalanceApprovalRequestsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NegativeBalanceApprovalRequestsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NegativeBalanceApprovalRequestsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NegativeBalanceApprovalRequestsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> idempotencyKey = const Value.absent(),
+            Value<String> operationType = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String> financialAccountId = const Value.absent(),
+            Value<String> paymentMethod = const Value.absent(),
+            Value<int> amountQirsh = const Value.absent(),
+            Value<String> sourceDocumentId = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<String> payloadFingerprint = const Value.absent(),
+            Value<String?> relatedPartyId = const Value.absent(),
+            Value<String> requesterActorId = const Value.absent(),
+            Value<DateTime> requestedAt = const Value.absent(),
+            Value<int> balanceAtRequestQirsh = const Value.absent(),
+            Value<int> expectedBalanceAtRequestQirsh = const Value.absent(),
+            Value<int> deficitAtRequestQirsh = const Value.absent(),
+            Value<String> reason = const Value.absent(),
+            Value<String?> resolverActorId = const Value.absent(),
+            Value<DateTime?> resolvedAt = const Value.absent(),
+            Value<String?> resolutionReason = const Value.absent(),
+            Value<String?> ownerVerificationReference = const Value.absent(),
+            Value<String?> resultDocumentId = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NegativeBalanceApprovalRequestsCompanion(
+            id: id,
+            idempotencyKey: idempotencyKey,
+            operationType: operationType,
+            status: status,
+            financialAccountId: financialAccountId,
+            paymentMethod: paymentMethod,
+            amountQirsh: amountQirsh,
+            sourceDocumentId: sourceDocumentId,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            relatedPartyId: relatedPartyId,
+            requesterActorId: requesterActorId,
+            requestedAt: requestedAt,
+            balanceAtRequestQirsh: balanceAtRequestQirsh,
+            expectedBalanceAtRequestQirsh: expectedBalanceAtRequestQirsh,
+            deficitAtRequestQirsh: deficitAtRequestQirsh,
+            reason: reason,
+            resolverActorId: resolverActorId,
+            resolvedAt: resolvedAt,
+            resolutionReason: resolutionReason,
+            ownerVerificationReference: ownerVerificationReference,
+            resultDocumentId: resultDocumentId,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String idempotencyKey,
+            required String operationType,
+            required String status,
+            required String financialAccountId,
+            required String paymentMethod,
+            required int amountQirsh,
+            required String sourceDocumentId,
+            required String payloadJson,
+            required String payloadFingerprint,
+            Value<String?> relatedPartyId = const Value.absent(),
+            required String requesterActorId,
+            required DateTime requestedAt,
+            required int balanceAtRequestQirsh,
+            required int expectedBalanceAtRequestQirsh,
+            required int deficitAtRequestQirsh,
+            required String reason,
+            Value<String?> resolverActorId = const Value.absent(),
+            Value<DateTime?> resolvedAt = const Value.absent(),
+            Value<String?> resolutionReason = const Value.absent(),
+            Value<String?> ownerVerificationReference = const Value.absent(),
+            Value<String?> resultDocumentId = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NegativeBalanceApprovalRequestsCompanion.insert(
+            id: id,
+            idempotencyKey: idempotencyKey,
+            operationType: operationType,
+            status: status,
+            financialAccountId: financialAccountId,
+            paymentMethod: paymentMethod,
+            amountQirsh: amountQirsh,
+            sourceDocumentId: sourceDocumentId,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            relatedPartyId: relatedPartyId,
+            requesterActorId: requesterActorId,
+            requestedAt: requestedAt,
+            balanceAtRequestQirsh: balanceAtRequestQirsh,
+            expectedBalanceAtRequestQirsh: expectedBalanceAtRequestQirsh,
+            deficitAtRequestQirsh: deficitAtRequestQirsh,
+            reason: reason,
+            resolverActorId: resolverActorId,
+            resolvedAt: resolvedAt,
+            resolutionReason: resolutionReason,
+            ownerVerificationReference: ownerVerificationReference,
+            resultDocumentId: resultDocumentId,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$NegativeBalanceApprovalRequestsTableReferences(
+                        db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {negativeBalanceApprovalRequestTransitionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (negativeBalanceApprovalRequestTransitionsRefs)
+                  db.negativeBalanceApprovalRequestTransitions
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (negativeBalanceApprovalRequestTransitionsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$NegativeBalanceApprovalRequestsTableReferences
+                                ._negativeBalanceApprovalRequestTransitionsRefsTable(
+                                    db),
+                        managerFromTypedResult: (p0) =>
+                            $$NegativeBalanceApprovalRequestsTableReferences(
+                                    db, table, p0)
+                                .negativeBalanceApprovalRequestTransitionsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.requestId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$NegativeBalanceApprovalRequestsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $NegativeBalanceApprovalRequestsTable,
+        NegativeBalanceApprovalRequest,
+        $$NegativeBalanceApprovalRequestsTableFilterComposer,
+        $$NegativeBalanceApprovalRequestsTableOrderingComposer,
+        $$NegativeBalanceApprovalRequestsTableAnnotationComposer,
+        $$NegativeBalanceApprovalRequestsTableCreateCompanionBuilder,
+        $$NegativeBalanceApprovalRequestsTableUpdateCompanionBuilder,
+        (
+          NegativeBalanceApprovalRequest,
+          $$NegativeBalanceApprovalRequestsTableReferences
+        ),
+        NegativeBalanceApprovalRequest,
+        PrefetchHooks Function(
+            {bool negativeBalanceApprovalRequestTransitionsRefs})>;
+typedef $$NegativeBalanceApprovalRequestTransitionsTableCreateCompanionBuilder
+    = NegativeBalanceApprovalRequestTransitionsCompanion Function({
+  required String id,
+  required String requestId,
+  Value<String?> fromStatus,
+  required String toStatus,
+  required String actorId,
+  required DateTime occurredAt,
+  required String reason,
+  Value<int> rowid,
+});
+typedef $$NegativeBalanceApprovalRequestTransitionsTableUpdateCompanionBuilder
+    = NegativeBalanceApprovalRequestTransitionsCompanion Function({
+  Value<String> id,
+  Value<String> requestId,
+  Value<String?> fromStatus,
+  Value<String> toStatus,
+  Value<String> actorId,
+  Value<DateTime> occurredAt,
+  Value<String> reason,
+  Value<int> rowid,
+});
+
+final class $$NegativeBalanceApprovalRequestTransitionsTableReferences
+    extends BaseReferences<
+        _$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable,
+        NegativeBalanceApprovalRequestTransition> {
+  $$NegativeBalanceApprovalRequestTransitionsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $NegativeBalanceApprovalRequestsTable _requestIdTable(
+          _$FoundationDatabase db) =>
+      db.negativeBalanceApprovalRequests.createAlias($_aliasNameGenerator(
+          db.negativeBalanceApprovalRequestTransitions.requestId,
+          db.negativeBalanceApprovalRequests.id));
+
+  $$NegativeBalanceApprovalRequestsTableProcessedTableManager get requestId {
+    final manager = $$NegativeBalanceApprovalRequestsTableTableManager(
+            $_db, $_db.negativeBalanceApprovalRequests)
+        .filter((f) => f.id($_item.requestId));
+    final item = $_typedResult.readTableOrNull(_requestIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer
+    extends Composer<_$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable> {
+  $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fromStatus => $composableBuilder(
+      column: $table.fromStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get toStatus => $composableBuilder(
+      column: $table.toStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get actorId => $composableBuilder(
+      column: $table.actorId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnFilters(column));
+
+  $$NegativeBalanceApprovalRequestsTableFilterComposer get requestId {
+    final $$NegativeBalanceApprovalRequestsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.requestId,
+            referencedTable: $db.negativeBalanceApprovalRequests,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$NegativeBalanceApprovalRequestsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.negativeBalanceApprovalRequests,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+}
+
+class $$NegativeBalanceApprovalRequestTransitionsTableOrderingComposer
+    extends Composer<_$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable> {
+  $$NegativeBalanceApprovalRequestTransitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fromStatus => $composableBuilder(
+      column: $table.fromStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get toStatus => $composableBuilder(
+      column: $table.toStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get actorId => $composableBuilder(
+      column: $table.actorId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnOrderings(column));
+
+  $$NegativeBalanceApprovalRequestsTableOrderingComposer get requestId {
+    final $$NegativeBalanceApprovalRequestsTableOrderingComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.requestId,
+            referencedTable: $db.negativeBalanceApprovalRequests,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$NegativeBalanceApprovalRequestsTableOrderingComposer(
+                  $db: $db,
+                  $table: $db.negativeBalanceApprovalRequests,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+}
+
+class $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable> {
+  $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fromStatus => $composableBuilder(
+      column: $table.fromStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get toStatus =>
+      $composableBuilder(column: $table.toStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get actorId =>
+      $composableBuilder(column: $table.actorId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  $$NegativeBalanceApprovalRequestsTableAnnotationComposer get requestId {
+    final $$NegativeBalanceApprovalRequestsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.requestId,
+            referencedTable: $db.negativeBalanceApprovalRequests,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$NegativeBalanceApprovalRequestsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.negativeBalanceApprovalRequests,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+}
+
+class $$NegativeBalanceApprovalRequestTransitionsTableTableManager
+    extends RootTableManager<
+        _$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable,
+        NegativeBalanceApprovalRequestTransition,
+        $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableOrderingComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableCreateCompanionBuilder,
+        $$NegativeBalanceApprovalRequestTransitionsTableUpdateCompanionBuilder,
+        (
+          NegativeBalanceApprovalRequestTransition,
+          $$NegativeBalanceApprovalRequestTransitionsTableReferences
+        ),
+        NegativeBalanceApprovalRequestTransition,
+        PrefetchHooks Function({bool requestId})> {
+  $$NegativeBalanceApprovalRequestTransitionsTableTableManager(
+      _$FoundationDatabase db,
+      $NegativeBalanceApprovalRequestTransitionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NegativeBalanceApprovalRequestTransitionsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> requestId = const Value.absent(),
+            Value<String?> fromStatus = const Value.absent(),
+            Value<String> toStatus = const Value.absent(),
+            Value<String> actorId = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<String> reason = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NegativeBalanceApprovalRequestTransitionsCompanion(
+            id: id,
+            requestId: requestId,
+            fromStatus: fromStatus,
+            toStatus: toStatus,
+            actorId: actorId,
+            occurredAt: occurredAt,
+            reason: reason,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String requestId,
+            Value<String?> fromStatus = const Value.absent(),
+            required String toStatus,
+            required String actorId,
+            required DateTime occurredAt,
+            required String reason,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NegativeBalanceApprovalRequestTransitionsCompanion.insert(
+            id: id,
+            requestId: requestId,
+            fromStatus: fromStatus,
+            toStatus: toStatus,
+            actorId: actorId,
+            occurredAt: occurredAt,
+            reason: reason,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$NegativeBalanceApprovalRequestTransitionsTableReferences(
+                        db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({requestId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (requestId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.requestId,
+                    referencedTable:
+                        $$NegativeBalanceApprovalRequestTransitionsTableReferences
+                            ._requestIdTable(db),
+                    referencedColumn:
+                        $$NegativeBalanceApprovalRequestTransitionsTableReferences
+                            ._requestIdTable(db)
+                            .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$NegativeBalanceApprovalRequestTransitionsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $NegativeBalanceApprovalRequestTransitionsTable,
+        NegativeBalanceApprovalRequestTransition,
+        $$NegativeBalanceApprovalRequestTransitionsTableFilterComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableOrderingComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableAnnotationComposer,
+        $$NegativeBalanceApprovalRequestTransitionsTableCreateCompanionBuilder,
+        $$NegativeBalanceApprovalRequestTransitionsTableUpdateCompanionBuilder,
+        (
+          NegativeBalanceApprovalRequestTransition,
+          $$NegativeBalanceApprovalRequestTransitionsTableReferences
+        ),
+        NegativeBalanceApprovalRequestTransition,
+        PrefetchHooks Function({bool requestId})>;
 
 class $FoundationDatabaseManager {
   final _$FoundationDatabase _db;
@@ -18876,4 +21669,12 @@ class $FoundationDatabaseManager {
           _db, _db.supplierAdvanceRefunds);
   $$AuthAccountsTableTableManager get authAccounts =>
       $$AuthAccountsTableTableManager(_db, _db.authAccounts);
+  $$NegativeBalanceApprovalRequestsTableTableManager
+      get negativeBalanceApprovalRequests =>
+          $$NegativeBalanceApprovalRequestsTableTableManager(
+              _db, _db.negativeBalanceApprovalRequests);
+  $$NegativeBalanceApprovalRequestTransitionsTableTableManager
+      get negativeBalanceApprovalRequestTransitions =>
+          $$NegativeBalanceApprovalRequestTransitionsTableTableManager(
+              _db, _db.negativeBalanceApprovalRequestTransitions);
 }
