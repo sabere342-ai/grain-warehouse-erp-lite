@@ -4,8 +4,11 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_search_field.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 const String _stockTakeAdjustmentNote = 'تسوية جرد المخزون';
 
@@ -77,35 +80,15 @@ class _StockAdjustmentReportScreenState
         return ListView(
           key: const Key('stock-adjustment-report-list'),
           children: [
-            const Tooltip(
-              message: 'رجوع',
-              child: PageBackButton(
-                key: ValueKey('stock-adjustment-report-back-button'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'تقرير تسويات المخزون',
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'يعرض هذا التقرير حركات الزيادة والنقص اليدوية الناتجة عن تسويات المخزون، ولا يقوم بتعديل الكميات.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'تقرير تسويات المخزون',
+              subtitle:
+                  'يعرض هذا التقرير حركات الزيادة والنقص اليدوية الناتجة عن تسويات المخزون، ولا يقوم بتعديل الكميات.',
+              icon: Icons.fact_check_rounded,
+              onBack: () => Navigator.of(context).maybePop(),
+              backButtonKey:
+                  const ValueKey('stock-adjustment-report-back-button'),
+              actions: [
                 OutlinedButton.icon(
                   onPressed: () => _controller.load(user),
                   icon: const Icon(Icons.refresh_rounded),
@@ -113,7 +96,7 @@ class _StockAdjustmentReportScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             _Filters(
               searchController: _searchController,
               filter: _filter,
@@ -136,7 +119,7 @@ class _StockAdjustmentReportScreenState
             ],
             const SizedBox(height: 16),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل التقرير...')
             else ...[
               _TotalsCard(totals: totals),
               const SizedBox(height: 12),
@@ -147,10 +130,10 @@ class _StockAdjustmentReportScreenState
               ),
               const SizedBox(height: 12),
               if (rows.isEmpty)
-                const PremiumCard(
-                  child: Text(
-                    'لا توجد تسويات مخزون مسجلة حتى الآن.',
-                  ),
+                const GhalalEmptyState(
+                  title: 'لا توجد تسويات مخزون مسجلة',
+                  message: 'لم تُجرِ أي تسوية مخزون يدوية حتى الآن.',
+                  icon: Icons.fact_check_outlined,
                 )
               else
                 ...rows.map(
@@ -240,13 +223,11 @@ class _Filters extends StatelessWidget {
       children: [
         SizedBox(
           width: 280,
-          child: TextField(
+          child: GhalalSearchField(
+            key: const Key('stock-adjustment-search-field'),
             controller: searchController,
+            hintText: 'بحث بالصنف أو الملاحظة',
             onChanged: onSearchChanged,
-            decoration: const InputDecoration(
-              labelText: 'بحث بالصنف أو الملاحظة',
-              prefixIcon: Icon(Icons.search_rounded),
-            ),
           ),
         ),
         SizedBox(

@@ -4,8 +4,11 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 const int _maxStockTakeQuantityKg = 9223372036854775807;
 const String _stockTakeAdjustmentNote = 'تسوية جرد المخزون';
@@ -74,31 +77,15 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
       animation: _controller,
       builder: (context, _) {
         return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Tooltip(
-                  message: 'رجوع',
-                  child: PageBackButton(
-                    key: ValueKey('stock-take-back-button'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'جرد المخزون',
-                  style: textTheme.headlineMedium?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
+            GhalalPageHeader(
+              title: 'جرد المخزون',
+              subtitle:
                   'أدخل الكمية الفعلية التي تم عدّها، وسيقوم النظام بحساب الفرق وتسجيل حركة تسوية فقط عند وجود فرق.',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+              icon: Icons.balance_rounded,
+              onBack: () => Navigator.of(context).maybePop(),
+              backButtonKey: const ValueKey('stock-take-back-button'),
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: 12),
@@ -112,10 +99,12 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
             ],
             const SizedBox(height: 16),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل بيانات المخزون...')
             else if (_controller.products.isEmpty)
-              const PremiumCard(
-                child: Text('لا توجد أصناف نشطة. أضف صنف حبوب أولا.'),
+              const GhalalEmptyState(
+                title: 'لا توجد أصناف نشطة',
+                message: 'أضف صنف حبوب أولاً لبدء الجرد.',
+                icon: Icons.inventory_2_outlined,
               )
             else ...[
               ..._controller.products.map(
@@ -358,52 +347,50 @@ class _StockTakeConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return AlertDialog(
+    return GhalalResponsiveDialog(
       title: const Text('تأكيد تسوية الجرد'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'سيتم إنشاء حركات المخزون التالية:',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            for (final adj in adjustments) ...[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      adj.variance > 0
-                          ? Icons.arrow_upward_rounded
-                          : Icons.arrow_downward_rounded,
-                      size: 18,
-                      color: adj.variance > 0
-                          ? AppColors.olive
-                          : Theme.of(context).colorScheme.error,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'سيتم إنشاء حركات المخزون التالية:',
+            style: textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          for (final adj in adjustments) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    adj.variance > 0
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded,
+                    size: 18,
+                    color: adj.variance > 0
+                        ? AppColors.olive
+                        : Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${adj.product.name}: '
+                      'الرصيد ${adj.balanceKg} ← الفعلي ${adj.actualKg} كجم '
+                      '(${adj.variance > 0 ? "زيادة" : "نقص"} ${adj.variance.abs()} كجم)',
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${adj.product.name}: '
-                        'الرصيد ${adj.balanceKg} ← الفعلي ${adj.actualKg} كجم '
-                        '(${adj.variance > 0 ? "زيادة" : "نقص"} ${adj.variance.abs()} كجم)',
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-            const SizedBox(height: 12),
-            Text(
-              'ملاحظة: يتم تسجيل زيادة يدوية أو نقص يدوي حسب فرق كل صنف، مع حفظ سبب "$_stockTakeAdjustmentNote".',
-              style: textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
             ),
           ],
-        ),
+          const SizedBox(height: 12),
+          Text(
+            'ملاحظة: يتم تسجيل زيادة يدوية أو نقص يدوي حسب فرق كل صنف، مع حفظ سبب "$_stockTakeAdjustmentNote".',
+            style: textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+          ),
+        ],
       ),
       actions: [
         TextButton(

@@ -15,9 +15,11 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customer_advance_actions_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_search_field.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key, this.controller});
@@ -32,6 +34,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
   late final CustomerController _controller;
   late final bool _ownsController;
   String? _activeCollectionCustomerId;
+  final _searchController = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
@@ -52,6 +56,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     if (_ownsController) {
       _controller.dispose();
     }
@@ -61,7 +66,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض العملاء.'));
@@ -73,25 +77,24 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
+        final normalizedQuery = _query.trim().toLowerCase();
+        final visibleCustomers = _controller.customers.where((customer) {
+          if (normalizedQuery.isEmpty) return true;
+          return [
+            customer.name,
+            customer.phone ?? '',
+            customer.notes ?? '',
+          ].join(' ').toLowerCase().contains(normalizedQuery);
+        }).toList(growable: false);
         return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('العملاء', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        'أرصدة العملاء محسوبة من البيع الآجل والتحصيل فقط، ولا يوجد تعديل يدوي للرصيد.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'العملاء',
+              subtitle:
+                  'أرصدة العملاء محسوبة من البيع الآجل والتحصيل فقط، ولا يوجد تعديل يدوي للرصيد.',
+              icon: Icons.people_rounded,
+              actions: [
                 if (canManage)
                   FilledButton.icon(
                     onPressed: () => _showCustomerForm(context, user: user),
@@ -100,23 +103,38 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _controller.errorMessage!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+            const SizedBox(height: AppSpacing.md),
+            GhalalSearchField(
+              key: const Key('customers-search-field'),
+              controller: _searchController,
+              hintText: 'بحث باسم العميل أو الهاتف...',
+              onChanged: (value) => setState(() => _query = value),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            if (_controller.errorMessage != null)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () {
+                  final user = AuthScope.of(context).state.user;
+                  if (user != null) _controller.loadCustomers(user);
+                },
+              )
+            else if (_controller.isLoading)
+              const GhalalLoadingState(label: 'جاري تحميل العملاء...')
             else if (_controller.customers.isEmpty)
-              const PremiumCard(child: Text('لا توجد بيانات عملاء بعد.'))
+              const GhalalEmptyState(
+                title: 'لا توجد بيانات عملاء',
+                message: 'أضف أول عميل لبدء إدارة الحسابات.',
+                icon: Icons.people_outline_rounded,
+              )
+            else if (visibleCustomers.isEmpty)
+              const GhalalEmptyState(
+                title: 'لا توجد نتائج مطابقة',
+                message: 'امسح البحث أو استخدم اسمًا أو هاتفًا مختلفًا.',
+                icon: Icons.search_off_rounded,
+              )
             else
-              ..._controller.customers.map(
+              ...visibleCustomers.map(
                 (customer) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _CustomerCard(
@@ -861,30 +879,32 @@ class _CustomerStatementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leadingWidth: 112,
-        leading: const AppBarBackButton(),
-        title: Text('كشف الحساب - ${customer.name}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.preview_rounded),
-            tooltip: 'معاينة كشف الحساب',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PrintableCustomerStatementView(
-                    statement: statement,
-                    customerName: customer.name,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          GhalalPageHeader(
+            title: 'كشف الحساب - ${customer.name}',
+            subtitle: 'عرض حركات الحساب والرصيد النهائي للعميل.',
+            icon: Icons.receipt_long_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+            actions: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PrintableCustomerStatementView(
+                        statement: statement,
+                        customerName: customer.name,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.preview_rounded),
+                label: const Text('معاينة كشف الحساب'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           PremiumCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -908,7 +928,11 @@ class _CustomerStatementScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (statement.lines.isEmpty)
-            const PremiumCard(child: Text('لا توجد حركات على هذا العميل بعد.'))
+            const GhalalEmptyState(
+              title: 'لا توجد حركات',
+              message: 'لم تُسجَّل أي حركة على هذا العميل بعد.',
+              icon: Icons.receipt_long_outlined,
+            )
           else
             for (final line in statement.lines)
               Padding(
@@ -989,6 +1013,7 @@ class _CustomerOpeningBalanceDialogState
     extends State<_CustomerOpeningBalanceDialog> {
   final _amountController = TextEditingController();
   String? _errorMessage;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -998,48 +1023,61 @@ class _CustomerOpeningBalanceDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isLoading,
       title: const Text('رصيد افتتاحي للعميل'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'أدخل المبلغ المستحق على هذا العميل كرصيد افتتاحي (بقيمة مالية).',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'أدخل المبلغ المستحق على هذا العميل كرصيد افتتاحي (بقيمة مالية).',
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _amountController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'المبلغ بقروش',
+              helperText:
+                  'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
             ),
+            textDirection: TextDirection.ltr,
+          ),
+          if (_errorMessage != null) ...[
             const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'المبلغ بقروش',
-                helperText:
-                    'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
-              ),
-              textDirection: TextDirection.ltr,
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isLoading
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
-          onPressed: _submit,
-          child: const Text('حفظ الرصيد الافتتاحي'),
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('حفظ الرصيد الافتتاحي'),
         ),
       ],
     );
   }
+
+  bool get _isDirty => _amountController.text.trim().isNotEmpty;
 
   void _submit() {
     final amount = int.tryParse(_amountController.text.trim());
@@ -1052,7 +1090,10 @@ class _CustomerOpeningBalanceDialogState
           'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
       return;
     }
-
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     Navigator.of(context).pop(amount);
   }
 }
@@ -1072,6 +1113,7 @@ class _CustomerFormDialogState extends State<_CustomerFormDialog> {
   late final TextEditingController _notesController;
   late bool _isActive;
   String? _errorMessage;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -1093,60 +1135,83 @@ class _CustomerFormDialogState extends State<_CustomerFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
+      isDirty: _isDirty,
+      isBusy: _isLoading,
       title: Text(widget.customer == null ? 'إضافة عميل' : 'تعديل عميل'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'اسم العميل'),
-              textDirection: TextDirection.rtl,
-            ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'اسم العميل'),
+            textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _phoneController,
+            decoration: const InputDecoration(labelText: 'الهاتف اختياري'),
+            textDirection: TextDirection.ltr,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _notesController,
+            decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+            maxLines: 2,
+            textDirection: TextDirection.rtl,
+          ),
+          SwitchListTile(
+            value: _isActive,
+            onChanged: (value) => setState(() => _isActive = value),
+            title: const Text('العميل نشط'),
+          ),
+          if (_errorMessage != null) ...[
             const SizedBox(height: 12),
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'الهاتف اختياري'),
-              textDirection: TextDirection.ltr,
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
-              maxLines: 2,
-              textDirection: TextDirection.rtl,
-            ),
-            SwitchListTile(
-              value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value),
-              title: const Text('العميل نشط'),
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isLoading
+              ? null
+              : () => GhalalResponsiveDialog.requestClose(
+                    context,
+                    isDirty: _isDirty,
+                  ),
           child: const Text('إلغاء'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('حفظ')),
+        FilledButton(
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('حفظ'),
+        ),
       ],
     );
   }
+
+  bool get _isDirty =>
+      _nameController.text.trim().isNotEmpty ||
+      _phoneController.text.trim().isNotEmpty ||
+      _notesController.text.trim().isNotEmpty;
 
   void _submit() {
     if (_nameController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'أدخل اسم العميل.');
       return;
     }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     Navigator.of(context).pop(
       CustomerDraft(
         name: _nameController.text,

@@ -8,10 +8,11 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_supplier_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 class SupplierStatementScreen extends StatefulWidget {
@@ -67,33 +68,41 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final supplier = widget.supplier;
 
     return Scaffold(
-      appBar: AppBar(
-        leadingWidth: 112,
-        leading: const AppBarBackButton(),
-        title: Text('كشف حساب ${supplier.name}'),
-        actions: [
-          if (_statement != null)
-            IconButton(
-              icon: const Icon(Icons.preview_rounded),
-              tooltip: 'معاينة كشف الحساب',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => PrintableSupplierStatementView(
-                      statement: _statement!,
-                      supplierName: supplier.name,
-                    ),
-                  ),
-                );
-              },
-            ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          GhalalPageHeader(
+            title: 'كشف حساب ${supplier.name}',
+            subtitle: 'عرض حركات الحساب والرصيد الحالي للمورد.',
+            icon: Icons.account_balance_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+            actions: [
+              if (_statement != null)
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PrintableSupplierStatementView(
+                          statement: _statement!,
+                          supplierName: supplier.name,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.preview_rounded),
+                  label: const Text('معاينة كشف الحساب'),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (_isLoading)
+            const GhalalLoadingState(label: 'جاري تحميل كشف المورد...')
+          else if (_error != null)
+            GhalalErrorState(message: _error!, onRetry: _load)
+          else
+            _buildContent(textTheme),
         ],
       ),
-      body: _isLoading
-          ? const GhalalLoadingState(label: 'جاري تحميل كشف المورد...')
-          : _error != null
-              ? GhalalErrorState(message: _error!, onRetry: _load)
-              : _buildContent(textTheme),
     );
   }
 

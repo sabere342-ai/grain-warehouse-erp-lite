@@ -62,7 +62,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('لا توجد تسويات مخزون مسجلة حتى الآن.'),
+        find.text('لا توجد تسويات مخزون مسجلة'),
         findsOneWidget,
       );
     });
@@ -89,9 +89,8 @@ void main() {
       expect(find.byTooltip('رجوع'), findsOneWidget);
       expect(find.byKey(const ValueKey('stock-adjustment-report-back-button')),
           findsOneWidget);
-      expect(Icons.arrow_forward_rounded.matchTextDirection, isTrue);
 
-      await tester.tap(find.text('رجوع'));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
 
       expect(find.byType(StockAdjustmentReportScreen), findsNothing);

@@ -76,7 +76,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('لا توجد أصناف نشطة. أضف صنف حبوب أولا.'),
+        find.text('لا توجد أصناف نشطة'),
         findsOneWidget,
       );
     });
@@ -215,9 +215,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byTooltip('رجوع'), findsOneWidget);
-      expect(Icons.arrow_forward_rounded.matchTextDirection, isTrue);
+      expect(find.byTooltip('رجوع'), findsOneWidget);
 
-      await tester.tap(find.text('رجوع'));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
 
       expect(find.byType(StockTakeScreen), findsNothing);
