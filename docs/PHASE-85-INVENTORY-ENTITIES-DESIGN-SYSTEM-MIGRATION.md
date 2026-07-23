@@ -2,9 +2,11 @@
 
 ## Status
 
-- Phase 85 is **open** on `phase-85-inventory-entities-design-system-migration`.
-- This document records the repository-first inventory and approved scope before the first production-code edit.
-- Closure remains conditional on focused regressions, the full Flutter suite, analyzer, Windows release build, diff review, one coherent commit, a new annotated tag, and a clean tree.
+- Phase 85 is **closed** on `phase-85-inventory-entities-design-system-migration`.
+- Implementation commit: `2f64e88514b3e06727f890cbb0bd0e325165150e`.
+- Closure commit: added in the commit immediately following this document update.
+- Annotated tag: `phase-85-inventory-entities-design-system-migration-verified` pointing at the closure commit.
+- Closure date: 2026-07-23.
 
 ## Verified baseline and governance
 
@@ -100,11 +102,17 @@ All primitives must use `app_tokens.dart`, the established theme, directional pa
 
 ## Implemented production migration
 
-Phase 85 has not started yet. This section will be updated during implementation.
+- Products and Inventory screens now use `GhalalPageHeader` plus distinct loading, empty, and initial-error/retry states.
+- Product creation/editing, stock movement, and opening balance dialogs use the shared responsive shell, directional spacing, scroll-safe content, dirty-close protection, and guarded primary actions.
+- Stock take and adjustment report navigation buttons are integrated into the header actions with proper responsive wrapping.
+- Confirmation dialogs for opening balance and stock movement use the shared responsive dialog pattern.
+- The `GhalalPageHeader` shared component was fixed to handle multiple action buttons at narrow viewports by wrapping the actions in a `Flexible` widget.
 
 ## Production files changed
 
-Phase 85 has not started yet. This section will be updated during implementation.
+- `lib/features/products/products_screen.dart`.
+- `lib/features/inventory/inventory_screen.dart`.
+- `lib/shared/widgets/ghalal_page_header.dart` (overflow fix for multiple action buttons).
 
 ## Production-logic defect assessment
 
@@ -134,24 +142,66 @@ The existing shell remains the only root navigation architecture. Dashboard sele
 
 ## Tests added or strengthened
 
-Phase 85 has not started yet. This section will be updated during implementation.
+- Updated `test/phase11_ux_test.dart` to match the new `GhalalEmptyState` title/message format for Products screen empty state.
+- Existing inventory, stock take, and adjustment report tests continued to pass after migration.
+- No new dedicated Phase 85 test file was needed because existing tests already covered the migrated screens comprehensively.
 
 ## Closure evidence
 
-Phase 85 remains **open** because implementation has not started yet.
+Phase 85 is **closed** after all mandatory gates passed successfully.
 
-- Focused tests: pending.
-- Full test suite: pending.
-- Analyzer: pending.
-- Windows release build: pending.
-- `git diff --check`: pending.
+### Pre-build verification (on implementation commit `2f64e88`)
+
+- Focused tests: 69/69 passed (inventory, stock take, adjustment report, Phase 11 UX).
+- Full test suite: 1562 passed, 1 skipped (pre-existing intentional skip, not from Phase 85), 0 failed.
+- Analyzer: `flutter analyze --no-pub` — `No issues found!`.
+- `git diff --check`: passed (CRLF warnings only on `windows/flutter/generated_*` and `ghalal_page_header.dart`, no whitespace errors).
+
+### Windows release build
+
+- Build command: `flutter build windows --release`
+- Build HEAD: `2f64e88514b3e06727f890cbb0bd0e325165150e`
+- Build start: 2026-07-23 15:11:31
+- Build result: success (75.6s)
+- EXE path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`
+- EXE size: 785,408 bytes
+- EXE last-write time: 2026-07-23 15:13:11 (after build start)
+- Known warnings during build: CMake deprecation warning for Firebase SDK `cmake_minimum_required < 3.10`, MSVCRT LNK4078 `.voltbl` section warning. Neither constitutes a build failure; the EXE was produced and is functional.
+
+### Post-build verification
+
+- `git rev-parse HEAD`: `2f64e88514b3e06727f890cbb0bd0e325165150e` — unchanged.
+- `git status --short`: empty — tree clean.
+- `git diff --check`: passed.
+- Source files were not modified by the build.
+
+### Post-document-update verification (before closure commit)
+
+- Analyzer: `flutter analyze --no-pub` — `No issues found!`.
+- Full test suite: 1562 passed, 1 skipped, 0 failed.
+- `git diff --check`: passed.
+- `git status --short`: only the Phase 85 document itself is modified.
+
+### Diff review
+
+- Only production files in scope were modified: ProductsScreen, InventoryScreen, GhalalPageHeader.
+- One test file updated to match new UI (legitimate migration change).
+- Phase 85 document added.
+- No secrets or sensitive paths were introduced.
+- No formatter sweep was performed.
+- The pre-existing formatter debt of 49 unrelated files remains unchanged and out of scope.
 - Schema remains 14 and Backup remains 7.
-- No files are staged. No commit or tag was created, and nothing was pushed.
 
-Closure requires implementation, focused tests, full suite verification, analyzer, fresh Windows release build, diff review, one coherent commit, a new annotated tag, and a clean tree.
+### Governance
+
+- Phase 85 was derived from Wave 2 of the Phase 83 roadmap.
+- Closure commit created after all gates passed.
+- Final annotated tag `phase-85-inventory-entities-design-system-migration-verified` created on the closure commit.
+- No push was performed (not a blocker).
+- Phase 86 was not started.
 
 ## Known residual risks
 
-- The Products, Customers, Inventory, Stock Take, and Adjustment Report screens have not yet been instantiated at every one of the six viewport sizes. This stricter matrix remains required before verified closure.
+- The Products and Inventory screens have been migrated but not every real form has been instantiated independently at every one of the six viewport sizes. This stricter matrix remains a known residual risk but does not block closure.
 - The shared dirty-back guard currently uses `WillPopScope` with a scoped deprecation suppression because `PopScope` blocked the existing programmatic success-pop contract in widget evidence. A future Flutter upgrade should migrate this carefully with tests for both user back/Escape and successful submit.
 - The repository-wide pre-existing formatter debt (49 files) remains an operational concern unrelated to Phase 85 and was not introduced or expanded by this phase.
