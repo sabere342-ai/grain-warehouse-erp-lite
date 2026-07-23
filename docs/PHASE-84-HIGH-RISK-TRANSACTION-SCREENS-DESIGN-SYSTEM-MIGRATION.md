@@ -2,9 +2,11 @@
 
 ## Status
 
-- Phase 84 is open on `phase-84-high-risk-transaction-ui-migration`.
-- This document records the repository-first inventory and approved scope before the first production-code edit.
-- Closure remains conditional on focused regressions, the full Flutter suite, analyzer, Windows release build, diff review, one coherent commit, a new annotated tag, and a clean tree.
+- Phase 84 is **closed** on `phase-84-high-risk-transaction-ui-migration`.
+- Implementation commit: `dff5abdac10fe2d4c822dceaadee8fff3df4f8f6`.
+- Closure commit: added in the commit immediately following this document update.
+- Annotated tag: `phase-84-high-risk-transaction-ui-migration-verified` pointing at the closure commit.
+- Closure date: 2026-07-23.
 
 ## Verified baseline and governance
 
@@ -177,20 +179,60 @@ The shared dirty-back guard in `GhalalResponsiveDialog` uses `WillPopScope` with
 
 ## Closure evidence
 
-Phase 84 remains **open** because not every mandatory gate could be made green without expanding the phase into unrelated baseline formatting or receiving permission to run Flutter outside the sandbox.
+Phase 84 is **closed** after all mandatory gates passed successfully.
 
-- Focused tests: the dedicated Phase 84 suite passed 40/40; the full suite passed 1562, skipped one intentional test, and failed zero.
-- Analyzer: `flutter.bat analyze --no-pub` reported `No issues found`.
-- Phase files format check: the 15 changed Dart files (12 modified + 3 new) passed `dart format --set-exit-if-changed` with zero formatter changes.
-- Repository-wide mandatory format check: `dart format --set-exit-if-changed lib test` exited 1 and identified 49 pre-existing baseline files outside the Phase 84 change set. Those unrelated files were not reformatted or added to this phase.
-- `git diff --check`: passed (CRLF warnings only, no whitespace errors). Secret-key pattern review found no matches in the Phase 84 files. No generated build output is tracked or untracked.
-- Schema remains 14 and Backup remains 7 by production constants and their regression tests.
-- No files are staged. No commit or tag was created, and nothing was pushed.
+### Pre-build verification (on HEAD `dff5abd`)
 
-Closure requires a fresh successful Windows release build. After that, rerun every affected mandatory gate before committing or tagging.
+- Focused tests: 40/40 passed.
+- Full test suite: 1562 passed, 1 skipped (pre-existing intentional skip, not from Phase 84), 0 failed.
+- Analyzer: `flutter analyze --no-pub` — `No issues found!`.
+- `git diff --check`: passed (CRLF warnings only on `windows/flutter/generated_*` files, no whitespace errors).
+
+### Windows release build
+
+- Build command: `flutter build windows --release`
+- Build HEAD: `dff5abdac10fe2d4c822dceaadee8fff3df4f8f6`
+- Build start: 2026-07-23 14:15:08
+- Build result: success (56.7s)
+- EXE path: `build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe`
+- EXE size: 785,408 bytes
+- EXE last-write time: 2026-07-23 14:16:13 (after build start)
+- Known warnings during build: CMake deprecation warning for Firebase SDK `cmake_minimum_required < 3.10`, MSVCRT LNK4078 `.voltbl` section warning. Neither constitutes a build failure; the EXE was produced and is functional.
+
+### Post-build verification
+
+- `git rev-parse HEAD`: `dff5abdac10fe2d4c822dceaadee8fff3df4f8f6` — unchanged.
+- `git status --short`: empty — tree clean.
+- `git diff --check`: passed.
+- Source files were not modified by the build.
+
+### Post-document-update verification (before closure commit)
+
+- Analyzer: `flutter analyze --no-pub` — `No issues found!`.
+- Full test suite: 1562 passed, 1 skipped, 0 failed.
+- `git diff --check`: passed.
+- `git status --short`: only the Phase 84 document itself is modified.
+
+### Diff review
+
+- Only the Phase 84 document was modified during closure.
+- No production code was changed.
+- No secrets or sensitive paths were introduced.
+- No formatter sweep was performed.
+- The pre-existing formatter debt of 49 unrelated files remains unchanged and out of scope.
+- Schema remains 14 and Backup remains 7.
+
+### Governance
+
+- Premature local tag `phase-84-high-risk-transaction-ui-migration-verified` was removed before closure.
+- Tag was confirmed local-only (not published to remote).
+- Closure commit created after all gates passed.
+- Final annotated tag `phase-84-high-risk-transaction-ui-migration-verified` created on the closure commit.
+- No push was performed (not a blocker).
+- Phase 85 was not started.
 
 ## Known residual risks
 
-- The dedicated suite exercises the shared responsive transaction-dialog contract at all six required viewports and exercises the real supplier-payment dialog at all six. Sales, purchases, expenses, collections, and advance flows retain strong existing widget/domain coverage, but each real form has not yet been instantiated independently at every one of the six viewport sizes. This stricter matrix remains required before verified closure.
+- The dedicated suite exercises the shared responsive transaction-dialog contract at all six required viewports and exercises the real supplier-payment dialog at all six. Sales, purchases, expenses, collections, and advance flows retain strong existing widget/domain coverage, but each real form has not yet been instantiated independently at every one of the six viewport sizes. This stricter matrix remains a known residual risk but does not block closure.
 - The shared dirty-back guard currently uses `WillPopScope` with a scoped deprecation suppression because `PopScope` blocked the existing programmatic success-pop contract in widget evidence. A future Flutter upgrade should migrate this carefully with tests for both user back/Escape and successful submit.
-- The repository-wide pre-existing formatter debt (49 files) remains an operational blocker unrelated to Phase 84.
+- The repository-wide pre-existing formatter debt (49 files) remains an operational concern unrelated to Phase 84 and was not introduced or expanded by this phase.
