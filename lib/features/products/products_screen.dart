@@ -6,6 +6,10 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -47,7 +51,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
     final canManage = user?.permissions.canManageProducts ?? false;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض الأصناف.'));
@@ -58,56 +61,52 @@ class _ProductsScreenState extends State<ProductsScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('الأصناف', style: textTheme.headlineMedium),
-                      const SizedBox(height: 6),
-                      Text(
-                        canManage
-                            ? 'إدارة أصناف الحبوب وأسعار البيع الإرشادية للكيلو.'
-                            : 'عرض الأصناف النشطة فقط. إضافة وتعديل الأصناف للمالك فقط.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            GhalalPageHeader(
+              title: 'الأصناف',
+              subtitle: canManage
+                  ? 'إدارة أصناف الحبوب وأسعار البيع الإرشادية للكيلو.'
+                  : 'عرض الأصناف النشطة فقط. إضافة وتعديل الأصناف للمالك فقط.',
+              icon: Icons.inventory_2_rounded,
+              actions: [
                 if (canManage)
                   FilledButton.icon(
+                    key: const Key('products_add_button'),
                     onPressed: () => _showProductForm(context, user: user),
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('إضافة صنف حبوب'),
                   ),
               ],
             ),
-            if (_controller.errorMessage != null) ...[
-              const SizedBox(height: 12),
+            if (_controller.errorMessage != null &&
+                _controller.products.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 _controller.errorMessage!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل الأصناف...')
+            else if (_controller.errorMessage != null &&
+                _controller.products.isEmpty)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.loadProducts(user),
+              )
             else if (_controller.products.isEmpty)
-              const PremiumCard(
-                child: Text(
-                  'لا توجد أصناف حبوب مسجلة بعد. أضف صنفا مثل قمح أو ذرة قبل تسجيل المخزون.',
-                ),
+              const GhalalEmptyState(
+                title: 'لا توجد أصناف حبوب مسجلة بعد',
+                message: 'أضف صنفا مثل قمح أو ذرة قبل تسجيل المخزون.',
+                icon: Icons.inventory_2_outlined,
               )
             else
               ..._controller.products.map(
                 (product) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: _ProductCard(
                     product: product,
                     canManage: canManage,
@@ -331,99 +330,102 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
       title: Text(widget.product == null ? 'إضافة صنف حبوب' : 'تعديل صنف حبوب'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'اسم الصنف',
-                helperText: 'مثال: قمح محلي أو ذرة صفراء',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'اسم الصنف',
+              helperText: 'مثال: قمح محلي أو ذرة صفراء',
+            ),
+            textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _codeController,
+            decoration: const InputDecoration(labelText: 'الكود اختياري'),
+            textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DropdownButtonFormField<GrainUnit>(
+            value: _unit,
+            decoration: const InputDecoration(labelText: 'الوحدة'),
+            items: const [
+              DropdownMenuItem(
+                value: GrainUnit.kilogram,
+                child: Text('كجم'),
               ),
-              textDirection: TextDirection.rtl,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _codeController,
-              decoration: const InputDecoration(labelText: 'الكود اختياري'),
-              textDirection: TextDirection.rtl,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<GrainUnit>(
-              value: _unit,
-              decoration: const InputDecoration(labelText: 'الوحدة'),
-              items: const [
-                DropdownMenuItem(
-                  value: GrainUnit.kilogram,
-                  child: Text('كجم'),
-                ),
-                DropdownMenuItem(
-                  value: GrainUnit.ton,
-                  child: Text('طن'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _unit = value);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _defaultPriceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'السعر الافتراضي بالجنيه / كجم اختياري',
-                helperText: 'اتركه فارغا إذا لم يوجد سعر ثابت.',
-              ),
-              textDirection: TextDirection.ltr,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _minimumPriceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'الحد الأدنى للبيع بالجنيه / كجم اختياري',
-                helperText: 'يمنع حفظ البيع بسعر أقل من هذا الحد.',
-              ),
-              textDirection: TextDirection.ltr,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _referenceCostPriceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'سعر التكلفة بالجنيه / كجم اختياري',
-                helperText: 'تكلفة مرجعية للصنف وليست محرك تكلفة.',
-              ),
-              textDirection: TextDirection.ltr,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
-              textDirection: TextDirection.rtl,
-              maxLines: 2,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              DropdownMenuItem(
+                value: GrainUnit.ton,
+                child: Text('طن'),
               ),
             ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _unit = value);
+              }
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _defaultPriceController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'السعر الافتراضي بالجنيه / كجم اختياري',
+              helperText: 'اتركه فارغا إذا لم يوجد سعر ثابت.',
+            ),
+            textDirection: TextDirection.ltr,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _minimumPriceController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'الحد الأدنى للبيع بالجنيه / كجم اختياري',
+              helperText: 'يمنع حفظ البيع بسعر أقل من هذا الحد.',
+            ),
+            textDirection: TextDirection.ltr,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _referenceCostPriceController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'سعر التكلفة بالجنيه / كجم اختياري',
+              helperText: 'تكلفة مرجعية للصنف وليست محرك تكلفة.',
+            ),
+            textDirection: TextDirection.ltr,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _notesController,
+            decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+            textDirection: TextDirection.rtl,
+            maxLines: 2,
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => GhalalResponsiveDialog.requestClose(
+            context,
+            isDirty: _nameController.text.isNotEmpty ||
+                _codeController.text.isNotEmpty ||
+                _defaultPriceController.text.isNotEmpty ||
+                _minimumPriceController.text.isNotEmpty ||
+                _referenceCostPriceController.text.isNotEmpty ||
+                _notesController.text.isNotEmpty,
+          ),
           child: const Text('إلغاء'),
         ),
         FilledButton(

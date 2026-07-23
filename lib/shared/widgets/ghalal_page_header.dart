@@ -84,10 +84,12 @@ class GhalalPageHeader extends StatelessWidget {
           children: [
             Expanded(child: heading),
             const SizedBox(width: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: actions,
+            Flexible(
+              child: Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: actions,
+              ),
             ),
           ],
         );

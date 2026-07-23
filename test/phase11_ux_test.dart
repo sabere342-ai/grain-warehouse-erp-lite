@@ -37,9 +37,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.text(
-          'لا توجد أصناف حبوب مسجلة بعد. أضف صنفا مثل قمح أو ذرة قبل تسجيل المخزون.',
-        ),
+        find.text('لا توجد أصناف حبوب مسجلة بعد'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('أضف صنفا مثل قمح أو ذرة قبل تسجيل المخزون.'),
         findsOneWidget,
       );
 

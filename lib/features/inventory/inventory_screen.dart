@@ -6,8 +6,12 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class InventoryScreen extends StatefulWidget {
@@ -51,7 +55,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
       return const PremiumCard(child: Text('يجب تسجيل الدخول لعرض المخزون.'));
@@ -64,94 +67,80 @@ class _InventoryScreenState extends State<InventoryScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('المخزون', style: textTheme.headlineMedium),
-                          const SizedBox(height: 6),
-                          Text(
-                            canAdjust
-                                ? 'الأرصدة محسوبة من حركات المخزون فقط. أي تعديل يدوي يحتاج سبب واضح.'
-                                : 'الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: AppColors.mutedText,
+            GhalalPageHeader(
+              title: 'المخزون',
+              subtitle: canAdjust
+                  ? 'الأرصدة محسوبة من حركات المخزون فقط. أي تعديل يدوي يحتاج سبب واضح.'
+                  : 'الأرصدة للعرض فقط. تعديل المخزون وإضافة الحركات للمالك فقط.',
+              icon: Icons.warehouse_rounded,
+              actions: [
+                if (canAdjust) ...[
+                  FilledButton.icon(
+                    key: const Key('inventory_add_movement_button'),
+                    onPressed: _controller.products.isEmpty
+                        ? null
+                        : () => _showMovementForm(context, user: user),
+                    icon: const Icon(Icons.add_chart_rounded),
+                    label: const Text('إضافة حركة مخزون'),
+                  ),
+                  OutlinedButton.icon(
+                    key: const Key('inventory_stock_take_button'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => StockTakeScreen(
+                            controller: _controller,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.balance_rounded),
+                    label: const Text('جرد المخزون'),
+                  ),
+                  OutlinedButton.icon(
+                    key: const Key('inventory_adjustment_report_button'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => Scaffold(
+                            body: StockAdjustmentReportScreen(
+                              controller: _controller,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                if (canAdjust) ...[
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _controller.products.isEmpty
-                            ? null
-                            : () => _showMovementForm(context, user: user),
-                        icon: const Icon(Icons.add_chart_rounded),
-                        label: const Text('إضافة حركة مخزون'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => StockTakeScreen(
-                                controller: _controller,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.balance_rounded),
-                        label: const Text('جرد المخزون'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => Scaffold(
-                                body: StockAdjustmentReportScreen(
-                                  controller: _controller,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.fact_check_rounded),
-                        label: const Text('تقرير التسويات'),
-                      ),
-                    ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.fact_check_rounded),
+                    label: const Text('تقرير التسويات'),
                   ),
                 ],
               ],
             ),
-            if (_controller.errorMessage != null) ...[
-              const SizedBox(height: 12),
+            if (_controller.errorMessage != null &&
+                _controller.products.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 _controller.errorMessage!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل المخزون...')
+            else if (_controller.errorMessage != null &&
+                _controller.products.isEmpty)
+              GhalalErrorState(
+                message: _controller.errorMessage!,
+                onRetry: () => _controller.load(user),
+              )
             else if (_controller.products.isEmpty)
-              const PremiumCard(
-                child: Text(
-                  'لا توجد أصناف نشطة لعرض المخزون. أضف أو فعّل صنف حبوب أولا.',
-                ),
+              const GhalalEmptyState(
+                title: 'لا توجد أصناف نشطة لعرض المخزون',
+                message: 'أضف أو فعّل صنف حبوب أولا.',
+                icon: Icons.warehouse_outlined,
               )
             else
               ..._controller.products.map(
@@ -159,7 +148,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   final productId = product.id;
                   final hasOpening = _controller.hasOpeningBalance(productId);
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: _InventoryProductCard(
                       product: product,
                       balanceKg: _controller.balanceForProduct(productId),
@@ -198,7 +187,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => GhalalResponsiveDialog(
         title: const Text('تأكيد الرصيد الافتتاحي'),
         content: Text(
           'تأكيد تسجيل رصيد افتتاحي لـ ${product.name} بكمية $quantityKg كجم.',
@@ -290,7 +279,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   ) async {
     return await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => GhalalResponsiveDialog(
             title: const Text('تأكيد حركة المخزون'),
             content: Text(
               'تنبيه: سيتم تسجيل ${draft.movementType.labelAr} بكمية '
@@ -410,65 +399,66 @@ class _OpeningBalanceDialogState extends State<_OpeningBalanceDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
       title: const Text('إضافة رصيد افتتاحي للمخزون'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('أدخل الكمية الافتتاحية لـ ${widget.product.name}.'),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'الكمية',
-                      helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('أدخل الكمية الافتتاحية لـ ${widget.product.name}.'),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'الكمية',
+                    helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+                  ),
+                  textDirection: TextDirection.ltr,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              SizedBox(
+                width: 120,
+                child: DropdownButtonFormField<GrainUnit>(
+                  value: _inputUnit,
+                  decoration: const InputDecoration(labelText: 'الوحدة'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: GrainUnit.kilogram,
+                      child: Text('كجم'),
                     ),
-                    textDirection: TextDirection.ltr,
-                  ),
+                    DropdownMenuItem(
+                      value: GrainUnit.ton,
+                      child: Text('طن'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _inputUnit = value);
+                    }
+                  },
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 120,
-                  child: DropdownButtonFormField<GrainUnit>(
-                    value: _inputUnit,
-                    decoration: const InputDecoration(labelText: 'الوحدة'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: GrainUnit.kilogram,
-                        child: Text('كجم'),
-                      ),
-                      DropdownMenuItem(
-                        value: GrainUnit.ton,
-                        child: Text('طن'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _inputUnit = value);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => GhalalResponsiveDialog.requestClose(
+            context,
+            isDirty: _quantityController.text.isNotEmpty,
+          ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
@@ -524,115 +514,117 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GhalalResponsiveDialog(
       title: const Text('إضافة حركة مخزون'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<String>(
-              value: _productId,
-              decoration: const InputDecoration(labelText: 'الصنف'),
-              items: [
-                for (final product in widget.products)
-                  DropdownMenuItem(
-                    value: product.id,
-                    child: Text(product.name),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _productId = value;
-                    if (!_availableMovementTypes().contains(_movementType)) {
-                      _movementType = _availableMovementTypes().first;
-                    }
-                  });
-                }
-              },
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<String>(
+            value: _productId,
+            decoration: const InputDecoration(labelText: 'الصنف'),
+            items: [
+              for (final product in widget.products)
+                DropdownMenuItem(
+                  value: product.id,
+                  child: Text(product.name),
+                ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _productId = value;
+                  if (!_availableMovementTypes().contains(_movementType)) {
+                    _movementType = _availableMovementTypes().first;
+                  }
+                });
+              }
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          DropdownButtonFormField<StockMovementType>(
+            value: _movementType,
+            decoration: const InputDecoration(
+              labelText: 'نوع الحركة',
+              helperText: 'اخترها بدقة لأنها تؤثر على الرصيد.',
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<StockMovementType>(
-              value: _movementType,
-              decoration: const InputDecoration(
-                labelText: 'نوع الحركة',
-                helperText: 'اخترها بدقة لأنها تؤثر على الرصيد.',
+            items: [
+              for (final type in _availableMovementTypes())
+                DropdownMenuItem(
+                  value: type,
+                  child: Text(type.labelAr),
+                ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _movementType = value);
+              }
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'الكمية',
+                    helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+                  ),
+                  textDirection: TextDirection.ltr,
+                ),
               ),
-              items: [
-                for (final type in _availableMovementTypes())
-                  DropdownMenuItem(
-                    value: type,
-                    child: Text(type.labelAr),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _movementType = value);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'الكمية',
-                      helperText: 'اكتب الرقم حسب الوحدة المختارة.',
+              const SizedBox(width: AppSpacing.md),
+              SizedBox(
+                width: 120,
+                child: DropdownButtonFormField<GrainUnit>(
+                  value: _inputUnit,
+                  decoration: const InputDecoration(labelText: 'الوحدة'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: GrainUnit.kilogram,
+                      child: Text('كجم'),
                     ),
-                    textDirection: TextDirection.ltr,
-                  ),
+                    DropdownMenuItem(
+                      value: GrainUnit.ton,
+                      child: Text('طن'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _inputUnit = value);
+                    }
+                  },
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 120,
-                  child: DropdownButtonFormField<GrainUnit>(
-                    value: _inputUnit,
-                    decoration: const InputDecoration(labelText: 'الوحدة'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: GrainUnit.kilogram,
-                        child: Text('كجم'),
-                      ),
-                      DropdownMenuItem(
-                        value: GrainUnit.ton,
-                        child: Text('طن'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _inputUnit = value);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _noteController,
-              decoration: const InputDecoration(
-                labelText: 'سبب أو ملاحظة',
-                helperText: 'مطلوب عمليا لتسهيل مراجعة المالك.',
-              ),
-              maxLines: 2,
-              textDirection: TextDirection.rtl,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _noteController,
+            decoration: const InputDecoration(
+              labelText: 'سبب أو ملاحظة',
+              helperText: 'مطلوب عمليا لتسهيل مراجعة المالك.',
+            ),
+            maxLines: 2,
+            textDirection: TextDirection.rtl,
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => GhalalResponsiveDialog.requestClose(
+            context,
+            isDirty: _quantityController.text.isNotEmpty ||
+                _noteController.text.isNotEmpty,
+          ),
           child: const Text('إلغاء'),
         ),
         FilledButton(
