@@ -3,6 +3,10 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_closing.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialClosingScreen extends StatefulWidget {
   const FinancialClosingScreen({super.key});
@@ -34,85 +38,100 @@ class _FinancialClosingScreenState extends State<FinancialClosingScreen> {
           body: Center(child: Text('هذه العملية متاحة للمالك فقط.')));
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('الإغلاق المالي والتسوية')),
       body: FutureBuilder<(List<FinancialAccount>, List<FinancialClosing>)>(
         future: _load(),
         builder: (context, snap) {
           if (snap.hasError) {
-            return const Center(
-                child: Text('تعذر تحميل بيانات الإغلاق المالي.'));
+            return GhalalErrorState(
+                message: 'تعذر تحميل بيانات الإغلاق المالي.',
+                onRetry: () => setState(() {}));
           }
           if (!snap.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const GhalalLoadingState(
+                label: 'جاري تحميل بيانات الإغلاق...');
           }
           final (accounts, closings) = snap.data!;
-          return ListView(padding: const EdgeInsets.all(16), children: [
-            const Text(
-                'تُسجّل التسوية الرصيد الفعلي وتقارنه بالرصيد الدفتري. لا تنشئ فروقًا أو تعدّل أي حركة مالية.'),
-            const SizedBox(height: 12),
-            SegmentedButton<FinancialClosingKind>(
-                segments: const [
-                  ButtonSegment(
-                      value: FinancialClosingKind.daily,
-                      label: Text('إغلاق يومي')),
-                  ButtonSegment(
-                      value: FinancialClosingKind.period,
-                      label: Text('إغلاق فترة'))
-                ],
-                selected: {
-                  _kind
-                },
-                onSelectionChanged: (v) => setState(() {
-                      _kind = v.first;
-                      if (_kind == FinancialClosingKind.daily) _from = _to;
-                    })),
-            const SizedBox(height: 12),
-            Wrap(spacing: 12, children: [
-              TextButton.icon(
-                  onPressed: () => _pickDate(true),
-                  icon: const Icon(Icons.date_range),
-                  label: Text('من: ${_date(_from)}')),
-              TextButton.icon(
-                  onPressed: () => _pickDate(false),
-                  icon: const Icon(Icons.event),
-                  label: Text('إلى: ${_date(_to)}'))
-            ]),
-            for (final account in accounts)
-              TextField(
-                  controller: _actual.putIfAbsent(
-                      account.id, TextEditingController.new),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: 'الرصيد الفعلي — ${account.name} (قرش)')),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-                onPressed: _busy || accounts.isEmpty
-                    ? null
-                    : () => _approve(user, accounts),
-                icon: const Icon(Icons.lock),
-                label: Text(
-                    _busy ? 'جارٍ الاعتماد...' : 'مراجعة واعتماد الإغلاق')),
-            const Divider(height: 32),
-            Text('سجل التسويات', style: Theme.of(context).textTheme.titleLarge),
-            if (closings.isEmpty)
-              const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('لا توجد تسويات مسجلة بعد.')),
-            for (final closing in closings)
-              Card(
-                  child: ListTile(
-                      title: Text(
-                          '${closing.kind == FinancialClosingKind.daily ? 'يومي' : 'فترة'}: ${_date(closing.fromDate)} — ${_date(closing.toDate)}'),
-                      subtitle: Text(
-                          'فرق التسوية: ${closing.totalDifferenceQirsh} قرش\nالحالة: ${closing.isOpen ? 'أعيد فتحه' : 'معتمد ومغلق'}${closing.reopenReason == null ? '' : '\nسبب إعادة الفتح: ${closing.reopenReason}'}'),
-                      isThreeLine: true,
-                      trailing: closing.isOpen
-                          ? null
-                          : IconButton(
-                              tooltip: 'إعادة فتح',
-                              icon: const Icon(Icons.lock_open),
-                              onPressed: () => _reopen(user, closing))))
-          ]);
+          return ListView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              children: [
+                GhalalPageHeader(
+                  title: 'الإغلاق المالي والتسوية',
+                  subtitle:
+                      'مراجعة واعتماد إغلاق الفترة المالية وتسجيل التسويات.',
+                  icon: Icons.lock_clock_rounded,
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
+                const PremiumCard(
+                  child: Text(
+                      'تُسجّل التسوية الرصيد الفعلي وتقارنه بالرصيد الدفتري. لا تنشئ فروقًا أو تعدّل أي حركة مالية.'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SegmentedButton<FinancialClosingKind>(
+                    segments: const [
+                      ButtonSegment(
+                          value: FinancialClosingKind.daily,
+                          label: Text('إغلاق يومي')),
+                      ButtonSegment(
+                          value: FinancialClosingKind.period,
+                          label: Text('إغلاق فترة'))
+                    ],
+                    selected: {
+                      _kind
+                    },
+                    onSelectionChanged: (v) => setState(() {
+                          _kind = v.first;
+                          if (_kind == FinancialClosingKind.daily) _from = _to;
+                        })),
+                const SizedBox(height: AppSpacing.md),
+                Wrap(spacing: 12, children: [
+                  TextButton.icon(
+                      onPressed: () => _pickDate(true),
+                      icon: const Icon(Icons.date_range),
+                      label: Text('من: ${_date(_from)}')),
+                  TextButton.icon(
+                      onPressed: () => _pickDate(false),
+                      icon: const Icon(Icons.event),
+                      label: Text('إلى: ${_date(_to)}'))
+                ]),
+                for (final account in accounts)
+                  TextField(
+                      controller: _actual.putIfAbsent(
+                          account.id, TextEditingController.new),
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                          labelText: 'الرصيد الفعلي — ${account.name} (قرش)')),
+                const SizedBox(height: AppSpacing.md),
+                FilledButton.icon(
+                    onPressed: _busy || accounts.isEmpty
+                        ? null
+                        : () => _approve(user, accounts),
+                    icon: const Icon(Icons.lock),
+                    label: Text(
+                        _busy ? 'جارٍ الاعتماد...' : 'مراجعة واعتماد الإغلاق')),
+                const Divider(height: 32),
+                Text('سجل التسويات',
+                    style: Theme.of(context).textTheme.titleLarge),
+                if (closings.isEmpty)
+                  const GhalalEmptyState(
+                    title: 'لا توجد تسويات',
+                    message: 'لا توجد تسويات مسجلة بعد.',
+                    icon: Icons.lock_clock_rounded,
+                  ),
+                for (final closing in closings)
+                  PremiumCard(
+                      child: ListTile(
+                          title: Text(
+                              '${closing.kind == FinancialClosingKind.daily ? 'يومي' : 'فترة'}: ${_date(closing.fromDate)} — ${_date(closing.toDate)}'),
+                          subtitle: Text(
+                              'فرق التسوية: ${closing.totalDifferenceQirsh} قرش\nالحالة: ${closing.isOpen ? 'أعيد فتحه' : 'معتمد ومغلق'}${closing.reopenReason == null ? '' : '\nسبب إعادة الفتح: ${closing.reopenReason}'}'),
+                          isThreeLine: true,
+                          trailing: closing.isOpen
+                              ? null
+                              : IconButton(
+                                  tooltip: 'إعادة فتح',
+                                  icon: const Icon(Icons.lock_open),
+                                  onPressed: () => _reopen(user, closing))))
+              ]);
         },
       ),
     );

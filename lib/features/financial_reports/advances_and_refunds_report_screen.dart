@@ -12,8 +12,11 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_repor
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_csv_exporter.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_pdf_builder.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class _CustomerAdvanceRefundLookupAdapter
@@ -311,49 +314,55 @@ class _AdvancesAndRefundsReportScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'تقرير رد السلف وعكسها',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          if (user.permissions.canExportFinancialReports) ...[
-            IconButton(
-              tooltip: 'تصدير PDF',
-              onPressed: _report != null ? _exportPdf : null,
-              icon: const Icon(Icons.picture_as_pdf_rounded),
-            ),
-            IconButton(
-              tooltip: 'تصدير CSV',
-              onPressed: _report != null ? _exportCsv : null,
-              icon: const Icon(Icons.table_chart_rounded),
-            ),
-          ],
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          GhalalPageHeader(
+            title: 'تقرير رد السلف وعكسها',
+            subtitle: 'جميع عمليات رد السلف وعكسها خلال الفترة المحددة.',
+            icon: Icons.replay_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+            actions: [
+              if (user.permissions.canExportFinancialReports) ...[
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportPdf : null,
+                  icon: const Icon(Icons.picture_as_pdf_rounded),
+                  label: const Text('PDF'),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportCsv : null,
+                  icon: const Icon(Icons.table_chart_rounded),
+                  label: const Text('CSV'),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           _buildFilters(textTheme),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           if (_loading)
-            const Center(child: CircularProgressIndicator())
+            const GhalalLoadingState(label: 'جاري تحميل التقرير...')
           else if (_report == null)
-            const PremiumCard(child: Text('تعذر تحميل التقرير.'))
+            GhalalErrorState(
+              message: 'تعذر تحميل التقرير.',
+              onRetry: _applyFilters,
+            )
           else if (_report!.details.isEmpty)
-            const PremiumCard(
-              child: Text('لا توجد عمليات رد سلف أو عكسها في الفترة المحددة.'),
+            const GhalalEmptyState(
+              title: 'لا توجد عمليات',
+              message: 'لا توجد عمليات رد سلف أو عكسها في الفترة المحددة.',
+              icon: Icons.replay_rounded,
             )
           else ...[
             _buildSummaryCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _buildAccountBreakdownCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _buildCustomerBreakdownCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _buildSupplierBreakdownCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text('التفاصيل', style: textTheme.titleMedium),
             const SizedBox(height: 8),
             ..._report!.details.map((d) => _buildDetailCard(d, textTheme)),
