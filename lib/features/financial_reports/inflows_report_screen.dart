@@ -7,8 +7,11 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_repor
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_csv_exporter.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_pdf_builder.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class InflowsReportScreen extends StatefulWidget {
@@ -81,41 +84,51 @@ class _InflowsReportScreenState extends State<InflowsReportScreen> {
     final entries = _report?.entries ?? [];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تقرير التدفقات الداخلة'),
-        actions: [
-          if (user.permissions.canExportFinancialReports) ...[
-            IconButton(
-              tooltip: 'تصدير PDF',
-              onPressed: _report != null ? _exportPdf : null,
-              icon: const Icon(Icons.picture_as_pdf_rounded),
-            ),
-            IconButton(
-              tooltip: 'تصدير CSV',
-              onPressed: _report != null ? _exportCsv : null,
-              icon: const Icon(Icons.table_chart_rounded),
-            ),
-          ],
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          GhalalPageHeader(
+            title: 'تقرير التدفقات الداخلة',
+            subtitle: 'جميع الحركات المالية الواردة خلال الفترة المحددة.',
+            icon: Icons.arrow_downward_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+            actions: [
+              if (user.permissions.canExportFinancialReports) ...[
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportPdf : null,
+                  icon: const Icon(Icons.picture_as_pdf_rounded),
+                  label: const Text('PDF'),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportCsv : null,
+                  icon: const Icon(Icons.table_chart_rounded),
+                  label: const Text('CSV'),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           _buildFilters(textTheme),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           if (_loading)
-            const Center(child: CircularProgressIndicator())
+            const GhalalLoadingState(label: 'جاري تحميل التقرير...')
           else if (_report == null)
-            const PremiumCard(child: Text('تعذر تحميل التقرير.'))
+            GhalalErrorState(
+              message: 'تعذر تحميل التقرير.',
+              onRetry: _applyFilters,
+            )
           else if (entries.isEmpty)
-            const PremiumCard(
-              child: Text('لا توجد تدفقات داخلة في الفترة المحددة.'),
+            const GhalalEmptyState(
+              title: 'لا توجد تدفقات داخلة',
+              message: 'لا توجد حركات مالية واردة في الفترة المحددة.',
+              icon: Icons.arrow_downward_rounded,
             )
           else ...[
             _buildSummaryCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _buildBreakdownCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             ...entries.map((e) => _buildEntryCard(e, textTheme)),
           ],
         ],

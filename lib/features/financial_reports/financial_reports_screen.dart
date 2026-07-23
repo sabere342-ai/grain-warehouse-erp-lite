@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_balance_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/account_statement_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/advances_and_refunds_report_screen.dart';
@@ -12,6 +13,7 @@ import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_meth
 import 'package:grain_warehouse_erp_lite/features/financial_reports/supplier_settlements_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_closing_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialReportsScreen extends StatelessWidget {
@@ -20,7 +22,6 @@ class FinancialReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null || !user.permissions.canViewFinancialReports) {
       return const Scaffold(
@@ -29,17 +30,16 @@ class FinancialReportsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('التقارير المالية')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          Text('التقارير المالية', style: textTheme.headlineSmall),
-          const SizedBox(height: 4),
-          Text(
-            'تقارير الأرصدة، كشف الحساب، طرق الدفع، والتحويلات الداخلية',
-            style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+          const GhalalPageHeader(
+            title: 'التقارير المالية',
+            subtitle:
+                'تقارير الأرصدة، كشف الحساب، طرق الدفع، والتحويلات الداخلية',
+            icon: Icons.assessment_rounded,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _ReportCard(
             title: 'أرصدة الحسابات',
             subtitle: 'عرض أرصدة جميع الحسابات المالية لل période المحددة',

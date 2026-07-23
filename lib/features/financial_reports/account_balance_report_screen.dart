@@ -9,6 +9,9 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_pdf_builder.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/financial_report_csv_exporter.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class AccountBalanceReportScreen extends StatefulWidget {
@@ -90,41 +93,51 @@ class _AccountBalanceReportScreenState
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('أرصدة الحسابات'),
-        actions: [
-          if (user.permissions.canExportFinancialReports) ...[
-            IconButton(
-              tooltip: 'تصدير PDF',
-              onPressed: _report != null ? _exportPdf : null,
-              icon: const Icon(Icons.picture_as_pdf_rounded),
-            ),
-            IconButton(
-              tooltip: 'تصدير CSV',
-              onPressed: _report != null ? _exportCsv : null,
-              icon: const Icon(Icons.table_chart_rounded),
-            ),
-          ],
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          GhalalPageHeader(
+            title: 'أرصدة الحسابات',
+            subtitle:
+                'عرض أرصدة الحسابات المالية والتحركات خلال الفترة المحددة',
+            icon: Icons.account_balance_wallet_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+            actions: [
+              if (user.permissions.canExportFinancialReports) ...[
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportPdf : null,
+                  icon: const Icon(Icons.picture_as_pdf_rounded),
+                  label: const Text('PDF'),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                OutlinedButton.icon(
+                  onPressed: _report != null ? _exportCsv : null,
+                  icon: const Icon(Icons.table_chart_rounded),
+                  label: const Text('CSV'),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           _buildFilters(textTheme),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           if (_loading)
-            const Center(child: CircularProgressIndicator())
+            const GhalalLoadingState(label: 'جاري تحميل التقرير...')
           else if (_report == null)
-            const PremiumCard(child: Text('تعذر تحميل التقرير.'))
+            GhalalErrorState(
+              message: 'تعذر تحميل التقرير.',
+              onRetry: _applyFilters,
+            )
           else if (filteredRows == null || filteredRows.isEmpty)
-            PremiumCard(
-              child: Text(
-                'لا توجد حسابات${_searchQuery.isNotEmpty ? ' تطابق البحث' : ''}.',
-              ),
+            GhalalEmptyState(
+              title: 'لا توجد بيانات',
+              message:
+                  'لا توجد حسابات${_searchQuery.isNotEmpty ? ' تطابق البحث' : ''}.',
+              icon: Icons.account_balance_wallet_rounded,
             )
           else ...[
             _buildSummaryCard(textTheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             ...filteredRows.map((row) => _buildRowCard(row, textTheme)),
           ],
         ],
