@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/advances_and_refunds_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_reports_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 void main() {
   group('AdvancesAndRefundsReportScreen', () {
@@ -37,9 +38,10 @@ void main() {
         find.text('لا توجد عمليات رد سلف أو عكسها في الفترة المحددة.'),
         findsOneWidget,
       );
-      expect(find.byType(BackButton), findsOneWidget);
+      final backButton = find.byTooltip('رجوع');
+      expect(backButton, findsOneWidget);
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(backButton);
       await tester.pumpAndSettle();
 
       expect(find.byType(AdvancesAndRefundsReportScreen), findsNothing);
@@ -77,14 +79,28 @@ void main() {
           theme: AppTheme.fromPreset(AppThemePreset.highContrast),
         ),
       );
+      await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('تقرير رد السلف وعكسها'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      final scrollableFinder = find.byType(Scrollable);
+      expect(scrollableFinder, findsWidgets);
+
+      final scrollState = tester.state<ScrollableState>(scrollableFinder.first);
+      expect(scrollState.position.maxScrollExtent, greaterThan(0.0),
+          reason: 'content must overflow the narrow viewport');
+
+      scrollState.position.jumpTo(scrollState.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
       expect(
         find.text('لا توجد عمليات رد سلف أو عكسها في الفترة المحددة.'),
         findsOneWidget,
       );
-      expect(tester.takeException(), isNull);
+      expect(find.byType(GhalalEmptyState), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
   });
 }

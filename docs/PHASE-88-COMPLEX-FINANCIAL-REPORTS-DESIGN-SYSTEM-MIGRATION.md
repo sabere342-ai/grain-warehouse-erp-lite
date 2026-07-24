@@ -5,7 +5,7 @@
 - Phase 88 is **CLOSED** on `phase-88-complex-financial-reports-design-system-migration`.
 - Implementation commit: `adc764b`.
 - Closure commit: the commit containing this document.
-- Annotated tag: `phase-88-complex-financial-reports-design-system-migration-verified` pointing at the closure commit.
+- Annotated tag: `phase-88-complex-financial-reports-design-system-migration-verified` pointing at the remediation commit (this document).
 - Closure date: 2026-07-23.
 
 ## Governance
@@ -136,7 +136,16 @@ None. All Ghalal components used (`GhalalPageHeader`, `GhalalLoadingState`, `Gha
 
 ## Test files changed
 
-None. Existing tests for these screens are service-level and unaffected by UI-only changes.
+- `test/advances_and_refunds_report_screen_test.dart` — remediation (see below)
+
+## Remediation
+
+After the initial closure commit (`2c07ece`), two test failures surfaced in `test/advances_and_refunds_report_screen_test.dart` that were not present at the Phase 87 baseline:
+
+1. **Back-button finder mismatch**: `find.byType(BackButton)` failed because the `GhalalPageHeader` migration replaced the default `BackButton` with an `IconButton(tooltip: 'رجوع')`. Fix: `find.byTooltip('رجوع')`.
+2. **Empty-state not rendering in direct-harness test**: The test mounts the screen at 360×720. The filter section (PremiumCard + two DropdownButtonFormField widgets) pushes the content area below the initial ListView build zone. The empty-state `GhalalEmptyState` was never built at scroll offset 0. Root cause proven via three controlled experiments (surface enlargement, scroll-to-max, dropdown count). Fix: scroll `Scrollable.first` to `maxScrollExtent` before asserting.
+
+Both fixes are test-only. No production code changed. Root causes verified with evidence before applying fixes.
 
 ## Verification
 
