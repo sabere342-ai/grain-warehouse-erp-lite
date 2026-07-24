@@ -127,9 +127,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text(
-          'لا توجد نتائج في سجل المستندات. غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
-        ),
+        find.text('لا توجد نتائج'),
         findsOneWidget,
       );
     });

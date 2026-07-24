@@ -5,7 +5,9 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FinancialAccountStatementScreen extends StatefulWidget {
@@ -80,17 +82,19 @@ class _FinancialAccountStatementScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('كشف حساب - ${_account?.name ?? ''}'),
-      ),
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
           final statement = _controller.statement;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             children: [
+              GhalalPageHeader(
+                title: 'كشف حساب - ${_account?.name ?? ''}',
+                icon: Icons.account_balance_rounded,
+                onBack: () => Navigator.of(context).maybePop(),
+              ),
               if (_account != null) ...[
                 PremiumCard(
                   child: Row(
@@ -99,7 +103,7 @@ class _FinancialAccountStatementScreenState
                         _account!.type.iconEmoji,
                         style: const TextStyle(fontSize: 24),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +112,9 @@ class _FinancialAccountStatementScreenState
                             Text(
                               _account!.type.labelAr,
                               style: textTheme.bodySmall?.copyWith(
-                                color: AppColors.mutedText,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -117,7 +123,7 @@ class _FinancialAccountStatementScreenState
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
               ],
               Row(
                 children: [
@@ -156,16 +162,19 @@ class _FinancialAccountStatementScreenState
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               if (_controller.isLoading)
-                const Center(child: CircularProgressIndicator())
+                const GhalalLoadingState(label: 'جاري تحميل كشف الحساب...')
               else if (statement == null)
-                const PremiumCard(child: Text('تعذر تحميل كشف الحساب.'))
+                GhalalErrorState(
+                    message: 'تعذر تحميل كشف الحساب.', onRetry: _loadData)
               else if (statement.lines.isEmpty)
-                PremiumCard(
-                  child: Text(
-                    'لا توجد حركات مالية${_fromDate != null || _toDate != null ? ' في الفترة المحددة' : ''}.',
-                  ),
+                GhalalEmptyState(
+                  title: 'لا توجد حركات مالية',
+                  message: _fromDate != null || _toDate != null
+                      ? 'لا توجد حركات في الفترة المحددة.'
+                      : 'لا توجد حركات مالية مسجلة في هذا الحساب.',
+                  icon: Icons.receipt_long_rounded,
                 )
               else ...[
                 PremiumCard(
@@ -176,7 +185,7 @@ class _FinancialAccountStatementScreenState
                         'الرصيد الافتتاحي: ${MoneyUtils.formatPiastersAsEgp(statement.openingBalanceQirsh)}',
                         style: textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         'الرصيد الحالي: ${MoneyUtils.formatPiastersAsEgp(statement.finalBalanceQirsh)}',
                         style: textTheme.titleMedium?.copyWith(
@@ -186,16 +195,16 @@ class _FinancialAccountStatementScreenState
                       Text(
                         'عدد الحركات: ${statement.lines.length}',
                         style: textTheme.bodySmall?.copyWith(
-                          color: AppColors.mutedText,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 ...statement.lines.map(
                   (line) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                     child: _StatementLineCard(line: line),
                   ),
                 ),
@@ -259,10 +268,9 @@ class _StatementLineCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isIn
-                  ? Colors.green.withAlpha(30)
-                  : Colors.red.withAlpha(30),
-              borderRadius: BorderRadius.circular(8),
+              color:
+                  isIn ? Colors.green.withAlpha(30) : Colors.red.withAlpha(30),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(
               isIn ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
@@ -270,7 +278,7 @@ class _StatementLineCard extends StatelessWidget {
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,14 +290,14 @@ class _StatementLineCard extends StatelessWidget {
                 Text(
                   _formatDate(entry.effectiveDate),
                   style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.mutedText,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 if (entry.note != null)
                   Text(
                     entry.note!,
                     style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.mutedText,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 if (entry.correctionGroup != null)
@@ -315,7 +323,7 @@ class _StatementLineCard extends StatelessWidget {
               Text(
                 'الرصيد: ${MoneyUtils.formatPiastersAsEgp(line.runningBalanceQirsh)}',
                 style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.mutedText,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

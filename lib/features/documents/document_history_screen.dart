@@ -5,8 +5,9 @@ import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DocumentHistoryScreen extends StatefulWidget {
@@ -57,7 +58,6 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final user = AuthScope.of(context).state.user;
-    final textTheme = Theme.of(context).textTheme;
 
     if (user == null) {
       return const PremiumCard(
@@ -70,19 +70,15 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            const PageBackButton(),
-            const SizedBox(height: 12),
-            Text('سجل المستندات', style: textTheme.headlineMedium),
-            const SizedBox(height: 6),
-            Text(
-              _controller.canViewOwnerAudit
+            GhalalPageHeader(
+              title: 'سجل المستندات',
+              subtitle: _controller.canViewOwnerAudit
                   ? 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء وتفاصيل التدقيق.'
                   : 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء. تفاصيل التدقيق للمالك فقط.',
-              style: textTheme.bodyMedium?.copyWith(
-                color: AppColors.mutedText,
-              ),
+              icon: Icons.history_rounded,
+              onBack: () => Navigator.of(context).maybePop(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _HistoryFilters(
               searchController: _searchController,
               productController: _productController,
@@ -97,19 +93,19 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
               onApply: () => _applyFilter(user),
               onClear: () => _clearFilter(user),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             if (_controller.isLoading)
-              const Center(child: CircularProgressIndicator())
+              const GhalalLoadingState(label: 'جاري تحميل سجل المستندات...')
             else if (_controller.entries.isEmpty)
-              const PremiumCard(
-                child: Text(
-                  'لا توجد نتائج في سجل المستندات. غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
-                ),
+              const GhalalEmptyState(
+                title: 'لا توجد نتائج',
+                message: 'غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
+                icon: Icons.search_off_rounded,
               )
             else
               ..._controller.entries.map(
                 (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: _DocumentHistoryCard(
                     entry: entry,
                     showAudit: _controller.canViewOwnerAudit,
@@ -314,10 +310,11 @@ class _DocumentHistoryCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return PremiumCard(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm),
         title: Text(entry.productName, style: textTheme.titleMedium),
         subtitle: Text('${entry.type.labelAr} - ${entry.id}'),
         trailing: Chip(
@@ -342,18 +339,17 @@ class _DocumentHistoryCard extends StatelessWidget {
                   '${MoneyUtils.formatPiastersAsEgp(entry.totalPiasters!)}',
                 ),
               Text('التاريخ: ${_formatDateTime(entry.createdAt)}'),
-              Text(
-                  'أنشأه: ${entry.createdByUserName ?? 'غير معروف'}'),
+              Text('أنشأه: ${entry.createdByUserName ?? 'غير معروف'}'),
             ],
           ),
           if (entry.notes != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(entry.notes!),
             ),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           _MovementLine(
               label: 'الحركة الأصلية', movement: entry.originalMovement),
           if (entry.reversalMovements.isNotEmpty)
@@ -417,7 +413,8 @@ class _AuditDetails extends StatelessWidget {
           if (cancellation.reversalMovementIds.length == 1)
             const Text('تم إنشاء حركة مخزون عكسية.')
           else
-            Text('تم إنشاء ${cancellation.reversalMovementIds.length} حركات مخزون عكسية.'),
+            Text(
+                'تم إنشاء ${cancellation.reversalMovementIds.length} حركات مخزون عكسية.'),
         ],
       ),
     );

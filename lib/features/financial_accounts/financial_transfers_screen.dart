@@ -6,6 +6,9 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 
 class FinancialTransfersScreen extends StatefulWidget {
   const FinancialTransfersScreen({super.key, required this.user});
@@ -68,28 +71,42 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.user.role != UserRole.owner) {
-      return const Scaffold(
-          body: Center(child: Text('التحويلات المالية متاحة للمالك فقط.')));
+      return Scaffold(
+          body: ListView(
+        children: [
+          GhalalPageHeader(
+            title: 'التحويلات المالية',
+            icon: Icons.swap_horiz_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+          ),
+          const Center(child: Text('التحويلات المالية متاحة للمالك فقط.')),
+        ],
+      ));
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('التحويلات المالية')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(padding: const EdgeInsets.all(16), children: [
+          ? const GhalalLoadingState(label: 'جاري تحميل التحويلات...')
+          : ListView(padding: const EdgeInsets.all(AppSpacing.md), children: [
+              GhalalPageHeader(
+                title: 'التحويلات المالية',
+                subtitle: 'إدارة التحويلات بين الحسابات المالية.',
+                icon: Icons.swap_horiz_rounded,
+                onBack: () => Navigator.of(context).maybePop(),
+              ),
               Text('تحويل جديد', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               _accountPicker('الحساب المصدر', _sourceId,
                   (v) => setState(() => _sourceId = v)),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               _accountPicker('الحساب الوجهة', _destinationId,
                   (v) => setState(() => _destinationId = v)),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                   controller: _amount,
                   keyboardType: TextInputType.number,
                   decoration:
                       const InputDecoration(labelText: 'المبلغ بالقرش')),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               ListTile(
                   title: const Text('تاريخ التحويل'),
                   subtitle: Text(
@@ -100,17 +117,17 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
                   controller: _note,
                   decoration:
                       const InputDecoration(labelText: 'ملاحظة (اختيارية)')),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.sm),
               FilledButton.icon(
                   onPressed: _review,
                   icon: const Icon(Icons.fact_check_outlined),
                   label: const Text('مراجعة التحويل')),
-              const Divider(height: 36),
+              const Divider(height: AppSpacing.xl),
               Text('سجل التحويلات',
                   style: Theme.of(context).textTheme.titleLarge),
               if (_transfers.isEmpty)
                 const Padding(
-                    padding: EdgeInsets.only(top: 12),
+                    padding: EdgeInsets.only(top: AppSpacing.sm),
                     child: Text('لا توجد تحويلات مسجلة.')),
               ..._transfers.map(_transferTile),
             ]),

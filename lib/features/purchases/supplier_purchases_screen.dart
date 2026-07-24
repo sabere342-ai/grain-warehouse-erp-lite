@@ -5,8 +5,10 @@ import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_purchase_invoice_view.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class SupplierPurchasesScreen extends StatefulWidget {
@@ -73,11 +75,6 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        leadingWidth: 112,
-        leading: const AppBarBackButton(),
-        title: Text('مشتريات ${widget.supplierName}'),
-      ),
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
@@ -86,27 +83,41 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
               .toList(growable: false);
 
           if (_controller.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const GhalalLoadingState(label: 'جاري تحميل المشتريات...');
           }
 
           if (supplierIntakes.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: PremiumCard(
-                child: Text('لا توجد مشتريات مسجلة لهذا المورد بعد.'),
-              ),
+            return ListView(
+              children: [
+                GhalalPageHeader(
+                  title: 'مشتريات ${widget.supplierName}',
+                  icon: Icons.shopping_cart_rounded,
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                const GhalalEmptyState(
+                  title: 'لا توجد مشتريات',
+                  message: 'لا توجد مشتريات مسجلة لهذا المورد بعد.',
+                  icon: Icons.shopping_cart_outlined,
+                ),
+              ],
             );
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             children: [
+              GhalalPageHeader(
+                title: 'مشتريات ${widget.supplierName}',
+                icon: Icons.shopping_cart_rounded,
+                onBack: () => Navigator.of(context).maybePop(),
+              ),
               if (!_balanceLoading) ...[
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: PremiumCard(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       child: Row(
                         children: [
                           Text(
@@ -119,7 +130,9 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
                               fontWeight: FontWeight.w900,
                               color: _balanceQirsh > 0
                                   ? AppColors.text
-                                  : AppColors.mutedText,
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -129,82 +142,81 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
                 ),
               ],
               ...supplierIntakes.reversed.map((intake) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: PremiumCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _controller.productName(intake.productId),
-                              style: textTheme.titleLarge,
-                            ),
-                          ),
-                          if (intake.isCancelled)
-                            Chip(
-                              label: const Text('ملغي'),
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .errorContainer,
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text('الكمية: ${intake.quantityKg} كجم'),
-                      Text(
-                        'السعر: ${MoneyUtils.formatPiastersAsEgp(intake.unitPricePiastersPerKg)} / كجم',
-                      ),
-                      Text(
-                        'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(intake.totalAmountPiasters)}',
-                      ),
-                      Text(
-                        'التاريخ: ${_formatDate(intake.createdAt)}',
-                      ),
-                      if (intake.notes != null) ...[
-                        const SizedBox(height: 4),
-                        Text(intake.notes!),
-                      ],
-                      if (intake.cancellation != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'سبب الإلغاء: ${intake.cancellation!.cancellationReason}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PrintablePurchaseInvoiceView(
-                                  purchase: intake,
-                                  supplierName: widget.supplierName,
-                                  productName: _controller
-                                      .productName(intake.productId),
-                                ),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: PremiumCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _controller.productName(intake.productId),
+                                style: textTheme.titleLarge,
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.preview_rounded),
-                          label:
-                              const Text('معاينة الفاتورة'),
+                            ),
+                            if (intake.isCancelled)
+                              Chip(
+                                label: const Text('ملغي'),
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .errorContainer,
+                              ),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: AppSpacing.xs),
+                        Text('الكمية: ${intake.quantityKg} كجم'),
+                        Text(
+                          'السعر: ${MoneyUtils.formatPiastersAsEgp(intake.unitPricePiastersPerKg)} / كجم',
+                        ),
+                        Text(
+                          'الإجمالي: ${MoneyUtils.formatPiastersAsEgp(intake.totalAmountPiasters)}',
+                        ),
+                        Text(
+                          'التاريخ: ${_formatDate(intake.createdAt)}',
+                        ),
+                        if (intake.notes != null) ...[
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(intake.notes!),
+                        ],
+                        if (intake.cancellation != null) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'سبب الإلغاء: ${intake.cancellation!.cancellationReason}',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.sm),
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      PrintablePurchaseInvoiceView(
+                                    purchase: intake,
+                                    supplierName: widget.supplierName,
+                                    productName: _controller
+                                        .productName(intake.productId),
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.preview_rounded),
+                            label: const Text('معاينة الفاتورة'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }),
-          ],
-        );
+                );
+              }),
+            ],
+          );
         },
       ),
     );
