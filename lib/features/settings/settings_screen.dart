@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_theme_selector.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -41,27 +43,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, _) {
         return ListView(
           children: [
-            Text('الإعدادات', style: textTheme.headlineMedium),
-            const SizedBox(height: 6),
-            Text(
-              'اختيار ألوان واضحة وبيانات منشأة محفوظة على هذا الجهاز فقط.',
-              style: textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            const GhalalPageHeader(
+              title: 'الإعدادات',
+              subtitle:
+                  'اختيار ألوان واضحة وبيانات منشأة محفوظة على هذا الجهاز فقط.',
+              icon: Icons.settings_rounded,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             GhalalThemeSelector(controller: themeController),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             PremiumCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('هوية المنشأة', style: textTheme.titleLarge),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xs),
                   const Text(
                     'اكتب اسم المنشأة ليظهر في عنوان التطبيق وعلى الفواتير. هذا لا يغير أي أرقام أو أرصدة.',
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: AppSpacing.md),
                   TextField(
                     controller: _establishmentNameController,
                     decoration: const InputDecoration(
@@ -70,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     textDirection: TextDirection.rtl,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     'الاسم الحالي على الفواتير: ${identityController.identity.displayName}',
                   ),
@@ -107,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _LogoSection(identityController: identityController),
           ],
         );
@@ -132,18 +132,18 @@ class _LogoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('شعار المنشأة', style: textTheme.titleLarge),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           const Text(
             'اختر شعارا ليظهر داخل التطبيق وعلى فواتير البيع والشراء المطبوعة وملفات PDF.',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           const Text(
             'الأنواع المدعومة: PNG, JPG/JPEG. الحد الأقصى: 1 ميجابايت، 2048×2048 بكسل.',
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           if (hasLogo) ...[
             _LogoPreview(managedFileName: logo?.managedFileName ?? ''),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
           ],
           Wrap(
             spacing: 8,
@@ -166,7 +166,7 @@ class _LogoSection extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           if (hasLogo && logo != null)
             Text(
               'الشعار الحالي: ${logo.mimeType} — ${logo.width}×${logo.height}',
@@ -174,7 +174,7 @@ class _LogoSection extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           const Text(
             'أيقونة تطبيق Windows تحدد أثناء تجهيز وبناء النسخة ولا تتغير من داخل البرنامج.',
             style: TextStyle(fontStyle: FontStyle.italic),

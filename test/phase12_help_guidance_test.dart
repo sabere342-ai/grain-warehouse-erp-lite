@@ -31,6 +31,7 @@ void main() {
       expect(find.text('دليل الاستخدام'), findsOneWidget);
       expect(find.text('أول مرة تستخدم النظام'), findsOneWidget);
       expect(find.text('خطوات العمل اليومية'), findsOneWidget);
+      expect(find.textContaining('حركة عكسية'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('شرح مبسط للشاشات'),
         300,
@@ -57,7 +58,6 @@ void main() {
       );
       expect(
           find.textContaining('إلغاء المستند لا يحذف الأصل'), findsOneWidget);
-      expect(find.textContaining('حركة عكسية'), findsOneWidget);
     });
 
     testWidgets('dashboard help button opens help screen', (tester) async {

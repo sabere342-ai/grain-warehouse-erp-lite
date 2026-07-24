@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class HelpGuideScreen extends StatelessWidget {
@@ -10,21 +11,24 @@ class HelpGuideScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        leadingWidth: 112,
-        leading: const AppBarBackButton(),
-        title: const Text('دليل الاستخدام'),
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          GhalalPageHeader(
+            title: 'دليل الاستخدام',
+            subtitle:
+                'خطوات قصيرة تساعد المالك والموظف على تسجيل الورد والمنصرف بأمان.',
+            icon: Icons.help_outline_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Text('طريقة تشغيل مخزن الغلال', style: textTheme.headlineMedium),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.xs),
           Text(
-            'خطوات قصيرة تساعد المالك والموظف على تسجيل الوارد والمنصرف ومراجعة المستندات بأمان.',
+            'خطوات قصيرة تساعد المالك والموظف على تسجيل الورد والمنصرف بأمان.',
             style: textTheme.bodyMedium,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           const _GuideSection(
             title: 'أول مرة تستخدم النظام',
             lines: [
@@ -64,7 +68,7 @@ class HelpGuideScreen extends StatelessWidget {
             lines: [
               'لا تستخدم حركة مخزون يدوية إلا عند الجرد أو التصحيح.',
               'إلغاء المستند لا يحذف الأصل.',
-              'الإلغاء ينشئ حركة عكسية للحفاظ على التاريخ.',
+              'الإنشاء ينية عكسية للحفاظ على التاريخ.',
               'راجع التقرير اليومي قبل نهاية اليوم.',
               'لا تضف نفس الصنف بأكثر من اسم قريب حتى لا يتشتت الرصيد.',
             ],
@@ -96,16 +100,16 @@ class _GuideSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: PremiumCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             for (final line in lines)
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
                 child: Text('• $line'),
               ),
           ],

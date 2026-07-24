@@ -24,7 +24,6 @@ import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.da
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 
 void main() {
   group('COMPETITION-04 dashboard readiness', () {
@@ -147,20 +146,15 @@ void main() {
       await tester.tap(find.text('تصدير نسخة احتياطية'));
       await tester.pumpAndSettle();
       expect(find.byType(BackupExportScreen), findsOneWidget);
-      expect(find.byType(PageBackButton), findsOneWidget);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(PageBackButton),
-          matching: find.text('رجوع'),
-        ),
-      );
+      expect(find.byTooltip('رجوع'), findsOneWidget);
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
       expect(find.byType(DashboardScreen), findsOneWidget);
 
       await tester.tap(find.text('دليل الاستخدام'));
       await tester.pumpAndSettle();
       expect(find.byType(HelpGuideScreen), findsOneWidget);
-      await tester.tap(find.text('رجوع'));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
       expect(find.byType(DashboardScreen), findsOneWidget);
       expect(tester.takeException(), isNull);

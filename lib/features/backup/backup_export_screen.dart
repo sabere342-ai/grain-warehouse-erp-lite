@@ -5,10 +5,10 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
@@ -55,17 +55,15 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
 
     return ListView(
       children: [
-        const PageBackButton(),
-        const SizedBox(height: 12),
-        Text('النسخ الاحتياطي', style: textTheme.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          'أنشئ نسخة احتياطية قبل أي تعديل كبير أو قبل نقل الجهاز.',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+        GhalalPageHeader(
+          title: 'النسخ الاحتياطي',
+          subtitle: 'أنشئ نسخة احتياطية قبل أي تعديل كبير أو قبل نقل الجهاز.',
+          icon: Icons.backup_rounded,
+          onBack: () => Navigator.of(context).maybePop(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         const _SafetyCopyCard(),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         FilledButton.icon(
           onPressed: _isExporting ? null : _createBackup,
           icon: _isExporting
@@ -76,14 +74,14 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
               : const Icon(Icons.backup_rounded),
           label: const Text('إنشاء نسخة احتياطية'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.xs),
         OutlinedButton.icon(
           onPressed: _openRestorePreview,
           icon: const Icon(Icons.fact_check_rounded),
           label: const Text('فحص نسخة احتياطية'),
         ),
         if (_errorMessage != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             _errorMessage!,
             style: textTheme.bodyMedium?.copyWith(
@@ -92,7 +90,7 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
           ),
         ],
         if (_result != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _BackupResultCard(
             result: _result!,
             saveResult: _saveResult,
@@ -102,7 +100,7 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
           ),
         ],
         if (user?.permissions.canWipeBusinessData == true) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _DangerActionsCard(onOpenDataWipe: _openDataWipe),
         ],
       ],

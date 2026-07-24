@@ -55,9 +55,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('دليل الاستخدام'), findsWidgets);
-      expect(find.text('رجوع'), findsOneWidget);
+      expect(find.byTooltip('رجوع'), findsOneWidget);
 
-      await tester.tap(find.text('رجوع'));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
 
       expect(find.text('فتح الدليل'), findsOneWidget);
@@ -73,9 +73,11 @@ void main() {
       );
       await themeController.initialize();
 
-      expect(AppThemePreset.values.map((preset) => preset.labelAr), containsAll(
-        ['اللون الافتراضي', 'أزرق', 'بني / قمح', 'داكن بسيط'],
-      ));
+      expect(
+          AppThemePreset.values.map((preset) => preset.labelAr),
+          containsAll(
+            ['اللون الافتراضي', 'أزرق', 'بني / قمح', 'داكن بسيط'],
+          ));
 
       await themeController.selectPreset(AppThemePreset.blue);
 

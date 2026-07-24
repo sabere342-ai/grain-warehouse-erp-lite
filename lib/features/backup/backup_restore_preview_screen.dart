@@ -3,8 +3,8 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupRestorePreviewScreen extends StatefulWidget {
@@ -46,19 +46,16 @@ class _BackupRestorePreviewScreenState
       );
     }
 
-    final textTheme = Theme.of(context).textTheme;
-
     return ListView(
       children: [
-        const PageBackButton(),
-        const SizedBox(height: 12),
-        Text('فحص نسخة احتياطية', style: textTheme.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          'يمكنك فحص نسخة احتياطية ومعرفة محتواها ثم الاسترجاع إلى نظام فارغ عند صلاحية النسخة.',
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+        GhalalPageHeader(
+          title: 'فحص نسخة احتياطية',
+          subtitle:
+              'يمكنك فحص نسخة احتياطية ومعرفة محتواها ثم الاسترجاع إلى نظام فارغ عند صلاحية النسخة.',
+          icon: Icons.fact_check_rounded,
+          onBack: () => Navigator.of(context).maybePop(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         const PremiumCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +72,7 @@ class _BackupRestorePreviewScreenState
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         TextField(
           controller: _controller,
           minLines: 8,
@@ -87,7 +84,7 @@ class _BackupRestorePreviewScreenState
             border: OutlineInputBorder(),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -105,11 +102,11 @@ class _BackupRestorePreviewScreenState
           ],
         ),
         if (_result != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _PreviewResultCard(result: _result!),
         ],
         if (_result?.isValid == true) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _RestoreToEmptyCard(
             isRestoring: _isRestoring,
             restoreResult: _restoreResult,

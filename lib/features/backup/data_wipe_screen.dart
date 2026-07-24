@@ -3,7 +3,8 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class DataWipeScreen extends StatefulWidget {
@@ -56,23 +57,17 @@ class _DataWipeScreenState extends State<DataWipeScreen> {
 
     return ListView(
       children: [
-        const PageBackButton(),
-        const SizedBox(height: 12),
-        Text(
-          '\u0625\u0639\u0627\u062f\u0629 \u062a\u0647\u064a\u0626\u0629 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u062e\u0632\u0646',
-          style: textTheme.headlineMedium,
+        GhalalPageHeader(
+          title:
+              '\u0625\u0639\u0627\u062f\u0629 \u062a\u0647\u064a\u0626\u0629 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u062e\u0632\u0646',
+          subtitle:
+              '\u0625\u062c\u0631\u0627\u0621\u0627\u062a \u062e\u0637\u064a\u0631\u0629 \u0644\u0644\u0645\u0627\u0644\u0643 \u0641\u0642\u0637',
+          icon: Icons.delete_forever_rounded,
+          onBack: () => Navigator.of(context).maybePop(),
         ),
-        const SizedBox(height: 6),
-        Text(
-          '\u0625\u062c\u0631\u0627\u0621\u0627\u062a \u062e\u0637\u064a\u0631\u0629 \u0644\u0644\u0645\u0627\u0644\u0643 \u0641\u0642\u0637',
-          style: textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.error,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         const _DangerCopyCard(),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         if (!_warningAccepted)
           FilledButton.icon(
             onPressed: _showWarningDialog,
@@ -88,12 +83,12 @@ class _DataWipeScreenState extends State<DataWipeScreen> {
                   '\u0627\u0643\u062a\u0628 \u0639\u0628\u0627\u0631\u0629 \u0627\u0644\u062a\u0623\u0643\u064a\u062f \u0643\u0645\u0627 \u0647\u064a \u0644\u0644\u0645\u062a\u0627\u0628\u0639\u0629.',
                   style: textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.xs),
                 const SelectableText(
                   BusinessDataWipeService.confirmationPhrase,
                   textDirection: TextDirection.rtl,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 TextField(
                   controller: _confirmationController,
                   decoration: const InputDecoration(
@@ -103,7 +98,7 @@ class _DataWipeScreenState extends State<DataWipeScreen> {
                   ),
                   textDirection: TextDirection.rtl,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 FilledButton.icon(
                   onPressed: canSubmit ? _wipeData : null,
                   icon: _isWiping
@@ -121,7 +116,7 @@ class _DataWipeScreenState extends State<DataWipeScreen> {
           ),
         ],
         if (_result != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           _WipeResultCard(result: _result!),
         ],
       ],
