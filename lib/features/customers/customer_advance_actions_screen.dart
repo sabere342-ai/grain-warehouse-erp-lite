@@ -18,7 +18,6 @@ import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_ba
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 typedef CustomerAdvanceApprovalPrompt = Future<String?> Function({
@@ -111,11 +110,6 @@ class _CustomerAdvanceActionsScreenState
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 112,
-          leading: const AppBarBackButton(),
-          title: Text('سلف العميل - ${widget.customer.name}'),
-        ),
         body: SafeArea(child: _buildBody()),
       ),
     );
@@ -150,11 +144,10 @@ class _CustomerAdvanceActionsScreenState
         key: const Key('customer-advances-list'),
         padding: const EdgeInsets.all(16),
         children: [
-          const GhalalPageHeader(
-            title: 'إدارة سلف العميل',
-            subtitle:
-                'يمكن تطبيق الرصيد المتاح على ذمة العميل أو رده من حسابه المالي الأصلي.',
+          GhalalPageHeader(
+            title: 'سلف العميل - ${widget.customer.name}',
             icon: Icons.account_balance_wallet_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
           ),
           const SizedBox(height: 16),
           for (final summary in _advances)

@@ -13,7 +13,6 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
@@ -93,11 +92,6 @@ class _SupplierAdvanceActionsScreenState
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 112,
-          leading: const AppBarBackButton(),
-          title: Text('سلف المورد - ${widget.supplier.name}'),
-        ),
         body: SafeArea(child: _body()),
       ),
     );
@@ -132,11 +126,10 @@ class _SupplierAdvanceActionsScreenState
         key: const Key('supplier-advances-list'),
         padding: const EdgeInsets.all(16),
         children: [
-          const GhalalPageHeader(
-            title: 'إدارة سلف المورد',
-            subtitle:
-                'يمكن تطبيق الرصيد على ذمة المورد أو استرداده منه إلى الحساب المالي الأصلي.',
+          GhalalPageHeader(
+            title: 'سلف المورد - ${widget.supplier.name}',
             icon: Icons.account_balance_wallet_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
           ),
           const SizedBox(height: 16),
           for (final summary in _advances)
