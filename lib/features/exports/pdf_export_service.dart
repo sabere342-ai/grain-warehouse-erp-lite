@@ -246,8 +246,11 @@ class PdfExportService {
   }) async {
     try {
       await FinancialReportPdfBuilder.initialize();
+      final branding = await _loadBranding();
       final file = await FinancialReportPdfBuilder.buildAccountBalanceReport(
-          report: report);
+          report: report,
+          businessIdentity: branding.identity,
+          logoBytes: branding.logoBytes);
       if (!context.mounted) return false;
       _showSuccess(context, file.path);
       return true;
@@ -264,8 +267,11 @@ class PdfExportService {
   }) async {
     try {
       await FinancialReportPdfBuilder.initialize();
+      final branding = await _loadBranding();
       final file = await FinancialReportPdfBuilder.buildAccountStatementReport(
-          report: report);
+          report: report,
+          businessIdentity: branding.identity,
+          logoBytes: branding.logoBytes);
       if (!context.mounted) return false;
       _showSuccess(context, file.path);
       return true;
@@ -282,8 +288,11 @@ class PdfExportService {
   }) async {
     try {
       await FinancialReportPdfBuilder.initialize();
+      final branding = await _loadBranding();
       final file = await FinancialReportPdfBuilder.buildPaymentMethodReport(
-          report: report);
+          report: report,
+          businessIdentity: branding.identity,
+          logoBytes: branding.logoBytes);
       if (!context.mounted) return false;
       _showSuccess(context, file.path);
       return true;
@@ -300,8 +309,11 @@ class PdfExportService {
   }) async {
     try {
       await FinancialReportPdfBuilder.initialize();
-      final file =
-          await FinancialReportPdfBuilder.buildTransferReport(report: report);
+      final branding = await _loadBranding();
+      final file = await FinancialReportPdfBuilder.buildTransferReport(
+          report: report,
+          businessIdentity: branding.identity,
+          logoBytes: branding.logoBytes);
       if (!context.mounted) return false;
       _showSuccess(context, file.path);
       return true;

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -361,6 +362,13 @@ class _InflowsReportScreenState extends State<InflowsReportScreen> {
   Future<void> _exportPdf() async {
     if (_report == null) return;
     try {
+      final identity =
+          await AppRepositories.businessIdentityRepository.loadIdentity();
+      Uint8List? logoBytes;
+      if (identity.hasLogo && identity.logo != null) {
+        logoBytes = await AppRepositories.businessIdentityRepository
+            .loadLogoBytes(identity.logo!.managedFileName);
+      }
       final accountLabel = _accountIdFilter != null
           ? _accounts
               .where((a) => a.id == _accountIdFilter)
@@ -370,6 +378,8 @@ class _InflowsReportScreenState extends State<InflowsReportScreen> {
       final file = await FinancialReportPdfBuilder.buildInflowsReport(
         report: _report!,
         accountLabel: accountLabel,
+        businessIdentity: identity,
+        logoBytes: logoBytes,
       );
       await _showExportResult(file);
     } catch (e) {

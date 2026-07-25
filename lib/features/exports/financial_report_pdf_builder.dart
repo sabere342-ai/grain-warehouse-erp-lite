@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_file_naming.dart';
@@ -32,8 +33,32 @@ class FinancialReportPdfBuilder {
     return dir;
   }
 
+  static List<pw.Widget> _brandingHeader({
+    required BusinessIdentity businessIdentity,
+    Uint8List? logoBytes,
+  }) {
+    return [
+      if (logoBytes != null && logoBytes.isNotEmpty)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 8),
+          child: pw.Image(
+            pw.MemoryImage(logoBytes),
+            height: 50,
+            fit: pw.BoxFit.contain,
+          ),
+        ),
+      pw.Text(
+        businessIdentity.displayName,
+        style: pw.TextStyle(font: _arabicFontBold!, fontSize: 13),
+      ),
+      pw.SizedBox(height: 4),
+    ];
+  }
+
   static Future<File> buildAccountBalanceReport({
     required AccountBalanceReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -53,6 +78,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('تقرير أرصددة الحسابات المالية',
                       style: titleStyle),
@@ -150,6 +179,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildAccountStatementReport({
     required AccountStatementReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -169,6 +200,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('كشف حساب مالي', style: titleStyle),
                 ),
@@ -281,6 +316,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildPaymentMethodReport({
     required PaymentMethodReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -299,6 +336,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('تقرير طرق الدفع', style: titleStyle),
                 ),
@@ -381,6 +422,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildTransferReport({
     required TransferReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -399,6 +442,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('تقرير التحويلات', style: titleStyle),
                 ),
@@ -511,24 +558,32 @@ class FinancialReportPdfBuilder {
   static Future<File> buildInflowsReport({
     required FlowReport report,
     String? accountLabel,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     return _buildFlowReport(
       report: report,
       title: 'تقرير التدفقات الداخلة',
       accountLabel: accountLabel,
       fileName: PdfFileNaming.inflowsReport(report.toDate),
+      businessIdentity: businessIdentity,
+      logoBytes: logoBytes,
     );
   }
 
   static Future<File> buildOutflowsReport({
     required FlowReport report,
     String? accountLabel,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     return _buildFlowReport(
       report: report,
       title: 'تقرير التدفقات الخارجة',
       accountLabel: accountLabel,
       fileName: PdfFileNaming.outflowsReport(report.toDate),
+      businessIdentity: businessIdentity,
+      logoBytes: logoBytes,
     );
   }
 
@@ -537,6 +592,8 @@ class FinancialReportPdfBuilder {
     required String title,
     String? accountLabel,
     required String fileName,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -556,6 +613,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(child: pw.Text(title, style: titleStyle)),
                 pw.SizedBox(height: 4),
                 pw.Center(
@@ -679,6 +740,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildCustomerCollectionsByAccountReport({
     required CustomerCollectionsByAccountReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -698,6 +761,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child:
                       pw.Text('تحصيلات العملاء حسب الحساب', style: titleStyle),
@@ -937,6 +1004,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildSupplierSettlementsByAccountReport({
     required SupplierSettlementsByAccountReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -956,6 +1025,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child:
                       pw.Text('تسويات الموردين حسب الحساب', style: titleStyle),
@@ -1195,6 +1268,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildAdvancesAndRefundsReport({
     required AdvancesAndRefundsReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -1214,6 +1289,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('تقرير السلف والردود', style: titleStyle),
                 ),
@@ -1560,6 +1639,8 @@ class FinancialReportPdfBuilder {
 
   static Future<File> buildExpenseAnalysisReport({
     required ExpenseAnalysisReport report,
+    BusinessIdentity businessIdentity = BusinessIdentity.empty,
+    Uint8List? logoBytes,
   }) async {
     await initialize();
     final pdf = pw.Document();
@@ -1579,6 +1660,10 @@ class FinancialReportPdfBuilder {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
               children: [
+                ..._brandingHeader(
+                  businessIdentity: businessIdentity,
+                  logoBytes: logoBytes,
+                ),
                 pw.Center(
                   child: pw.Text('تقرير تحليل المصروفات', style: titleStyle),
                 ),

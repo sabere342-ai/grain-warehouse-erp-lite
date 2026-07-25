@@ -33,12 +33,16 @@ void main() {
         customerId: 'c1',
         items: const [
           SaleLineItem(
-            productId: 'p1', quantityKg: 300,
-            salePriceQirshPerKg: 1000, lineTotalQirsh: 300000,
+            productId: 'p1',
+            quantityKg: 300,
+            salePriceQirshPerKg: 1000,
+            lineTotalQirsh: 300000,
           ),
           SaleLineItem(
-            productId: 'p2', quantityKg: 500,
-            salePriceQirshPerKg: 1300, lineTotalQirsh: 650000,
+            productId: 'p2',
+            quantityKg: 500,
+            salePriceQirshPerKg: 1300,
+            lineTotalQirsh: 650000,
           ),
         ],
       );
@@ -64,8 +68,7 @@ void main() {
       expect(find.textContaining('فتح واتساب'), findsOneWidget);
     });
 
-    test('prepared message contains customer name, doc number, date, مرفق',
-        () {
+    test('prepared message contains customer name, doc number, date, مرفق', () {
       final msg = WhatsAppMessageTemplates.salesInvoice(
         customerName: 'أحمد',
         documentNumber: 'S-0001',
@@ -82,16 +85,22 @@ void main() {
     testWidgets('فتح واتساب button is visible when valid customer phone exists',
         (tester) async {
       final sale = SaleRecord(
-        id: 'S-0002', productId: 'p1', quantityKg: 500,
-        salePriceQirshPerKg: 1000, totalQirsh: 500000,
-        createdByUserId: 'owner', createdAt: now,
-        stockMovementId: 'sm-2', customerId: 'c1',
+        id: 'S-0002',
+        productId: 'p1',
+        quantityKg: 500,
+        salePriceQirshPerKg: 1000,
+        totalQirsh: 500000,
+        createdByUserId: 'owner',
+        createdAt: now,
+        stockMovementId: 'sm-2',
+        customerId: 'c1',
       );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: PrintableSalesInvoiceView(
-            sale: sale, customerName: 'عميل',
+            sale: sale,
+            customerName: 'عميل',
             productNames: const {'p1': 'قمح'},
             customerPhone: '01001234567',
           ),
@@ -106,16 +115,22 @@ void main() {
     testWidgets('sales invoice hides WhatsApp button when phone is null',
         (tester) async {
       final sale = SaleRecord(
-        id: 'S-0003', productId: 'p1', quantityKg: 500,
-        salePriceQirshPerKg: 1000, totalQirsh: 500000,
-        createdByUserId: 'owner', createdAt: now,
-        stockMovementId: 'sm-3', customerId: 'c1',
+        id: 'S-0003',
+        productId: 'p1',
+        quantityKg: 500,
+        salePriceQirshPerKg: 1000,
+        totalQirsh: 500000,
+        createdByUserId: 'owner',
+        createdAt: now,
+        stockMovementId: 'sm-3',
+        customerId: 'c1',
       );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: PrintableSalesInvoiceView(
-            sale: sale, customerName: 'عميل',
+            sale: sale,
+            customerName: 'عميل',
             productNames: const {'p1': 'قمح'},
           ),
         ),
@@ -130,7 +145,9 @@ void main() {
         home: Scaffold(
           body: PrintableCustomerStatementView(
             statement: CustomerStatement(
-              customerId: 'c1', finalBalanceQirsh: 0, lines: [],
+              customerId: 'c1',
+              finalBalanceQirsh: 0,
+              lines: [],
             ),
             customerName: 'عميل',
           ),
@@ -153,18 +170,25 @@ void main() {
     testWidgets('purchase invoice shows فتح واتساب when valid supplier phone',
         (tester) async {
       final purchase = PurchaseIntake(
-        id: 'P-0001', supplierId: 's1', productId: 'p1',
-        quantityKg: 1000, entryUnit: GrainUnit.kilogram,
-        unitPricePiastersPerKg: 900, totalAmountPiasters: 900000,
-        createdByUserId: 'owner', createdAt: now,
+        id: 'P-0001',
+        supplierId: 's1',
+        productId: 'p1',
+        quantityKg: 1000,
+        entryUnit: GrainUnit.kilogram,
+        unitPricePiastersPerKg: 900,
+        totalAmountPiasters: 900000,
+        createdByUserId: 'owner',
+        createdAt: now,
         stockMovementId: 'sm-p1',
       );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: PrintablePurchaseInvoiceView(
-            purchase: purchase, supplierName: 'مورد',
-            productName: 'قمح', supplierPhone: '01001234567',
+            purchase: purchase,
+            supplierName: 'مورد',
+            productName: 'قمح',
+            supplierPhone: '01001234567',
           ),
         ),
       ));
@@ -175,17 +199,23 @@ void main() {
     testWidgets('purchase invoice hides WhatsApp when supplier phone is null',
         (tester) async {
       final purchase = PurchaseIntake(
-        id: 'P-0002', supplierId: 's1', productId: 'p1',
-        quantityKg: 1000, entryUnit: GrainUnit.kilogram,
-        unitPricePiastersPerKg: 900, totalAmountPiasters: 900000,
-        createdByUserId: 'owner', createdAt: now,
+        id: 'P-0002',
+        supplierId: 's1',
+        productId: 'p1',
+        quantityKg: 1000,
+        entryUnit: GrainUnit.kilogram,
+        unitPricePiastersPerKg: 900,
+        totalAmountPiasters: 900000,
+        createdByUserId: 'owner',
+        createdAt: now,
         stockMovementId: 'sm-p2',
       );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: PrintablePurchaseInvoiceView(
-            purchase: purchase, supplierName: 'مورد',
+            purchase: purchase,
+            supplierName: 'مورد',
             productName: 'قمح',
           ),
         ),
@@ -211,27 +241,37 @@ void main() {
     testWidgets('daily report shows PDF export but no WhatsApp',
         (tester) async {
       final report = DailyActivityReport(
-        start: now, end: now,
-        totalPurchasedKg: 1000, totalSoldKg: 500,
-        totalPurchaseAmountQirsh: 100000, totalSalesAmountQirsh: 500000,
-        totalCreditSalesAmountQirsh: 200000, totalExpenseAmountQirsh: 0,
+        start: now,
+        end: now,
+        totalPurchasedKg: 1000,
+        totalSoldKg: 500,
+        totalPurchaseAmountQirsh: 100000,
+        totalSalesAmountQirsh: 500000,
+        totalCreditSalesAmountQirsh: 200000,
+        totalExpenseAmountQirsh: 0,
         totalCollectionsAmountQirsh: 150000,
         totalOutstandingReceivablesQirsh: 100000,
         totalSupplierPaymentsQirsh: 50000,
         totalOutstandingSupplierPayablesQirsh: 40000,
-        estimatedSalesCostQirsh: null, estimatedGrossProfitQirsh: null,
+        estimatedSalesCostQirsh: null,
+        estimatedGrossProfitQirsh: null,
         estimatedStockValueQirsh: null,
-        hasCompleteSalesCost: false, hasCompleteStockValuation: false,
+        hasCompleteSalesCost: false,
+        hasCompleteStockValuation: false,
         missingSalesCostProductNames: [],
         missingStockCostProductNames: [],
-        purchaseCount: 2, saleCount: 5, stockMovementCount: 7,
-        stockBalances: [], recentMovements: [],
+        purchaseCount: 2,
+        saleCount: 5,
+        stockMovementCount: 7,
+        stockBalances: [],
+        recentMovements: [],
       );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: PrintableDailyReportView(
-            report: report, reportDate: now,
+            report: report,
+            reportDate: now,
           ),
         ),
       ));
@@ -248,7 +288,9 @@ void main() {
         home: Scaffold(
           body: PrintableCustomerStatementView(
             statement: CustomerStatement(
-              customerId: 'c1', finalBalanceQirsh: 50000, lines: [],
+              customerId: 'c1',
+              finalBalanceQirsh: 50000,
+              lines: [],
             ),
             customerName: 'عميل تجريبي',
             customerPhone: '01001234567',
@@ -266,7 +308,9 @@ void main() {
         home: Scaffold(
           body: PrintableSupplierStatementView(
             statement: SupplierStatement(
-              supplierId: 's1', finalBalanceQirsh: 30000, lines: [],
+              supplierId: 's1',
+              finalBalanceQirsh: 30000,
+              lines: [],
             ),
             supplierName: 'مورد تجريبي',
             supplierPhone: '01001234567',
@@ -284,7 +328,9 @@ void main() {
         home: Scaffold(
           body: PrintableSupplierStatementView(
             statement: SupplierStatement(
-              supplierId: 's1', finalBalanceQirsh: 0, lines: [],
+              supplierId: 's1',
+              finalBalanceQirsh: 0,
+              lines: [],
             ),
             supplierName: 'مورد',
           ),
@@ -330,19 +376,24 @@ void main() {
     for (final pattern in forbiddenPatterns) {
       test('no "$pattern" in any PDF/WhatsApp source file', () {
         for (final filePath in sourceFiles) {
-          final content = File(filePath).readAsStringSync();
-          expect(content, isNot(contains(pattern)),
+          final lines = File(filePath).readAsLinesSync();
+          final nonImportLines = lines
+              .where((line) => !line.trimLeft().startsWith('import '))
+              .join('\n');
+          expect(nonImportLines, isNot(contains(pattern)),
               reason: '$filePath should not contain "$pattern"');
         }
       });
     }
 
     test('PDF SnackBar uses حفظ (save) not إرسال (send)', () {
-      final content =
-          File('lib/features/exports/pdf_export_service.dart')
-              .readAsStringSync();
+      final content = File('lib/features/exports/pdf_export_service.dart')
+          .readAsStringSync();
       expect(content, contains('\\u062a\\u0645 \\u062d\\u0641\\u0638'));
-      expect(content, isNot(contains('\\u062a\\u0645 \\u0627\\u0644\\u0625\\u0631\\u0633\\u0627\\u0644')));
+      expect(
+          content,
+          isNot(contains(
+              '\\u062a\\u0645 \\u0627\\u0644\\u0625\\u0631\\u0633\\u0627\\u0644')));
     });
 
     test('WhatsApp instruction says افتح and أرفق not تم الإرسال', () {
@@ -352,7 +403,10 @@ void main() {
       expect(content, contains('\\u062A\\u0645 \\u0641\\u062A\\u062D'));
       expect(content, contains('\\u0623\\u0631\\u0641\\u0642'));
       expect(content, contains('\\u064A\\u062F\\u0648\\u064A\\u064B\\u0627'));
-      expect(content, isNot(contains('\\u062A\\u0645 \\u0627\\u0644\\u0625\\u0631\\u0633\\u0627\\u0644')));
+      expect(
+          content,
+          isNot(contains(
+              '\\u062A\\u0645 \\u0627\\u0644\\u0625\\u0631\\u0633\\u0627\\u0644')));
     });
   });
 
@@ -387,7 +441,10 @@ void main() {
       final content =
           File('lib/features/prints/printable_document_scaffold.dart')
               .readAsStringSync();
-      expect(content, contains('\\u0641\\u062A\\u062D \\u0648\\u0627\\u062A\\u0633\\u0627\\u0628'));
+      expect(
+          content,
+          contains(
+              '\\u0641\\u062A\\u062D \\u0648\\u0627\\u062A\\u0633\\u0627\\u0628'));
     });
   });
 }

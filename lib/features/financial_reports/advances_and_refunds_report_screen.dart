@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -956,9 +957,18 @@ class _AdvancesAndRefundsReportScreenState
   Future<void> _exportPdf() async {
     if (_report == null) return;
     try {
+      final identity =
+          await AppRepositories.businessIdentityRepository.loadIdentity();
+      Uint8List? logoBytes;
+      if (identity.hasLogo && identity.logo != null) {
+        logoBytes = await AppRepositories.businessIdentityRepository
+            .loadLogoBytes(identity.logo!.managedFileName);
+      }
       final file =
           await FinancialReportPdfBuilder.buildAdvancesAndRefundsReport(
-              report: _report!);
+              report: _report!,
+              businessIdentity: identity,
+              logoBytes: logoBytes);
       await _showExportResult(file);
     } catch (e) {
       if (mounted) {
