@@ -13,12 +13,12 @@ if (-not (Test-Path -LiteralPath $exePath)) {
 
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
-  $OutputRoot = "delivery\grain_warehouse_erp_lite_phase69_branded_delivery_$stamp"
+  $OutputRoot = "delivery\grain_warehouse_erp_lite_branded_delivery_$stamp"
 }
 
 $outputPath = Join-Path $projectRoot $OutputRoot
 if (Test-Path -LiteralPath $outputPath) {
-  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_phase69_branded_delivery_$stamp"
+  $outputPath = Join-Path $projectRoot "delivery\grain_warehouse_erp_lite_branded_delivery_$stamp"
 }
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
