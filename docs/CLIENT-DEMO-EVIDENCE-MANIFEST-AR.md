@@ -20,13 +20,16 @@
 |---|-----------|-------|--------|--------|
 | 1 | سجل الجلسة | سجل كامل لجميع خطوات الجلسة | PENDING CLIENT SESSION | CLIENT-DEMO-SESSION-RECORD-AR.md |
 | 2 | قائمة القبول | قائمة تحقق موقّعة من العميل | PENDING CLIENT SESSION | CLIENT-DEMO-ACCEPTANCE-CHECKLIST-AR.md |
-| 3 | سجل الملاحظات | جميع الملاحظات والأعطال | PENDING CLIENT SESSION | CLIENT-DEMO-FINDINGS-REGISTER-AR.md |
+| 3 | سجل الملاحظات | جميع الملاحظات والأعطال | جزئي — ملاحظة ما قبل الجلسة واحدة | CLIENT-DEMO-FINDINGS-REGISTER-AR.md |
 | 4 | صور الشاشة | صور للشاشات الرئيسية أثناء الجلسة | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
 | 5 | سجل المشاكل | أي مشاكل وقعت أثناء الجلسة | PENDING CLIENT SESSION | OWNER-TRIAL-INCIDENT-LOG-AR.md |
-| 6 | Checksums الحزمة | التحقق من سلامة الحزمة المستخدمة | PASS | checksums.sha256 |
-| 7 | دليل المشغّل | الدليل المستخدم أثناء الجلسة | EXISTS | CLIENT-DEMO-OPERATOR-RUNBOOK-AR.md |
-| 8 | سيناريو العرض | السكريبت المستخدم أثناء الجلسة | EXISTS | CLIENT-DEMO-WALKTHROUGH-AR.md |
-| 9 | قرار المالك | القرار النهائي من العميل | PENDING CLIENT SESSION | CLIENT-COMMERCIAL-READINESS-DECISION-AR.md |
+| 6 | Checksums الحزمة | التحقق من سلامة الحزمة المستخدمة | PASS — 29/29 | checksums.sha256 |
+| 7 | Source-Safety | عدم وجود كود مصدر أو بيانات حساسة | PASS | فحص ما قبل الجلسة |
+| 8 | Smoke Test | تشغيل البرنامج من مجلد الحزمة | PASS | فحص ما قبل الجلسة |
+| 9 | دليل المشغّل | الدليل المستخدم أثناء الجلسة | موجود | CLIENT-DEMO-OPERATOR-RUNBOOK-AR.md |
+| 10 | سيناريو العرض | السكريبت المستخدم أثناء الجلسة | موجود | CLIENT-DEMO-WALKTHROUGH-AR.md |
+| 11 | قرار المالك | القرار النهائي من العميل | PENDING CLIENT SESSION | CLIENT-COMMERCIAL-READINESS-DECISION-AR.md |
+| 12 | شجرة العمل | حالة شجرة العمل أثناء بدء الجلسة | موثق — غير نظيفة (F-001) | git status |
 
 ---
 
@@ -62,12 +65,13 @@
 
 | الفئة | العدد | الحالة |
 |-------|-------|--------|
-| الأدلة المطلوبة والمتوفرة | 2 | EXISTS |
-| الأدلة المطلوبة والناقصة | 7 | PENDING CLIENT SESSION |
+| الأدلة المطلوبة والمتوفرة | 5 | EXISTS |
+| الأدلة المطلوبة والناقصة | 4 | PENDING CLIENT SESSION |
 | الأدلة المتوفرة من الحزمة | 10 | PASS |
-| **الإجمالي** | **19** | — |
+| أدلة ما قبل الجلسة | 3 | PASS |
+| **الإجمالي** | **22** | — |
 
 ---
 
 *تم إنشاء هذا المستند في المرحلة 100 — دليل الأدلة.*
-*حالة الأدلة: PENDING CLIENT SESSION*
+*حالة الأدلة: ما قبل الجلسة — 5 أدلة موجودة، 4 تنتظر الجلسة، 10 من الحزمة، 3 ما قبل الجلسة*

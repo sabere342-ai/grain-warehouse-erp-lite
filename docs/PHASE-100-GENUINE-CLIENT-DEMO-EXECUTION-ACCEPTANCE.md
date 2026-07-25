@@ -24,26 +24,39 @@ No genuine client session has occurred. This phase cannot record client acceptan
 
 ---
 
-## Governance Verification Log
+## Governance Verification Log (Phase 100 session resume — 2026-07-26)
 
 | Step | Command | Result | Status |
 |------|---------|--------|--------|
-| Current branch | `git branch --show-current` | `phase-99-controlled-client-demo-handoff-guided-acceptance` | PASS |
-| Current HEAD | `git rev-parse HEAD` | `b7ffaaee03ac21e72b237a5caaf99a5f589915d5` | PASS |
-| Working tree | `git status --short` | (empty — clean) | PASS |
+| Current branch | `git branch --show-current` | `phase-100-genuine-client-demo-execution-acceptance-evidence` | PASS |
+| Current HEAD | `git rev-parse HEAD` | `3f6e231859a78995d7c2d1a256352ae4fc8ebfcd` | PASS |
+| Working tree | `git status --short` | **NOT CLEAN** — 1 deleted (app_icon.ico), 1 untracked (Arabic-named JPG) | **ANOMALY** |
 | Last 15 commits | `git log --oneline -15` | See below | PASS |
 | Phase 99 tag | `git tag -l "*phase-99*"` | `phase-99-controlled-client-demo-handoff-guided-acceptance-verified` | PASS |
-| Tag type | `git cat-file -t <tag>` | `tag` (annotated) | PASS |
-| Tag target | `git tag -v <tag>` | `b7ffaaee03ac21e72b237a5caaf99a5f589915d5` | PASS |
-| Tag target = HEAD | Manual check | Yes | PASS |
-| Staged changes | `git status --short` | None | PASS |
-| Modified files | `git status --short` | None | PASS |
-| Untracked files | `git status --short` | None | PASS |
-| Phase 100 reservation check | `grep -r "phase.?100" docs/ delivery/ tool/` | No existing references | PASS |
+| Phase 100 tags | `git tag -l "*phase-100*"` | (none) | PASS |
+| Tag type (Phase 99) | `git cat-file -t <tag>` | `tag` (annotated) | PASS |
+| Tag target (Phase 99) | `git tag -v <tag>` | `b7ffaaee03ac21e72b237a5caaf99a5f589915d5` | PASS |
+| Phase 100 commit exists | `git log --oneline` | `3f6e231` present | PASS |
+| Staged changes | `git status --short` | None staged | PASS |
+| Modified files | `git status --short` | `D windows/runner/resources/app_icon.ico` (deleted from disk) | ANOMALY |
+| Untracked files | `git status --short` | `windows/runner/resources/شعار_المُسبّد_الابيض.jpg` (Arabic-named, 122KB JPG) | ANOMALY |
+| Phase 101 check | `git tag -l "*phase-101*"; git branch -a` | No references | PASS |
 
-### Last 15 Commits at Start
+### Working Tree Anomaly Detail
+
+| Item | Detail |
+|------|--------|
+| Deleted file | `windows/runner/resources/app_icon.ico` (67,802 bytes ICO, tracked in git) |
+| Untracked file | `windows/runner/resources/شعار_المُسبّد_الابيض.jpg` (122,807 bytes JPG, created 2026-07-20) |
+| Build impact | `Runner.rc` line 55 references `app_icon.ico`; `ghalal.iss` line 31 references it |
+| Demo package impact | None — existing package was built before this change |
+| Current build impact | Would fail if rebuild attempted without fixing this |
+| Action required | Owner decision: restore .ico, convert JPG→ICO, or replace reference |
+
+### Last 15 Commits at Session Resume
 
 ```
+3f6e231 docs: prepare Phase 100 genuine client demo execution, acceptance evidence & commercial readiness decision templates
 b7ffaae docs: close phase 99 controlled client demo acceptance
 b929149 feat: prepare controlled client demo handoff and acceptance evidence
 cac9087 docs(phase-98): record verified remediation and closure
@@ -58,7 +71,6 @@ bb233e2 docs(phase-97): record verified native branding closure
 c2b82e8 docs: phase 95 closure report
 a69eee7 feat: expand business profile with tax number, address, phone; extract shared PDF branding header
 bb8f8ae docs: phase 94 closure report
-3dfc9f7 feat: apply business identity branding to financial report PDFs
 ```
 
 ---
@@ -114,13 +126,44 @@ bb8f8ae docs: phase 94 closure report
 
 **Note:** This package was built in Phase 98 before Phase 99 doc updates. The current `docs/CLIENT-DEMO-WALKTHROUGH-AR.md` and `docs/CLIENT-DEMO-OPERATOR-RUNBOOK-AR.md` in the working tree are more current than the packaged versions. A fresh package should be built before the actual client session to include updated docs.
 
+### Pre-Session Verification (2026-07-26)
+
+| Step | Check | Result |
+|------|-------|--------|
+| 1 | Payload checksums (29/29) | PASS |
+| 2 | Source-safety scan | PASS |
+| 3 | Executable exists | PASS — 785,408 bytes |
+| 4 | Runtime DLLs (6/6) | PASS |
+| 5 | Runtime data (app.so, icudtl.dat) | PASS |
+| 6 | Flutter assets | PASS |
+| 7 | Smoke launch from package dir | PASS — launched, ran, closed gracefully |
+| 8 | Package independent of project paths | PASS — launched from `delivery/` dir |
+| 9 | Demo data appropriate, non-sensitive | PASS — test accounts only |
+| 10 | App close and reopen test | PASS |
+
+#### Session Environment
+
+| Item | Value |
+|------|-------|
+| OS | Windows 11 Pro 10.0.26200 |
+| Architecture | 64-bit |
+| CPU | Intel i5-1145G7 @ 2.60GHz |
+| GPU | Intel Iris Xe Graphics |
+| Resolution | 1536×864 |
+| Display scale | 120 DPI |
+| Package path | `delivery/ghalal-demo-v1.0.0-20260725-201405` |
+| Package version | 1.0.0+1 |
+| Build commit | `e194e0cff0b55dcb7d70f2a1bec4039fa267d1f1` |
+| Build timestamp | 2026-07-25T17:14:05Z |
+| Smoke test timestamp | 2026-07-26 (pre-session) |
+
 ---
 
 ## Client Session Record
 
-**STATUS: PENDING CLIENT SESSION**
+**STATUS: PRE-SESSION VERIFICATION COMPLETE — AWAITING CLIENT SESSION**
 
-No genuine client session has been performed in this environment. The following fields remain unfilled:
+Pre-session verification has been completed. The genuine client session has not yet occurred. The following fields remain unfilled pending the actual session:
 
 | Field | Value |
 |-------|-------|
@@ -129,8 +172,8 @@ No genuine client session has been performed in this environment. The following 
 | Session location/medium | PENDING CLIENT SESSION |
 | Operator name/role | PENDING CLIENT SESSION |
 | Client name/identifier | PENDING CLIENT SESSION |
-| Device and OS | PENDING CLIENT SESSION |
-| Package version/checksum | PENDING CLIENT SESSION |
+| Device and OS | Intel i5-1145G7, Windows 11 Pro 10.0.26200, 1536×864, 120 DPI |
+| Package version/checksum | 1.0.0+1, 29/29 checksums verified |
 | Scenarios executed | PENDING CLIENT SESSION |
 | Scenarios skipped (with reason) | PENDING CLIENT SESSION |
 | Issues encountered | PENDING CLIENT SESSION |
@@ -209,13 +252,13 @@ All scenario results below are `PENDING CLIENT SESSION`. No results have been fa
 
 ## Findings Register
 
-**STATUS: PENDING CLIENT SESSION**
+**STATUS: PRE-SESSION FINDINGS RECORDED**
 
-No findings have been recorded. The register below will be populated after the genuine client session.
+The following finding was discovered during pre-session verification. Client session findings will be added after the genuine session.
 
 | ID | Scenario | Observation | Type | Severity | Reproducible | Evidence | Decision | Owner | Target Phase |
 |----|----------|-------------|------|----------|--------------|----------|----------|-------|--------------|
-| — | — | PENDING CLIENT SESSION | — | — | — | — | — | — | — |
+| F-001 | Pre-session governance | Working tree not clean: `windows/runner/resources/app_icon.ico` deleted from disk (tracked in git, 67,802 bytes ICO). Arabic-named JPG `شعار_المُسبّد_الابيض.jpg` added (122,807 bytes, 2026-07-20). `Runner.rc:55` and `ghalal.iss:31` reference `app_icon.ico`. Rebuild would fail. Existing package unaffected. | Environment issue | S3 — Minor usability or visual issue | Yes | git status, file system check | Needs owner decision | TBD |
 
 ### Classification Reference
 
@@ -265,37 +308,40 @@ No commercial readiness decision can be made without genuine client session evid
 
 ## Evidence Manifest
 
-**STATUS: PENDING CLIENT SESSION**
+**STATUS: PRE-SESSION EVIDENCE COLLECTED**
 
-No evidence has been collected. The evidence manifest below lists expected evidence types that will be populated after the genuine client session.
+Pre-session verification evidence collected. Client session evidence will be added after the genuine session.
 
 | # | Evidence Type | Description | Status | File/Reference |
 |---|---------------|-------------|--------|----------------|
-| 1 | Session record | Complete session log | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
-| 2 | Acceptance checklist | Signed by client | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
-| 3 | Findings register | Issues from session | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
+| 1 | Session record | Complete session log | PENDING CLIENT SESSION | CLIENT-DEMO-SESSION-RECORD-AR.md |
+| 2 | Acceptance checklist | Signed by client | PENDING CLIENT SESSION | CLIENT-DEMO-ACCEPTANCE-CHECKLIST-AR.md |
+| 3 | Findings register | Issues from session | PARTIAL — 1 pre-session finding | CLIENT-DEMO-FINDINGS-REGISTER-AR.md |
 | 4 | Screenshots | Key screens during session | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
 | 5 | Incident log | Any incidents during session | PENDING CLIENT SESSION | PENDING CLIENT SESSION |
-| 6 | Package checksums | Verification of used package | PASS | checksums.sha256 |
-| 7 | Operator runbook | Used during session | EXISTS | CLIENT-DEMO-OPERATOR-RUNBOOK-AR.md |
-| 8 | Walkthrough script | Used during session | EXISTS | CLIENT-DEMO-WALKTHROUGH-AR.md |
+| 6 | Package checksums | 29/29 payload checksums verified | PASS | checksums.sha256 |
+| 7 | Source-safety | No prohibited files in package | PASS | Pre-session verification |
+| 8 | Smoke test | App launches and runs from package | PASS | Pre-session verification |
+| 9 | Operator runbook | Used during session | EXISTS | CLIENT-DEMO-OPERATOR-RUNBOOK-AR.md |
+| 10 | Walkthrough script | Used during session | EXISTS | CLIENT-DEMO-WALKTHROUGH-AR.md |
+| 11 | Working tree anomaly | app_icon.ico deleted, Arabic JPG added | DOCUMENTED | F-001 |
 
 ---
 
 ## Verification Gates
 
-### Gate 1: Governance — PASS
+### Gate 1: Governance — CONDITIONAL PASS (with anomaly)
 
 ```
-Branch at start: phase-99-controlled-client-demo-handoff-guided-acceptance
-HEAD at start: b7ffaaee03ac21e72b237a5caaf99a5f589915d5
+Branch at session resume: phase-100-genuine-client-demo-execution-acceptance-evidence
+HEAD at session resume: 3f6e231859a78995d7c2d1a256352ae4fc8ebfcd
 Phase 99 tag: phase-99-controlled-client-demo-handoff-guided-acceptance-verified (annotated)
 Tag target: b7ffaaee03ac21e72b237a5caaf99a5f589915d5
-Tag target = HEAD: Yes
-Working tree at start: Clean
-Phase 100 reservation: None before this phase
+Working tree at session resume: NOT CLEAN — app_icon.ico deleted, Arabic JPG untracked
+Phase 100 reservation: None before this phase (verified)
+Phase 101: Not started (verified)
 ```
-**PASS**
+**CONDITIONAL PASS** — Working tree anomaly documented; does not affect existing demo package
 
 ### Gate 2: Previous Phase Tag Verified — PASS
 
@@ -312,9 +358,11 @@ Tag purpose: Phase 99 closure — demo kit prepared, internal rehearsal complete
 ```
 Package: delivery/ghalal-demo-v1.0.0-20260725-201405
 Version: 1.0.0+1
-File count: 29
-Size: ~43.61 MB
+Payload file count: 29 (covered by checksums.sha256)
+Metadata file count: 3 (checksums.sha256, file-listing.txt, release-manifest.json — not checksummed)
+Total files on disk: 32
 Build date: 2026-07-25T17:14:05Z
+Build commit: e194e0cff0b55dcb7d70f2a1bec4039fa267d1f1
 ```
 **PASS**
 
@@ -342,12 +390,16 @@ No C++/H/CMake source
 ```
 **PASS**
 
-### Gate 6: Demo Launched from Packaged Artifact — BLOCKED
+### Gate 6: Demo Launched from Packaged Artifact — PASS (pre-session)
 
 ```
-Not performed — client session not executed
+Package: delivery/ghalal-demo-v1.0.0-20260725-201405
+Executable: Release/grain_warehouse_erp_lite.exe (785,408 bytes)
+Launch result: PASS — application started, ran, closed gracefully
+Launch timestamp: 2026-07-26 (pre-session verification)
+Environment: Windows 11 Pro 10.0.26200, Intel i5-1145G7, 1536x864, 120 DPI
 ```
-**BLOCKED**
+**PASS**
 
 ### Gate 7: Genuine Client Session Occurred — BLOCKED
 

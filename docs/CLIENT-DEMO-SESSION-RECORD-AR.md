@@ -16,11 +16,20 @@
 | اسم المشغّل | PENDING CLIENT SESSION |
 | دور المشغّل | PENDING CLIENT SESSION |
 | اسم العميل أو المعرف | PENDING CLIENT SESSION |
-| الجهاز | PENDING CLIENT SESSION |
-| نظام التشغيل | PENDING CLIENT SESSION |
+| الجهاز | Intel i5-1145G7, 1536x864, 120 DPI |
+| نظام التشغيل | Windows 11 Pro 10.0.26200 (64-bit) |
 | إصدار الحزمة | 1.0.0+1 |
-| Checksum الحزمة | `delivery/ghalal-demo-v1.0.0-20260725-201405` |
+| مسار الحزمة | `delivery/ghalal-demo-v1.0.0-20260725-201405` |
+| Build commit | `e194e0cff0b55dcb7d70f2a1bec4039fa267d1f1` |
+| Build timestamp | 2026-07-25T17:14:05Z |
+| Hash/Manifest ID | checksums.sha256 + release-manifest.json |
+| Checksum الحزمة | 29/29 payload checksums verified (pre-session) |
+| Source-Safety | PASS (pre-session) |
+| Smoke Test | PASS (application launched, ran, closed gracefully) |
 | مصدر الحزمة | Phase 98 demo package (pre-Phase 99 doc updates) |
+| هل وافق العميل على التصوير | PENDING CLIENT SESSION |
+| الحاضرون | PENDING CLIENT SESSION |
+| انقطاع أو مشكلة بيئية | PENDING CLIENT SESSION |
 
 ---
 
