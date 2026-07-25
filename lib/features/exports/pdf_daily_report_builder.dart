@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/daily_activity_report.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_branding_header.dart';
 
 class PdfDailyReportBuilder {
   PdfDailyReportBuilder._();
@@ -36,23 +37,12 @@ class PdfDailyReportBuilder {
                   pw.Center(
                     child: pw.Column(
                       children: [
-                        if (logoBytes != null && logoBytes.isNotEmpty)
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.only(bottom: 8),
-                            child: pw.Image(
-                              pw.MemoryImage(logoBytes),
-                              height: 50,
-                              fit: pw.BoxFit.contain,
-                            ),
-                          ),
-                        pw.Text(
-                          businessIdentity.displayName,
-                          style: pw.TextStyle(
-                            font: arabicFontBold,
-                            fontSize: 13,
-                          ),
+                        ...PdfBrandingHeader.build(
+                          businessIdentity: businessIdentity,
+                          arabicFont: arabicFont,
+                          arabicFontBold: arabicFontBold,
+                          logoBytes: logoBytes,
                         ),
-                        pw.SizedBox(height: 4),
                         pw.Text(
                           '\u0627\u0644\u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u064a\u0648\u0645\u064a',
                           style: headerStyle,

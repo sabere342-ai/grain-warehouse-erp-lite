@@ -81,6 +81,9 @@ class BusinessIdentity {
   const BusinessIdentity({
     this.establishmentName,
     this.logo,
+    this.taxNumber,
+    this.address,
+    this.phone,
   });
 
   static const defaultDisplayName = 'غلال';
@@ -88,6 +91,9 @@ class BusinessIdentity {
 
   final String? establishmentName;
   final LogoMetadata? logo;
+  final String? taxNumber;
+  final String? address;
+  final String? phone;
 
   bool get hasLogo => logo != null && logo!.isValid;
 
@@ -101,14 +107,42 @@ class BusinessIdentity {
     return name != null && name.isNotEmpty;
   }
 
+  String? get trimmedTaxNumber {
+    final value = taxNumber?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  String? get trimmedAddress {
+    final value = address?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  String? get trimmedPhone {
+    final value = phone?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  bool get hasAddress => trimmedAddress != null;
+  bool get hasPhone => trimmedPhone != null;
+  bool get hasTaxNumber => trimmedTaxNumber != null;
+
   BusinessIdentity copyWith({
     String? establishmentName,
     LogoMetadata? logo,
     bool clearLogo = false,
+    String? taxNumber,
+    bool clearTaxNumber = false,
+    String? address,
+    bool clearAddress = false,
+    String? phone,
+    bool clearPhone = false,
   }) {
     return BusinessIdentity(
       establishmentName: establishmentName ?? this.establishmentName,
       logo: clearLogo ? null : (logo ?? this.logo),
+      taxNumber: clearTaxNumber ? null : (taxNumber ?? this.taxNumber),
+      address: clearAddress ? null : (address ?? this.address),
+      phone: clearPhone ? null : (phone ?? this.phone),
     );
   }
 
@@ -116,6 +150,9 @@ class BusinessIdentity {
     return {
       'establishmentName': establishmentName,
       if (logo != null) 'logo': logo!.toJson(),
+      if (taxNumber != null) 'taxNumber': taxNumber,
+      if (address != null) 'address': address,
+      if (phone != null) 'phone': phone,
     };
   }
 
@@ -128,6 +165,10 @@ class BusinessIdentity {
     return BusinessIdentity(
       establishmentName: establishmentName is String ? establishmentName : null,
       logo: logoData != null ? LogoMetadata.fromJson(logoData) : null,
+      taxNumber:
+          value['taxNumber'] is String ? value['taxNumber'] as String : null,
+      address: value['address'] is String ? value['address'] as String : null,
+      phone: value['phone'] is String ? value['phone'] as String : null,
     );
   }
 }

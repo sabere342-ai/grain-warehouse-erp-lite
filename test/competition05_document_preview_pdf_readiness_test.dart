@@ -121,8 +121,7 @@ void main() {
       for (final path in builders) {
         final source = File(path).readAsStringSync();
         expect(source, contains('BusinessIdentity'));
-        expect(source, contains('businessIdentity.displayName'));
-        expect(source, contains('pw.BoxFit.contain'));
+        expect(source, contains('pdf_branding_header.dart'));
       }
     });
 

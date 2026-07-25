@@ -63,8 +63,11 @@ class _PrintableDocumentScaffoldState extends State<PrintableDocumentScaffold> {
     final displayName =
         BusinessIdentityScope.maybeOf(context)?.identity.displayName ??
             BusinessIdentity.defaultDisplayName;
-    final logo = BusinessIdentityScope.maybeOf(context)?.identity.logo;
+    final identity = BusinessIdentityScope.maybeOf(context)?.identity;
+    final logo = identity?.logo;
     final hasLogo = logo != null && logo.isValid;
+    final address = identity?.trimmedAddress;
+    final phone = identity?.trimmedPhone;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Container(
@@ -87,6 +90,26 @@ class _PrintableDocumentScaffoldState extends State<PrintableDocumentScaffold> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
+                  if (address != null) ...[
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      address,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if (phone != null) ...[
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      'هاتف: $phone',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.xxs + 2),
                   Text(
                     widget.title,

@@ -36,8 +36,31 @@ class BusinessIdentityController extends ChangeNotifier {
       await _repository.saveIdentity(_identity);
       _message = 'تم حفظ اسم المنشأة.';
     } catch (_) {
-      _message =
-          'تم تطبيق اسم المنشأة الآن، لكن تعذر حفظه للجلسة القادمة.';
+      _message = 'تم تطبيق اسم المنشأة الآن، لكن تعذر حفظه للجلسة القادمة.';
+    }
+    notifyListeners();
+  }
+
+  Future<void> saveProfileDetails({
+    String? taxNumber,
+    String? address,
+    String? phone,
+  }) async {
+    final trimmedTax = taxNumber?.trim();
+    final trimmedAddress = address?.trim();
+    final trimmedPhone = phone?.trim();
+    _identity = _identity.copyWith(
+      taxNumber: trimmedTax?.isEmpty == true ? null : trimmedTax,
+      address: trimmedAddress?.isEmpty == true ? null : trimmedAddress,
+      phone: trimmedPhone?.isEmpty == true ? null : trimmedPhone,
+    );
+    _message = null;
+    notifyListeners();
+    try {
+      await _repository.saveIdentity(_identity);
+      _message = 'تم حفظ بيانات المنشأة الإضافية.';
+    } catch (_) {
+      _message = 'تم تطبيق البيانات، لكن تعذر حفظها للجلسة القادمة.';
     }
     notifyListeners();
   }
@@ -57,7 +80,8 @@ class BusinessIdentityController extends ChangeNotifier {
       }
       _identity = _identity.copyWith(logo: metadata);
       await _repository.saveIdentity(_identity);
-      if (oldLogo != null && oldLogo.managedFileName != metadata.managedFileName) {
+      if (oldLogo != null &&
+          oldLogo.managedFileName != metadata.managedFileName) {
         await _repository.deleteLogoFile(oldLogo.managedFileName);
       }
       _message = 'تم حفظ الشعار بنجاح.';

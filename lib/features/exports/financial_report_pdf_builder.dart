@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_branding_header.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_file_naming.dart';
 
 class FinancialReportPdfBuilder {
@@ -37,22 +38,13 @@ class FinancialReportPdfBuilder {
     required BusinessIdentity businessIdentity,
     Uint8List? logoBytes,
   }) {
-    return [
-      if (logoBytes != null && logoBytes.isNotEmpty)
-        pw.Padding(
-          padding: const pw.EdgeInsets.only(bottom: 8),
-          child: pw.Image(
-            pw.MemoryImage(logoBytes),
-            height: 50,
-            fit: pw.BoxFit.contain,
-          ),
-        ),
-      pw.Text(
-        businessIdentity.displayName,
-        style: pw.TextStyle(font: _arabicFontBold!, fontSize: 13),
-      ),
-      pw.SizedBox(height: 4),
-    ];
+    return PdfBrandingHeader.build(
+      businessIdentity: businessIdentity,
+      arabicFont: _arabicFont!,
+      arabicFontBold: _arabicFontBold!,
+      logoBytes: logoBytes,
+      includeProfileDetails: false,
+    );
   }
 
   static Future<File> buildAccountBalanceReport({

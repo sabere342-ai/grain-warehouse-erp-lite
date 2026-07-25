@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
+import 'package:grain_warehouse_erp_lite/features/exports/pdf_branding_header.dart';
 
 class PdfCustomerStatementBuilder {
   PdfCustomerStatementBuilder._();
@@ -38,23 +39,13 @@ class PdfCustomerStatementBuilder {
                   pw.Center(
                     child: pw.Column(
                       children: [
-                        if (logoBytes != null && logoBytes.isNotEmpty)
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.only(bottom: 8),
-                            child: pw.Image(
-                              pw.MemoryImage(logoBytes),
-                              height: 50,
-                              fit: pw.BoxFit.contain,
-                            ),
-                          ),
-                        pw.Text(
-                          businessIdentity.displayName,
-                          style: pw.TextStyle(
-                            font: arabicFontBold,
-                            fontSize: 13,
-                          ),
+                        ...PdfBrandingHeader.build(
+                          businessIdentity: businessIdentity,
+                          arabicFont: arabicFont,
+                          arabicFontBold: arabicFontBold,
+                          logoBytes: logoBytes,
+                          includeProfileDetails: true,
                         ),
-                        pw.SizedBox(height: 4),
                         pw.Text(
                           '\u0643\u0634\u0641 \u062d\u0633\u0627\u0628 \u0639\u0645\u064a\u0644',
                           style: headerStyle,

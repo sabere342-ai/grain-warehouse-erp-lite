@@ -19,11 +19,20 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _establishmentNameController = TextEditingController();
+  final _taxNumberController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
   String? _lastIdentityName;
+  String? _lastTaxNumber;
+  String? _lastAddress;
+  String? _lastPhone;
 
   @override
   void dispose() {
     _establishmentNameController.dispose();
+    _taxNumberController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -36,6 +45,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_lastIdentityName != identityName) {
       _lastIdentityName = identityName;
       _establishmentNameController.text = identityName;
+    }
+    final currentTax = identityController.identity.taxNumber ?? '';
+    if (_lastTaxNumber != currentTax) {
+      _lastTaxNumber = currentTax;
+      _taxNumberController.text = currentTax;
+    }
+    final currentAddress = identityController.identity.address ?? '';
+    if (_lastAddress != currentAddress) {
+      _lastAddress = currentAddress;
+      _addressController.text = currentAddress;
+    }
+    final currentPhone = identityController.identity.phone ?? '';
+    if (_lastPhone != currentPhone) {
+      _lastPhone = currentPhone;
+      _phoneController.text = currentPhone;
     }
 
     return AnimatedBuilder(
@@ -109,6 +133,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             _LogoSection(identityController: identityController),
+            const SizedBox(height: AppSpacing.md),
+            _ProfileDetailsSection(
+              identityController: identityController,
+              taxNumberController: _taxNumberController,
+              addressController: _addressController,
+              phoneController: _phoneController,
+            ),
           ],
         );
       },
@@ -395,5 +426,76 @@ class _LogoPreview extends StatelessWidget {
     } catch (_) {
       return null;
     }
+  }
+}
+
+class _ProfileDetailsSection extends StatelessWidget {
+  const _ProfileDetailsSection({
+    required this.identityController,
+    required this.taxNumberController,
+    required this.addressController,
+    required this.phoneController,
+  });
+
+  final BusinessIdentityController identityController;
+  final TextEditingController taxNumberController;
+  final TextEditingController addressController;
+  final TextEditingController phoneController;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('بيانات المنشأة الإضافية', style: textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.xs),
+          const Text(
+            'بيانات اختيارية تظهر على الفواتير والمستندات المطبوعة. اترك الحقل فارغاً إذا لا تريد إظهاره.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: taxNumberController,
+            decoration: const InputDecoration(
+              labelText: 'رقم التسجيل الضريبي',
+              helperText: 'اختياري — لا يظهر إذا فارغ.',
+            ),
+            textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: addressController,
+            decoration: const InputDecoration(
+              labelText: 'العنوان',
+              helperText: 'اختياري — يظهر تحت اسم المنشأة.',
+            ),
+            textDirection: TextDirection.rtl,
+            maxLines: 2,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: phoneController,
+            decoration: const InputDecoration(
+              labelText: 'رقم الهاتف',
+              helperText: 'اختياري — يظهر على المستندات.',
+            ),
+            textDirection: TextDirection.rtl,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          FilledButton.icon(
+            onPressed: identityController.isLoading
+                ? null
+                : () => identityController.saveProfileDetails(
+                      taxNumber: taxNumberController.text,
+                      address: addressController.text,
+                      phone: phoneController.text,
+                    ),
+            icon: const Icon(Icons.save_rounded),
+            label: const Text('حفظ البيانات'),
+          ),
+        ],
+      ),
+    );
   }
 }
