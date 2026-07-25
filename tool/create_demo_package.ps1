@@ -80,7 +80,8 @@ $clientDocs = @(
   'docs\CLIENT-KNOWN-LIMITATIONS-AR.md',
   'docs\CLIENT-PILOT-HANDOFF-SMOKE-AR.md',
   'docs\OWNER-QUICK-START-AR.md',
-  'docs\CUSTOMER-INSTALLATION-BACKUP-NOTE-AR.md'
+  'docs\CUSTOMER-INSTALLATION-BACKUP-NOTE-AR.md',
+  'docs\PHASE-98-RELEASE-NOTES-AR.md'
 )
 $copiedDocs = @()
 foreach ($doc in $clientDocs) {
