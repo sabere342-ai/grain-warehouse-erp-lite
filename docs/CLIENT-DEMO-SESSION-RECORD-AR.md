@@ -19,14 +19,14 @@
 | الجهاز | Intel i5-1145G7, 1536x864, 120 DPI |
 | نظام التشغيل | Windows 11 Pro 10.0.26200 (64-bit) |
 | إصدار الحزمة | 1.0.0+1 |
-| مسار الحزمة | `delivery/ghalal-demo-v1.0.0-20260726-010237` |
-| Build commit | `23908b244d202e0f7a4d9869786e80bf1f20db6e` |
-| Build timestamp | 2026-07-25T22:02:37Z |
+| مسار الحزمة | `delivery/ghalal-demo-v1.0.0-20260726-012039` |
+| Build commit | `44e84a1f7de9809e5e8ee61b9d484e22669d53bb` |
+| Build timestamp | 2026-07-26T01:20:39+03:00 |
 | Hash/Manifest ID | checksums.sha256 + release-manifest.json |
-| Checksum الحزمة | 30/30 payload checksums verified (fresh build) |
-| Source-Safety | PASS (fresh build verification) |
+| Checksum الحزمة | 22/22 payload checksums verified (provenance-corrected build) |
+| Source-Safety | PASS (provenance-corrected build verification) |
 | Smoke Test | PASS (application launched, ran, closed gracefully) |
-| مصدر الحزمة | Fresh Windows release build (new icon embedded) |
+| مصدر الحزمة | Fresh Windows release build from clean working tree (icon embedded) |
 | هل وافق العميل على التصوير | PENDING CLIENT SESSION |
 | الحاضرون | PENDING CLIENT SESSION |
 | انقطاع أو مشكلة بيئية | PENDING CLIENT SESSION |

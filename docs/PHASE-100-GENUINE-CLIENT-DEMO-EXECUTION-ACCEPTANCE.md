@@ -42,7 +42,7 @@ No genuine client session has occurred. This phase cannot record client acceptan
 | Untracked files | `git status --short` | `windows/runner/resources/شعار_المُسبّد_الابيض.jpg` (Arabic-named, 122KB JPG) | ANOMALY |
 | Phase 101 check | `git tag -l "*phase-101*"; git branch -a` | No references | PASS |
 
-### Working Tree Anomaly Detail — RESOLVED
+### Working Tree Anomaly Detail — RESOLVED (F-001)
 
 | Item | Detail |
 |------|--------|
@@ -50,17 +50,32 @@ No genuine client session has occurred. This phase cannot record client acceptan
 | Resolution | JPG converted to valid Windows multi-resolution ICO (16/24/32/48/64/128/256) |
 | ICO format | Valid ICO with 7 PNG-encoded entries, 32bpp, 33,010 bytes |
 | ICO SHA-256 | `8589FC6612A5ADB730DBA4CCCADCD9F581581CC80CAFAFF9FF0D41A3347EE9B1` |
-| Source JPG preserved | Yes — backup at `windows/runner/resources/_icon_source_backup/` |
+| Source JPG preserved | Yes — externally at `C:\dev\ghalal-owner-assets\phase-100-temporary-icon-source\` |
 | Source JPG SHA-256 | `969D8BB198E9F3052F7310833DE075D637A55383906AEC8D44F358417FD295E6` |
 | Runner.rc reference | Unchanged — still references `app_icon.ico` |
 | ghalal.iss reference | Unchanged — still references `app_icon.ico` |
 | Fresh build | Windows release build successful |
-| Fresh package | `delivery/ghalal-demo-v1.0.0-20260726-010237` (30 payload + 3 metadata) |
-| Package checksums | 30/30 verified |
+| Fresh package | `delivery/ghalal-demo-v1.0.0-20260726-012039` (22 payload + 3 metadata) |
+| Package checksums | 22/22 verified |
 | Package source-safety | PASS |
 | Package smoke test | PASS |
-| Icon in EXE | Verified — extractable via `System.Drawing.Icon.ExtractAssociatedIcon` |
+| Icon in EXE | Verified — application starts with replacement icon |
 | Temporary branding note | Temporary demo branding approved by the owner. Final commercial icon and branding approval remain deferred. |
+
+### Package Provenance Correction Detail — RESOLVED (F-002)
+
+| Item | Detail |
+|------|--------|
+| Original issue | Package `ghalal-demo-v1.0.0-20260726-010237` identified commit `23908b2` but contained the replacement icon from commit `44e84a1` (dirty working tree build) |
+| Severity | S3 (Release metadata / provenance) |
+| Resolution | Fresh build from exact committed HEAD `44e84a1f7de9809e5e8ee61b9d484e22669d53bb` with clean working tree |
+| Superseded package | `delivery/ghalal-demo-v1.0.0-20260726-010237` |
+| Superseded reason | Build metadata identified wrong source commit |
+| New package | `delivery/ghalal-demo-v1.0.0-20260726-012039` |
+| Build commit | `44e84a1f7de9809e5e8ee61b9d484e22669d53bb` |
+| Working tree state | Clean (verified by `git status --porcelain=v1`) |
+| ICO in package | Valid — same committed ICO used in build |
+| ICO SHA-256 | `8589FC6612A5ADB730DBA4CCCADCD9F581581CC80CAFAFF9FF0D41A3347EE9B1` |
 
 ### Last 15 Commits at Session Resume
 
@@ -160,13 +175,13 @@ bb8f8ae docs: phase 94 closure report
 | GPU | Intel Iris Xe Graphics |
 | Resolution | 1536×864 |
 | Display scale | 120 DPI |
-| Package path | `delivery/ghalal-demo-v1.0.0-20260726-010237` |
+| Package path | `delivery/ghalal-demo-v1.0.0-20260726-012039` |
 | Package version | 1.0.0+1 |
-| Build commit | `23908b244d202e0f7a4d9869786e80bf1f20db6e` |
-| Build timestamp | 2026-07-25T22:02:37Z |
-| Icon source | Temporary owner-approved JPG (`شعار_المساعد_ابيض.jpg`) |
+| Build commit | `44e84a1f7de9809e5e8ee61b9d484e22669d53bb` |
+| Build timestamp | 2026-07-26T01:20:39+03:00 |
+| Icon source | Temporary owner-approved JPG (`شعار_المساعد_ابيض.jpg`) preserved externally |
 | ICO SHA-256 | `8589FC6612A5ADB730DBA4CCCADCD9F581581CC80CAFAFF9FF0D41A3347EE9B1` |
-| Smoke test timestamp | 2026-07-26 (fresh build verification) |
+| Smoke test timestamp | 2026-07-26 (provenance-corrected fresh build) |
 
 ---
 
@@ -270,6 +285,7 @@ The following finding was discovered during pre-session verification. Client ses
 | ID | Scenario | Observation | Type | Severity | Reproducible | Evidence | Decision | Owner | Target Phase |
 |----|----------|-------------|------|----------|--------------|----------|----------|-------|--------------|
 | F-001 | Pre-session governance | Working tree anomaly: `app_icon.ico` deleted, Arabic JPG added. **RESOLVED** — Temporary owner-approved JPG converted into valid Windows multi-resolution ICO (16/24/32/48/64/128/256). Fresh package created and verified. | Environment issue | S3 | Yes | git status, ICO conversion, build, package verification | **RESOLVED — Temporary owner-approved JPG converted into a valid Windows ICO asset.** | Owner (temporary authorization) | TBD |
+| F-002 | Package provenance | Package `ghalal-demo-v1.0.0-20260726-010237` identified commit `23908b2` but contained the replacement icon from commit `44e84a1` (dirty working tree build). **RESOLVED** — Fresh build from exact committed HEAD `44e84a1` with clean working tree. New package `ghalal-demo-v1.0.0-20260726-012039` created with corrected release metadata. | Release metadata / provenance | S3 | Yes | git log, git status, build metadata comparison | **RESOLVED — Package superseded by clean rebuild from exact committed icon HEAD with corrected release metadata.** | Developer | TBD |
 
 ### Classification Reference
 
@@ -368,15 +384,18 @@ Tag purpose: Phase 99 closure — demo kit prepared, internal rehearsal complete
 ### Gate 3: Demo Package Identified — PASS
 
 ```
-Package: delivery/ghalal-demo-v1.0.0-20260726-010237 (fresh build with new icon)
-Previous package: delivery/ghalal-demo-v1.0.0-20260725-201405 (pre-icon change)
+Package: delivery/ghalal-demo-v1.0.0-20260726-012039 (provenance-corrected fresh build)
+Previous packages:
+  - delivery/ghalal-demo-v1.0.0-20260726-010237 (superseded — wrong build metadata)
+  - delivery/ghalal-demo-v1.0.0-20260725-201405 (pre-icon change)
 Version: 1.0.0+1
-Payload file count: 30 (covered by checksums.sha256)
+Payload file count: 22 (covered by checksums.sha256)
 Metadata file count: 3 (checksums.sha256, file-listing.txt, release-manifest.json)
-Total files on disk: 33
-Build date: 2026-07-25T22:02:37Z
-Build commit: 23908b244d202e0f7a4d9869786e80bf1f20db6e
-Build type: Fresh Windows release build (new icon embedded)
+Total files on disk: 25
+Build date: 2026-07-26T01:20:39+03:00
+Build commit: 44e84a1f7de9809e5e8ee61b9d484e22669d53bb
+Build type: Fresh Windows release build from clean working tree (icon embedded)
+Working tree state at build: Clean (verified by git status --porcelain=v1)
 ```
 **PASS**
 
@@ -384,9 +403,8 @@ Build type: Fresh Windows release build (new icon embedded)
 
 ```
 Release binaries: 22/22 SHA-256 match
-Documentation files: 7/7 SHA-256 match (includes PHASE-98-RELEASE-NOTES-AR.md)
-README: 1/1 SHA-256 match
-Total: 30/30 verified
+Metadata files: 3/3 (checksums.sha256, file-listing.txt, release-manifest.json)
+Total: 22/22 payload files verified
 ```
 **PASS**
 
@@ -405,15 +423,16 @@ No C++/H/CMake source
 ```
 **PASS**
 
-### Gate 6: Demo Launched from Packaged Artifact — PASS (fresh build)
+### Gate 6: Demo Launched from Packaged Artifact — PASS (provenance-corrected build)
 
 ```
-Package: delivery/ghalal-demo-v1.0.0-20260726-010237
-Executable: Release/grain_warehouse_erp_lite.exe (784,384 bytes)
+Package: delivery/ghalal-demo-v1.0.0-20260726-012039
+Executable: grain_warehouse_erp_lite.exe (784,384 bytes)
 Launch result: PASS — application started, ran, closed gracefully
-Launch timestamp: 2026-07-26 (fresh build verification)
+Launch timestamp: 2026-07-26 (provenance-corrected build verification)
 Environment: Windows 11 Pro 10.0.26200, Intel i5-1145G7, 1536x864, 120 DPI
-Icon embedded: Yes — verified via System.Drawing.Icon.ExtractAssociatedIcon
+Icon embedded: Yes — built from committed HEAD with replacement ICO
+Working tree at build: Clean (verified by git status --porcelain=v1)
 ```
 **PASS**
 
@@ -471,7 +490,7 @@ No evidence collected — client session not performed
 ```
 Full test suite: 1806 passed, 1 skipped, 0 failed
 Pre-existing skip: phase8d_durable_supplier_repository_test
-Result preserved from Phase 99 (no code changes)
+Fresh verification: 2026-07-26
 ```
 **PASS**
 
@@ -479,7 +498,7 @@ Result preserved from Phase 99 (no code changes)
 
 ```
 0 errors (31 pre-existing info/warning only)
-Result preserved from Phase 99 (no code changes)
+Fresh verification: 2026-07-26
 ```
 **PASS**
 
@@ -487,22 +506,27 @@ Result preserved from Phase 99 (no code changes)
 
 ```
 0 changes (340 files clean)
-Result preserved from Phase 99 (no code changes)
+Fresh verification: 2026-07-26
 ```
 **PASS**
 
 ### Gate 17: git diff --check — PASS
 
 ```
-Clean (CRLF warnings expected on Windows)
+Clean (CRLF warnings expected on Windows for generated files)
+Fresh verification: 2026-07-26
 ```
 **PASS**
 
 ### Gate 18: Windows Build — PASS
 
 ```
-Existing build preserved from Phase 98
-No production code changed
+Fresh Windows release build from clean working tree
+Build commit: 44e84a1f7de9809e5e8ee61b9d484e22669d53bb
+Build timestamp: 2026-07-26T01:20:39+03:00
+Build command: flutter build windows --release
+Build result: SUCCESS
+Working tree at build: Clean (verified by git status --porcelain=v1)
 ```
 **PASS**
 
