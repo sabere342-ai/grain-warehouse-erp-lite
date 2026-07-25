@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class FirstOwnerSetupScreen extends StatefulWidget {
@@ -15,6 +15,7 @@ class _FirstOwnerSetupScreenState extends State<FirstOwnerSetupScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -28,83 +29,117 @@ class _FirstOwnerSetupScreenState extends State<FirstOwnerSetupScreen> {
   Widget build(BuildContext context) {
     final auth = AuthScope.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
+              constraints: const BoxConstraints(
+                maxWidth: AppComponentSizes.authMaxWidth,
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 child: PremiumCard(
-                  padding: const EdgeInsets.all(28),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(
-                        Icons.admin_panel_settings_rounded,
-                        size: 52,
-                        color: Theme.of(context).colorScheme.primary,
+                      Semantics(
+                        label: 'إعداد المالك الأول',
+                        child: Icon(
+                          Icons.admin_panel_settings_rounded,
+                          size: AppIconSizes.hero,
+                          color: colorScheme.primary,
+                        ),
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         'إعداد المالك الأول',
                         textAlign: TextAlign.center,
                         style: textTheme.headlineMedium,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         'لا يوجد مالك مسجل لهذا المخزن. أنشئ حساب المالك للبدء.',
                         textAlign: TextAlign.center,
                         style: textTheme.bodyLarge?.copyWith(
-                          color: AppColors.mutedText,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.lg),
                       TextField(
+                        key: const Key('setup-name-field'),
                         controller: _nameController,
                         textDirection: TextDirection.rtl,
                         decoration: const InputDecoration(
                           labelText: 'اسم المالك',
-                          prefixIcon: Icon(Icons.badge_outlined),
+                          prefixIcon: Icon(Icons.badge_rounded),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       TextField(
+                        key: const Key('setup-phone-field'),
                         controller: _phoneController,
                         textDirection: TextDirection.rtl,
+                        keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(
                           labelText: 'رقم الهاتف',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                          prefixIcon: Icon(Icons.phone_rounded),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       TextField(
+                        key: const Key('setup-password-field'),
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         textDirection: TextDirection.rtl,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'كلمة المرور',
-                          prefixIcon: Icon(Icons.lock_outline_rounded),
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            tooltip: _obscurePassword
+                                ? 'إظهار كلمة المرور'
+                                : 'إخفاء كلمة المرور',
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_rounded
+                                  : Icons.visibility_off_rounded,
+                            ),
+                          ),
                         ),
                       ),
                       if (auth.state.errorMessage != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          auth.state.errorMessage!,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                            fontWeight: FontWeight.w700,
+                        const SizedBox(height: AppSpacing.sm),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            auth.state.errorMessage!,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.error,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ],
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppSpacing.lg),
                       FilledButton.icon(
+                        key: const Key('setup-submit-button'),
                         onPressed: _isSubmitting ? null : _submit,
-                        icon: const Icon(Icons.check_circle_rounded),
+                        icon: _isSubmitting
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle_rounded),
                         label: Text(_isSubmitting
                             ? 'جاري الحفظ...'
                             : 'إنشاء حساب المالك'),
