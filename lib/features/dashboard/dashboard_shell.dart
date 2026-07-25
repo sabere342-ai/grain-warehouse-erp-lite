@@ -22,6 +22,7 @@ import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/suppliers/suppliers_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/layout/responsive_layout.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/business_identity_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/page_back_button.dart';
 
 class DashboardShell extends StatefulWidget {
@@ -285,26 +286,45 @@ class _DesktopNavigationSidebar extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         child: SafeArea(
           top: false,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            itemCount: destinations.length,
-            itemBuilder: (context, index) {
-              final destination = destinations[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
-                child: ListTile(
-                  selected: selectedIndex == index,
-                  selectedTileColor:
-                      Theme.of(context).colorScheme.secondaryContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  leading: Icon(destination.icon),
-                  title: Text(destination.label),
-                  onTap: () => onSelected(index),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.xs,
                 ),
-              );
-            },
+                child: BusinessIdentityHeader(
+                  compact: true,
+                  subtitle: 'إدارة مخازن الحبوب',
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  itemCount: destinations.length,
+                  itemBuilder: (context, index) {
+                    final destination = destinations[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                      child: ListTile(
+                        selected: selectedIndex == index,
+                        selectedTileColor:
+                            Theme.of(context).colorScheme.secondaryContainer,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        leading: Icon(destination.icon),
+                        title: Text(destination.label),
+                        onTap: () => onSelected(index),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -335,24 +355,8 @@ class _MobileNavigationDrawer extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.warehouse_rounded,
-                    size: AppIconSizes.lg,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(identityName,
-                      style: Theme.of(context).textTheme.titleLarge),
-                  Text(
-                    'إدارة مخازن الحبوب',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
+              child: BusinessIdentityHeader(
+                subtitle: 'إدارة مخازن الحبوب',
               ),
             ),
             const Divider(height: 1),

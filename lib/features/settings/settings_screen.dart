@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/business_identity_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_theme_selector.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -128,6 +129,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 8),
                     Text(identityController.message!),
                   ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            PremiumCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('معاينة الهوية', style: textTheme.titleLarge),
+                  const SizedBox(height: AppSpacing.xs),
+                  const Text(
+                    'هذا شكل الهوية كما يظهر في التطبيق.',
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: BusinessIdentityHeader(
+                      identity: identityController.identity,
+                      showLogo: true,
+                    ),
+                  ),
                 ],
               ),
             ),

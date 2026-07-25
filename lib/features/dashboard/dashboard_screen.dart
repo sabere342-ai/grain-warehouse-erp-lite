@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
@@ -92,11 +94,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return ListView(
           padding: const EdgeInsets.only(bottom: AppSpacing.lg),
           children: [
-            const GhalalPageHeader(
-              title: 'لوحة متابعة غلال',
-              subtitle:
-                  'نظرة سريعة على حركة الحبوب والمخزون والحسابات المصرح بها.',
-              icon: Icons.dashboard_rounded,
+            Builder(
+              builder: (context) {
+                final displayName = BusinessIdentityScope.maybeOf(context)
+                        ?.identity
+                        .displayName ??
+                    BusinessIdentity.defaultDisplayName;
+                return GhalalPageHeader(
+                  title: 'لوحة متابعة $displayName',
+                  subtitle:
+                      'نظرة سريعة على حركة الحبوب والمخزون والحسابات المصرح بها.',
+                  icon: Icons.dashboard_rounded,
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             if (ownerCanExport) ...[
