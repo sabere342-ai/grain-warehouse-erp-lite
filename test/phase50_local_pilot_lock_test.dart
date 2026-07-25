@@ -22,24 +22,33 @@ void main() {
     });
 
     test('Phase 50 doc mentions read-only stock adjustment report', () {
-      expect(content, contains('No PDF/export for stock adjustment report yet'));
+      expect(
+          content, contains('No PDF/export for stock adjustment report yet'));
       expect(content, contains('No invented before/after stock balances'));
     });
 
-    test('Phase 50 doc includes Arabic owner checklist and stop conditions', () {
+    test('Phase 50 doc includes Arabic owner checklist and stop conditions',
+        () {
       expect(content, contains('فتح البرنامج من نسخة التسليم'));
       expect(content, contains('أوقف التجربة وأبلغ المطور'));
-      expect(content, contains('تضمّن أي حزمة عميل ملفات مصدر أو ملفات مطور داخلية'));
+      expect(content,
+          contains('تضمّن أي حزمة عميل ملفات مصدر أو ملفات مطور داخلية'));
     });
 
     test('Client docs explicitly deny cloud/mobile promises', () {
-      final releaseNotes = File('docs/PILOT-RELEASE-NOTES-AR.md').readAsStringSync().toLowerCase();
-      final ownerChecklist = File('docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md').readAsStringSync().toLowerCase();
-      final quickStart = File('docs/OWNER-QUICK-START-AR.md').readAsStringSync().toLowerCase();
+      final releaseNotes = File('docs/PILOT-RELEASE-NOTES-AR.md')
+          .readAsStringSync()
+          .toLowerCase();
+      final ownerChecklist = File('docs/PILOT-OWNER-ACCEPTANCE-CHECKLIST-AR.md')
+          .readAsStringSync()
+          .toLowerCase();
+      final quickStart =
+          File('docs/OWNER-QUICK-START-AR.md').readAsStringSync().toLowerCase();
 
       expect(releaseNotes, contains('لا تضيف مزامنة سحابية'));
       expect(releaseNotes, contains('لا تضيف تطبيق موبايل'));
-      expect(ownerChecklist, contains('لا تعتبر السحابة أو الموبايل جزءًا من هذه النسخة'));
+      expect(ownerChecklist,
+          contains('لا تعتبر السحابة أو الموبايل جزءًا من هذه النسخة'));
       expect(quickStart, isNot(contains('سحابة')));
     });
   });

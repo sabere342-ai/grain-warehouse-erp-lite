@@ -37,10 +37,13 @@ void main() {
       );
 
       expect(entry.debitAmountQirsh, sale.totalQirsh);
-      expect(await fixture.ledger.balanceForCustomer(customer.id), sale.totalQirsh);
+      expect(await fixture.ledger.balanceForCustomer(customer.id),
+          sale.totalQirsh);
     });
 
-    test('invalid credit sale below minimum price does not mutate stock or ledger', () async {
+    test(
+        'invalid credit sale below minimum price does not mutate stock or ledger',
+        () async {
       final fixture = _Fixture();
       await fixture.seedProduct(
         defaultSalePricePiastersPerKg: 7000,
@@ -101,10 +104,14 @@ void main() {
       expect(await fixture.ledger.balanceForCustomer(customer.id), 48000);
       expect(collection.amountQirsh, 2000);
       final logs = await fixture.audit.listLogs();
-      expect(logs.any((entry) => entry.actionType == 'customer.collection.recorded'), isTrue);
+      expect(
+          logs.any(
+              (entry) => entry.actionType == 'customer.collection.recorded'),
+          isTrue);
     });
 
-    test('statement shows debit then collection credit with running balance', () async {
+    test('statement shows debit then collection credit with running balance',
+        () async {
       final fixture = _Fixture();
       await fixture.seedProduct();
       final customer = await fixture.customers.createCustomer(
@@ -167,8 +174,7 @@ class _Fixture {
       ProductDraft(
         name: 'حبوب 1',
         unit: GrainUnit.kilogram,
-        defaultSalePricePiastersPerKg:
-            defaultSalePricePiastersPerKg ?? 5000,
+        defaultSalePricePiastersPerKg: defaultSalePricePiastersPerKg ?? 5000,
         minimumSalePricePiastersPerKg: minimumSalePricePiastersPerKg,
         referenceCostPricePiastersPerKg: 4000,
       ),

@@ -92,10 +92,8 @@ void main() {
 
     setUpAll(() async {
       await PdfExportService.initialize();
-      final regular =
-          await rootBundle.load('assets/fonts/Amiri-Regular.ttf');
-      final bold =
-          await rootBundle.load('assets/fonts/Amiri-Bold.ttf');
+      final regular = await rootBundle.load('assets/fonts/Amiri-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Amiri-Bold.ttf');
       arabicFont = pw.Font.ttf(regular.buffer.asByteData());
       arabicFontBold = pw.Font.ttf(bold.buffer.asByteData());
     });

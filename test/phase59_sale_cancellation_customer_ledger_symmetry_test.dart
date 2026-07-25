@@ -26,7 +26,10 @@ void main() {
 
     test('cancelling credit sale reverses customer receivable', () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0627\u062e\u062a\u0628\u0627\u0631', isActive: true),
+        const CustomerDraft(
+            name:
+                '\u0639\u0645\u064a\u0644 \u0627\u062e\u062a\u0628\u0627\u0631',
+            isActive: true),
       );
 
       final created = await f.controller.createSale(
@@ -40,8 +43,10 @@ void main() {
       expect(created, isTrue);
 
       final entries = await f.ledger.listEntries();
-      expect(entries.where((e) => e.sourceDocumentType == 'sale'), hasLength(1));
-      final originalEntry = entries.firstWhere((e) => e.sourceDocumentType == 'sale');
+      expect(
+          entries.where((e) => e.sourceDocumentType == 'sale'), hasLength(1));
+      final originalEntry =
+          entries.firstWhere((e) => e.sourceDocumentType == 'sale');
       expect(originalEntry.debitAmountQirsh, 50000);
       expect(originalEntry.creditAmountQirsh, 0);
       expect(await f.ledger.balanceForCustomer(customer.id), 50000);
@@ -51,25 +56,32 @@ void main() {
       final cancelled = await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0625\u062f\u062e\u0627\u0644',
+        cancellationReason:
+            '\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0625\u062f\u062e\u0627\u0644',
       );
       expect(cancelled, isTrue);
 
       final allEntries = await f.ledger.listEntries();
-      expect(allEntries.where((e) => e.sourceDocumentType == 'sale'), hasLength(1));
-      final reversal = allEntries.firstWhere((e) => e.sourceDocumentType == 'saleCancellation');
+      expect(allEntries.where((e) => e.sourceDocumentType == 'sale'),
+          hasLength(1));
+      final reversal = allEntries
+          .firstWhere((e) => e.sourceDocumentType == 'saleCancellation');
       expect(reversal.type, CustomerAccountEntryType.saleCancellation);
       expect(reversal.debitAmountQirsh, 0);
       expect(reversal.creditAmountQirsh, 50000);
       expect(reversal.sourceDocumentId, f.controller.sales.first.id);
-      expect(reversal.descriptionAr, contains('\u0625\u0644\u063a\u0627\u0621'));
+      expect(
+          reversal.descriptionAr, contains('\u0625\u0644\u063a\u0627\u0621'));
 
       expect(await f.ledger.balanceForCustomer(customer.id), 0);
     });
 
-    test('cancelling fully paid cash sale does not create reversal entry', () async {
+    test('cancelling fully paid cash sale does not create reversal entry',
+        () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0646\u0642\u062f\u064a', isActive: true),
+        const CustomerDraft(
+            name: '\u0639\u0645\u064a\u0644 \u0646\u0642\u062f\u064a',
+            isActive: true),
       );
 
       await f.controller.createSale(
@@ -87,19 +99,25 @@ void main() {
       final result = await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u0627\u062e\u062a\u0628\u0627\u0631 \u0625\u0644\u063a\u0627\u0621',
+        cancellationReason:
+            '\u0627\u062e\u062a\u0628\u0627\u0631 \u0625\u0644\u063a\u0627\u0621',
       );
       expect(result, isTrue);
 
       final entries = await f.ledger.listEntries();
-      final cancellations = entries.where((e) => e.sourceDocumentType == 'saleCancellation');
+      final cancellations =
+          entries.where((e) => e.sourceDocumentType == 'saleCancellation');
       expect(cancellations, isEmpty);
       expect(await f.ledger.balanceForCustomer(customer.id), 0);
     });
 
-    test('cancelling partial payment sale reverses remaining balance', () async {
+    test('cancelling partial payment sale reverses remaining balance',
+        () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u062f\u0641\u0639 \u062c\u0632\u0626\u064a', isActive: true),
+        const CustomerDraft(
+            name:
+                '\u0639\u0645\u064a\u0644 \u062f\u0641\u0639 \u062c\u0632\u0626\u064a',
+            isActive: true),
       );
 
       await f.controller.createSale(
@@ -118,18 +136,23 @@ void main() {
       await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u0625\u0644\u063a\u0627\u0621 \u062f\u0641\u0639 \u062c\u0632\u0626\u064a',
+        cancellationReason:
+            '\u0625\u0644\u063a\u0627\u0621 \u062f\u0641\u0639 \u062c\u0632\u0626\u064a',
       );
 
       expect(await f.ledger.balanceForCustomer(customer.id), 0);
       final entries = await f.ledger.listEntries();
-      final reversal = entries.firstWhere((e) => e.sourceDocumentType == 'saleCancellation');
+      final reversal =
+          entries.firstWhere((e) => e.sourceDocumentType == 'saleCancellation');
       expect(reversal.creditAmountQirsh, 28000);
     });
 
-    test('double cancellation does not create duplicate reversal entries', () async {
+    test('double cancellation does not create duplicate reversal entries',
+        () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0645\u0632\u062f\u0648\u062c', isActive: true),
+        const CustomerDraft(
+            name: '\u0639\u0645\u064a\u0644 \u0645\u0632\u062f\u0648\u062c',
+            isActive: true),
       );
 
       await f.controller.createSale(
@@ -145,23 +168,30 @@ void main() {
       await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u0627\u0644\u0645\u0631\u0629 \u0627\u0644\u0623\u0648\u0644\u0649',
+        cancellationReason:
+            '\u0627\u0644\u0645\u0631\u0629 \u0627\u0644\u0623\u0648\u0644\u0649',
       );
       await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u0627\u0644\u0645\u0631\u0629 \u0627\u0644\u062b\u0627\u0646\u064a\u0629',
+        cancellationReason:
+            '\u0627\u0644\u0645\u0631\u0629 \u0627\u0644\u062b\u0627\u0646\u064a\u0629',
       );
 
       final entries = await f.ledger.listEntries();
-      final cancellations = entries.where((e) => e.sourceDocumentType == 'saleCancellation');
+      final cancellations =
+          entries.where((e) => e.sourceDocumentType == 'saleCancellation');
       expect(cancellations, hasLength(1));
       expect(await f.ledger.balanceForCustomer(customer.id), 0);
     });
 
-    test('reversal entry is linked to original sale via sourceDocumentId', () async {
+    test('reversal entry is linked to original sale via sourceDocumentId',
+        () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0627\u0644\u062a\u062d\u0642\u0642', isActive: true),
+        const CustomerDraft(
+            name:
+                '\u0639\u0645\u064a\u0644 \u0627\u0644\u062a\u062d\u0642\u0642',
+            isActive: true),
       );
 
       await f.controller.createSale(
@@ -188,7 +218,9 @@ void main() {
 
     test('cancellation blocked when customer has collections', () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0645\u062a\u062d\u0635\u0644', isActive: true),
+        const CustomerDraft(
+            name: '\u0639\u0645\u064a\u0644 \u0645\u062a\u062d\u0635\u0644',
+            isActive: true),
       );
 
       await f.controller.createSale(
@@ -214,7 +246,8 @@ void main() {
       final result = await f.controller.cancelSale(
         user: _owner,
         saleId: f.controller.sales.first.id,
-        cancellationReason: '\u0645\u062d\u0627\u0648\u0644\u0629 \u0625\u0644\u063a\u0627\u0621',
+        cancellationReason:
+            '\u0645\u062d\u0627\u0648\u0644\u0629 \u0625\u0644\u063a\u0627\u0621',
       );
       expect(result, isFalse);
       expect(f.controller.errorMessage, isNotNull);
@@ -222,7 +255,9 @@ void main() {
 
     test('direct repository reversal mirrors controller behavior', () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u0639\u0645\u064a\u0644 \u0645\u0628\u0627\u0634\u0631', isActive: true),
+        const CustomerDraft(
+            name: '\u0639\u0645\u064a\u0644 \u0645\u0628\u0627\u0634\u0631',
+            isActive: true),
       );
 
       final sale = await f.sales.createSale(
@@ -241,12 +276,14 @@ void main() {
       final cancelled = await f.sales.cancelSale(
         saleId: sale.id,
         cancelledByUserId: _owner.id,
-        cancellationReason: '\u0625\u0644\u063a\u0627\u0621 \u0645\u0628\u0627\u0634\u0631',
+        cancellationReason:
+            '\u0625\u0644\u063a\u0627\u0621 \u0645\u0628\u0627\u0634\u0631',
       );
       final reversal = await f.ledger.reverseSaleEntry(
         cancelledSale: cancelled,
         cancelledByUserId: _owner.id,
-        cancellationReason: '\u0625\u0644\u063a\u0627\u0621 \u0645\u0628\u0627\u0634\u0631',
+        cancellationReason:
+            '\u0625\u0644\u063a\u0627\u0621 \u0645\u0628\u0627\u0634\u0631',
       );
 
       expect(reversal.creditAmountQirsh, 50000);
@@ -271,7 +308,8 @@ void main() {
         () => f.ledger.reverseSaleEntry(
           cancelledSale: nonExistentSale,
           cancelledByUserId: _owner.id,
-          cancellationReason: '\u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f',
+          cancellationReason:
+              '\u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f',
         ),
         throwsStateError,
       );
@@ -279,7 +317,8 @@ void main() {
 
     test('reverseSaleEntry creates audit log entry', () async {
       final customer = await f.customers.createCustomer(
-        const CustomerDraft(name: '\u062a\u062f\u0642\u064a\u0642', isActive: true),
+        const CustomerDraft(
+            name: '\u062a\u062f\u0642\u064a\u0642', isActive: true),
       );
       final sale = await f.sales.createSale(
         SaleDraft(
@@ -295,7 +334,8 @@ void main() {
       await f.ledger.reverseSaleEntry(
         cancelledSale: sale,
         cancelledByUserId: _owner.id,
-        cancellationReason: '\u062a\u062f\u0642\u064a\u0642 \u0627\u0644\u062a\u062f\u0642\u064a\u0642',
+        cancellationReason:
+            '\u062a\u062f\u0642\u064a\u0642 \u0627\u0644\u062a\u062f\u0642\u064a\u0642',
       );
 
       final logs = await f.audit.listLogs();

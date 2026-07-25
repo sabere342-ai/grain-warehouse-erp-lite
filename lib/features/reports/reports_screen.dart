@@ -257,7 +257,8 @@ class _ReportBody extends StatelessWidget {
                 report.totalOutstandingReceivablesQirsh,
               ),
             ),
-            const Text('مبالغ لنا عند العملاء. التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.'),
+            const Text(
+                'مبالغ لنا عند العملاء. التحصيلات تقلل مديونية العملاء فقط ولا تُحسب كمبيعات أو ربح جديد.'),
           ],
         ),
         const SizedBox(height: 12),
@@ -276,7 +277,8 @@ class _ReportBody extends StatelessWidget {
                 report.totalOutstandingSupplierPayablesQirsh,
               ),
             ),
-            const Text('مبالغ علينا للموردين. المدفوعات للموردين تقلل الرصيد المستحق فقط ولا تُحسب كمصروفات.'),
+            const Text(
+                'مبالغ علينا للموردين. المدفوعات للموردين تقلل الرصيد المستحق فقط ولا تُحسب كمصروفات.'),
           ],
         ),
         const SizedBox(height: 12),

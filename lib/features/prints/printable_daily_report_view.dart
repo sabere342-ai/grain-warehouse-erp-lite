@@ -71,11 +71,13 @@ class PrintableDailyReportView extends StatelessWidget {
             children: [
               _MetricLine(
                 'تحصيل من العملاء',
-                MoneyUtils.formatPiastersAsEgp(report.totalCollectionsAmountQirsh),
+                MoneyUtils.formatPiastersAsEgp(
+                    report.totalCollectionsAmountQirsh),
               ),
               _MetricLine(
                 'مدفوعات للموردين',
-                MoneyUtils.formatPiastersAsEgp(report.totalSupplierPaymentsQirsh),
+                MoneyUtils.formatPiastersAsEgp(
+                    report.totalSupplierPaymentsQirsh),
               ),
             ],
           ),
@@ -90,7 +92,8 @@ class PrintableDailyReportView extends StatelessWidget {
               if (report.totalExpenseAmountQirsh > 0)
                 _MetricLine(
                   'إجمالي المصروفات',
-                  MoneyUtils.formatPiastersAsEgp(report.totalExpenseAmountQirsh),
+                  MoneyUtils.formatPiastersAsEgp(
+                      report.totalExpenseAmountQirsh),
                 ),
               if (report.totalOutstandingReceivablesQirsh > 0)
                 _MetricLine(

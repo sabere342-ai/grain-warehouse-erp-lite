@@ -30,8 +30,8 @@ void main() {
     late final String lower;
 
     setUpAll(() {
-      content = File('docs/PHASE-52-ACCOUNTING-FREEZE-AUDIT.md')
-          .readAsStringSync();
+      content =
+          File('docs/PHASE-52-ACCOUNTING-FREEZE-AUDIT.md').readAsStringSync();
       lower = content.toLowerCase();
     });
 
@@ -153,10 +153,10 @@ void main() {
 
       final beforeReportStock =
           await fixture.inventory.currentStockKg(fixture.product.id);
-      final beforeReportCustomer =
-          await fixture.customerAccounts.balanceForCustomer(fixture.customer.id);
-      final beforeReportSupplier =
-          await fixture.supplierAccounts.balanceForSupplier(fixture.supplier.id);
+      final beforeReportCustomer = await fixture.customerAccounts
+          .balanceForCustomer(fixture.customer.id);
+      final beforeReportSupplier = await fixture.supplierAccounts
+          .balanceForSupplier(fixture.supplier.id);
 
       final report = await fixture.reports.dailyActivityReport(
         selectedDate: _today,
@@ -166,7 +166,8 @@ void main() {
       expect(report.totalCollectionsAmountQirsh, 30000);
       expect(report.totalSupplierPaymentsQirsh, 25000);
       expect(report.totalOutstandingReceivablesQirsh, beforeReportCustomer);
-      expect(report.totalOutstandingSupplierPayablesQirsh, beforeReportSupplier);
+      expect(
+          report.totalOutstandingSupplierPayablesQirsh, beforeReportSupplier);
 
       expect(await fixture.inventory.currentStockKg(fixture.product.id),
           beforeReportStock);
@@ -211,12 +212,14 @@ void main() {
         ]),
       );
       expect(
-        movements.singleWhere((m) => m.id == purchase.stockMovementId)
+        movements
+            .singleWhere((m) => m.id == purchase.stockMovementId)
             .signedQuantityKg,
         120,
       );
       expect(
-        movements.singleWhere((m) => m.id == sale.stockMovementId)
+        movements
+            .singleWhere((m) => m.id == sale.stockMovementId)
             .signedQuantityKg,
         -50,
       );
@@ -279,8 +282,7 @@ void main() {
       expect(
         movements
             .singleWhere((movement) =>
-                movement.movementType ==
-                StockMovementType.purchaseCancellation)
+                movement.movementType == StockMovementType.purchaseCancellation)
             .reversedMovementId,
         activePurchase.stockMovementId,
       );

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -12,7 +12,8 @@ class ExpenseController extends ChangeNotifier {
   String? _errorMessage;
   bool _isLoading = false;
 
-  List<ExpenseRecord> get expenses => List<ExpenseRecord>.unmodifiable(_expenses);
+  List<ExpenseRecord> get expenses =>
+      List<ExpenseRecord>.unmodifiable(_expenses);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 

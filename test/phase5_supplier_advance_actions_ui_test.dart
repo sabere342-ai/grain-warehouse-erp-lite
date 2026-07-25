@@ -40,15 +40,15 @@ void main() {
       await tester.tap(find.text('تطبيق السلفة'));
       await tester.pumpAndSettle();
 
-      await tester.tap(
-          find.byKey(const Key('supplier-advance-application-submit')));
+      await tester
+          .tap(find.byKey(const Key('supplier-advance-application-submit')));
       await tester.pump();
       expect(find.text('أدخل المبلغ أولًا.'), findsOneWidget);
 
       await tester.enterText(
           find.byKey(const Key('supplier-advance-application-amount')), '1');
-      await tester.tap(
-          find.byKey(const Key('supplier-advance-application-submit')));
+      await tester
+          .tap(find.byKey(const Key('supplier-advance-application-submit')));
       await tester.pumpAndSettle();
 
       expect(fixture.controller.applyCalls, 1);
@@ -68,8 +68,8 @@ void main() {
       await tester.pump();
       expect(find.text('اختر الحساب المالي أولًا.'), findsOneWidget);
 
-      await tester.tap(
-          find.byKey(const Key('supplier-advance-refund-account')));
+      await tester
+          .tap(find.byKey(const Key('supplier-advance-refund-account')));
       await tester.pumpAndSettle();
       await tester.tap(find.textContaining('الخزينة').last);
       await tester.pumpAndSettle();
@@ -82,8 +82,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(fixture.controller.refundCalls, 1);
-      expect(find.text('تم استرداد مبلغ السلفة من المورد بنجاح'),
-          findsOneWidget);
+      expect(
+          find.text('تم استرداد مبلغ السلفة من المورد بنجاح'), findsOneWidget);
     });
   });
 
@@ -107,7 +107,8 @@ void main() {
     final entries = statement.lines
         .map((line) => line.entry)
         .where((entry) =>
-            entry.sourceType == FinancialAccountEntrySource.supplierAdvanceRefund)
+            entry.sourceType ==
+            FinancialAccountEntrySource.supplierAdvanceRefund)
         .toList();
 
     expect(replay.id, first.id);
@@ -145,9 +146,13 @@ final _owner = AppUser(
 );
 
 class _Fixture {
-  const _Fixture({required this.supplier, required this.account,
-    required this.accounts, required this.ledger, required this.advance,
-    required this.controller});
+  const _Fixture(
+      {required this.supplier,
+      required this.account,
+      required this.accounts,
+      required this.ledger,
+      required this.advance,
+      required this.controller});
   final Supplier supplier;
   final FinancialAccount account;
   final LocalFinancialAccountRepository accounts;
@@ -159,21 +164,25 @@ class _Fixture {
     final audit = LocalAuditLogRepository();
     final accounts = LocalFinancialAccountRepository(auditLogRepository: audit);
     final account = await accounts.createAccount(const FinancialAccountDraft(
-      name: 'الخزينة', type: FinancialAccountType.treasury,
-      createdByUserId: 'owner-phase5'));
+        name: 'الخزينة',
+        type: FinancialAccountType.treasury,
+        createdByUserId: 'owner-phase5'));
     final suppliers = LocalSupplierRepository();
-    final supplier = await suppliers.createSupplier(
-      const SupplierDraft(name: 'مورد الاختبار'));
+    final supplier = await suppliers
+        .createSupplier(const SupplierDraft(name: 'مورد الاختبار'));
     final ledger = LocalSupplierAccountRepository(
       supplierRepository: suppliers,
       auditLogRepository: audit,
       financialAccountRepository: accounts,
     );
     final advance = SupplierAdvance(
-      id: 'supplier-advance-phase5', supplierId: supplier.id,
+      id: 'supplier-advance-phase5',
+      supplierId: supplier.id,
       sourcePaymentId: 'supplier-payment-phase5',
-      financialAccountId: account.id, amountQirsh: 200,
-      createdAt: _date, createdByUserId: _owner.id,
+      financialAccountId: account.id,
+      amountQirsh: 200,
+      createdAt: _date,
+      createdByUserId: _owner.id,
       ownerApprovalId: 'creation-approval',
       operationRequestId: 'advance-creation-request',
       paymentMethod: PaymentMethod.cash,
@@ -196,8 +205,13 @@ class _Fixture {
         remainingQirsh: 200,
       ),
     );
-    return _Fixture(supplier: supplier, account: account, accounts: accounts,
-      ledger: ledger, advance: advance, controller: controller);
+    return _Fixture(
+        supplier: supplier,
+        account: account,
+        accounts: accounts,
+        ledger: ledger,
+        advance: advance,
+        controller: controller);
   }
 }
 
@@ -213,7 +227,9 @@ class _ProbeSupplierController extends SupplierController {
   int refundCalls = 0;
 
   @override
-  Future<List<SupplierAdvanceSummary>> advancesForSupplier(String supplierId) async => [summary];
+  Future<List<SupplierAdvanceSummary>> advancesForSupplier(
+          String supplierId) async =>
+      [summary];
 
   @override
   Future<SupplierAdvanceActionResult> applySupplierAdvance({

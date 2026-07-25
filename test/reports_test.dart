@@ -635,7 +635,8 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
   Future<List<SupplierAdvance>> listAdvances() async => const [];
 
   @override
-  Future<List<SupplierAdvanceApplication>> listAdvanceApplications() async => const [];
+  Future<List<SupplierAdvanceApplication>> listAdvanceApplications() async =>
+      const [];
 
   @override
   Future<List<SupplierAdvanceRefund>> listAdvanceRefunds() async => const [];
@@ -644,7 +645,8 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
   Future<int> remainingAdvanceQirsh(String advanceId) async => 0;
 
   @override
-  Future<SupplierAdvanceApplication> applyAdvance(SupplierAdvanceApplicationDraft draft) =>
+  Future<SupplierAdvanceApplication> applyAdvance(
+          SupplierAdvanceApplicationDraft draft) =>
       throw UnsupportedError('Reports test fake is read-only.');
 
   @override
@@ -653,10 +655,12 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
     required String applicationId,
     required String reason,
     required String operationRequestId,
-  }) => throw UnsupportedError('Reports test fake is read-only.');
+  }) =>
+      throw UnsupportedError('Reports test fake is read-only.');
 
   @override
-  Future<SupplierAdvanceRefund> refundAdvance(SupplierAdvanceRefundDraft draft) =>
+  Future<SupplierAdvanceRefund> refundAdvance(
+          SupplierAdvanceRefundDraft draft) =>
       throw UnsupportedError('Reports test fake is read-only.');
 
   @override
@@ -666,7 +670,8 @@ class _FakeSupplierAccountRepository implements SupplierAccountRepository {
     required String reason,
     required String operationRequestId,
     String? overpaymentApprovalId,
-  }) => throw UnsupportedError('Reports test fake is read-only.');
+  }) =>
+      throw UnsupportedError('Reports test fake is read-only.');
 
   @override
   Future<SupplierPaymentCancellation> cancelPayment({

@@ -302,7 +302,6 @@ void main() {
       expect(find.text('تسجيل فاتورة بيع'), findsOneWidget);
     });
 
-
     testWidgets('sales screen shows selectable product cards', (tester) async {
       final auth =
           await _signedInController(phone: '01000000000', password: 'owner123');

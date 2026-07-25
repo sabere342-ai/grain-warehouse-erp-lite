@@ -1387,8 +1387,10 @@ void main() {
           toDate: DateTime(2026, 1, 31),
         );
 
-        expect(report.signedGrandCashEffect,
-            report.totalSupplierNetRefundInflow - report.totalCustomerNetRefundOutflow);
+        expect(
+            report.signedGrandCashEffect,
+            report.totalSupplierNetRefundInflow -
+                report.totalCustomerNetRefundOutflow);
         expect(report.signedGrandCashEffect, 20000);
       });
 
@@ -1455,8 +1457,8 @@ void main() {
           toDate: DateTime(2026, 1, 31),
         );
 
-        final customerGrossSum = report.customerSummaries
-            .fold<int>(0, (s, c) => s + c.grossAmount);
+        final customerGrossSum =
+            report.customerSummaries.fold<int>(0, (s, c) => s + c.grossAmount);
         final customerRevSum = report.customerSummaries
             .fold<int>(0, (s, c) => s + c.reversalAmount);
         expect(customerGrossSum, report.totalCustomerGrossRefundOutflow);
@@ -1522,8 +1524,10 @@ void main() {
           toDate: DateTime(2026, 1, 31),
         );
 
-        expect(report.signedGrandCashEffect,
-            report.totalSupplierNetRefundInflow - report.totalCustomerNetRefundOutflow);
+        expect(
+            report.signedGrandCashEffect,
+            report.totalSupplierNetRefundInflow -
+                report.totalCustomerNetRefundOutflow);
         expect(report.customerSummaries.first.netAmount,
             report.totalCustomerNetRefundOutflow);
         expect(report.supplierSummaries.first.netAmount,
@@ -1640,8 +1644,7 @@ void main() {
       });
 
       test('details sorted by required comparator', () async {
-        final acc1 =
-            await createAccount('بنك', FinancialAccountType.bank);
+        final acc1 = await createAccount('بنك', FinancialAccountType.bank);
         final acc2 =
             await createAccount('خزينة', FinancialAccountType.treasury);
         await seedOpeningBalance(acc1.id, 1000000);
@@ -1716,8 +1719,7 @@ void main() {
           sourceDocumentId: 'car-1',
         );
 
-        final statementBefore =
-            await repo.statementForAccount(acc.id);
+        final statementBefore = await repo.statementForAccount(acc.id);
         final countBefore = statementBefore.lines.length;
 
         await service.getAdvancesAndRefundsReport(
@@ -1725,8 +1727,7 @@ void main() {
           toDate: DateTime(2026, 1, 31),
         );
 
-        final statementAfter =
-            await repo.statementForAccount(acc.id);
+        final statementAfter = await repo.statementForAccount(acc.id);
         expect(statementAfter.lines.length, countBefore);
       });
 

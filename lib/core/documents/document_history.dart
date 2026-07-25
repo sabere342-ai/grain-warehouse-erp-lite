@@ -182,7 +182,8 @@ class LocalDocumentHistoryRepository implements DocumentHistoryRepository {
           productId: sale.productId,
           productName: sale.isMultiItem
               ? '\u0641\u0627\u062a\u0648\u0631\u0629 ${sale.items.length} \u0623\u0635\u0646\u0627\u0641'
-              : (productNames[sale.productId] ?? '\u0635\u0646\u0641 \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'),
+              : (productNames[sale.productId] ??
+                  '\u0635\u0646\u0641 \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'),
           quantityKg: sale.quantityKg,
           unitPricePiastersPerKg: sale.salePriceQirshPerKg,
           totalPiasters: sale.totalQirsh,

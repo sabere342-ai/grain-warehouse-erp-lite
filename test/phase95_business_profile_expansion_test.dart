@@ -600,10 +600,8 @@ class _TestSettingsWrapper extends StatelessWidget {
             const SizedBox(height: 8),
             if (identity.trimmedTaxNumber != null)
               Text(identity.trimmedTaxNumber!),
-            if (identity.trimmedAddress != null)
-              Text(identity.trimmedAddress!),
-            if (identity.trimmedPhone != null)
-              Text(identity.trimmedPhone!),
+            if (identity.trimmedAddress != null) Text(identity.trimmedAddress!),
+            if (identity.trimmedPhone != null) Text(identity.trimmedPhone!),
             const SizedBox(height: 8),
             const Text('بيانات المنشأة الإضافية'),
             const Text('رقم التسجيل الضريبي'),
@@ -616,8 +614,7 @@ class _TestSettingsWrapper extends StatelessWidget {
   }
 }
 
-class _MemoryBusinessIdentityRepository
-    implements BusinessIdentityRepository {
+class _MemoryBusinessIdentityRepository implements BusinessIdentityRepository {
   _MemoryBusinessIdentityRepository(this._identity);
 
   BusinessIdentity _identity;

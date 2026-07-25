@@ -32,7 +32,8 @@ void main() {
         () async {
       final fixture = await _fixture(referenceCost: 700);
       final sale = await fixture.sales.createSale(
-        _saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id),
+        _saleDraft(fixture.product.id,
+            price: 900, customerId: _testCustomer.id),
       );
 
       final report = await fixture.reports.dailyActivityReport(
@@ -49,7 +50,8 @@ void main() {
         () async {
       final fixture = await _fixture(referenceCost: null);
       final sale = await fixture.sales.createSale(
-        _saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id),
+        _saleDraft(fixture.product.id,
+            price: 900, customerId: _testCustomer.id),
       );
 
       final report = await fixture.reports.dailyActivityReport(
@@ -92,8 +94,8 @@ void main() {
         (tester) async {
       final auth = await _signedInController();
       final fixture = await _fixture(referenceCost: null);
-      await fixture.sales
-          .createSale(_saleDraft(fixture.product.id, price: 900, customerId: _testCustomer.id));
+      await fixture.sales.createSale(_saleDraft(fixture.product.id,
+          price: 900, customerId: _testCustomer.id));
 
       await tester.pumpWidget(
         _harness(
@@ -131,8 +133,8 @@ void main() {
       final fixture = await _fixture(referenceCost: 700);
 
       expect(
-        () => fixture.sales
-            .createSale(_saleDraft(fixture.product.id, price: 699, customerId: _testCustomer.id)),
+        () => fixture.sales.createSale(_saleDraft(fixture.product.id,
+            price: 699, customerId: _testCustomer.id)),
         throwsA(isA<MinimumSalePriceViolation>()),
       );
       expect(await fixture.sales.listSales(), isEmpty);
@@ -225,7 +227,8 @@ ProductDraft _productDraft({
   );
 }
 
-SaleDraft _saleDraft(String productId, {required int price, String? customerId}) {
+SaleDraft _saleDraft(String productId,
+    {required int price, String? customerId}) {
   return SaleDraft(
     productId: productId,
     quantityKg: 100,

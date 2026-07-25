@@ -33,12 +33,14 @@ void main() {
         expect(find.text('المحتوى'), findsOneWidget);
         expect(find.text('رجوع'), findsOneWidget);
         expect(
-          find.text('يمكن مراجعة هذا المستند من الشاشة أو تصويره/حفظه حسب المتاح حاليًا.'),
+          find.text(
+              'يمكن مراجعة هذا المستند من الشاشة أو تصويره/حفظه حسب المتاح حاليًا.'),
           findsOneWidget,
         );
       });
 
-      testWidgets('shows document date and number when provided', (tester) async {
+      testWidgets('shows document date and number when provided',
+          (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -321,7 +323,8 @@ void main() {
     });
 
     group('D. PrintableDailyReportView', () {
-      testWidgets('renders daily report with sales and purchases', (tester) async {
+      testWidgets('renders daily report with sales and purchases',
+          (tester) async {
         final date = DateTime(2026, 7, 9);
         final report = DailyActivityReport(
           start: date,
@@ -580,7 +583,8 @@ void main() {
     });
 
     group('G. Phase 41 Preview Accuracy QA — Edge Cases', () {
-      testWidgets('unknown product name falls back to منتج غير معروف', (tester) async {
+      testWidgets('unknown product name falls back to منتج غير معروف',
+          (tester) async {
         final sale = SaleRecord(
           id: 'SALE-UKN',
           productId: 'unknown-id',
@@ -610,8 +614,7 @@ void main() {
         expect(find.text('unknown-id'), findsNothing);
       });
 
-      testWidgets(
-          'multi-item sale with unknown products shows منتج غير معروف',
+      testWidgets('multi-item sale with unknown products shows منتج غير معروف',
           (tester) async {
         final sale = SaleRecord(
           id: 'SALE-MUK',
@@ -758,8 +761,7 @@ void main() {
         expect(find.text('ملغاة — تم عكس الأرصدة'), findsOneWidget);
       });
 
-      testWidgets(
-          'daily report shows collections and outstanding balances',
+      testWidgets('daily report shows collections and outstanding balances',
           (tester) async {
         final date = DateTime(2026, 7, 9);
         final report = DailyActivityReport(

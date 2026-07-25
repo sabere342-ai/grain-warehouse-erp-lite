@@ -34,7 +34,8 @@ void main() {
 
       setUp(() {
         productRepo = LocalProductRepository();
-        inventoryRepo = LocalInventoryRepository(productRepository: productRepo);
+        inventoryRepo =
+            LocalInventoryRepository(productRepository: productRepo);
         customerRepo = LocalCustomerRepository();
         customerAccountRepo = LocalCustomerAccountRepository(
           customerRepository: customerRepo,
@@ -254,8 +255,7 @@ void main() {
 
       test('returns all customers with balances (UI limits display)', () async {
         for (int i = 1; i <= 7; i++) {
-          await customerRepo
-              .createCustomer(CustomerDraft(name: 'عميل $i'));
+          await customerRepo.createCustomer(CustomerDraft(name: 'عميل $i'));
         }
         final customers = await customerRepo.listCustomers();
         for (int i = 0; i < customers.length; i++) {
@@ -314,8 +314,7 @@ void main() {
 
       test('returns all suppliers with payables (UI limits display)', () async {
         for (int i = 1; i <= 6; i++) {
-          await supplierRepo
-              .createSupplier(SupplierDraft(name: 'مورد $i'));
+          await supplierRepo.createSupplier(SupplierDraft(name: 'مورد $i'));
         }
         final suppliers = await supplierRepo.listSuppliers();
         for (int i = 0; i < suppliers.length; i++) {

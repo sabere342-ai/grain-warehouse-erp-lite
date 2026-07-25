@@ -40,9 +40,12 @@ void main() {
     });
 
     test('normalizes 011, 012, 015 prefixes', () {
-      expect(PhoneNumberNormalizer.normalize('01112345678'), equals('201112345678'));
-      expect(PhoneNumberNormalizer.normalize('01212345678'), equals('201212345678'));
-      expect(PhoneNumberNormalizer.normalize('01512345678'), equals('201512345678'));
+      expect(PhoneNumberNormalizer.normalize('01112345678'),
+          equals('201112345678'));
+      expect(PhoneNumberNormalizer.normalize('01212345678'),
+          equals('201212345678'));
+      expect(PhoneNumberNormalizer.normalize('01512345678'),
+          equals('201512345678'));
     });
 
     test('returns null for empty string', () {
@@ -77,7 +80,8 @@ void main() {
   });
 
   group('B. WhatsApp message templates', () {
-    test('sales invoice message contains customer name and document number', () {
+    test('sales invoice message contains customer name and document number',
+        () {
       final msg = WhatsAppMessageTemplates.salesInvoice(
         customerName: 'أحمد',
         documentNumber: 'S-0001',
@@ -128,13 +132,13 @@ void main() {
 
     test('all messages reference PDF attachment (مرفق) not auto-send', () {
       final sales = WhatsAppMessageTemplates.salesInvoice(
-        customerName: 'أ', documentNumber: '1', date: 'd');
+          customerName: 'أ', documentNumber: '1', date: 'd');
       final customer = WhatsAppMessageTemplates.customerStatement(
-        customerName: 'أ', date: 'd');
+          customerName: 'أ', date: 'd');
       final purchase = WhatsAppMessageTemplates.purchaseInvoice(
-        supplierName: 'أ', documentNumber: '1', date: 'd');
+          supplierName: 'أ', documentNumber: '1', date: 'd');
       final supplier = WhatsAppMessageTemplates.supplierStatement(
-        supplierName: 'أ', date: 'd');
+          supplierName: 'أ', date: 'd');
 
       for (final msg in [sales, customer, purchase, supplier]) {
         expect(msg, contains('مرفق'));
@@ -426,7 +430,10 @@ void main() {
       final scaffoldContent =
           File('lib/features/prints/printable_document_scaffold.dart')
               .readAsStringSync();
-      expect(scaffoldContent, contains('\\u0641\\u062A\\u062D \\u0648\\u0627\\u062A\\u0633\\u0627\\u0628'));
+      expect(
+          scaffoldContent,
+          contains(
+              '\\u0641\\u062A\\u062D \\u0648\\u0627\\u062A\\u0633\\u0627\\u0628'));
     });
   });
 }

@@ -45,7 +45,8 @@ class PrintableSupplierStatementView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final canWhatsApp = supplierPhone != null && supplierPhone!.trim().isNotEmpty;
+    final canWhatsApp =
+        supplierPhone != null && supplierPhone!.trim().isNotEmpty;
 
     return PrintableDocumentScaffold(
       title: 'كشف حساب مورد',

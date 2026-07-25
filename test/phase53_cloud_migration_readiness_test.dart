@@ -30,20 +30,24 @@ void main() {
     late final String lower;
 
     setUpAll(() {
-      content = File('docs/PHASE-53-CLOUD-MIGRATION-READINESS.md')
-          .readAsStringSync();
+      content =
+          File('docs/PHASE-53-CLOUD-MIGRATION-READINESS.md').readAsStringSync();
       lower = content.toLowerCase();
     });
 
     test('states planning-only scope and explicit non-implementation', () {
       expect(content, contains('Phase 53 - Cloud Migration Readiness'));
-      expect(content, contains('Phase 53 is a planning, readiness, and audit phase only'));
+      expect(content,
+          contains('Phase 53 is a planning, readiness, and audit phase only'));
       expect(content, contains('No cloud sync was implemented in Phase 53'));
       expect(content, contains('No mobile app was implemented in Phase 53'));
-      expect(content, contains('No multi-device live sync was implemented in Phase 53'));
-      expect(content, contains('No production code or schema change was required'));
+      expect(content,
+          contains('No multi-device live sync was implemented in Phase 53'));
+      expect(content,
+          contains('No production code or schema change was required'));
       expect(content, contains('Phase 53 does not add Firebase, Supabase'));
-      expect(content, contains('Phase 53 does not create a new delivery package'));
+      expect(
+          content, contains('Phase 53 does not create a new delivery package'));
     });
 
     test('documents cloud risks, minimum requirements, and migration path', () {
@@ -92,7 +96,9 @@ void main() {
   });
 
   group('Phase 53 current local invariants for future cloud migration', () {
-    test('inventory, customer, and supplier balances keep separate sources of truth', () async {
+    test(
+        'inventory, customer, and supplier balances keep separate sources of truth',
+        () async {
       final fixture = await _ReadinessFixture.create();
       final purchase = await fixture.purchases.createPurchaseIntake(
         fixture.purchaseDraft(quantityKg: 100, unitPriceQirshPerKg: 1000),
@@ -187,11 +193,12 @@ void main() {
         ),
       );
 
-      final stockBefore = await fixture.inventory.currentStockKg(fixture.product.id);
-      final customerBefore =
-          await fixture.customerAccounts.balanceForCustomer(fixture.customer.id);
-      final supplierBefore =
-          await fixture.supplierAccounts.balanceForSupplier(fixture.supplier.id);
+      final stockBefore =
+          await fixture.inventory.currentStockKg(fixture.product.id);
+      final customerBefore = await fixture.customerAccounts
+          .balanceForCustomer(fixture.customer.id);
+      final supplierBefore = await fixture.supplierAccounts
+          .balanceForSupplier(fixture.supplier.id);
       final movementsBefore = await fixture.inventory.listAllMovements();
 
       final report = await fixture.reports.dailyActivityReport(
@@ -201,7 +208,8 @@ void main() {
       expect(report.totalSalesAmountQirsh, sale.totalQirsh);
       expect(report.totalOutstandingReceivablesQirsh, customerBefore);
       expect(report.totalOutstandingSupplierPayablesQirsh, supplierBefore);
-      expect(await fixture.inventory.currentStockKg(fixture.product.id), stockBefore);
+      expect(await fixture.inventory.currentStockKg(fixture.product.id),
+          stockBefore);
       expect(
         await fixture.customerAccounts.balanceForCustomer(fixture.customer.id),
         customerBefore,
@@ -213,7 +221,8 @@ void main() {
       expect(await fixture.inventory.listAllMovements(), movementsBefore);
     });
 
-    test('cancellation keeps documents and adds reversal audit movements', () async {
+    test('cancellation keeps documents and adds reversal audit movements',
+        () async {
       final fixture = await _ReadinessFixture.create();
       final purchase = await fixture.purchases.createPurchaseIntake(
         fixture.purchaseDraft(quantityKg: 100, unitPriceQirshPerKg: 1000),
@@ -238,7 +247,8 @@ void main() {
       expect(await fixture.sales.listSales(), hasLength(1));
       expect(await fixture.purchases.listPurchaseIntakes(), hasLength(1));
       expect((await fixture.sales.listSales()).single.id, sale.id);
-      expect((await fixture.purchases.listPurchaseIntakes()).single.id, purchase.id);
+      expect((await fixture.purchases.listPurchaseIntakes()).single.id,
+          purchase.id);
 
       final movements = await fixture.inventory.listAllMovements();
       expect(
@@ -266,15 +276,18 @@ void main() {
       );
     });
 
-    test('backup and restore assumptions remain local-first in readiness docs', () {
+    test('backup and restore assumptions remain local-first in readiness docs',
+        () {
       final content =
           File('docs/PHASE-53-CLOUD-MIGRATION-READINESS.md').readAsStringSync();
       expect(content, contains('Current backup export is local JSON'));
-      expect(content, contains('Current restore is local restore-to-empty only'));
+      expect(
+          content, contains('Current restore is local restore-to-empty only'));
       expect(content, contains('Current restore is not a cloud merge'));
       expect(
         content,
-        contains('Current restore is not safe to run over non-empty cloud tenant data'),
+        contains(
+            'Current restore is not safe to run over non-empty cloud tenant data'),
       );
     });
   });

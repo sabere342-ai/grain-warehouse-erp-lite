@@ -196,7 +196,8 @@ ProductDraft _productDraft({
   );
 }
 
-SaleDraft _saleDraft(_Fixture fixture, {required int price, String? customerId}) {
+SaleDraft _saleDraft(_Fixture fixture,
+    {required int price, String? customerId}) {
   return SaleDraft(
     productId: fixture.product.id,
     quantityKg: 100,

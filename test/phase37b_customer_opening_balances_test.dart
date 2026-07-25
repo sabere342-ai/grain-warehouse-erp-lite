@@ -140,8 +140,7 @@ void main() {
         expect(statement.finalBalanceQirsh, 500000);
       });
 
-      test('opening balance combines with credit sale in statement',
-          () async {
+      test('opening balance combines with credit sale in statement', () async {
         final customer = await customers.createCustomer(
           const CustomerDraft(name: 'عميل 8', isActive: true),
         );
@@ -174,8 +173,8 @@ void main() {
         expect(statement.lines[0].entry.type,
             CustomerAccountEntryType.openingBalance);
         expect(statement.lines[0].runningBalanceQirsh, 200000);
-        expect(statement.lines[1].entry.type,
-            CustomerAccountEntryType.creditSale);
+        expect(
+            statement.lines[1].entry.type, CustomerAccountEntryType.creditSale);
         expect(statement.lines[1].runningBalanceQirsh, 400000);
         expect(statement.finalBalanceQirsh, 400000);
       });

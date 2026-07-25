@@ -164,8 +164,7 @@ void main() {
         );
         final movements = await inventory.listMovementsByProduct(product.id);
         final reversalMovement = movements.firstWhere(
-          (m) =>
-              m.movementType == StockMovementType.purchaseCancellation,
+          (m) => m.movementType == StockMovementType.purchaseCancellation,
         );
 
         expect(reversalMovement.note, contains('إلغاء'));

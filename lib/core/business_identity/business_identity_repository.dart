@@ -82,8 +82,7 @@ class LocalBusinessIdentityRepository implements BusinessIdentityRepository {
     final fileName = 'logo_${hash.substring(0, 16)}.$ext';
     final dir = Directory(managedLogosDirectory);
     await dir.create(recursive: true);
-    final finalPath =
-        '${dir.path}${Platform.pathSeparator}$fileName';
+    final finalPath = '${dir.path}${Platform.pathSeparator}$fileName';
 
     final tempPath = '$finalPath.tmp';
     final tempFile = File(tempPath);
@@ -199,8 +198,11 @@ class LocalBusinessIdentityRepository implements BusinessIdentityRepository {
           while (offset < bytes.length - 1) {
             if (bytes[offset] != 0xFF) break;
             final marker = bytes[offset + 1];
-            if (marker >= 0xC0 && marker <= 0xCF && marker != 0xC4 &&
-                marker != 0xC8 && marker != 0xCC) {
+            if (marker >= 0xC0 &&
+                marker <= 0xCF &&
+                marker != 0xC4 &&
+                marker != 0xC8 &&
+                marker != 0xCC) {
               if (offset + 9 < bytes.length) {
                 final h = (bytes[offset + 5] << 8) | bytes[offset + 6];
                 final w = (bytes[offset + 7] << 8) | bytes[offset + 8];
@@ -208,8 +210,7 @@ class LocalBusinessIdentityRepository implements BusinessIdentityRepository {
               }
             }
             if (offset + 3 < bytes.length) {
-              final segLen =
-                  (bytes[offset + 2] << 8) | bytes[offset + 3];
+              final segLen = (bytes[offset + 2] << 8) | bytes[offset + 3];
               offset += 2 + segLen;
             } else {
               break;

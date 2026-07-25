@@ -191,8 +191,7 @@ class DriftSaleRepository implements DurableSaleRepository {
     final allocations = (jsonDecode(row.paymentAllocationsJson) as List)
         .cast<Map<String, Object?>>()
         .map((allocation) => SalePaymentAllocation(
-              financialAccountId:
-                  allocation['financialAccountId']! as String,
+              financialAccountId: allocation['financialAccountId']! as String,
               amountQirsh: allocation['amountQirsh']! as int,
               paymentMethod: PaymentMethod.values
                   .byName(allocation['paymentMethod']! as String),

@@ -209,9 +209,11 @@ void main() {
             .where((m) => m.movementType == StockMovementType.sale)
             .toList();
         expect(saleMovements, hasLength(2));
-        final p1movement = saleMovements.firstWhere((m) => m.productId == p1.id);
+        final p1movement =
+            saleMovements.firstWhere((m) => m.productId == p1.id);
         expect(p1movement.signedQuantityKg, -40);
-        final p2movement = saleMovements.firstWhere((m) => m.productId == p2.id);
+        final p2movement =
+            saleMovements.firstWhere((m) => m.productId == p2.id);
         expect(p2movement.signedQuantityKg, -60);
       });
 

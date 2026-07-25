@@ -138,6 +138,7 @@ class CustomerAdvanceRefundDraft {
   final DateTime date;
   final String createdByUserId;
   final String operationRequestId;
+
   /// Must be absent or match the original collection account.
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;

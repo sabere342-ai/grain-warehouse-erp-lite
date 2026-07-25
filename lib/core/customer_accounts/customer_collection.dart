@@ -27,6 +27,7 @@ class CustomerCollectionRecord {
   final String? notes;
   final String? financialAccountId;
   final PaymentMethod? paymentMethod;
+
   /// Portion applied to the customer's receivable. The remainder is a
   /// separately tracked customer advance and never becomes a negative debt.
   final int? settledAmountQirsh;

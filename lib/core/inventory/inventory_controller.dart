@@ -23,7 +23,8 @@ class InventoryController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<Product> get products => List<Product>.unmodifiable(_products);
-  List<StockMovement> get movements => List<StockMovement>.unmodifiable(_movements);
+  List<StockMovement> get movements =>
+      List<StockMovement>.unmodifiable(_movements);
   Map<String, int> get balancesKg => Map<String, int>.unmodifiable(_balancesKg);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;

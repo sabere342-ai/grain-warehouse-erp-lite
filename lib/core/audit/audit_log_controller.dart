@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 
@@ -30,4 +30,3 @@ class AuditLogController extends ChangeNotifier {
     return true;
   }
 }
-
