@@ -3,7 +3,7 @@ import shutil
 import datetime
 import os
 
-project_root = Path(r"C:\dev\multi-pos\grain-warehouse-erp-lite")
+project_root = Path(__file__).resolve().parent.parent
 release_dir = project_root / "build" / "windows" / "x64" / "runner" / "Release"
 exe_path = release_dir / "grain_warehouse_erp_lite.exe"
 if not exe_path.exists():

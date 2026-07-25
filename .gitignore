@@ -23,3 +23,6 @@ release/
 delivery/
 tmp/
 *.log
+
+# Inno Setup output
+windows/installer/Output/
