@@ -98,8 +98,8 @@ void main() {
 
   group('Phase 97 - Version consistency', () {
     test('pubspec.yaml version format is valid', () {
-      final versionMatch =
-          RegExp(r'^version:\s*(\S+)').firstMatch(pubspecContent);
+      final versionMatch = RegExp(r'^version:\s*(\S+)', multiLine: true)
+          .firstMatch(pubspecContent);
       expect(versionMatch, isNotNull);
       final version = versionMatch!.group(1)!;
       expect(RegExp(r'^\d+\.\d+\.\d+\+\d+$').hasMatch(version), isTrue);
