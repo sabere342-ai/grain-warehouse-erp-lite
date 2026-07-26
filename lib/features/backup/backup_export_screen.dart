@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_route_scaffold.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
 class BackupExportScreen extends StatefulWidget {
@@ -46,64 +47,70 @@ class _BackupExportScreenState extends State<BackupExportScreen> {
     final canExport = user?.permissions.canExportBackups ?? false;
 
     if (!canExport) {
-      return const PremiumCard(
-        child: Text('النسخ الاحتياطي متاح للمالك فقط.'),
+      return const GhalalRouteScaffold(
+        scaffoldKey: Key('backup-export-route-scaffold'),
+        child: PremiumCard(
+          child: Text('النسخ الاحتياطي متاح للمالك فقط.'),
+        ),
       );
     }
 
     final textTheme = Theme.of(context).textTheme;
 
-    return ListView(
-      children: [
-        GhalalPageHeader(
-          title: 'النسخ الاحتياطي',
-          subtitle: 'أنشئ نسخة احتياطية قبل أي تعديل كبير أو قبل نقل الجهاز.',
-          icon: Icons.backup_rounded,
-          onBack: () => Navigator.of(context).maybePop(),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        const _SafetyCopyCard(),
-        const SizedBox(height: AppSpacing.md),
-        FilledButton.icon(
-          onPressed: _isExporting ? null : _createBackup,
-          icon: _isExporting
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.backup_rounded),
-          label: const Text('إنشاء نسخة احتياطية'),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        OutlinedButton.icon(
-          onPressed: _openRestorePreview,
-          icon: const Icon(Icons.fact_check_rounded),
-          label: const Text('فحص نسخة احتياطية'),
-        ),
-        if (_errorMessage != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            _errorMessage!,
-            style: textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.error,
+    return GhalalRouteScaffold(
+      scaffoldKey: const Key('backup-export-route-scaffold'),
+      child: ListView(
+        children: [
+          GhalalPageHeader(
+            title: 'النسخ الاحتياطي',
+            subtitle: 'أنشئ نسخة احتياطية قبل أي تعديل كبير أو قبل نقل الجهاز.',
+            icon: Icons.backup_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const _SafetyCopyCard(),
+          const SizedBox(height: AppSpacing.md),
+          FilledButton.icon(
+            onPressed: _isExporting ? null : _createBackup,
+            icon: _isExporting
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.backup_rounded),
+            label: const Text('إنشاء نسخة احتياطية'),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          OutlinedButton.icon(
+            onPressed: _openRestorePreview,
+            icon: const Icon(Icons.fact_check_rounded),
+            label: const Text('فحص نسخة احتياطية'),
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              _errorMessage!,
+              style: textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
-          ),
+          ],
+          if (_result != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            _BackupResultCard(
+              result: _result!,
+              saveResult: _saveResult,
+              onCopy: _copyBackup,
+              onSave: _saveBackup,
+              isSaving: _isSaving,
+            ),
+          ],
+          if (user?.permissions.canWipeBusinessData == true) ...[
+            const SizedBox(height: AppSpacing.md),
+            _DangerActionsCard(onOpenDataWipe: _openDataWipe),
+          ],
         ],
-        if (_result != null) ...[
-          const SizedBox(height: AppSpacing.md),
-          _BackupResultCard(
-            result: _result!,
-            saveResult: _saveResult,
-            onCopy: _copyBackup,
-            onSave: _saveBackup,
-            isSaving: _isSaving,
-          ),
-        ],
-        if (user?.permissions.canWipeBusinessData == true) ...[
-          const SizedBox(height: AppSpacing.md),
-          _DangerActionsCard(onOpenDataWipe: _openDataWipe),
-        ],
-      ],
+      ),
     );
   }
 

@@ -62,6 +62,8 @@
 | F-002 | بيانات الحزمة | الحزمة `ghalal-demo-v1.0.0-20260726-010237` حددت commit `23908b2` لكنها تحتوي على الأيقونة المُستبدلة من commit `44e84a1` (بناء من شجرة عمل غير نظيفة). **الحالة: محلّل** — إعادة بناء من HEAD المُلتزم `44e84a1` مع شجرة عمل نظيفة. حزمة جديدة `ghalal-demo-v1.0.0-20260726-012039` أُنشئت مع بيانات إصدار مُصحّحة. | بيانات الإصدار / المصدر | S3 | نعم | git log، git status، مقارنة بيانات البناء | **RESOLVED — تم استبدال الحزمة بإعادة بناء نظيفة من HEAD المُلتزم للأيقونة مع بيانات إصدار مُصحّحة.** | المُطوّر | TBD |
 | F-003 | بوابة التحليل بعد Phase 101B | فشل `flutter analyze --no-pub` من baseline المنشور `8557966f` بخروج `1`: عالجت Phase 101C التحذيرين فقط وبقيت 30 infos، ثم عالجت Phase 101D جميع infos بأصغر تغييرات const/declaration صحيحة. النتيجة النهائية: 0 errors و0 warnings و0 infos، exit `0`، وجميع بوابات الاختبار والبناء والتشغيل والنسخ الاحتياطي نجحت. بقي ادعاء Phase 101B القديم موثقًا كخطأ تاريخي مصحح. | Bug / quality gate | S2 | نعم | analyzer: `1 → 1 → 0`؛ full suite 1831 pass؛ build/launch/backup PASS | **RESOLVED — Phase 101D full technical reverification passed** | المطور | Phase 101D |
 | F-004 | إدخال الرصيد الافتتاحي للعميل والمورد | كانت واجهتا الرصيد الافتتاحي تطلبان من المستخدم إدخال قروش بدل جنيهات مصرية، وهو ما رفضه المالك وحجب قبول العميل. سجلت Phase 101E الحالة `OPEN — BLOCKS CLIENT ACCEPTANCE`. عالجت Phase 101F الواجهتين بإدخال جنيه عشري دقيق وتحويله إلى القروش الصحيحة داخليًا، مع إبقاء المحاسبة والتخزين والنسخ الاحتياطي دون تغيير. | UX confusion / financial input | S2 | نعم | اختبارات Phase 101F؛ 1838 اختبارًا ناجحًا؛ analyzer/build PASS؛ تحقق يدوي لبيانات عرض اصطناعية | **RESOLVED — Phase 101F verified; new genuine client session still required** | المطور | Phase 101F |
+| F-005 | النسخ الاحتياطي وسجل المستندات في Light Theme | أظهر الفيديو عند `00:04`–`00:06` و`00:26`–`00:27` سطح Windows أسود خلف محتوى فاتح وعناوين داكنة شبه غير مقروءة. كان جذرا المسارين شفافين بلا `Scaffold`. أضافت Phase 101H سطح مسار semantic مشتركًا واختبارات Light/Dark/RTL. | Bug / visual presentation | VISUAL-HIGH | نعم | SHA الفيديو؛ مراجعة الإطارات؛ اختبارات Phase 101H؛ تشغيل Windows Light/Dark | **RESOLVED — Phase 101H native visual verification passed** | المطور | Phase 101H |
+| F-006 | تباين عناصر التأكيد في Dark Theme | كشف التحقق الأصلي لـPhase 101H أن الثيم يستبدل primary بلون preset داكن مع إبقاء onPrimary الداكن المولّد، فتضعف قراءة نصوص وأيقونات الأزرار. أصبحت درجات accent داكنة adaptive مع اختبار تباين `4.5:1` لكل presets. | Bug / theme contrast | VISUAL-HIGH | نعم | تشغيل Windows Dark؛ اختبار contrast؛ Theme/RTL regression | **RESOLVED — Phase 101H dark-theme verification passed** | المطور | Phase 101H |
 
 **ملاحظة:** تم تسجيل F-004 بقرار صريح من المالك، وليس بوصفه قبولًا صادرًا من عميل. أغلقت Phase 101F المعالجة التقنية فقط. لا تزال جلسة عميل حقيقية جديدة مطلوبة، ولم يُعد فتح F-003.
 
@@ -75,10 +77,11 @@
 | S1 — يمنع سير العمل الأساسي | 0 |
 | S2 — كبير لكن يوجد حل بديل | 2 (F-003 وF-004 — محلّلان) |
 | S3 — بسيط في الاستخدام أو المظهر | 2 (F-001 — محلّل، F-002 — محلّل) |
+| VISUAL-HIGH — عيب بصري مؤثر | 2 (F-005 وF-006 — محلّلان) |
 | S4 — اقتراح | 0 |
-| **الإجمالي** | **4** |
+| **الإجمالي** | **6** |
 
-**ملاحظة:** F-001 وF-002 وF-003 وF-004 محلّلة. إغلاق F-003 وF-004 تقني فقط ولا يمثل قبول العميل.
+**ملاحظة:** F-001 إلى F-006 محلّلة. إغلاق F-003 وF-004 تقني فقط ولا يمثل قبول العميل.
 
 ---
 
@@ -86,7 +89,7 @@
 
 | النوع | العدد |
 |-------|-------|
-| Bug | 1 (F-003) |
+| Bug | 3 (F-003, F-005, F-006) |
 | UX confusion | 1 (F-004) |
 | Missing requirement | 0 |
 | Enhancement request | 0 |
@@ -96,7 +99,7 @@
 | Release metadata / provenance | 1 (F-002) |
 | Commercial request | 0 |
 | Out of scope | 0 |
-| **الإجمالي** | **4** |
+| **الإجمالي** | **6** |
 
 ---
 
@@ -110,7 +113,7 @@
 | Training/documentation only | 0 |
 | Rejected/out of scope | 0 |
 | Needs owner decision | 0 |
-| RESOLVED | 4 (F-001, F-002, F-003, F-004) |
+| RESOLVED | 6 (F-001, F-002, F-003, F-004, F-005, F-006) |
 | **الإجمالي المفتوح** | **0** |
 
 ---
@@ -135,3 +138,10 @@
 - F-003 يبقى `RESOLVED`.
 - F-004 يبقى `RESOLVED — TECHNICALLY VERIFIED; CLIENT REVERIFICATION PENDING`؛ لا تتحقق عتبة `TECHNICALLY AND VISUALLY VERIFIED` من هذا التسجيل.
 - أثر القرار: Phase 101G تظل `BLOCKED — GENUINE CLIENT SESSION REQUIRED` والجاهزية التجارية غير معلنة.
+
+## متابعة Phase 101H — 2026-07-27
+
+- أعادت Phase 101H مراجعة الفيديو frame-by-frame لأغراض العرض، فأنشأت F-005 للمسارين ذوي السطح الأسود غير المقصود في Light Theme، وكشفت بوابة Dark Theme المحلية F-006 لتباين accent.
+- F-005 وF-006: `RESOLVED — PHASE 101H` بعد اختبارات Light/Dark/RTL وتشغيل Windows الأصلي.
+- لا تتغير حالة F-003 أو F-004. القيمة `124.75` تظل استرداد سلفة مورد وليست رصيدًا افتتاحيًا.
+- لم تُنفذ جلسة عميل حقيقية؛ Phase 101G والجاهزية التجارية تظلان `BLOCKED — GENUINE CLIENT SESSION REQUIRED`.

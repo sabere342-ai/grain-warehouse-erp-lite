@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_route_scaffold.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -60,61 +61,67 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
     final user = AuthScope.of(context).state.user;
 
     if (user == null) {
-      return const PremiumCard(
-        child: Text('يجب تسجيل الدخول لعرض سجل المستندات.'),
+      return const GhalalRouteScaffold(
+        scaffoldKey: Key('document-history-route-scaffold'),
+        child: PremiumCard(
+          child: Text('يجب تسجيل الدخول لعرض سجل المستندات.'),
+        ),
       );
     }
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        return ListView(
-          children: [
-            GhalalPageHeader(
-              title: 'سجل المستندات',
-              subtitle: _controller.canViewOwnerAudit
-                  ? 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء وتفاصيل التدقيق.'
-                  : 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء. تفاصيل التدقيق للمالك فقط.',
-              icon: Icons.history_rounded,
-              onBack: () => Navigator.of(context).maybePop(),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _HistoryFilters(
-              searchController: _searchController,
-              productController: _productController,
-              from: _from,
-              to: _to,
-              type: _type,
-              status: _status,
-              onFromChanged: (value) => setState(() => _from = value),
-              onToChanged: (value) => setState(() => _to = value),
-              onTypeChanged: (value) => setState(() => _type = value),
-              onStatusChanged: (value) => setState(() => _status = value),
-              onApply: () => _applyFilter(user),
-              onClear: () => _clearFilter(user),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (_controller.isLoading)
-              const GhalalLoadingState(label: 'جاري تحميل سجل المستندات...')
-            else if (_controller.entries.isEmpty)
-              const GhalalEmptyState(
-                title: 'لا توجد نتائج',
-                message: 'غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
-                icon: Icons.search_off_rounded,
-              )
-            else
-              ..._controller.entries.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _DocumentHistoryCard(
-                    entry: entry,
-                    showAudit: _controller.canViewOwnerAudit,
+    return GhalalRouteScaffold(
+      scaffoldKey: const Key('document-history-route-scaffold'),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return ListView(
+            children: [
+              GhalalPageHeader(
+                title: 'سجل المستندات',
+                subtitle: _controller.canViewOwnerAudit
+                    ? 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء وتفاصيل التدقيق.'
+                    : 'بحث ومراجعة مستندات الشراء والبيع وحالة الإلغاء. تفاصيل التدقيق للمالك فقط.',
+                icon: Icons.history_rounded,
+                onBack: () => Navigator.of(context).maybePop(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _HistoryFilters(
+                searchController: _searchController,
+                productController: _productController,
+                from: _from,
+                to: _to,
+                type: _type,
+                status: _status,
+                onFromChanged: (value) => setState(() => _from = value),
+                onToChanged: (value) => setState(() => _to = value),
+                onTypeChanged: (value) => setState(() => _type = value),
+                onStatusChanged: (value) => setState(() => _status = value),
+                onApply: () => _applyFilter(user),
+                onClear: () => _clearFilter(user),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              if (_controller.isLoading)
+                const GhalalLoadingState(label: 'جاري تحميل سجل المستندات...')
+              else if (_controller.entries.isEmpty)
+                const GhalalEmptyState(
+                  title: 'لا توجد نتائج',
+                  message: 'غيّر الفلاتر أو امسح البحث لعرض كل المستندات.',
+                  icon: Icons.search_off_rounded,
+                )
+              else
+                ..._controller.entries.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _DocumentHistoryCard(
+                      entry: entry,
+                      showAudit: _controller.canViewOwnerAudit,
+                    ),
                   ),
                 ),
-              ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 

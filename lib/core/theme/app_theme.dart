@@ -24,6 +24,15 @@ class AppTheme {
       seedColor: preset.seed,
       brightness: resolvedBrightness,
     );
+    final accent = resolvedBrightness == Brightness.dark && !preset.isDark
+        ? generatedScheme.primary
+        : preset.seed;
+    final secondary = resolvedBrightness == Brightness.dark && !preset.isDark
+        ? generatedScheme.secondary
+        : preset.secondary;
+    final tertiary = resolvedBrightness == Brightness.dark && !preset.isDark
+        ? generatedScheme.tertiary
+        : preset.tertiary;
     final usePresetSurfaces = resolvedBrightness == Brightness.light ||
         (preset.isDark && resolvedBrightness == Brightness.dark);
     final surface =
@@ -47,9 +56,9 @@ class AppTheme {
       useMaterial3: true,
       brightness: resolvedBrightness,
       colorScheme: generatedScheme.copyWith(
-        primary: preset.seed,
-        secondary: preset.secondary,
-        tertiary: preset.tertiary,
+        primary: accent,
+        secondary: secondary,
+        tertiary: tertiary,
         surface: surface,
         onSurface: text,
         outline: border,
@@ -71,7 +80,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: preset.seed,
+          backgroundColor: accent,
           foregroundColor: generatedScheme.onPrimary,
           textStyle: const TextStyle(fontWeight: FontWeight.w900),
           minimumSize: const Size(0, AppComponentSizes.minimumTouchTarget),
@@ -83,8 +92,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: preset.seed,
-          side: BorderSide(color: preset.seed, width: 1.4),
+          foregroundColor: accent,
+          side: BorderSide(color: accent, width: 1.4),
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
           minimumSize: const Size(0, AppComponentSizes.minimumTouchTarget),
           shape: RoundedRectangleBorder(
@@ -95,7 +104,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: preset.seed,
+          foregroundColor: accent,
           textStyle: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
@@ -121,16 +130,16 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: preset.seed, width: 2),
+          borderSide: BorderSide(color: accent, width: 2),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: surface,
         indicatorColor: surfaceAlt,
-        selectedIconTheme: IconThemeData(color: preset.seed),
+        selectedIconTheme: IconThemeData(color: accent),
         unselectedIconTheme: IconThemeData(color: mutedText),
         selectedLabelTextStyle: TextStyle(
-          color: preset.seed,
+          color: accent,
           fontWeight: FontWeight.w900,
         ),
         unselectedLabelTextStyle: TextStyle(
@@ -143,8 +152,7 @@ class AppTheme {
         indicatorColor: surfaceAlt,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           return TextStyle(
-            color:
-                states.contains(WidgetState.selected) ? preset.seed : mutedText,
+            color: states.contains(WidgetState.selected) ? accent : mutedText,
             fontWeight: FontWeight.w800,
           );
         }),
@@ -162,7 +170,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
       ),
-      focusColor: preset.seed.withOpacity(0.18),
+      focusColor: accent.withOpacity(0.18),
     );
   }
 }
