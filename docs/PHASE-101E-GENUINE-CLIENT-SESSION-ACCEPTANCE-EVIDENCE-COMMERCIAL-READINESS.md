@@ -34,3 +34,11 @@ The technical blocker F-004 is resolved, but the decisive commercial gate remain
 ## Next required action
 
 Run a new genuine client session using a fresh artifact that includes Phase 101F. Record the participant, date, scenarios, findings, evidence, explicit acceptance decision, and commercial-readiness decision without inferring consent from silence or from owner-only technical verification.
+
+## Phase 101G follow-up — 2026-07-26
+
+بدأت Phase 101G من baseline Phase 101F الصحيح، وأثبت preflight تطابق الفرع وHEAD والـannotated tag ونظافة الشجرة. لم يتوفر مشارك عميل حقيقي، ولذلك لم تُنفذ جلسة القبول ولم تتغير هذه الوثيقة إلى حالة accepted.
+
+**PHASE 101G STATUS: BLOCKED — GENUINE CLIENT SESSION REQUIRED**
+
+F-004 يظل محللًا تقنيًا فقط، ولا يحمل وصف `CLIENT-VERIFIED`. الجاهزية التجارية غير معلنة.
