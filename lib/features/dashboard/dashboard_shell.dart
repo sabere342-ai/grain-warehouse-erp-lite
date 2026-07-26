@@ -288,8 +288,8 @@ class _DesktopNavigationSidebar extends StatelessWidget {
           top: false,
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
+              const Padding(
+                padding: EdgeInsets.fromLTRB(
                   AppSpacing.sm,
                   AppSpacing.sm,
                   AppSpacing.sm,
@@ -353,8 +353,8 @@ class _MobileNavigationDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: BusinessIdentityHeader(
                 subtitle: 'إدارة مخازن الحبوب',
               ),

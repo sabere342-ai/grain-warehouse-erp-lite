@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
@@ -218,16 +216,5 @@ class _EmptyDocumentHistoryRepository implements DocumentHistoryRepository {
   }) async =>
       [];
 
-  @override
   Future<DocumentHistoryEntry?> entryById(String id) async => null;
 }
-
-final _owner = AppUser(
-  id: 'owner-test',
-  name: 'مالك',
-  phone: '01000000000',
-  role: UserRole.owner,
-  isActive: true,
-  createdAt: DateTime(2026),
-  updatedAt: DateTime(2026),
-);

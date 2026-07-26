@@ -8,7 +8,6 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customer_advance_actions_screen.dart';

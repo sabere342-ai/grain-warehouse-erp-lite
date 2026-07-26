@@ -11,7 +11,7 @@ void main() {
   group('Phase 96 - BusinessIdentityHeader widget', () {
     testWidgets('shows display name and logo when both available',
         (tester) async {
-      final identity = const BusinessIdentity(
+      const identity = BusinessIdentity(
         establishmentName: 'مخازن النور',
         logo: LogoMetadata(
           managedFileName: 'logo.png',
@@ -24,7 +24,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(identity: identity),
           ),
@@ -39,7 +39,7 @@ void main() {
       const identity = BusinessIdentity(establishmentName: 'غلال');
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(identity: identity),
           ),
@@ -53,7 +53,7 @@ void main() {
     testWidgets('falls back to default name when identity is null',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(identity: null),
           ),
@@ -68,7 +68,7 @@ void main() {
       const identity = BusinessIdentity(establishmentName: 'غلال');
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(
               identity: identity,
@@ -87,7 +87,7 @@ void main() {
       const identity = BusinessIdentity(establishmentName: 'غلال');
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SizedBox(
               width: 200,
@@ -115,7 +115,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(
               identity: identity,
@@ -138,7 +138,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: BusinessIdentityHeader(
               identity: identity,
@@ -164,7 +164,7 @@ void main() {
         MaterialApp(
           home: BusinessIdentityScope(
             controller: controller,
-            child: Scaffold(
+            child: const Scaffold(
               body: BusinessIdentityHeader(),
             ),
           ),

@@ -4,7 +4,92 @@
 
 **BLOCKED — CLIENT SESSION REQUIRED**
 
-No genuine client session has occurred. This phase cannot record client acceptance. All client-dependent fields remain `PENDING CLIENT SESSION`.
+The analyzer failure found during the post-Phase 101B resume was fully remediated and technically reverified by Phase 101D on 2026-07-26. No genuine client session has occurred. Phase 100 still cannot record client acceptance or commercial readiness. All client-dependent fields remain `PENDING CLIENT SESSION`.
+
+## Post-Phase 101B Resume Decision — 2026-07-26
+
+**OUTCOME D — REMEDIATION REQUIRED**
+
+This current result supersedes the older verification snapshots later in this document. It does not rewrite their historical observations.
+
+### Published baseline
+
+| Item | Verified value |
+|------|----------------|
+| Repository | `C:/dev/multi-pos/grain-warehouse-erp-lite` |
+| Branch | `phase-101b-customer-advances-refunds-navigation-presentation` |
+| HEAD | `8557966f0a273ec305e1b7aee10d440dce28d708` |
+| Working tree before verification | clean |
+| Local Phase 101B tag target | `8557966f0a273ec305e1b7aee10d440dce28d708` |
+| Remote Phase 100 branch target | `8557966f0a273ec305e1b7aee10d440dce28d708` |
+| Remote Phase 101B tag target | `8557966f0a273ec305e1b7aee10d440dce28d708` |
+
+### Fresh technical gates
+
+| Gate | Command | Exit code | Result |
+|------|---------|-----------|--------|
+| Preflight | Required local and remote Git checks | `0` | PASS |
+| Analyzer, first attempt | `flutter analyze --no-pub` | `124` | ENVIRONMENT RETRY — command timed out without analyzer output |
+| Analyzer, direct SDK in sandbox | `C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe C:\src\flutter\packages\flutter_tools\bin\flutter_tools.dart analyze --no-pub` | `1` | ENVIRONMENT RETRY — SDK cache lockfile access denied |
+| Analyzer, direct SDK outside sandbox | Same direct SDK command | `1` | **FAIL — 32 issues (2 warnings, 30 info)** |
+| Diff check | `git diff --check` | `0` | PASS |
+| Full tests | Not run after mandatory analyzer failure | — | NOT RUN |
+| Windows release build | Not run after mandatory analyzer failure | — | NOT RUN |
+| Application launch | Not run after mandatory analyzer failure | — | NOT RUN |
+| Backup safety | Not run after mandatory analyzer failure | — | NOT RUN |
+
+### Confirmed analyzer defect (F-003)
+
+The completed unsandboxed analyzer invocation produced two warnings that make the mandatory gate exit non-zero:
+
+1. `test/phase101b_customer_advances_navigation_test.dart:11:8` — unused import `financial_account.dart` (`unused_import`).
+2. `test/phase90_push_route_screens_design_system_test.dart:222:33` — method marked `@override` does not override an inherited method (`override_on_non_overriding_member`).
+
+It also reported 30 informational lints. No production, test, dependency, database, or backup-format files were changed in this Phase 100 resume. The Phase 101B report states that the modified analyzer result was zero issues; that claim conflicts with the fresh command result at the published Phase 101B commit and must not be used as current acceptance evidence.
+
+### Stop decision and proposed remediation
+
+Per the Phase 100 gate policy, verification stopped immediately after the confirmed analyzer failure. No tests, build, launch, demo-data preparation, backup operation, or client-session simulation was performed.
+
+Proposed independently authorized scope:
+
+`Phase 101C — Analyzer Warning Remediation and Published-Baseline Reverification`
+
+The narrow scope should correct only the two analyzer warnings, rerun analyzer/tests/diff/build, and reconcile the Phase 101B analyzer evidence. It must not alter accounting, inventory, permissions, database schema, backup format, or product behavior.
+
+### Phase 101C execution result — analyzer remediation incomplete
+
+**OUTCOME D — ANALYZER REMEDIATION INCOMPLETE**
+
+Phase 101C was authorized and started from the exact published Phase 101B commit while preserving the three documentation changes above. The two warning causes were remediated with two test-only deletions:
+
+- removed the unused `financial_account.dart` import from the Phase 101B customer-advances navigation test;
+- removed the invalid `@override` annotation from the Phase 90 document-history test double.
+
+The post-fix command `flutter analyze --no-pub` reported **0 errors, 0 warnings, and 30 informational lints**, but still returned exit code `1` with Flutter 3.24.5 / Dart 3.5.4. Because Phase 101C requires analyzer exit code `0`, and the authorization expressly forbids a general informational-lint cleanup, analyzer configuration changes, severity reduction, or production-code changes, the remediation cannot be completed inside the authorized scope.
+
+Focused tests, full tests, Windows build, application launch, and backup-safety verification were not run because the first post-fix analyzer gate did not pass. F-003 remains open. No Phase 101C commit or tag may be created.
+
+### Phase 101D execution result — technical baseline reverified
+
+**TECHNICAL BASELINE REVERIFIED — CLIENT SESSION STILL REQUIRED**
+
+Phase 101D preserved the complete six-file Phase 101C dirty baseline and remediated all 30 informational lints without suppressions or analyzer configuration changes. Production scope was limited to const-context modernization for the two static navigation-header subtrees in `dashboard_shell.dart`; permissions, reads, KPIs, callbacks, destinations, accounting, inventory, and navigation behavior were unchanged.
+
+Fresh Phase 101D verification:
+
+- Analyzer: exit `0`; 0 errors, 0 warnings, 0 infos.
+- Phase 101B focused tests: 17 passed.
+- Phase 90 focused tests: 6 passed.
+- Phase 91/96 focused tests: 29 passed.
+- Dashboard/permission/navigation focused tests: 52 passed.
+- Full suite: 1831 passed, 0 failed, 1 pre-existing skip.
+- Windows release build: PASS; EXE 784,384 bytes.
+- Application launch: PASS; visible Arabic RTL login screen, no immediate crash, normal close.
+- Backup safety: 72 passed, 0 failed.
+- Diff integrity: PASS.
+
+F-003 is technically remediated. This does not constitute client acceptance and does not close Phase 100.
 
 ---
 

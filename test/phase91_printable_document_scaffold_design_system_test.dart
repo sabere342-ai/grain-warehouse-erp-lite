@@ -44,8 +44,8 @@ void main() {
       testWidgets('no Directionality wrapper — relies on app RTL',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: const Scaffold(
+          const MaterialApp(
+            home: Scaffold(
               body: PrintableDocumentScaffold(
                 title: 'اختبار',
                 child: Text('محتوى'),
@@ -100,8 +100,8 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: const Scaffold(
+          const MaterialApp(
+            home: Scaffold(
               body: PrintableDocumentScaffold(
                 title: 'فاتورة بيع',
                 documentDate: '2026/07/25',
@@ -124,8 +124,8 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: const Scaffold(
+          const MaterialApp(
+            home: Scaffold(
               body: PrintableDocumentScaffold(
                 title: 'اختبار',
                 child: SizedBox(height: 2000),
