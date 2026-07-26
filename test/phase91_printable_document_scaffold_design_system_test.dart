@@ -359,5 +359,114 @@ void main() {
         expect(find.text('اختبار'), findsOneWidget);
       });
     });
+
+    group('E. Back button correct positioning', () {
+      testWidgets(
+          'back button visible in first viewport on tall content without scrolling',
+          (tester) async {
+        tester.view.physicalSize = const Size(360, 720);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: PrintableDocumentScaffold(
+                title: 'اختبار طويل',
+                child: SizedBox(height: 5000),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('رجوع'), findsOneWidget);
+        expect(find.byKey(const Key('printable-document-back-button')),
+            findsOneWidget);
+        final button = tester.widget<OutlinedButton>(
+          find.byKey(const Key('printable-document-back-button')),
+        );
+        expect(button.onPressed, isNotNull);
+      });
+
+      testWidgets('only one back button exists — no duplicate', (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: PrintableDocumentScaffold(
+                title: 'اختبار',
+                child: SizedBox(height: 5000),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('رجوع'), findsOneWidget);
+        expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
+      });
+
+      testWidgets('back button pops route on tall content', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const Scaffold(
+                            body: PrintableDocumentScaffold(
+                              title: 'مستند طويل',
+                              child: SizedBox(height: 5000),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('فتح'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('فتح'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PrintableDocumentScaffold), findsOneWidget);
+        expect(find.text('رجوع'), findsOneWidget);
+
+        await tester.tap(find.text('رجوع'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PrintableDocumentScaffold), findsNothing);
+      });
+
+      testWidgets('no overflow on small viewport 360x720 with tall content',
+          (tester) async {
+        tester.view.physicalSize = const Size(360, 720);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: PrintableDocumentScaffold(
+                title: 'فاتورة بيع',
+                documentDate: '2026/07/25',
+                documentNumber: 'INV-001',
+                child: SizedBox(height: 5000),
+              ),
+            ),
+          ),
+        );
+
+        final finder = find.byType(PrintableDocumentScaffold);
+        expect(finder, findsOneWidget);
+        expect(find.text('رجوع'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    });
   });
 }

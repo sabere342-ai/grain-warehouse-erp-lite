@@ -447,6 +447,63 @@ void main() {
         findsWidgets,
       );
     });
+
+    testWidgets(
+        'dashboard shell tab shows shell-back-button and hides stock-adjustment-report-back-button',
+        (tester) async {
+      final auth = await _signedInController(
+        phone: '01000000000',
+        password: 'owner123',
+      );
+
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(_dashboardHarness(auth: auth));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('تقرير التسويات'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('shell-back-button')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('stock-adjustment-report-back-button')),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'dashboard shell tab shell-back-button returns to home without write',
+        (tester) async {
+      final auth = await _signedInController(
+        phone: '01000000000',
+        password: 'owner123',
+      );
+
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(_dashboardHarness(auth: auth));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('تقرير التسويات'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('shell-back-button')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('shell-back-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('shell-back-button')), findsNothing);
+    });
   });
 }
 

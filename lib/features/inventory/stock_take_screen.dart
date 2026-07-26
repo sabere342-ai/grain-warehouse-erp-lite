@@ -84,7 +84,9 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
               subtitle:
                   'أدخل الكمية الفعلية التي تم عدّها، وسيقوم النظام بحساب الفرق وتسجيل حركة تسوية فقط عند وجود فرق.',
               icon: Icons.balance_rounded,
-              onBack: () => Navigator.of(context).maybePop(),
+              onBack: Navigator.of(context).canPop()
+                  ? () => Navigator.of(context).maybePop()
+                  : null,
               backButtonKey: const ValueKey('stock-take-back-button'),
             ),
             if (_errorMessage != null) ...[

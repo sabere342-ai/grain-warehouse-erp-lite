@@ -85,7 +85,9 @@ class _StockAdjustmentReportScreenState
               subtitle:
                   'يعرض هذا التقرير حركات الزيادة والنقص اليدوية الناتجة عن تسويات المخزون، ولا يقوم بتعديل الكميات.',
               icon: Icons.fact_check_rounded,
-              onBack: () => Navigator.of(context).maybePop(),
+              onBack: Navigator.of(context).canPop()
+                  ? () => Navigator.of(context).maybePop()
+                  : null,
               backButtonKey:
                   const ValueKey('stock-adjustment-report-back-button'),
               actions: [
