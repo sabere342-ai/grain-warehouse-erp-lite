@@ -208,8 +208,8 @@ class _SupplierStatementScreenState extends State<SupplierStatementScreen> {
     final user = AuthScope.of(context).state.user;
     final canRecordPayment = user?.permissions.canCreateSupplierPayment == true;
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PremiumCard(
           child: Padding(

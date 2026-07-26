@@ -17,9 +17,11 @@
 
 ## قرار الجاهزية التجارية
 
-**القرار الفني: TECHNICAL REMEDIATION COMPLETE — GENUINE CLIENT SESSION STILL REQUIRED**
+**القرار الفني: PHASE 101F TECHNICAL REMEDIATION COMPLETE — GENUINE CLIENT SESSION STILL REQUIRED**
 
 أكملت Phase 101D معالجة جميع مشكلات Analyzer وحققت exit `0` مع 0 errors و0 warnings و0 infos، كما نجحت الاختبارات والبناء والتشغيل التقني واختبارات أمان النسخ والاستعادة. لكن لم تُنفذ جلسة عميل حقيقية ولم يصدر قرار قبول، لذلك لا يجوز إعلان الجاهزية التجارية أو القبول.
+
+بعد ذلك رفض المالك واجهتي الرصيد الافتتاحي اللتين تطلبان القروش، وسُجلت الملاحظة F-004 بوصفها حاجبًا لقبول العميل. أكملت Phase 101F تحويل إدخال أرصدة العملاء والموردين إلى الجنيه المصري بدقة مع إبقاء القروش الصحيحة تمثيلًا داخليًا، ونجحت بوابات التحليل والاختبارات والبناء والتحقق الوظيفي. F-004 محلّلة تقنيًا، لكن ذلك لا يساوي قبول العميل ولا يثبت جلسة Phase 101E.
 
 ---
 
@@ -32,7 +34,7 @@
 | NOT READY — REMEDIATION REQUIRED | غير جاهز — يحتاج معالجة تقنية مستقلة |
 | UNDECIDED — CLIENT SESSION REQUIRED | غير محدد — يحتاج جلسة عميل |
 
-**الحالة الحالية:** TECHNICAL REMEDIATION COMPLETE — GENUINE CLIENT SESSION STILL REQUIRED
+**الحالة الحالية:** PHASE 101F COMPLETE — COMMERCIAL READINESS NOT DECLARED — NEW GENUINE CLIENT SESSION REQUIRED
 
 ---
 
@@ -54,7 +56,7 @@
 
 | # | التعديل | السبب | المرحلة المستهدفة |
 |---|---------|-------|------------------|
-| — | لا توجد remediation تقنية مفتوحة مرتبطة بـF-003 | أغلقتها Phase 101D بجميع البوابات التقنية | — |
+| — | لا توجد remediation تقنية مفتوحة مرتبطة بـF-003 أو F-004 | أغلقت Phase 101D الملاحظة F-003، وأغلقت Phase 101F الملاحظة F-004 بجميع البوابات التقنية | — |
 
 ---
 

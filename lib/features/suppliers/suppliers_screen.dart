@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/supplier_purchases_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/opening_balances/opening_balance_amount_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_payment_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/supplier_accounts/supplier_statement_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/suppliers/supplier_advance_actions_screen.dart';
@@ -166,7 +167,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   }) async {
     final amount = await showDialog<int>(
       context: context,
-      builder: (context) => const _SupplierOpeningBalanceDialog(),
+      builder: (context) => const OpeningBalanceAmountDialog(
+        party: OpeningBalanceParty.supplier,
+      ),
     );
 
     if (amount == null) return;
@@ -613,85 +616,5 @@ class _SupplierFormDialogState extends State<_SupplierFormDialog> {
         notes: _notesController.text,
       ),
     );
-  }
-}
-
-class _SupplierOpeningBalanceDialog extends StatefulWidget {
-  const _SupplierOpeningBalanceDialog();
-
-  @override
-  State<_SupplierOpeningBalanceDialog> createState() =>
-      _SupplierOpeningBalanceDialogState();
-}
-
-class _SupplierOpeningBalanceDialogState
-    extends State<_SupplierOpeningBalanceDialog> {
-  final _amountController = TextEditingController();
-  String? _errorMessage;
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('رصيد افتتاحي للمورد'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'أدخل المبلغ المستحق لهذا المورد كرصيد افتتاحي (بقيمة مالية).',
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'المبلغ بقروش',
-                helperText:
-                    'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
-              ),
-              textDirection: TextDirection.ltr,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('إلغاء'),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('حفظ الرصيد الافتتاحي'),
-        ),
-      ],
-    );
-  }
-
-  void _submit() {
-    final amount = int.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) {
-      setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
-      return;
-    }
-    if (amount % 100 != 0) {
-      setState(() => _errorMessage =
-          'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
-      return;
-    }
-
-    Navigator.of(context).pop(amount);
   }
 }

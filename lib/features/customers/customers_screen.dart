@@ -14,6 +14,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/customers/customer_advance_actions_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_dialog.dart';
+import 'package:grain_warehouse_erp_lite/features/opening_balances/opening_balance_amount_dialog.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_customer_statement_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
@@ -299,7 +300,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }) async {
     final amount = await showDialog<int>(
       context: context,
-      builder: (context) => const _CustomerOpeningBalanceDialog(),
+      builder: (context) => const OpeningBalanceAmountDialog(
+        party: OpeningBalanceParty.customer,
+      ),
     );
 
     if (amount == null) return;
@@ -999,103 +1002,6 @@ class _StatementLineCard extends StatelessWidget {
   }
 
   String _twoDigits(int value) => value.toString().padLeft(2, '0');
-}
-
-class _CustomerOpeningBalanceDialog extends StatefulWidget {
-  const _CustomerOpeningBalanceDialog();
-
-  @override
-  State<_CustomerOpeningBalanceDialog> createState() =>
-      _CustomerOpeningBalanceDialogState();
-}
-
-class _CustomerOpeningBalanceDialogState
-    extends State<_CustomerOpeningBalanceDialog> {
-  final _amountController = TextEditingController();
-  String? _errorMessage;
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GhalalResponsiveDialog(
-      isDirty: _isDirty,
-      isBusy: _isLoading,
-      title: const Text('رصيد افتتاحي للعميل'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'أدخل المبلغ المستحق على هذا العميل كرصيد افتتاحي (بقيمة مالية).',
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'المبلغ بقروش',
-              helperText:
-                  'أدخل المبلغ الإجمالي بالقرش (مثال: 50000 = 500 جنيه).',
-            ),
-            textDirection: TextDirection.ltr,
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _errorMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading
-              ? null
-              : () => GhalalResponsiveDialog.requestClose(
-                    context,
-                    isDirty: _isDirty,
-                  ),
-          child: const Text('إلغاء'),
-        ),
-        FilledButton(
-          onPressed: _isLoading ? null : _submit,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('حفظ الرصيد الافتتاحي'),
-        ),
-      ],
-    );
-  }
-
-  bool get _isDirty => _amountController.text.trim().isNotEmpty;
-
-  void _submit() {
-    final amount = int.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) {
-      setState(() => _errorMessage = 'أدخل مبلغا صحيحا أكبر من صفر.');
-      return;
-    }
-    if (amount % 100 != 0) {
-      setState(() => _errorMessage =
-          'المبلغ يجب أن يكون من مضاعفات 100 (أي جنيه كامل بدون قروش مفردة).');
-      return;
-    }
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    Navigator.of(context).pop(amount);
-  }
 }
 
 class _CustomerFormDialog extends StatefulWidget {
