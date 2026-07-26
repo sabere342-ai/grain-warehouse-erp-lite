@@ -125,3 +125,13 @@
 - F-004 يظل `RESOLVED — TECHNICALLY VERIFIED; CLIENT REVERIFICATION PENDING`، ولا يجوز وصفه بأنه client-verified بعد.
 - حالة المرحلة: `BLOCKED — GENUINE CLIENT SESSION REQUIRED`.
 - عدم توفر المشارك شرط حجب للقبول، وليس finding تقنية جديدة في التطبيق.
+
+## Owner-Provided Visual Evidence — 2026-07-26
+
+- المصدر: تسجيل شاشة قدمه المالك؛ SHA-256: `584FD7356C475D1EAEBE70136A25A1DB8F0A559126F97B82094EE2E7E8C1409F`؛ المدة نحو `238.87` ثانية.
+- التصنيف: `SUPPLEMENTARY OWNER VISUAL EVIDENCE ACCEPTED`، وليس Genuine Client Session؛ هوية وصفة المنفذ غير مثبتتين، والمسار الصوتي صامت فعليًا (`-91.0 dB`).
+- يظهر التسجيل واجهة RTL وتنقلًا دون crash ظاهر، ومبالغ `ج.م`، وإدخال `124.75` في **استرداد سلفة مورد بالجنيه**. لا يجوز إعادة توصيف هذا الإدخال كرصيد افتتاحي.
+- لا يظهر حقل أو إدخال أو حفظ رصيد افتتاحي للعميل أو المورد، ولا تحقق restart/persistence، ولا رأي أو قبول عميل. لذلك لم تُنفذ سيناريوهات F-004 البصرية المطلوبة ولم تظهر ملاحظة تطبيق جديدة قابلة لإعادة الإنتاج.
+- F-003 يبقى `RESOLVED`.
+- F-004 يبقى `RESOLVED — TECHNICALLY VERIFIED; CLIENT REVERIFICATION PENDING`؛ لا تتحقق عتبة `TECHNICALLY AND VISUALLY VERIFIED` من هذا التسجيل.
+- أثر القرار: Phase 101G تظل `BLOCKED — GENUINE CLIENT SESSION REQUIRED` والجاهزية التجارية غير معلنة.

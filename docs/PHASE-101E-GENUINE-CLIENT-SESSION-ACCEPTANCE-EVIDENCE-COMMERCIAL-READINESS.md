@@ -42,3 +42,11 @@ Run a new genuine client session using a fresh artifact that includes Phase 101F
 **PHASE 101G STATUS: BLOCKED — GENUINE CLIENT SESSION REQUIRED**
 
 F-004 يظل محللًا تقنيًا فقط، ولا يحمل وصف `CLIENT-VERIFIED`. الجاهزية التجارية غير معلنة.
+
+## Owner-Provided Visual Evidence — 2026-07-26
+
+راجع امتداد Phase 101G تسجيل الشاشة المقدم من المالك (`Screen Recording 2026-07-26 215606.mp4`، SHA-256 `584FD7356C475D1EAEBE70136A25A1DB8F0A559126F97B82094EE2E7E8C1409F`) كاملًا. التسجيل قابل للمراجعة ويعرض واجهة غلال RTL، والتنقل، ومبالغًا معروضة بـ`ج.م`، وحقول جنيه في مسارات دفعة المورد واسترداد سلفة المورد. القيمة العشرية `124.75` الظاهرة أُدخلت في **مبلغ الاسترداد بالجنيه** وليست في رصيد افتتاحي.
+
+لا يعرض التسجيل حقلي الرصيد الافتتاحي للعميل أو المورد، ولا إدخالًا أو حفظًا أو كشف حساب يؤكد قيمة افتتاحية، ولا restart/persistence. مساره الصوتي صامت فعليًا (`mean/max -91.0 dB`) ولا يقدم هوية مستخدم أو صفة أو قبولًا. لذلك قُبل بوصفه `SUPPLEMENTARY OWNER VISUAL EVIDENCE` محدودًا، ولم يثبت F-004 بصريًا ولم يحوّل Phase 101E أو Phase 101G إلى قبول عميل.
+
+تبقى F-004 `RESOLVED — TECHNICALLY VERIFIED; CLIENT REVERIFICATION PENDING`، ويبقى القرار `BLOCKED — GENUINE CLIENT SESSION REQUIRED`.

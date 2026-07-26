@@ -143,3 +143,17 @@
 **COMMERCIAL READINESS: BLOCKED — GENUINE CLIENT SESSION REQUIRED**
 
 لا يتغير هذا القرار إلا بعد جلسة حقيقية موثقة، ونجاح السيناريوهات المالية والاستمرارية، والتحقق من استعادة ملف Grala الأصلي بعد اختبار معزول.
+
+## Owner-Provided Visual Evidence — 2026-07-26
+
+تمت مراجعة تسجيل الشاشة المقدم من المالك كاملًا (المدة نحو `238.87` ثانية، SHA-256 `584FD7356C475D1EAEBE70136A25A1DB8F0A559126F97B82094EE2E7E8C1409F`). قُبل التسجيل بوصفه `SUPPLEMENTARY OWNER VISUAL EVIDENCE` فقط. يعرض واجهة RTL، تنقلًا عامًا، مبالغ `ج.م`، وحقول جنيه في مسارات دفعة مورد واسترداد سلفة؛ لكنه لا يعرض حقول الرصيد الافتتاحي للعميل أو المورد ولا إدخالها أو حفظها أو استمرارها بعد إعادة التشغيل. القيمة `124.75` الظاهرة تخص استرداد سلفة مورد، وليست رصيدًا افتتاحيًا.
+
+لا يثبت التسجيل هوية منفذه أو صفته أو رأيه أو قبوله؛ والمسار الصوتي الموجود صامت فعليًا (`mean/max -91.0 dB`). كما لا يوثق جلسة A–H أو restart/persistence أو استعادة ملف Grala أو سلامة جميع الآثار المحاسبية والمخزنية المطلوبة.
+
+لذلك لا يثبت التسجيل F-004 بصريًا، وتبقى حالتها `RESOLVED — TECHNICALLY VERIFIED; CLIENT REVERIFICATION PENDING`. لا يوجد قبول عميل حقيقي ولا أساس لإعلان الجاهزية التجارية.
+
+**VIDEO EVIDENCE DECISION: SUPPLEMENTARY OWNER VISUAL EVIDENCE ACCEPTED**
+
+**CLIENT ACCEPTANCE: NOT ACHIEVED — NO GENUINE CLIENT IDENTITY OR SESSION EVIDENCE**
+
+**COMMERCIAL READINESS: BLOCKED — GENUINE CLIENT SESSION REQUIRED**
