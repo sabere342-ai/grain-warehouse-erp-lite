@@ -116,6 +116,22 @@ class _CustomerAdvanceActionsScreenState
   }
 
   Widget _buildBody() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: GhalalPageHeader(
+            title: 'سلف العميل - ${widget.customer.name}',
+            icon: Icons.account_balance_wallet_rounded,
+            onBack: () => Navigator.of(context).maybePop(),
+          ),
+        ),
+        Expanded(child: _buildContent()),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
     if (_isLoading) {
       return const GhalalLoadingState(
         key: Key('customer-advances-loading'),
@@ -142,14 +158,8 @@ class _CustomerAdvanceActionsScreenState
       onRefresh: _loadAdvances,
       child: ListView(
         key: const Key('customer-advances-list'),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
-          GhalalPageHeader(
-            title: 'سلف العميل - ${widget.customer.name}',
-            icon: Icons.account_balance_wallet_rounded,
-            onBack: () => Navigator.of(context).maybePop(),
-          ),
-          const SizedBox(height: 16),
           for (final summary in _advances)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
