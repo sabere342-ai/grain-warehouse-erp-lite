@@ -16,6 +16,8 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -51,6 +53,31 @@ void main() {
       expect(await target.purchases.listPurchaseIntakes(), hasLength(1));
       expect(await target.sales.listSales(), hasLength(1));
       expect(await target.history.listHistory(), hasLength(2));
+      expect((await target.valuation.getActivation()).isActivated, isTrue);
+      expect((await target.sales.listSales()).single.hasCompleteCostSnapshots,
+          isTrue);
+    });
+
+    test('legacy v7 restore remains profitabilityNotActivated', () async {
+      final source = await _seededFixture();
+      final target = await _emptyFixture();
+      final backup = await _decodedBackup(source);
+      (backup['metadata'] as Map<String, Object?>)['backupVersion'] = 7;
+      final data = backup['data'] as Map<String, Object?>;
+      data.remove('profitabilityActivation');
+      data.remove('inventoryValuationStates');
+      data.remove('inventoryValuationEvents');
+      _refreshChecksum(backup);
+
+      final result = await target.restoreService.restoreToEmpty(
+        user: _owner,
+        jsonText: const JsonEncoder.withIndent('  ').convert(backup),
+      );
+
+      expect(result.success, isTrue);
+      expect((await target.valuation.getActivation()).isActivated, isFalse);
+      expect(await target.valuation.listStates(), isEmpty);
+      expect(await target.valuation.listEvents(), isEmpty);
     });
 
     test('restore is blocked if products already exist', () async {
@@ -455,6 +482,19 @@ Future<_BackupFixture> _seededFixture() async {
       createdByUserId: _owner.id,
     ),
   );
+  await fixture.valuation.activate(
+    activationDate: DateTime.now().subtract(const Duration(days: 1)),
+    approvedByUserId: _owner.id,
+    evidenceNote: 'TEST FIXTURE ONLY — physical count',
+    openings: [
+      OpeningValuationInput(
+        productId: product.id,
+        quantityKg: 1000,
+        unitCostQirshPerKg: 650,
+        evidenceReference: 'TEST FIXTURE ONLY — trusted invoice',
+      ),
+    ],
+  );
   final backupCustomer = await LocalCustomerRepository().createCustomer(
     const CustomerDraft(name: 'عميل', isActive: true),
   );
@@ -474,14 +514,17 @@ Future<_BackupFixture> _emptyFixture() async {
   final products = LocalProductRepository();
   final suppliers = LocalSupplierRepository();
   final inventory = LocalInventoryRepository(productRepository: products);
+  final valuation = LocalInventoryValuationRepository();
   final purchases = LocalPurchaseRepository(
     supplierRepository: suppliers,
     productRepository: products,
     inventoryRepository: inventory,
+    inventoryValuationRepository: valuation,
   );
   final sales = LocalSaleRepository(
     productRepository: products,
     inventoryRepository: inventory,
+    inventoryValuationRepository: valuation,
   );
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
@@ -496,6 +539,7 @@ Future<_BackupFixture> _emptyFixture() async {
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
+    inventoryValuationRepository: valuation,
     now: () => DateTime.utc(2026, 7, 6, 15, 42, 30),
   );
   final restoreService = BackupRestoreService(
@@ -505,6 +549,7 @@ Future<_BackupFixture> _emptyFixture() async {
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
+    inventoryValuationRepository: valuation,
   );
 
   return _BackupFixture(
@@ -514,6 +559,7 @@ Future<_BackupFixture> _emptyFixture() async {
     purchases: purchases,
     sales: sales,
     history: history,
+    valuation: valuation,
     exportService: exportService,
     restoreService: restoreService,
   );
@@ -566,6 +612,7 @@ class _BackupFixture {
     required this.purchases,
     required this.sales,
     required this.history,
+    required this.valuation,
     required this.exportService,
     required this.restoreService,
   });
@@ -576,8 +623,23 @@ class _BackupFixture {
   final LocalPurchaseRepository purchases;
   final LocalSaleRepository sales;
   final LocalDocumentHistoryRepository history;
+  final LocalInventoryValuationRepository valuation;
   final BackupExportService exportService;
   final BackupRestoreService restoreService;
+}
+
+void _refreshChecksum(Map<String, Object?> backup) {
+  backup.remove('checksum');
+  final note = backup.remove('checksumNote');
+  final body = const JsonEncoder.withIndent('  ').convert(backup);
+  var a = 1;
+  var b = 0;
+  for (final byte in utf8.encode(body)) {
+    a = (a + byte) % 65521;
+    b = (b + a) % 65521;
+  }
+  backup['checksum'] = ((b << 16) | a).toRadixString(16).padLeft(8, '0');
+  backup['checksumNote'] = note;
 }
 
 class _StaticAuthRepository implements AuthRepository {

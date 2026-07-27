@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 
 abstract class PurchaseRepository {
   Future<PurchaseIntake> createPurchaseIntake(PurchaseIntakeDraft draft);
@@ -40,11 +41,13 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     SupplierAccountRepository? supplierAccountRepository,
     FinancialAccountRepository? financialAccountRepository,
     AuditLogRepository? auditLogRepository,
+    InventoryValuationRepository? inventoryValuationRepository,
   })  : _supplierRepository = supplierRepository,
         _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
         _supplierAccountRepository = supplierAccountRepository,
         _financialAccountRepository = financialAccountRepository,
+        _inventoryValuationRepository = inventoryValuationRepository,
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository();
 
   final SupplierRepository _supplierRepository;
@@ -52,6 +55,7 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
   final InventoryRepository _inventoryRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final FinancialAccountRepository? _financialAccountRepository;
+  final InventoryValuationRepository? _inventoryValuationRepository;
   final AuditLogRepository _auditLogRepository;
   final List<PurchaseIntake> _intakes = [];
   final Map<String, String> _purchaseRequestIntakeIds = {};
@@ -67,6 +71,7 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     await _validateNewPaymentRoute(draft);
 
     final now = DateTime.now();
+    await _financialAccountRepository?.ensureDateIsOpen(now);
     final intake = PurchaseIntake(
       id: _generatePurchaseIntakeId(now),
       supplierId: supplier.id,
@@ -105,6 +110,10 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
       snapshots
           .add(_requiredSnapshot(_financialAccountRepository, 'financial'));
     }
+    if (_inventoryValuationRepository != null) {
+      snapshots
+          .add(_requiredSnapshot(_inventoryValuationRepository, 'valuation'));
+    }
     if (_auditLogRepository is! TransactionSnapshotProvider) {
       throw StateError(
           'Purchase audit repository cannot participate in a transaction.');
@@ -141,6 +150,14 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
       );
 
       final postedIntake = intake.copyWith(stockMovementId: movement.id);
+      await _inventoryValuationRepository?.recordPurchase(
+        productId: postedIntake.productId,
+        quantityKg: postedIntake.quantityKg,
+        unitCostQirshPerKg: postedIntake.unitPricePiastersPerKg,
+        sourceDocumentId: postedIntake.id,
+        effectiveDate: postedIntake.createdAt,
+        createdByUserId: postedIntake.createdByUserId,
+      );
       _intakes.add(postedIntake);
       if (postedIntake.outstandingAmountQirsh > 0) {
         await _supplierAccountRepository?.createPurchaseEntry(
@@ -222,6 +239,14 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
       );
     }
     await _validatePurchaseCancellationStock(intake);
+    final cancelledAt = DateTime.now();
+    await _financialAccountRepository?.ensureDateIsOpen(cancelledAt);
+    if (_inventoryValuationRepository != null &&
+        !await _inventoryValuationRepository
+            .canDirectlyCancelPurchase(intake.id)) {
+      throw StateError(
+          'Purchase is already mixed or used; record a current-dated correction instead.');
+    }
 
     final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
     snapshots.add(_requiredSnapshot(_inventoryRepository, 'inventory'));
@@ -231,6 +256,10 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
     if (_financialAccountRepository != null) {
       snapshots
           .add(_requiredSnapshot(_financialAccountRepository, 'financial'));
+    }
+    if (_inventoryValuationRepository != null) {
+      snapshots
+          .add(_requiredSnapshot(_inventoryValuationRepository, 'valuation'));
     }
     snapshots.add(_requiredSnapshot(_auditLogRepository, 'audit'));
 
@@ -246,9 +275,16 @@ class LocalPurchaseRepository implements DurablePurchaseRepository {
           originalDocumentId: intake.id,
         ),
       );
+      await _inventoryValuationRepository?.reversePurchase(
+        originalPurchaseDocumentId: intake.id,
+        sourceDocumentId: intake.id,
+        effectiveDate: cancelledAt,
+        createdByUserId: userId,
+        reason: reason,
+      );
       final cancelled = intake.copyWith(
         cancellation: CancellationMetadata(
-          cancelledAt: DateTime.now(),
+          cancelledAt: cancelledAt,
           cancelledByUserId: userId,
           cancellationReason: reason,
           originalDocumentId: intake.id,

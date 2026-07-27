@@ -133,6 +133,7 @@ void main() {
 
       await source.expenses.createExpense(
         ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: _pilotDay,
           category: 'Ù†Ù‚Ù„',
           amountQirsh: 12500,

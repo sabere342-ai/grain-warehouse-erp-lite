@@ -4,6 +4,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 
 abstract class ExpenseRepository {
   Future<List<ExpenseRecord>> listExpenses();
@@ -11,6 +13,12 @@ abstract class ExpenseRepository {
   Future<int> totalExpensesQirsh({
     required DateTime start,
     required DateTime end,
+  });
+  Future<ExpenseRecord> reclassifyExpense({
+    required AppUser user,
+    required String expenseId,
+    required ExpenseAccountingClassification classification,
+    required String reason,
   });
 }
 
@@ -48,6 +56,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
     await _validateNewPaymentRoute(draft);
+    await _financialAccountRepository?.ensureDateIsOpen(draft.date);
     final requestId = _normalizedOptionalText(draft.operationRequestId)!;
     final fingerprint = _expenseFingerprint(draft);
     for (final existing in _expenses) {
@@ -70,6 +79,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
       paymentMethod: draft.paymentMethod,
       operationRequestId: requestId,
       operationRequestFingerprint: fingerprint,
+      accountingClassification: draft.accountingClassification,
     );
     if (!expense.hasValidId) {
       throw StateError('Expense id is required.');
@@ -128,6 +138,38 @@ class LocalExpenseRepository implements DurableExpenseRepository {
         .where((expense) =>
             !expense.date.isBefore(start) && expense.date.isBefore(end))
         .fold<int>(0, (total, expense) => total + expense.amountQirsh);
+  }
+
+  @override
+  Future<ExpenseRecord> reclassifyExpense({
+    required AppUser user,
+    required String expenseId,
+    required ExpenseAccountingClassification classification,
+    required String reason,
+  }) async {
+    if (user.role != UserRole.owner) {
+      throw StateError('Only the owner can reclassify historical expenses.');
+    }
+    final normalizedReason = _normalizedOptionalText(reason);
+    if (normalizedReason == null) {
+      throw ArgumentError.value(reason, 'reason', 'Reason is required.');
+    }
+    final index = _expenses.indexWhere((value) => value.id == expenseId);
+    if (index < 0) throw StateError('Expense was not found.');
+    return RepositoryTransaction.execute([createTransactionSnapshot()],
+        () async {
+      final previous = _expenses[index];
+      final updated = previous.copyWithAccountingClassification(classification);
+      _expenses[index] = updated;
+      await _auditLogRepository.record(AuditLogDraft(
+        actionType: 'expense.accountingClassification.changed',
+        descriptionAr:
+            'تغيير تصنيف المصروف من ${previous.accountingClassification?.name ?? 'غير مصنف'} إلى ${classification.name}. السبب: $normalizedReason',
+        referenceId: updated.id,
+        actorId: user.id,
+      ));
+      return updated;
+    });
   }
 
   @override
@@ -237,6 +279,7 @@ class LocalExpenseRepository implements DurableExpenseRepository {
         draft.financialAccountId?.trim() ?? '',
         draft.paymentMethod?.name ?? '',
         draft.createdByUserId.trim(),
+        draft.accountingClassification.name,
       ].join('|');
 
   String? _normalizedOptionalText(String? value) {

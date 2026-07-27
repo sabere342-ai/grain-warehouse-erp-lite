@@ -7,7 +7,6 @@ import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_controller.dar
 import 'package:grain_warehouse_erp_lite/core/dashboard/dashboard_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
-import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
@@ -84,7 +83,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = AuthScope.maybeOf(context)?.state.user;
     final canViewDashboardData =
         user?.permissions.canViewFinancialReports ?? false;
-    final ownerCanExport = user?.permissions.canExportBackups ?? false;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -227,65 +225,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
                 ),
               ),
-            if (ownerCanExport) ...[
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                'أدوات الإدارة',
-                key: const Key('dashboard-administration-section-title'),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              const _BackupExportCard(),
-            ],
           ],
         );
       },
-    );
-  }
-}
-
-class _BackupExportCard extends StatelessWidget {
-  const _BackupExportCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return PremiumCard(
-      key: const Key('dashboard-backup-administration-card'),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.backup_rounded,
-              color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'النسخ الاحتياطي',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'احفظ نسخة من البيانات قبل أي تعديل كبير. يمكن فحص النسخة واسترجاعها إلى نظام فارغ فقط.',
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton.icon(
-                  onPressed: () => _openBackup(context),
-                  icon: const Icon(Icons.backup_rounded),
-                  label: const Text('تصدير نسخة احتياطية'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openBackup(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const BackupExportScreen()),
     );
   }
 }

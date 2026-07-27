@@ -13,6 +13,7 @@ import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_meth
 import 'package:grain_warehouse_erp_lite/features/financial_reports/supplier_settlements_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/financial_closing_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/profitability_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
@@ -40,6 +41,14 @@ class FinancialReportsScreen extends StatelessWidget {
             icon: Icons.assessment_rounded,
           ),
           const SizedBox(height: AppSpacing.md),
+          _ReportCard(
+            title: 'الربحية التشغيلية',
+            subtitle:
+                'صافي الربح من لقطة تكلفة البيع والمصروفات التشغيلية منذ التفعيل فقط',
+            icon: Icons.trending_up_rounded,
+            onTap: () => _navigate(context, const ProfitabilityReportScreen()),
+          ),
+          const SizedBox(height: 12),
           _ReportCard(
             title: 'أرصدة الحسابات',
             subtitle: 'عرض أرصدة جميع الحسابات المالية لل période المحددة',

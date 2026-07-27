@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
@@ -125,7 +126,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               ..._controller.expenses.map(
                 (expense) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _ExpenseCard(expense: expense),
+                  child: _ExpenseCard(
+                    expense: expense,
+                    onReclassify: user.role == UserRole.owner
+                        ? () => _reclassifyExpense(user, expense)
+                        : null,
+                  ),
                 ),
               ),
           ],
@@ -191,12 +197,30 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       if (mounted) setState(() => _isSubmittingExpense = false);
     }
   }
+
+  Future<void> _reclassifyExpense(
+    AppUser user,
+    ExpenseRecord expense,
+  ) async {
+    final result = await showDialog<(ExpenseAccountingClassification, String)>(
+      context: context,
+      builder: (context) => _ExpenseReclassificationDialog(expense: expense),
+    );
+    if (result == null) return;
+    await _controller.reclassifyExpense(
+      user: user,
+      expenseId: expense.id,
+      classification: result.$1,
+      reason: result.$2,
+    );
+  }
 }
 
 class _ExpenseCard extends StatelessWidget {
-  const _ExpenseCard({required this.expense});
+  const _ExpenseCard({required this.expense, this.onReclassify});
 
   final ExpenseRecord expense;
+  final VoidCallback? onReclassify;
 
   @override
   Widget build(BuildContext context) {
@@ -219,6 +243,10 @@ class _ExpenseCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text('التاريخ: ${_formatDate(expense.date)}'),
+          const SizedBox(height: 4),
+          Text(
+            'التصنيف المحاسبي: ${expense.accountingClassification?.labelAr ?? 'غير مصنف (سجل قديم)'}',
+          ),
           if (expense.paymentMethod != null) ...[
             const SizedBox(height: 4),
             Text('طريقة الدفع: ${expense.paymentMethod!.labelAr}'),
@@ -226,6 +254,14 @@ class _ExpenseCard extends StatelessWidget {
           if (expense.notes != null) ...[
             const SizedBox(height: 8),
             Text(expense.notes!),
+          ],
+          if (onReclassify != null) ...[
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: onReclassify,
+              icon: const Icon(Icons.edit_note_rounded),
+              label: const Text('تعديل التصنيف المحاسبي'),
+            ),
           ],
         ],
       ),
@@ -235,6 +271,84 @@ class _ExpenseCard extends StatelessWidget {
   String _formatDate(DateTime value) {
     return '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }
+}
+
+class _ExpenseReclassificationDialog extends StatefulWidget {
+  const _ExpenseReclassificationDialog({required this.expense});
+  final ExpenseRecord expense;
+
+  @override
+  State<_ExpenseReclassificationDialog> createState() =>
+      _ExpenseReclassificationDialogState();
+}
+
+class _ExpenseReclassificationDialogState
+    extends State<_ExpenseReclassificationDialog> {
+  late ExpenseAccountingClassification _classification =
+      widget.expense.accountingClassification ??
+          ExpenseAccountingClassification.operating;
+  final _reason = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => GhalalResponsiveDialog(
+        isDirty: _reason.text.isNotEmpty,
+        title: const Text('تعديل التصنيف المحاسبي'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<ExpenseAccountingClassification>(
+              value: _classification,
+              decoration: const InputDecoration(labelText: 'التصنيف الجديد'),
+              items: ExpenseAccountingClassification.values
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value.labelAr),
+                      ))
+                  .toList(growable: false),
+              onChanged: (value) {
+                if (value != null) setState(() => _classification = value);
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _reason,
+              decoration: const InputDecoration(
+                labelText: 'سبب التعديل *',
+                helperText: 'سيُحفظ السبب وهوية المالك في سجل التدقيق.',
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(_error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final reason = _reason.text.trim();
+              if (reason.isEmpty) {
+                setState(() => _error = 'سبب التعديل مطلوب.');
+                return;
+              }
+              Navigator.of(context).pop((_classification, reason));
+            },
+            child: const Text('حفظ التعديل'),
+          ),
+        ],
+      );
 }
 
 class _ExpenseFormDialog extends StatefulWidget {
@@ -261,6 +375,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   DateTime _date = DateTime.now();
   String? _errorMessage;
   PaymentMethod? _selectedPaymentMethod;
+  ExpenseAccountingClassification? _selectedAccountingClassification;
   String? _selectedAccountId;
   bool _isSubmitting = false;
 
@@ -291,6 +406,21 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   label: const Text('اختيار'),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<ExpenseAccountingClassification>(
+              value: _selectedAccountingClassification,
+              isExpanded: true,
+              decoration:
+                  const InputDecoration(labelText: 'التصنيف المحاسبي *'),
+              items: ExpenseAccountingClassification.values
+                  .map((classification) => DropdownMenuItem(
+                        value: classification,
+                        child: Text(classification.labelAr),
+                      ))
+                  .toList(growable: false),
+              onChanged: (value) =>
+                  setState(() => _selectedAccountingClassification = value),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -418,6 +548,10 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         setState(() => _errorMessage = 'اختر طريقة الدفع.');
         return;
       }
+      if (_selectedAccountingClassification == null) {
+        setState(() => _errorMessage = 'اختر التصنيف المحاسبي للمصروف.');
+        return;
+      }
       if (_selectedAccountId == null) {
         setState(() => _errorMessage = 'اختر الحساب المالي للمصروف.');
         return;
@@ -433,6 +567,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
           financialAccountId: _selectedAccountId,
           paymentMethod: _selectedPaymentMethod,
           operationRequestId: widget.operationRequestId,
+          accountingClassification: _selectedAccountingClassification!,
         ),
       );
     } on FormatException {
@@ -445,6 +580,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
       _amountController.text.trim().isNotEmpty ||
       _notesController.text.trim().isNotEmpty ||
       _selectedPaymentMethod != null ||
+      _selectedAccountingClassification != null ||
       _selectedAccountId != null ||
       !_isSameDay(_date, DateTime.now());
 

@@ -93,6 +93,7 @@ void main() {
         await controller.createExpense(
           user: _owner,
           draft: ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: _day,
             category: '',
             amountQirsh: 1000,
@@ -106,6 +107,7 @@ void main() {
         await controller.createExpense(
           user: _owner,
           draft: ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: _day,
             category: 'نقل',
             amountQirsh: 0,
@@ -120,6 +122,7 @@ void main() {
         await controller.createExpense(
           user: _owner,
           draft: ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: _day,
             category: 'نقل',
             amountQirsh: 12550,
@@ -152,6 +155,7 @@ void main() {
 
       await fixture.expenses.createExpense(
         ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: _day,
           category: 'كهرباء',
           amountQirsh: 30000,
@@ -199,6 +203,7 @@ void main() {
       );
       await source.expenses.createExpense(
         ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: _day,
           category: 'نولون',
           amountQirsh: 45000,

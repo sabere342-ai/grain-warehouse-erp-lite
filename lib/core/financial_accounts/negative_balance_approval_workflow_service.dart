@@ -191,6 +191,7 @@ class NegativeBalanceApprovalWorkflowService {
       ),
       'date': draft.date.toUtc().toIso8601String(),
       'category': draft.category.trim(),
+      'accountingClassification': draft.accountingClassification.name,
       'notes': draft.notes?.trim(),
     };
     return NegativeBalanceSubmission.pending(
@@ -566,7 +567,10 @@ class NegativeBalanceApprovalWorkflowService {
         }
       case NegativeBalanceApprovalRequestOperationType.expense:
         if ((payload['category'] as String?)?.trim().isEmpty != false ||
-            DateTime.tryParse(payload['date'] as String? ?? '') == null) {
+            DateTime.tryParse(payload['date'] as String? ?? '') == null ||
+            !ExpenseAccountingClassification.values.any(
+              (value) => value.name == payload['accountingClassification'],
+            )) {
           return 'بيانات المصروف الدائمة غير صالحة.';
         }
       case NegativeBalanceApprovalRequestOperationType.paidPurchase:
@@ -624,6 +628,8 @@ class NegativeBalanceApprovalWorkflowService {
       case NegativeBalanceApprovalRequestOperationType.expense:
         final value = await _expenseRepository.createExpense(
           ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.values
+                .byName(payload['accountingClassification'] as String),
             date: DateTime.parse(payload['date'] as String),
             category: payload['category'] as String,
             amountQirsh: request.amountQirsh,

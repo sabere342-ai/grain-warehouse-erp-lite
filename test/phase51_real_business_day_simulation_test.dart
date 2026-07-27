@@ -117,6 +117,7 @@ void main() {
       );
       final expense = await fixture.expenses.createExpense(
         ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: today,
           category: 'Phase 51 synthetic operating expense',
           amountQirsh: 25000,

@@ -24,12 +24,60 @@ class SaleLineItem {
     required this.quantityKg,
     required this.salePriceQirshPerKg,
     required this.lineTotalQirsh,
+    this.valuationEventId,
+    this.unitCostMicrosQirshPerKg,
+    this.costOfGoodsSoldQirsh,
+    this.inventoryQuantityBeforeKg,
+    this.inventoryQuantityAfterKg,
+    this.inventoryValueBeforeQirsh,
+    this.inventoryValueAfterQirsh,
+    this.costAllocationResidualNumerator,
+    this.costAllocationResidualDenominator,
   });
 
   final String productId;
   final int quantityKg;
   final int salePriceQirshPerKg;
   final int lineTotalQirsh;
+  final String? valuationEventId;
+  final int? unitCostMicrosQirshPerKg;
+  final int? costOfGoodsSoldQirsh;
+  final int? inventoryQuantityBeforeKg;
+  final int? inventoryQuantityAfterKg;
+  final int? inventoryValueBeforeQirsh;
+  final int? inventoryValueAfterQirsh;
+  final int? costAllocationResidualNumerator;
+  final int? costAllocationResidualDenominator;
+
+  bool get hasCostSnapshot =>
+      valuationEventId != null && costOfGoodsSoldQirsh != null;
+
+  SaleLineItem copyWithCostSnapshot({
+    required String valuationEventId,
+    required int unitCostMicrosQirshPerKg,
+    required int costOfGoodsSoldQirsh,
+    required int inventoryQuantityBeforeKg,
+    required int inventoryQuantityAfterKg,
+    required int inventoryValueBeforeQirsh,
+    required int inventoryValueAfterQirsh,
+    required int costAllocationResidualNumerator,
+    required int costAllocationResidualDenominator,
+  }) =>
+      SaleLineItem(
+        productId: productId,
+        quantityKg: quantityKg,
+        salePriceQirshPerKg: salePriceQirshPerKg,
+        lineTotalQirsh: lineTotalQirsh,
+        valuationEventId: valuationEventId,
+        unitCostMicrosQirshPerKg: unitCostMicrosQirshPerKg,
+        costOfGoodsSoldQirsh: costOfGoodsSoldQirsh,
+        inventoryQuantityBeforeKg: inventoryQuantityBeforeKg,
+        inventoryQuantityAfterKg: inventoryQuantityAfterKg,
+        inventoryValueBeforeQirsh: inventoryValueBeforeQirsh,
+        inventoryValueAfterQirsh: inventoryValueAfterQirsh,
+        costAllocationResidualNumerator: costAllocationResidualNumerator,
+        costAllocationResidualDenominator: costAllocationResidualDenominator,
+      );
 }
 
 class SaleLineItemDraft {
@@ -107,6 +155,16 @@ class SaleRecord {
   bool get isCreditSale => paymentMode == SalePaymentMode.credit;
   bool get isPartialPayment => paymentMode == SalePaymentMode.partial;
   bool get isMultiItem => items.length > 1;
+
+  bool get hasCompleteCostSnapshots =>
+      items.isNotEmpty && items.every((item) => item.hasCostSnapshot);
+
+  int? get totalCostOfGoodsSoldQirsh => hasCompleteCostSnapshots
+      ? items.fold<int>(
+          0,
+          (total, item) => total + item.costOfGoodsSoldQirsh!,
+        )
+      : null;
 
   int get effectivePaidAmountQirsh {
     if (paidAmountQirsh != null) return paidAmountQirsh!;

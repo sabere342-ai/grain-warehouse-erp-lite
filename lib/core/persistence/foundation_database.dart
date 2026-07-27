@@ -96,6 +96,65 @@ class InventoryMovements extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('ProfitabilityActivationRow')
+class ProfitabilityActivations extends Table {
+  TextColumn get id => text()();
+  TextColumn get status => text()();
+  DateTimeColumn get activationDate => dateTime().nullable()();
+  DateTimeColumn get approvedAt => dateTime().nullable()();
+  TextColumn get approvedByUserId => text().nullable()();
+  TextColumn get evidenceNote => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('InventoryValuationStateRow')
+class InventoryValuationStates extends Table {
+  TextColumn get productId => text()();
+  IntColumn get quantityKg => integer()();
+  IntColumn get totalValueQirsh => integer()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get lastEventId => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {productId};
+}
+
+@DataClassName('InventoryValuationEventRow')
+@TableIndex(
+  name: 'inventory_valuation_events_product_created_idx',
+  columns: {#productId, #createdAt, #id},
+)
+@TableIndex(
+  name: 'inventory_valuation_events_source_idx',
+  columns: {#sourceDocumentId},
+)
+class InventoryValuationEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get productId => text()();
+  TextColumn get eventType => text()();
+  IntColumn get quantityBeforeKg => integer()();
+  IntColumn get quantityDeltaKg => integer()();
+  IntColumn get quantityAfterKg => integer()();
+  IntColumn get valueBeforeQirsh => integer()();
+  IntColumn get valueDeltaQirsh => integer()();
+  IntColumn get valueAfterQirsh => integer()();
+  IntColumn get unitCostMicrosQirshPerKg => integer()();
+  IntColumn get allocationResidualNumerator => integer()();
+  IntColumn get allocationResidualDenominator => integer()();
+  TextColumn get sourceDocumentId => text()();
+  DateTimeColumn get effectiveDate => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get createdByUserId => text()();
+  TextColumn get reversalOfEventId => text().nullable()();
+  TextColumn get reason => text().nullable()();
+  TextColumn get evidenceReference => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @TableIndex(name: 'purchases_supplier_idx', columns: {#supplierId})
 @TableIndex(name: 'purchases_created_idx', columns: {#createdAt, #id})
 @TableIndex(name: 'purchases_product_idx', columns: {#productId})
@@ -288,6 +347,7 @@ class Expenses extends Table {
   TextColumn get createdByUserId => text().nullable()();
   TextColumn get operationRequestId => text().nullable()();
   TextColumn get operationRequestFingerprint => text().nullable()();
+  TextColumn get accountingClassification => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -479,6 +539,9 @@ class NegativeBalanceApprovalRequestTransitions extends Table {
   Customers,
   Suppliers,
   InventoryMovements,
+  ProfitabilityActivations,
+  InventoryValuationStates,
+  InventoryValuationEvents,
   Purchases,
   Sales,
   FinancialAccounts,
@@ -505,7 +568,7 @@ class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

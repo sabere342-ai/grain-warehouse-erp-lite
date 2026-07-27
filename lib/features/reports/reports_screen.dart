@@ -504,11 +504,11 @@ class _SummaryGrid extends StatelessWidget {
             ),
             _SummaryCard(
               width: itemWidth,
-              title: 'الربح التقديري',
+              title: 'مؤشر هامش مرجعي غير محاسبي',
               value: _formatOptionalMoney(report.estimatedGrossProfitQirsh),
               caption: report.hasCompleteSalesCost
-                  ? 'مبيعات ناقص تكلفة مرجعية'
-                  : 'غير مكتمل',
+                  ? 'مبيعات ناقص تكلفة مرجعية — لا يمثل ربحًا محاسبيًا'
+                  : 'غير مكتمل — لا يمثل ربحًا محاسبيًا',
               icon: Icons.trending_up_rounded,
             ),
             _SummaryCard(
@@ -626,7 +626,7 @@ class _CostWarningCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'تقدير الربح غير مكتمل لأن بعض الأصناف لا تحتوي على تكلفة مرجعية.',
+                  'المؤشر المرجعي غير مكتمل لأن بعض الأصناف لا تحتوي على تكلفة مرجعية. هذا المؤشر لا يمثل ربحًا محاسبيًا.',
                 ),
                 if (missing.isNotEmpty) ...[
                   const SizedBox(height: 6),

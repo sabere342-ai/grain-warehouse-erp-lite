@@ -108,7 +108,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('إجمالي المبيعات'), findsOneWidget);
-      expect(find.text('الربح التقديري'), findsOneWidget);
+      expect(find.text('مؤشر هامش مرجعي غير محاسبي'), findsOneWidget);
       expect(find.text('تنبيه نقص التكلفة المرجعية'), findsOneWidget);
       expect(find.textContaining('ج.م'), findsWidgets);
       expect(find.textContaining('قرش'), findsNothing);

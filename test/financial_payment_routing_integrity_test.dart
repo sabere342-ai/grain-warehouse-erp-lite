@@ -317,6 +317,7 @@ void main() {
       await expectLater(
         expenses.createExpense(
           ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 7, 21),
             category: 'نقل',
             amountQirsh: 1000,
@@ -331,6 +332,7 @@ void main() {
 
       await expenses.createExpense(
         ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: DateTime(2026, 7, 21),
           category: 'نقل',
           amountQirsh: 2500,

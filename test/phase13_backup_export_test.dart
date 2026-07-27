@@ -7,6 +7,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
@@ -14,6 +16,8 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -21,29 +25,46 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
 
 void main() {
   group('Phase 13 backup export', () {
-    testWidgets('dashboard backup entry appears for owner only',
+    testWidgets('dashboard keeps backup administration out of daily view',
         (tester) async {
       await tester.pumpWidget(_dashboardHarness(user: _owner));
       await _pumpExpectedState(tester);
 
-      await tester.scrollUntilVisible(
-        find.text('تصدير نسخة احتياطية'),
-        300,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text('النسخ الاحتياطي'), findsOneWidget);
-      expect(find.text('تصدير نسخة احتياطية'), findsOneWidget);
+      expect(find.byKey(const Key('dashboard-backup-administration-card')),
+          findsNothing);
 
       await tester.pumpWidget(_dashboardHarness(user: _employee));
       await _pumpExpectedState(tester);
 
-      expect(find.text('النسخ الاحتياطي'), findsNothing);
-      expect(find.text('تصدير نسخة احتياطية'), findsNothing);
+      expect(find.byKey(const Key('dashboard-backup-administration-card')),
+          findsNothing);
+    });
+
+    testWidgets('settings owns backup administration for owner only',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 4000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(await _settingsHarness(user: _owner));
+      await _pumpExpectedState(tester);
+      expect(
+        find.byKey(const Key('settings-backup-administration-card')),
+        findsOneWidget,
+      );
+
+      await tester.pumpWidget(await _settingsHarness(user: _employee));
+      await _pumpExpectedState(tester);
+      expect(
+        find.byKey(const Key('settings-backup-administration-card')),
+        findsNothing,
+      );
     });
 
     testWidgets('backup screen contains safety warnings and copy UI',
@@ -105,7 +126,7 @@ void main() {
       final data = decoded['data'] as Map<String, Object?>;
 
       expect(metadata['app'], 'grain-warehouse-erp-lite');
-      expect(metadata['backupVersion'], 7);
+      expect(metadata['backupVersion'], 8);
       expect(metadata['generatedAt'], '2026-01-02T03:04:05.000Z');
       expect(metadata['restoreSupported'], isFalse);
       expect(metadata['warning'], contains('يمكن استرجاعها فقط إلى نظام فارغ'));
@@ -128,6 +149,9 @@ void main() {
             'purchases',
             'sales',
             'documentHistory',
+            'profitabilityActivation',
+            'inventoryValuationStates',
+            'inventoryValuationEvents',
           ]));
       expect(data['products'], isA<List<Object?>>());
       expect(data['inventoryMovements'], isA<List<Object?>>());
@@ -135,6 +159,17 @@ void main() {
       expect(data['purchases'], isA<List<Object?>>());
       expect(data['sales'], isA<List<Object?>>());
       expect(data['documentHistory'], isA<List<Object?>>());
+      expect(
+        (data['profitabilityActivation'] as Map<String, Object?>)['status'],
+        ProfitabilityActivationStatus.activated.name,
+      );
+      expect(data['inventoryValuationStates'], hasLength(1));
+      expect(data['inventoryValuationEvents'], hasLength(2));
+      final sale =
+          (data['sales'] as List<Object?>).single as Map<String, Object?>;
+      final item =
+          (sale['items'] as List<Object?>).single as Map<String, Object?>;
+      expect(item['costOfGoodsSoldQirsh'], 162500);
     });
 
     test('snapshot omits password token and session fields', () async {
@@ -174,14 +209,17 @@ Future<_BackupFixture> _fixture() async {
   final products = LocalProductRepository();
   final suppliers = LocalSupplierRepository();
   final inventory = LocalInventoryRepository(productRepository: products);
+  final valuation = LocalInventoryValuationRepository();
   final purchases = LocalPurchaseRepository(
     supplierRepository: suppliers,
     productRepository: products,
     inventoryRepository: inventory,
+    inventoryValuationRepository: valuation,
   );
   final sales = LocalSaleRepository(
     productRepository: products,
     inventoryRepository: inventory,
+    inventoryValuationRepository: valuation,
   );
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
@@ -207,6 +245,19 @@ Future<_BackupFixture> _fixture() async {
       notes: 'استلام شراء',
     ),
   );
+  await valuation.activate(
+    activationDate: DateTime.utc(2026, 1, 1),
+    approvedByUserId: _owner.id,
+    evidenceNote: 'TEST FIXTURE ONLY — physical stocktake',
+    openings: [
+      OpeningValuationInput(
+        productId: product.id,
+        quantityKg: 1000,
+        unitCostQirshPerKg: 650,
+        evidenceReference: 'TEST FIXTURE ONLY — trusted invoice',
+      ),
+    ],
+  );
   final backupCustomer = await LocalCustomerRepository().createCustomer(
     const CustomerDraft(name: 'عميل', isActive: true),
   );
@@ -229,6 +280,7 @@ Future<_BackupFixture> _fixture() async {
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
+    inventoryValuationRepository: valuation,
     now: () => DateTime.utc(2026, 1, 2, 3, 4, 5),
   );
 
@@ -254,6 +306,35 @@ Widget _dashboardHarness({required AppUser user}) {
     user: user,
     child: DashboardScreen(
       loadGuidance: () async => DashboardGuidanceState.empty(),
+    ),
+  );
+}
+
+Future<Widget> _settingsHarness({required AppUser user}) async {
+  final authController =
+      AuthController(repository: _StaticAuthRepository(user));
+  final themeController = ThemeController(
+    repository: LocalThemeSettingsRepository(),
+  );
+  final identityController = BusinessIdentityController(
+    repository: LocalBusinessIdentityRepository(),
+  );
+  addTearDown(authController.dispose);
+  addTearDown(themeController.dispose);
+  addTearDown(identityController.dispose);
+  await authController.initialize();
+  return AuthScope(
+    controller: authController,
+    child: ThemeScope(
+      controller: themeController,
+      child: BusinessIdentityScope(
+        controller: identityController,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('ar'),
+          home: const Scaffold(body: SettingsScreen()),
+        ),
+      ),
     ),
   );
 }

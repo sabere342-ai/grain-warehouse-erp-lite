@@ -23,6 +23,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balanc
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -40,7 +42,7 @@ void main() {
     final decoded = jsonDecode(backup.jsonText) as Map<String, Object?>;
     final data = decoded['data'] as Map<String, Object?>;
 
-    expect((decoded['metadata'] as Map<String, Object?>)['backupVersion'], 7);
+    expect((decoded['metadata'] as Map<String, Object?>)['backupVersion'], 8);
     _expectLink(data, 'sales', PaymentMethod.cash);
     _expectLink(data, 'purchases', PaymentMethod.bankTransfer);
     _expectLink(data, 'customerCollections', PaymentMethod.mobileWallet);
@@ -198,17 +200,22 @@ void main() {
     expect(await target.financialAccounts.listAccounts(), isEmpty);
   });
 
-  test('all v1 through v6 remain accepted by preview', () async {
+  test('all v1 through v8 remain restorable into an empty system', () async {
     final source = await _Fixture.seeded();
     final decoded =
         jsonDecode((await source.exportService.createBackup()).jsonText)
             as Map<String, Object?>;
-    for (var version = 1; version <= 6; version++) {
+    for (var version = 1; version <= 8; version++) {
       (decoded['metadata'] as Map<String, Object?>)['backupVersion'] = version;
       final target = await _Fixture.empty();
       final result = await target.restoreService
           .restoreToEmpty(user: _owner, jsonText: _withChecksum(decoded));
       expect(result.success, isTrue, reason: 'backup v$version');
+      expect(
+        (await target.valuation.getActivation()).isActivated,
+        version == 8,
+        reason: 'profitability activation policy for backup v$version',
+      );
     }
   });
 }
@@ -299,6 +306,7 @@ class _Fixture {
     required this.history,
     required this.audit,
     required this.approvalRequests,
+    required this.valuation,
   });
 
   final LocalProductRepository products;
@@ -314,6 +322,7 @@ class _Fixture {
   final LocalDocumentHistoryRepository history;
   final LocalAuditLogRepository audit;
   final LocalNegativeBalanceApprovalRequestRepository approvalRequests;
+  final LocalInventoryValuationRepository valuation;
 
   static Future<_Fixture> empty() async {
     final products = LocalProductRepository();
@@ -343,6 +352,7 @@ class _Fixture {
         productRepository: products,
         inventoryRepository: inventory);
     final approvalRequests = LocalNegativeBalanceApprovalRequestRepository();
+    final valuation = LocalInventoryValuationRepository();
     return _Fixture._(
         products: products,
         suppliers: suppliers,
@@ -356,7 +366,8 @@ class _Fixture {
         financialAccounts: financialAccounts,
         history: history,
         audit: LocalAuditLogRepository(),
-        approvalRequests: approvalRequests);
+        approvalRequests: approvalRequests,
+        valuation: valuation);
   }
 
   static Future<_Fixture> seeded() async {
@@ -380,6 +391,19 @@ class _Fixture {
         createdAt: _fixedDate);
     await value.inventory
         .restoreMovementsIntoEmpty([purchaseMovement, saleMovement]);
+    await value.valuation.activate(
+      activationDate: _fixedDate,
+      approvedByUserId: _owner.id,
+      evidenceNote: 'TEST FIXTURE ONLY — backup compatibility',
+      openings: const [
+        OpeningValuationInput(
+          productId: 'product-1',
+          quantityKg: 15,
+          unitCostQirshPerKg: 100,
+          evidenceReference: 'TEST FIXTURE ONLY',
+        ),
+      ],
+    );
     await value.financialAccounts.restoreFinancialAccountsIntoEmpty(
         accounts: [_account], entries: const []);
     await value.purchases.restorePurchaseIntakesIntoEmpty([
@@ -533,6 +557,7 @@ class _Fixture {
       auditLogRepository: audit,
       financialAccountRepository: financialAccounts,
       negativeBalanceApprovalRequestRepository: approvalRequests,
+      inventoryValuationRepository: valuation,
       now: () => _now);
 
   BackupRestoreService get restoreService => BackupRestoreService(
@@ -548,7 +573,8 @@ class _Fixture {
       expenseRepository: expenses,
       auditLogRepository: audit,
       financialAccountRepository: financialAccounts,
-      negativeBalanceApprovalRequestRepository: approvalRequests);
+      negativeBalanceApprovalRequestRepository: approvalRequests,
+      inventoryValuationRepository: valuation);
 }
 
 final _fixedDate = DateTime.utc(2026, 7, 11);

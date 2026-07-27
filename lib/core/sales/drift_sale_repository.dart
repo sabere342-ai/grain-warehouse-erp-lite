@@ -7,6 +7,8 @@ import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.da
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -20,13 +22,19 @@ class DriftSaleRepository implements DurableSaleRepository {
     this._database, {
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
-  }) : _delegate = LocalSaleRepository(
+    InventoryValuationRepository? inventoryValuationRepository,
+    FinancialAccountRepository? financialAccountRepository,
+  })  : _delegate = LocalSaleRepository(
           productRepository: productRepository,
           inventoryRepository: inventoryRepository,
-        );
+          inventoryValuationRepository: inventoryValuationRepository,
+          financialAccountRepository: financialAccountRepository,
+        ),
+        _inventoryValuationRepository = inventoryValuationRepository;
 
   final db.FoundationDatabase _database;
   final LocalSaleRepository _delegate;
+  final InventoryValuationRepository? _inventoryValuationRepository;
   Future<void> _tail = Future<void>.value();
   bool _loaded = false;
 
@@ -58,6 +66,9 @@ class DriftSaleRepository implements DurableSaleRepository {
         await _ensureLoaded();
         final snapshot = _delegate.createTransactionSnapshot();
         await snapshot.capture();
+        final valuationSnapshot =
+            _inventoryValuationRepository?.createTransactionSnapshot();
+        await valuationSnapshot?.capture();
         try {
           return await _database.inTransaction(() async {
             final sale = await _delegate.createSale(draft);
@@ -66,6 +77,7 @@ class DriftSaleRepository implements DurableSaleRepository {
           });
         } catch (_) {
           await snapshot.rollback();
+          await valuationSnapshot?.rollback();
           rethrow;
         }
       });
@@ -80,6 +92,9 @@ class DriftSaleRepository implements DurableSaleRepository {
         await _ensureLoaded();
         final snapshot = _delegate.createTransactionSnapshot();
         await snapshot.capture();
+        final valuationSnapshot =
+            _inventoryValuationRepository?.createTransactionSnapshot();
+        await valuationSnapshot?.capture();
         try {
           return await _database.inTransaction(() async {
             final sale = await _delegate.cancelSale(
@@ -94,6 +109,7 @@ class DriftSaleRepository implements DurableSaleRepository {
           });
         } catch (_) {
           await snapshot.rollback();
+          await valuationSnapshot?.rollback();
           rethrow;
         }
       });
@@ -153,6 +169,17 @@ class DriftSaleRepository implements DurableSaleRepository {
                 'quantityKg': item.quantityKg,
                 'salePriceQirshPerKg': item.salePriceQirshPerKg,
                 'lineTotalQirsh': item.lineTotalQirsh,
+                'valuationEventId': item.valuationEventId,
+                'unitCostMicrosQirshPerKg': item.unitCostMicrosQirshPerKg,
+                'costOfGoodsSoldQirsh': item.costOfGoodsSoldQirsh,
+                'inventoryQuantityBeforeKg': item.inventoryQuantityBeforeKg,
+                'inventoryQuantityAfterKg': item.inventoryQuantityAfterKg,
+                'inventoryValueBeforeQirsh': item.inventoryValueBeforeQirsh,
+                'inventoryValueAfterQirsh': item.inventoryValueAfterQirsh,
+                'costAllocationResidualNumerator':
+                    item.costAllocationResidualNumerator,
+                'costAllocationResidualDenominator':
+                    item.costAllocationResidualDenominator,
               })
           .toList()),
       paymentAllocationsJson: jsonEncode(sale.paymentAllocations
@@ -186,6 +213,22 @@ class DriftSaleRepository implements DurableSaleRepository {
               quantityKg: item['quantityKg']! as int,
               salePriceQirshPerKg: item['salePriceQirshPerKg']! as int,
               lineTotalQirsh: item['lineTotalQirsh']! as int,
+              valuationEventId: item['valuationEventId'] as String?,
+              unitCostMicrosQirshPerKg:
+                  item['unitCostMicrosQirshPerKg'] as int?,
+              costOfGoodsSoldQirsh: item['costOfGoodsSoldQirsh'] as int?,
+              inventoryQuantityBeforeKg:
+                  item['inventoryQuantityBeforeKg'] as int?,
+              inventoryQuantityAfterKg:
+                  item['inventoryQuantityAfterKg'] as int?,
+              inventoryValueBeforeQirsh:
+                  item['inventoryValueBeforeQirsh'] as int?,
+              inventoryValueAfterQirsh:
+                  item['inventoryValueAfterQirsh'] as int?,
+              costAllocationResidualNumerator:
+                  item['costAllocationResidualNumerator'] as int?,
+              costAllocationResidualDenominator:
+                  item['costAllocationResidualDenominator'] as int?,
             ))
         .toList(growable: false);
     final allocations = (jsonDecode(row.paymentAllocationsJson) as List)

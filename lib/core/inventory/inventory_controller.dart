@@ -4,16 +4,30 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 
 class InventoryController extends ChangeNotifier {
   InventoryController({
     required InventoryRepository inventoryRepository,
     required ProductRepository productRepository,
+    InventoryValuationRepository? inventoryValuationRepository,
+    FinancialAccountRepository? financialAccountRepository,
+    AuditLogRepository? auditLogRepository,
   })  : _inventoryRepository = inventoryRepository,
-        _productRepository = productRepository;
+        _productRepository = productRepository,
+        _inventoryValuationRepository = inventoryValuationRepository,
+        _financialAccountRepository = financialAccountRepository,
+        _auditLogRepository = auditLogRepository;
 
   final InventoryRepository _inventoryRepository;
   final ProductRepository _productRepository;
+  final InventoryValuationRepository? _inventoryValuationRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
+  final AuditLogRepository? _auditLogRepository;
 
   List<Product> _products = const [];
   List<StockMovement> _movements = const [];
@@ -21,6 +35,7 @@ class InventoryController extends ChangeNotifier {
   Set<String> _productsWithOpeningBalance = const {};
   String? _errorMessage;
   bool _isLoading = false;
+  bool _isProfitabilityActivated = false;
 
   List<Product> get products => List<Product>.unmodifiable(_products);
   List<StockMovement> get movements =>
@@ -28,6 +43,7 @@ class InventoryController extends ChangeNotifier {
   Map<String, int> get balancesKg => Map<String, int>.unmodifiable(_balancesKg);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
+  bool get isProfitabilityActivated => _isProfitabilityActivated;
 
   Future<void> load(AppUser user) async {
     _isLoading = true;
@@ -41,6 +57,9 @@ class InventoryController extends ChangeNotifier {
     _balancesKg = await _inventoryRepository.allProductBalancesKg(
       activeProductsOnly: !user.permissions.canCreateStockAdjustment,
     );
+    _isProfitabilityActivated = user.permissions.canViewFinancialReports &&
+        (await _inventoryValuationRepository?.getActivation())?.isActivated ==
+            true;
     _productsWithOpeningBalance = _movements
         .where((movement) =>
             movement.movementType == StockMovementType.openingBalance &&
@@ -72,6 +91,9 @@ class InventoryController extends ChangeNotifier {
     required String productId,
     required int quantityKg,
     String? note,
+    int? unitCostQirshPerKg,
+    String? evidenceReference,
+    bool isStocktake = false,
   }) {
     return _createMovement(
       user: user,
@@ -79,6 +101,9 @@ class InventoryController extends ChangeNotifier {
       movementType: StockMovementType.manualIncrease,
       quantityKg: quantityKg,
       note: note,
+      unitCostQirshPerKg: unitCostQirshPerKg,
+      evidenceReference: evidenceReference,
+      isStocktake: isStocktake,
     );
   }
 
@@ -87,6 +112,7 @@ class InventoryController extends ChangeNotifier {
     required String productId,
     required int quantityKg,
     String? note,
+    bool isStocktake = false,
   }) {
     return _createMovement(
       user: user,
@@ -94,6 +120,7 @@ class InventoryController extends ChangeNotifier {
       movementType: StockMovementType.manualDecrease,
       quantityKg: quantityKg,
       note: note,
+      isStocktake: isStocktake,
     );
   }
 
@@ -117,21 +144,91 @@ class InventoryController extends ChangeNotifier {
     required StockMovementType movementType,
     required int quantityKg,
     String? note,
+    int? unitCostQirshPerKg,
+    String? evidenceReference,
+    bool isStocktake = false,
   }) async {
     if (!_canCreateStockMovement(user)) {
       return false;
     }
 
     try {
-      await _inventoryRepository.createMovement(
-        StockMovementDraft(
-          productId: productId,
-          movementType: movementType,
-          quantityKg: quantityKg,
-          createdByUserId: user.id,
-          note: note,
-        ),
-      );
+      final now = DateTime.now();
+      await _financialAccountRepository?.ensureDateIsOpen(now);
+      final valuation = _inventoryValuationRepository;
+      final activation = await valuation?.getActivation();
+      final reason = note?.trim() ?? '';
+      if (activation?.isActivated == true &&
+          movementType == StockMovementType.openingBalance) {
+        throw StateError(
+            'Opening balances are frozen after profitability activation.');
+      }
+      if (activation?.isActivated == true && reason.isEmpty) {
+        throw ArgumentError('Adjustment reason is required.');
+      }
+      if (activation?.isActivated == true &&
+          movementType == StockMovementType.manualIncrease &&
+          (unitCostQirshPerKg == null ||
+              unitCostQirshPerKg <= 0 ||
+              (evidenceReference?.trim().isEmpty ?? true))) {
+        throw ArgumentError('Surplus cost and trusted evidence are required.');
+      }
+      final snapshots = <SnapshotHolder>[
+        _requiredSnapshot(_inventoryRepository, 'inventory'),
+      ];
+      if (valuation != null) {
+        snapshots.add(_requiredSnapshot(valuation, 'inventory valuation'));
+      }
+      if (_auditLogRepository != null) {
+        snapshots.add(_requiredSnapshot(_auditLogRepository, 'audit'));
+      }
+      await RepositoryTransaction.execute(snapshots, () async {
+        final movement = await _inventoryRepository.createMovement(
+          StockMovementDraft(
+            productId: productId,
+            movementType: movementType,
+            quantityKg: quantityKg,
+            createdByUserId: user.id,
+            note: note,
+          ),
+        );
+        if (movementType == StockMovementType.manualIncrease) {
+          await valuation?.recordValuedIncrease(
+            productId: productId,
+            quantityKg: quantityKg,
+            unitCostQirshPerKg: unitCostQirshPerKg ?? 0,
+            type: isStocktake
+                ? InventoryValuationEventType.stocktakeSurplus
+                : InventoryValuationEventType.manualIncrease,
+            sourceDocumentId: movement.id,
+            effectiveDate: now,
+            createdByUserId: user.id,
+            reason: reason,
+            evidenceReference: evidenceReference?.trim() ?? '',
+          );
+        } else if (movementType == StockMovementType.manualDecrease) {
+          await valuation?.recordDecrease(
+            productId: productId,
+            quantityKg: quantityKg,
+            type: isStocktake
+                ? InventoryValuationEventType.stocktakeShortage
+                : InventoryValuationEventType.manualDecrease,
+            sourceDocumentId: movement.id,
+            effectiveDate: now,
+            createdByUserId: user.id,
+            reason: reason,
+          );
+        }
+        await _auditLogRepository?.record(AuditLogDraft(
+          actionType: isStocktake
+              ? 'inventory.stocktake.adjusted'
+              : 'inventory.manual.adjusted',
+          descriptionAr:
+              'تسوية مخزون ${movementType.name}: $quantityKg كجم. السبب: $reason',
+          referenceId: movement.id,
+          actorId: user.id,
+        ));
+      });
       await load(user);
       return true;
     } catch (error) {
@@ -139,6 +236,14 @@ class InventoryController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  SnapshotHolder _requiredSnapshot(Object repository, String name) {
+    if (repository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Inventory $name repository cannot participate in a transaction.');
+    }
+    return repository.createTransactionSnapshot();
   }
 
   bool _canCreateStockMovement(AppUser user) {

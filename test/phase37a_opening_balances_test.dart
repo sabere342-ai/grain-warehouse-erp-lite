@@ -219,7 +219,7 @@ void main() {
         );
 
         final result = await service.createBackup();
-        expect(result.backupVersion, 7);
+        expect(result.backupVersion, 8);
       });
 
       test('v1 backup is accepted by preview service', () async {
@@ -418,7 +418,7 @@ void main() {
             const BackupRestorePreviewService().preview(result.jsonText);
 
         expect(preview.isValid, isTrue);
-        expect(preview.summary!.backupVersion, 7);
+        expect(preview.summary!.backupVersion, 8);
       });
 
       test('unsupported version 99 is rejected', () {

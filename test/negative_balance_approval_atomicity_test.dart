@@ -221,6 +221,7 @@ void main() {
       await expectLater(
         expenses.createExpense(
           ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 1, 2),
             category: 'Utilities',
             amountQirsh: 1500,

@@ -4,7 +4,8 @@ class RepositoryTransaction {
   RepositoryTransaction._();
 
   static final Object _transactionZoneKey = Object();
-  static Future<void> _tail = Future<void>.value();
+  static final Future<void> _idle = Future<void>.value();
+  static Future<void> _tail = _idle;
 
   static bool get isActive => Zone.current[_transactionZoneKey] == true;
 
@@ -22,7 +23,9 @@ class RepositoryTransaction {
     final completion = Completer<void>();
     final previous = _tail;
     _tail = completion.future;
-    await previous.catchError((_) {});
+    if (!identical(previous, _idle)) {
+      await previous.catchError((_) {});
+    }
     try {
       return await runZoned(
         () => _executeWithinBoundary(snapshots, operation),
@@ -30,6 +33,9 @@ class RepositoryTransaction {
       );
     } finally {
       completion.complete();
+      if (identical(_tail, completion.future)) {
+        _tail = _idle;
+      }
     }
   }
 

@@ -37,6 +37,11 @@ class _StockAdjustmentReportScreenState
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
           productRepository: AppRepositories.productRepository,
+          inventoryValuationRepository:
+              AppRepositories.inventoryValuationRepository,
+          financialAccountRepository:
+              AppRepositories.financialAccountRepository,
+          auditLogRepository: AppRepositories.auditLogRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;

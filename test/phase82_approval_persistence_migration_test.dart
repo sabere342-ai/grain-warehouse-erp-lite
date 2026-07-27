@@ -16,7 +16,7 @@ void main() {
       () async {
     final database = openInMemoryTestDatabase();
     addTearDown(database.close);
-    expect(database.schemaVersion, 14);
+    expect(database.schemaVersion, 15);
     final objects = (await database
             .customSelect(
               "SELECT name, type FROM sqlite_master WHERE name LIKE 'negative_balance_%' OR name = 'expenses_operation_request_uq'",
@@ -96,7 +96,7 @@ void main() {
 
     final upgraded = openDatabaseFile(file);
     addTearDown(upgraded.close);
-    expect(upgraded.schemaVersion, 14);
+    expect(upgraded.schemaVersion, 15);
     final audit = await upgraded
         .customSelect(
           "SELECT actor_id FROM audit_logs WHERE id = 'audit-old'",

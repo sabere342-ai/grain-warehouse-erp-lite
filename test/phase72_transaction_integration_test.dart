@@ -238,6 +238,7 @@ void main() {
         );
         await expenseRepo.createExpense(
           ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 1, 15),
             category: 'مصاريف إدارية',
             amountQirsh: 2500,
@@ -271,6 +272,8 @@ void main() {
         await expectLater(
           expenseRepo.createExpense(
             ExpenseDraft(
+              accountingClassification:
+                  ExpenseAccountingClassification.operating,
               date: DateTime(2026, 1, 15),
               category: 'مصاريف إدارية',
               amountQirsh: 2500,
@@ -291,6 +294,8 @@ void main() {
         await expectLater(
           expenseRepo.createExpense(
             ExpenseDraft(
+              accountingClassification:
+                  ExpenseAccountingClassification.operating,
               date: DateTime(2026, 1, 15),
               category: 'مصاريف إدارية',
               amountQirsh: 2500,

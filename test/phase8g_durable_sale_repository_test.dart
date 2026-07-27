@@ -51,7 +51,7 @@ void main() {
     legacy.dispose();
 
     final upgraded = openDatabaseFile(file);
-    expect(upgraded.schemaVersion, 14);
+    expect(upgraded.schemaVersion, 15);
     expect(await upgraded.readProbe('legacy'), 'kept');
     expect(await upgraded.purchases.count().getSingle(), 1);
     expect(await upgraded.sales.count().getSingle(), 0);

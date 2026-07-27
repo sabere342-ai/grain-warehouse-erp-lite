@@ -805,6 +805,7 @@ void main() {
 
         expect(
           () => expenseRepo.createExpense(ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 1, 2),
             category: 'نقل',
             amountQirsh: 5000,
@@ -856,6 +857,7 @@ void main() {
           requesterUserId: 'system',
         );
         final expense = await expenseRepo.createExpense(ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: DateTime(2026, 1, 2),
           category: 'نقل',
           amountQirsh: 5000,
@@ -896,6 +898,7 @@ void main() {
 
         expect(
           () => expenseRepo.createExpense(ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 1, 2),
             category: 'نقل',
             amountQirsh: 5000,
@@ -916,6 +919,7 @@ void main() {
         );
         await expectLater(
           expenseRepo.createExpense(ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: DateTime(2026, 1, 2),
             category: 'نقل',
             amountQirsh: 5000,

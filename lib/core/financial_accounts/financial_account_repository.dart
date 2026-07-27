@@ -89,6 +89,8 @@ abstract class FinancialAccountRepository {
   });
   Future<List<FinancialTransfer>> listTransfers();
   Future<List<FinancialClosing>> listClosings();
+
+  Future<void> ensureDateIsOpen(DateTime value);
   Future<FinancialClosing> createClosing(
       {required AppUser user, required FinancialClosingDraft draft});
   Future<FinancialClosing> reopenClosing(
@@ -1413,6 +1415,10 @@ class LocalFinancialAccountRepository
       'fat-${now.microsecondsSinceEpoch}-${++_generatedTransferIdCounter}';
   String _displayNumber() =>
       'TR-${(_generatedTransferIdCounter).toString().padLeft(6, '0')}';
+
+  @override
+  Future<void> ensureDateIsOpen(DateTime value) async =>
+      _ensureDateIsOpen(value);
 
   Future<void> _recordAudit({
     required String actionType,

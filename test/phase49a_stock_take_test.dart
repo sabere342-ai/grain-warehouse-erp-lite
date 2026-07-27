@@ -68,6 +68,7 @@ void main() {
         inventoryRepository: inventory,
         productRepository: products,
       );
+      addTearDown(controller.dispose);
       await controller.load(_owner);
 
       await tester.pumpWidget(
@@ -103,6 +104,9 @@ void main() {
       await tester.pump();
 
       expect(find.text('الفرق: +200 كجم'), findsOneWidget);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
     });
 
     testWidgets('shows negative variance correctly', (tester) async {
@@ -177,6 +181,7 @@ void main() {
         ),
         productRepository: products,
       );
+      addTearDown(controller.dispose);
       await controller.load(_owner);
 
       await tester.pumpWidget(
@@ -208,6 +213,7 @@ void main() {
           ),
           productRepository: products,
         );
+        addTearDown(controller.dispose);
         await controller.load(_owner);
         final theme =
             brightness == Brightness.light ? AppTheme.light : AppTheme.dark;
@@ -674,6 +680,7 @@ Future<_StockTakeFixture> _fixture() async {
     inventoryRepository: inventory,
     productRepository: products,
   );
+  addTearDown(controller.dispose);
   await controller.load(_owner);
 
   return _StockTakeFixture(
@@ -775,6 +782,7 @@ Future<AuthController> _signedInController({
   required String password,
 }) async {
   final controller = AuthController(repository: LocalAuthRepository.demo());
+  addTearDown(controller.dispose);
   await controller.initialize();
   await controller.signIn(phone: phone, password: password);
   return controller;

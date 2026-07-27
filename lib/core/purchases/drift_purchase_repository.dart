@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -29,11 +30,13 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     SupplierAccountRepository? supplierAccountRepository,
     FinancialAccountRepository? financialAccountRepository,
     AuditLogRepository? auditLogRepository,
+    InventoryValuationRepository? inventoryValuationRepository,
   })  : _supplierRepository = supplierRepository,
         _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
         _supplierAccountRepository = supplierAccountRepository,
         _financialAccountRepository = financialAccountRepository,
+        _inventoryValuationRepository = inventoryValuationRepository,
         _auditLogRepository = auditLogRepository ?? LocalAuditLogRepository();
 
   static const _sequenceKey = 'purchases';
@@ -43,6 +46,7 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   final InventoryRepository _inventoryRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final FinancialAccountRepository? _financialAccountRepository;
+  final InventoryValuationRepository? _inventoryValuationRepository;
   final AuditLogRepository _auditLogRepository;
 
   @override
@@ -79,6 +83,7 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
         }
       }
       final now = DateTime.now();
+      await _financialAccountRepository?.ensureDateIsOpen(now);
       final sequence = await _takeSequence();
       var intake = PurchaseIntake(
         id: 'pin-${now.microsecondsSinceEpoch}-$sequence',
@@ -112,6 +117,14 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
         ),
       );
       intake = intake.copyWith(stockMovementId: movement.id);
+      await _inventoryValuationRepository?.recordPurchase(
+        productId: intake.productId,
+        quantityKg: intake.quantityKg,
+        unitCostQirshPerKg: intake.unitPricePiastersPerKg,
+        sourceDocumentId: intake.id,
+        effectiveDate: intake.createdAt,
+        createdByUserId: intake.createdByUserId,
+      );
       await _database.into(_database.purchases).insert(
             _companion(intake, requestId: requestId, fingerprint: fingerprint),
           );
@@ -150,6 +163,14 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
         intake.quantityKg) {
       throw StateError('Purchase cancellation would make stock negative.');
     }
+    final cancelledAt = DateTime.now();
+    await _financialAccountRepository?.ensureDateIsOpen(cancelledAt);
+    if (_inventoryValuationRepository != null &&
+        !await _inventoryValuationRepository
+            .canDirectlyCancelPurchase(intake.id)) {
+      throw StateError(
+          'Purchase is already mixed or used; record a current-dated correction instead.');
+    }
     return RepositoryTransaction.execute(_transactionSnapshots(), () async {
       final reversal = await _inventoryRepository.createMovement(
         StockMovementDraft(
@@ -162,9 +183,16 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
           originalDocumentId: intake.id,
         ),
       );
+      await _inventoryValuationRepository?.reversePurchase(
+        originalPurchaseDocumentId: intake.id,
+        sourceDocumentId: intake.id,
+        effectiveDate: cancelledAt,
+        createdByUserId: userId,
+        reason: reason,
+      );
       final cancelled = intake.copyWith(
         cancellation: CancellationMetadata(
-          cancelledAt: DateTime.now(),
+          cancelledAt: cancelledAt,
           cancelledByUserId: userId,
           cancellationReason: reason,
           originalDocumentId: intake.id,
@@ -256,6 +284,9 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     }
     if (_financialAccountRepository != null) {
       result.add(_requiredSnapshot(_financialAccountRepository, 'financial'));
+    }
+    if (_inventoryValuationRepository != null) {
+      result.add(_requiredSnapshot(_inventoryValuationRepository, 'valuation'));
     }
     result.add(_requiredSnapshot(_auditLogRepository, 'audit'));
     return result;

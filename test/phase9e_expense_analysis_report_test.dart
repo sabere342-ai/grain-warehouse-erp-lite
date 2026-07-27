@@ -68,6 +68,7 @@ void main() {
     PaymentMethod? paymentMethod,
   }) async {
     await expenseRepo.createExpense(ExpenseDraft(
+      accountingClassification: ExpenseAccountingClassification.operating,
       date: date,
       category: category,
       amountQirsh: amount,

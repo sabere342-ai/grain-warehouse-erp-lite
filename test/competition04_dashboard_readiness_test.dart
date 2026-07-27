@@ -20,7 +20,6 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
-import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
@@ -143,27 +142,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.scrollUntilVisible(
-        find.text('تصدير نسخة احتياطية'),
-        300,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.ensureVisible(find.text('تصدير نسخة احتياطية'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('تصدير نسخة احتياطية'));
-      await tester.pumpAndSettle();
-      expect(find.byType(BackupExportScreen), findsOneWidget);
-      expect(find.byTooltip('رجوع'), findsOneWidget);
-      await tester.tap(find.byTooltip('رجوع'));
-      await tester.pumpAndSettle();
-      expect(find.byType(DashboardScreen), findsOneWidget);
-
-      await tester.fling(
-        find.byType(ListView).first,
-        const Offset(0, 2000),
-        2000,
-      );
-      await tester.pumpAndSettle();
       await tester.tap(find.text('دليل الاستخدام'));
       await tester.pumpAndSettle();
       expect(find.byType(HelpGuideScreen), findsOneWidget);
@@ -173,7 +151,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('dashboard prioritizes daily operations over admin tools',
+    testWidgets('dashboard contains daily operations without admin tools',
         (tester) async {
       final auth = await _signedIn(UserRole.owner);
       await tester.binding.setSurfaceSize(const Size(1200, 2400));
@@ -197,16 +175,8 @@ void main() {
           find.byKey(const Key('dashboard-backup-administration-card'));
 
       expect(dailySummary, findsOneWidget);
-      expect(adminTitle, findsOneWidget);
-      expect(backupCard, findsOneWidget);
-      expect(
-        tester.getTopLeft(dailySummary).dy,
-        lessThan(tester.getTopLeft(adminTitle).dy),
-      );
-      expect(
-        tester.getTopLeft(adminTitle).dy,
-        lessThan(tester.getTopLeft(backupCard).dy),
-      );
+      expect(adminTitle, findsNothing);
+      expect(backupCard, findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

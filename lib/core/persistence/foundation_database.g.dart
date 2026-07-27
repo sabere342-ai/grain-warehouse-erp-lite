@@ -2639,6 +2639,1672 @@ class InventoryMovementsCompanion extends UpdateCompanion<InventoryMovement> {
   }
 }
 
+class $ProfitabilityActivationsTable extends ProfitabilityActivations
+    with TableInfo<$ProfitabilityActivationsTable, ProfitabilityActivationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProfitabilityActivationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _activationDateMeta =
+      const VerificationMeta('activationDate');
+  @override
+  late final GeneratedColumn<DateTime> activationDate =
+      GeneratedColumn<DateTime>('activation_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _approvedAtMeta =
+      const VerificationMeta('approvedAt');
+  @override
+  late final GeneratedColumn<DateTime> approvedAt = GeneratedColumn<DateTime>(
+      'approved_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _approvedByUserIdMeta =
+      const VerificationMeta('approvedByUserId');
+  @override
+  late final GeneratedColumn<String> approvedByUserId = GeneratedColumn<String>(
+      'approved_by_user_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _evidenceNoteMeta =
+      const VerificationMeta('evidenceNote');
+  @override
+  late final GeneratedColumn<String> evidenceNote = GeneratedColumn<String>(
+      'evidence_note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, status, activationDate, approvedAt, approvedByUserId, evidenceNote];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'profitability_activations';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<ProfitabilityActivationRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('activation_date')) {
+      context.handle(
+          _activationDateMeta,
+          activationDate.isAcceptableOrUnknown(
+              data['activation_date']!, _activationDateMeta));
+    }
+    if (data.containsKey('approved_at')) {
+      context.handle(
+          _approvedAtMeta,
+          approvedAt.isAcceptableOrUnknown(
+              data['approved_at']!, _approvedAtMeta));
+    }
+    if (data.containsKey('approved_by_user_id')) {
+      context.handle(
+          _approvedByUserIdMeta,
+          approvedByUserId.isAcceptableOrUnknown(
+              data['approved_by_user_id']!, _approvedByUserIdMeta));
+    }
+    if (data.containsKey('evidence_note')) {
+      context.handle(
+          _evidenceNoteMeta,
+          evidenceNote.isAcceptableOrUnknown(
+              data['evidence_note']!, _evidenceNoteMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProfitabilityActivationRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProfitabilityActivationRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      activationDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}activation_date']),
+      approvedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}approved_at']),
+      approvedByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}approved_by_user_id']),
+      evidenceNote: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}evidence_note']),
+    );
+  }
+
+  @override
+  $ProfitabilityActivationsTable createAlias(String alias) {
+    return $ProfitabilityActivationsTable(attachedDatabase, alias);
+  }
+}
+
+class ProfitabilityActivationRow extends DataClass
+    implements Insertable<ProfitabilityActivationRow> {
+  final String id;
+  final String status;
+  final DateTime? activationDate;
+  final DateTime? approvedAt;
+  final String? approvedByUserId;
+  final String? evidenceNote;
+  const ProfitabilityActivationRow(
+      {required this.id,
+      required this.status,
+      this.activationDate,
+      this.approvedAt,
+      this.approvedByUserId,
+      this.evidenceNote});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || activationDate != null) {
+      map['activation_date'] = Variable<DateTime>(activationDate);
+    }
+    if (!nullToAbsent || approvedAt != null) {
+      map['approved_at'] = Variable<DateTime>(approvedAt);
+    }
+    if (!nullToAbsent || approvedByUserId != null) {
+      map['approved_by_user_id'] = Variable<String>(approvedByUserId);
+    }
+    if (!nullToAbsent || evidenceNote != null) {
+      map['evidence_note'] = Variable<String>(evidenceNote);
+    }
+    return map;
+  }
+
+  ProfitabilityActivationsCompanion toCompanion(bool nullToAbsent) {
+    return ProfitabilityActivationsCompanion(
+      id: Value(id),
+      status: Value(status),
+      activationDate: activationDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(activationDate),
+      approvedAt: approvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approvedAt),
+      approvedByUserId: approvedByUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approvedByUserId),
+      evidenceNote: evidenceNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(evidenceNote),
+    );
+  }
+
+  factory ProfitabilityActivationRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProfitabilityActivationRow(
+      id: serializer.fromJson<String>(json['id']),
+      status: serializer.fromJson<String>(json['status']),
+      activationDate: serializer.fromJson<DateTime?>(json['activationDate']),
+      approvedAt: serializer.fromJson<DateTime?>(json['approvedAt']),
+      approvedByUserId: serializer.fromJson<String?>(json['approvedByUserId']),
+      evidenceNote: serializer.fromJson<String?>(json['evidenceNote']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'status': serializer.toJson<String>(status),
+      'activationDate': serializer.toJson<DateTime?>(activationDate),
+      'approvedAt': serializer.toJson<DateTime?>(approvedAt),
+      'approvedByUserId': serializer.toJson<String?>(approvedByUserId),
+      'evidenceNote': serializer.toJson<String?>(evidenceNote),
+    };
+  }
+
+  ProfitabilityActivationRow copyWith(
+          {String? id,
+          String? status,
+          Value<DateTime?> activationDate = const Value.absent(),
+          Value<DateTime?> approvedAt = const Value.absent(),
+          Value<String?> approvedByUserId = const Value.absent(),
+          Value<String?> evidenceNote = const Value.absent()}) =>
+      ProfitabilityActivationRow(
+        id: id ?? this.id,
+        status: status ?? this.status,
+        activationDate:
+            activationDate.present ? activationDate.value : this.activationDate,
+        approvedAt: approvedAt.present ? approvedAt.value : this.approvedAt,
+        approvedByUserId: approvedByUserId.present
+            ? approvedByUserId.value
+            : this.approvedByUserId,
+        evidenceNote:
+            evidenceNote.present ? evidenceNote.value : this.evidenceNote,
+      );
+  ProfitabilityActivationRow copyWithCompanion(
+      ProfitabilityActivationsCompanion data) {
+    return ProfitabilityActivationRow(
+      id: data.id.present ? data.id.value : this.id,
+      status: data.status.present ? data.status.value : this.status,
+      activationDate: data.activationDate.present
+          ? data.activationDate.value
+          : this.activationDate,
+      approvedAt:
+          data.approvedAt.present ? data.approvedAt.value : this.approvedAt,
+      approvedByUserId: data.approvedByUserId.present
+          ? data.approvedByUserId.value
+          : this.approvedByUserId,
+      evidenceNote: data.evidenceNote.present
+          ? data.evidenceNote.value
+          : this.evidenceNote,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProfitabilityActivationRow(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('activationDate: $activationDate, ')
+          ..write('approvedAt: $approvedAt, ')
+          ..write('approvedByUserId: $approvedByUserId, ')
+          ..write('evidenceNote: $evidenceNote')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, status, activationDate, approvedAt, approvedByUserId, evidenceNote);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProfitabilityActivationRow &&
+          other.id == this.id &&
+          other.status == this.status &&
+          other.activationDate == this.activationDate &&
+          other.approvedAt == this.approvedAt &&
+          other.approvedByUserId == this.approvedByUserId &&
+          other.evidenceNote == this.evidenceNote);
+}
+
+class ProfitabilityActivationsCompanion
+    extends UpdateCompanion<ProfitabilityActivationRow> {
+  final Value<String> id;
+  final Value<String> status;
+  final Value<DateTime?> activationDate;
+  final Value<DateTime?> approvedAt;
+  final Value<String?> approvedByUserId;
+  final Value<String?> evidenceNote;
+  final Value<int> rowid;
+  const ProfitabilityActivationsCompanion({
+    this.id = const Value.absent(),
+    this.status = const Value.absent(),
+    this.activationDate = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.approvedByUserId = const Value.absent(),
+    this.evidenceNote = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProfitabilityActivationsCompanion.insert({
+    required String id,
+    required String status,
+    this.activationDate = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.approvedByUserId = const Value.absent(),
+    this.evidenceNote = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        status = Value(status);
+  static Insertable<ProfitabilityActivationRow> custom({
+    Expression<String>? id,
+    Expression<String>? status,
+    Expression<DateTime>? activationDate,
+    Expression<DateTime>? approvedAt,
+    Expression<String>? approvedByUserId,
+    Expression<String>? evidenceNote,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (status != null) 'status': status,
+      if (activationDate != null) 'activation_date': activationDate,
+      if (approvedAt != null) 'approved_at': approvedAt,
+      if (approvedByUserId != null) 'approved_by_user_id': approvedByUserId,
+      if (evidenceNote != null) 'evidence_note': evidenceNote,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProfitabilityActivationsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? status,
+      Value<DateTime?>? activationDate,
+      Value<DateTime?>? approvedAt,
+      Value<String?>? approvedByUserId,
+      Value<String?>? evidenceNote,
+      Value<int>? rowid}) {
+    return ProfitabilityActivationsCompanion(
+      id: id ?? this.id,
+      status: status ?? this.status,
+      activationDate: activationDate ?? this.activationDate,
+      approvedAt: approvedAt ?? this.approvedAt,
+      approvedByUserId: approvedByUserId ?? this.approvedByUserId,
+      evidenceNote: evidenceNote ?? this.evidenceNote,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (activationDate.present) {
+      map['activation_date'] = Variable<DateTime>(activationDate.value);
+    }
+    if (approvedAt.present) {
+      map['approved_at'] = Variable<DateTime>(approvedAt.value);
+    }
+    if (approvedByUserId.present) {
+      map['approved_by_user_id'] = Variable<String>(approvedByUserId.value);
+    }
+    if (evidenceNote.present) {
+      map['evidence_note'] = Variable<String>(evidenceNote.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProfitabilityActivationsCompanion(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('activationDate: $activationDate, ')
+          ..write('approvedAt: $approvedAt, ')
+          ..write('approvedByUserId: $approvedByUserId, ')
+          ..write('evidenceNote: $evidenceNote, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InventoryValuationStatesTable extends InventoryValuationStates
+    with TableInfo<$InventoryValuationStatesTable, InventoryValuationStateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryValuationStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _productIdMeta =
+      const VerificationMeta('productId');
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+      'product_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _quantityKgMeta =
+      const VerificationMeta('quantityKg');
+  @override
+  late final GeneratedColumn<int> quantityKg = GeneratedColumn<int>(
+      'quantity_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _totalValueQirshMeta =
+      const VerificationMeta('totalValueQirsh');
+  @override
+  late final GeneratedColumn<int> totalValueQirsh = GeneratedColumn<int>(
+      'total_value_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastEventIdMeta =
+      const VerificationMeta('lastEventId');
+  @override
+  late final GeneratedColumn<String> lastEventId = GeneratedColumn<String>(
+      'last_event_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [productId, quantityKg, totalValueQirsh, updatedAt, lastEventId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_valuation_states';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<InventoryValuationStateRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('product_id')) {
+      context.handle(_productIdMeta,
+          productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta));
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('quantity_kg')) {
+      context.handle(
+          _quantityKgMeta,
+          quantityKg.isAcceptableOrUnknown(
+              data['quantity_kg']!, _quantityKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityKgMeta);
+    }
+    if (data.containsKey('total_value_qirsh')) {
+      context.handle(
+          _totalValueQirshMeta,
+          totalValueQirsh.isAcceptableOrUnknown(
+              data['total_value_qirsh']!, _totalValueQirshMeta));
+    } else if (isInserting) {
+      context.missing(_totalValueQirshMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('last_event_id')) {
+      context.handle(
+          _lastEventIdMeta,
+          lastEventId.isAcceptableOrUnknown(
+              data['last_event_id']!, _lastEventIdMeta));
+    } else if (isInserting) {
+      context.missing(_lastEventIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {productId};
+  @override
+  InventoryValuationStateRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryValuationStateRow(
+      productId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_id'])!,
+      quantityKg: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity_kg'])!,
+      totalValueQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_value_qirsh'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      lastEventId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_event_id'])!,
+    );
+  }
+
+  @override
+  $InventoryValuationStatesTable createAlias(String alias) {
+    return $InventoryValuationStatesTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryValuationStateRow extends DataClass
+    implements Insertable<InventoryValuationStateRow> {
+  final String productId;
+  final int quantityKg;
+  final int totalValueQirsh;
+  final DateTime updatedAt;
+  final String lastEventId;
+  const InventoryValuationStateRow(
+      {required this.productId,
+      required this.quantityKg,
+      required this.totalValueQirsh,
+      required this.updatedAt,
+      required this.lastEventId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['product_id'] = Variable<String>(productId);
+    map['quantity_kg'] = Variable<int>(quantityKg);
+    map['total_value_qirsh'] = Variable<int>(totalValueQirsh);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['last_event_id'] = Variable<String>(lastEventId);
+    return map;
+  }
+
+  InventoryValuationStatesCompanion toCompanion(bool nullToAbsent) {
+    return InventoryValuationStatesCompanion(
+      productId: Value(productId),
+      quantityKg: Value(quantityKg),
+      totalValueQirsh: Value(totalValueQirsh),
+      updatedAt: Value(updatedAt),
+      lastEventId: Value(lastEventId),
+    );
+  }
+
+  factory InventoryValuationStateRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryValuationStateRow(
+      productId: serializer.fromJson<String>(json['productId']),
+      quantityKg: serializer.fromJson<int>(json['quantityKg']),
+      totalValueQirsh: serializer.fromJson<int>(json['totalValueQirsh']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      lastEventId: serializer.fromJson<String>(json['lastEventId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'productId': serializer.toJson<String>(productId),
+      'quantityKg': serializer.toJson<int>(quantityKg),
+      'totalValueQirsh': serializer.toJson<int>(totalValueQirsh),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'lastEventId': serializer.toJson<String>(lastEventId),
+    };
+  }
+
+  InventoryValuationStateRow copyWith(
+          {String? productId,
+          int? quantityKg,
+          int? totalValueQirsh,
+          DateTime? updatedAt,
+          String? lastEventId}) =>
+      InventoryValuationStateRow(
+        productId: productId ?? this.productId,
+        quantityKg: quantityKg ?? this.quantityKg,
+        totalValueQirsh: totalValueQirsh ?? this.totalValueQirsh,
+        updatedAt: updatedAt ?? this.updatedAt,
+        lastEventId: lastEventId ?? this.lastEventId,
+      );
+  InventoryValuationStateRow copyWithCompanion(
+      InventoryValuationStatesCompanion data) {
+    return InventoryValuationStateRow(
+      productId: data.productId.present ? data.productId.value : this.productId,
+      quantityKg:
+          data.quantityKg.present ? data.quantityKg.value : this.quantityKg,
+      totalValueQirsh: data.totalValueQirsh.present
+          ? data.totalValueQirsh.value
+          : this.totalValueQirsh,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      lastEventId:
+          data.lastEventId.present ? data.lastEventId.value : this.lastEventId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryValuationStateRow(')
+          ..write('productId: $productId, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('totalValueQirsh: $totalValueQirsh, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('lastEventId: $lastEventId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      productId, quantityKg, totalValueQirsh, updatedAt, lastEventId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryValuationStateRow &&
+          other.productId == this.productId &&
+          other.quantityKg == this.quantityKg &&
+          other.totalValueQirsh == this.totalValueQirsh &&
+          other.updatedAt == this.updatedAt &&
+          other.lastEventId == this.lastEventId);
+}
+
+class InventoryValuationStatesCompanion
+    extends UpdateCompanion<InventoryValuationStateRow> {
+  final Value<String> productId;
+  final Value<int> quantityKg;
+  final Value<int> totalValueQirsh;
+  final Value<DateTime> updatedAt;
+  final Value<String> lastEventId;
+  final Value<int> rowid;
+  const InventoryValuationStatesCompanion({
+    this.productId = const Value.absent(),
+    this.quantityKg = const Value.absent(),
+    this.totalValueQirsh = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.lastEventId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InventoryValuationStatesCompanion.insert({
+    required String productId,
+    required int quantityKg,
+    required int totalValueQirsh,
+    required DateTime updatedAt,
+    required String lastEventId,
+    this.rowid = const Value.absent(),
+  })  : productId = Value(productId),
+        quantityKg = Value(quantityKg),
+        totalValueQirsh = Value(totalValueQirsh),
+        updatedAt = Value(updatedAt),
+        lastEventId = Value(lastEventId);
+  static Insertable<InventoryValuationStateRow> custom({
+    Expression<String>? productId,
+    Expression<int>? quantityKg,
+    Expression<int>? totalValueQirsh,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? lastEventId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (productId != null) 'product_id': productId,
+      if (quantityKg != null) 'quantity_kg': quantityKg,
+      if (totalValueQirsh != null) 'total_value_qirsh': totalValueQirsh,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (lastEventId != null) 'last_event_id': lastEventId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InventoryValuationStatesCompanion copyWith(
+      {Value<String>? productId,
+      Value<int>? quantityKg,
+      Value<int>? totalValueQirsh,
+      Value<DateTime>? updatedAt,
+      Value<String>? lastEventId,
+      Value<int>? rowid}) {
+    return InventoryValuationStatesCompanion(
+      productId: productId ?? this.productId,
+      quantityKg: quantityKg ?? this.quantityKg,
+      totalValueQirsh: totalValueQirsh ?? this.totalValueQirsh,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastEventId: lastEventId ?? this.lastEventId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (quantityKg.present) {
+      map['quantity_kg'] = Variable<int>(quantityKg.value);
+    }
+    if (totalValueQirsh.present) {
+      map['total_value_qirsh'] = Variable<int>(totalValueQirsh.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (lastEventId.present) {
+      map['last_event_id'] = Variable<String>(lastEventId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryValuationStatesCompanion(')
+          ..write('productId: $productId, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('totalValueQirsh: $totalValueQirsh, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('lastEventId: $lastEventId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InventoryValuationEventsTable extends InventoryValuationEvents
+    with TableInfo<$InventoryValuationEventsTable, InventoryValuationEventRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryValuationEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _productIdMeta =
+      const VerificationMeta('productId');
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+      'product_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _eventTypeMeta =
+      const VerificationMeta('eventType');
+  @override
+  late final GeneratedColumn<String> eventType = GeneratedColumn<String>(
+      'event_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _quantityBeforeKgMeta =
+      const VerificationMeta('quantityBeforeKg');
+  @override
+  late final GeneratedColumn<int> quantityBeforeKg = GeneratedColumn<int>(
+      'quantity_before_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _quantityDeltaKgMeta =
+      const VerificationMeta('quantityDeltaKg');
+  @override
+  late final GeneratedColumn<int> quantityDeltaKg = GeneratedColumn<int>(
+      'quantity_delta_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _quantityAfterKgMeta =
+      const VerificationMeta('quantityAfterKg');
+  @override
+  late final GeneratedColumn<int> quantityAfterKg = GeneratedColumn<int>(
+      'quantity_after_kg', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _valueBeforeQirshMeta =
+      const VerificationMeta('valueBeforeQirsh');
+  @override
+  late final GeneratedColumn<int> valueBeforeQirsh = GeneratedColumn<int>(
+      'value_before_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _valueDeltaQirshMeta =
+      const VerificationMeta('valueDeltaQirsh');
+  @override
+  late final GeneratedColumn<int> valueDeltaQirsh = GeneratedColumn<int>(
+      'value_delta_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _valueAfterQirshMeta =
+      const VerificationMeta('valueAfterQirsh');
+  @override
+  late final GeneratedColumn<int> valueAfterQirsh = GeneratedColumn<int>(
+      'value_after_qirsh', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _unitCostMicrosQirshPerKgMeta =
+      const VerificationMeta('unitCostMicrosQirshPerKg');
+  @override
+  late final GeneratedColumn<int> unitCostMicrosQirshPerKg =
+      GeneratedColumn<int>('unit_cost_micros_qirsh_per_kg', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _allocationResidualNumeratorMeta =
+      const VerificationMeta('allocationResidualNumerator');
+  @override
+  late final GeneratedColumn<int> allocationResidualNumerator =
+      GeneratedColumn<int>('allocation_residual_numerator', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _allocationResidualDenominatorMeta =
+      const VerificationMeta('allocationResidualDenominator');
+  @override
+  late final GeneratedColumn<int> allocationResidualDenominator =
+      GeneratedColumn<int>(
+          'allocation_residual_denominator', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _sourceDocumentIdMeta =
+      const VerificationMeta('sourceDocumentId');
+  @override
+  late final GeneratedColumn<String> sourceDocumentId = GeneratedColumn<String>(
+      'source_document_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _effectiveDateMeta =
+      const VerificationMeta('effectiveDate');
+  @override
+  late final GeneratedColumn<DateTime> effectiveDate =
+      GeneratedColumn<DateTime>('effective_date', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _createdByUserIdMeta =
+      const VerificationMeta('createdByUserId');
+  @override
+  late final GeneratedColumn<String> createdByUserId = GeneratedColumn<String>(
+      'created_by_user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _reversalOfEventIdMeta =
+      const VerificationMeta('reversalOfEventId');
+  @override
+  late final GeneratedColumn<String> reversalOfEventId =
+      GeneratedColumn<String>('reversal_of_event_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+      'reason', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _evidenceReferenceMeta =
+      const VerificationMeta('evidenceReference');
+  @override
+  late final GeneratedColumn<String> evidenceReference =
+      GeneratedColumn<String>('evidence_reference', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        productId,
+        eventType,
+        quantityBeforeKg,
+        quantityDeltaKg,
+        quantityAfterKg,
+        valueBeforeQirsh,
+        valueDeltaQirsh,
+        valueAfterQirsh,
+        unitCostMicrosQirshPerKg,
+        allocationResidualNumerator,
+        allocationResidualDenominator,
+        sourceDocumentId,
+        effectiveDate,
+        createdAt,
+        createdByUserId,
+        reversalOfEventId,
+        reason,
+        evidenceReference
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_valuation_events';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<InventoryValuationEventRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(_productIdMeta,
+          productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta));
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('event_type')) {
+      context.handle(_eventTypeMeta,
+          eventType.isAcceptableOrUnknown(data['event_type']!, _eventTypeMeta));
+    } else if (isInserting) {
+      context.missing(_eventTypeMeta);
+    }
+    if (data.containsKey('quantity_before_kg')) {
+      context.handle(
+          _quantityBeforeKgMeta,
+          quantityBeforeKg.isAcceptableOrUnknown(
+              data['quantity_before_kg']!, _quantityBeforeKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityBeforeKgMeta);
+    }
+    if (data.containsKey('quantity_delta_kg')) {
+      context.handle(
+          _quantityDeltaKgMeta,
+          quantityDeltaKg.isAcceptableOrUnknown(
+              data['quantity_delta_kg']!, _quantityDeltaKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityDeltaKgMeta);
+    }
+    if (data.containsKey('quantity_after_kg')) {
+      context.handle(
+          _quantityAfterKgMeta,
+          quantityAfterKg.isAcceptableOrUnknown(
+              data['quantity_after_kg']!, _quantityAfterKgMeta));
+    } else if (isInserting) {
+      context.missing(_quantityAfterKgMeta);
+    }
+    if (data.containsKey('value_before_qirsh')) {
+      context.handle(
+          _valueBeforeQirshMeta,
+          valueBeforeQirsh.isAcceptableOrUnknown(
+              data['value_before_qirsh']!, _valueBeforeQirshMeta));
+    } else if (isInserting) {
+      context.missing(_valueBeforeQirshMeta);
+    }
+    if (data.containsKey('value_delta_qirsh')) {
+      context.handle(
+          _valueDeltaQirshMeta,
+          valueDeltaQirsh.isAcceptableOrUnknown(
+              data['value_delta_qirsh']!, _valueDeltaQirshMeta));
+    } else if (isInserting) {
+      context.missing(_valueDeltaQirshMeta);
+    }
+    if (data.containsKey('value_after_qirsh')) {
+      context.handle(
+          _valueAfterQirshMeta,
+          valueAfterQirsh.isAcceptableOrUnknown(
+              data['value_after_qirsh']!, _valueAfterQirshMeta));
+    } else if (isInserting) {
+      context.missing(_valueAfterQirshMeta);
+    }
+    if (data.containsKey('unit_cost_micros_qirsh_per_kg')) {
+      context.handle(
+          _unitCostMicrosQirshPerKgMeta,
+          unitCostMicrosQirshPerKg.isAcceptableOrUnknown(
+              data['unit_cost_micros_qirsh_per_kg']!,
+              _unitCostMicrosQirshPerKgMeta));
+    } else if (isInserting) {
+      context.missing(_unitCostMicrosQirshPerKgMeta);
+    }
+    if (data.containsKey('allocation_residual_numerator')) {
+      context.handle(
+          _allocationResidualNumeratorMeta,
+          allocationResidualNumerator.isAcceptableOrUnknown(
+              data['allocation_residual_numerator']!,
+              _allocationResidualNumeratorMeta));
+    } else if (isInserting) {
+      context.missing(_allocationResidualNumeratorMeta);
+    }
+    if (data.containsKey('allocation_residual_denominator')) {
+      context.handle(
+          _allocationResidualDenominatorMeta,
+          allocationResidualDenominator.isAcceptableOrUnknown(
+              data['allocation_residual_denominator']!,
+              _allocationResidualDenominatorMeta));
+    } else if (isInserting) {
+      context.missing(_allocationResidualDenominatorMeta);
+    }
+    if (data.containsKey('source_document_id')) {
+      context.handle(
+          _sourceDocumentIdMeta,
+          sourceDocumentId.isAcceptableOrUnknown(
+              data['source_document_id']!, _sourceDocumentIdMeta));
+    } else if (isInserting) {
+      context.missing(_sourceDocumentIdMeta);
+    }
+    if (data.containsKey('effective_date')) {
+      context.handle(
+          _effectiveDateMeta,
+          effectiveDate.isAcceptableOrUnknown(
+              data['effective_date']!, _effectiveDateMeta));
+    } else if (isInserting) {
+      context.missing(_effectiveDateMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('created_by_user_id')) {
+      context.handle(
+          _createdByUserIdMeta,
+          createdByUserId.isAcceptableOrUnknown(
+              data['created_by_user_id']!, _createdByUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_createdByUserIdMeta);
+    }
+    if (data.containsKey('reversal_of_event_id')) {
+      context.handle(
+          _reversalOfEventIdMeta,
+          reversalOfEventId.isAcceptableOrUnknown(
+              data['reversal_of_event_id']!, _reversalOfEventIdMeta));
+    }
+    if (data.containsKey('reason')) {
+      context.handle(_reasonMeta,
+          reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta));
+    }
+    if (data.containsKey('evidence_reference')) {
+      context.handle(
+          _evidenceReferenceMeta,
+          evidenceReference.isAcceptableOrUnknown(
+              data['evidence_reference']!, _evidenceReferenceMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventoryValuationEventRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryValuationEventRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      productId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_id'])!,
+      eventType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}event_type'])!,
+      quantityBeforeKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}quantity_before_kg'])!,
+      quantityDeltaKg: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity_delta_kg'])!,
+      quantityAfterKg: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}quantity_after_kg'])!,
+      valueBeforeQirsh: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}value_before_qirsh'])!,
+      valueDeltaQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}value_delta_qirsh'])!,
+      valueAfterQirsh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}value_after_qirsh'])!,
+      unitCostMicrosQirshPerKg: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}unit_cost_micros_qirsh_per_kg'])!,
+      allocationResidualNumerator: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}allocation_residual_numerator'])!,
+      allocationResidualDenominator: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}allocation_residual_denominator'])!,
+      sourceDocumentId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_document_id'])!,
+      effectiveDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}effective_date'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      createdByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}created_by_user_id'])!,
+      reversalOfEventId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}reversal_of_event_id']),
+      reason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reason']),
+      evidenceReference: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}evidence_reference']),
+    );
+  }
+
+  @override
+  $InventoryValuationEventsTable createAlias(String alias) {
+    return $InventoryValuationEventsTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryValuationEventRow extends DataClass
+    implements Insertable<InventoryValuationEventRow> {
+  final String id;
+  final String productId;
+  final String eventType;
+  final int quantityBeforeKg;
+  final int quantityDeltaKg;
+  final int quantityAfterKg;
+  final int valueBeforeQirsh;
+  final int valueDeltaQirsh;
+  final int valueAfterQirsh;
+  final int unitCostMicrosQirshPerKg;
+  final int allocationResidualNumerator;
+  final int allocationResidualDenominator;
+  final String sourceDocumentId;
+  final DateTime effectiveDate;
+  final DateTime createdAt;
+  final String createdByUserId;
+  final String? reversalOfEventId;
+  final String? reason;
+  final String? evidenceReference;
+  const InventoryValuationEventRow(
+      {required this.id,
+      required this.productId,
+      required this.eventType,
+      required this.quantityBeforeKg,
+      required this.quantityDeltaKg,
+      required this.quantityAfterKg,
+      required this.valueBeforeQirsh,
+      required this.valueDeltaQirsh,
+      required this.valueAfterQirsh,
+      required this.unitCostMicrosQirshPerKg,
+      required this.allocationResidualNumerator,
+      required this.allocationResidualDenominator,
+      required this.sourceDocumentId,
+      required this.effectiveDate,
+      required this.createdAt,
+      required this.createdByUserId,
+      this.reversalOfEventId,
+      this.reason,
+      this.evidenceReference});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['event_type'] = Variable<String>(eventType);
+    map['quantity_before_kg'] = Variable<int>(quantityBeforeKg);
+    map['quantity_delta_kg'] = Variable<int>(quantityDeltaKg);
+    map['quantity_after_kg'] = Variable<int>(quantityAfterKg);
+    map['value_before_qirsh'] = Variable<int>(valueBeforeQirsh);
+    map['value_delta_qirsh'] = Variable<int>(valueDeltaQirsh);
+    map['value_after_qirsh'] = Variable<int>(valueAfterQirsh);
+    map['unit_cost_micros_qirsh_per_kg'] =
+        Variable<int>(unitCostMicrosQirshPerKg);
+    map['allocation_residual_numerator'] =
+        Variable<int>(allocationResidualNumerator);
+    map['allocation_residual_denominator'] =
+        Variable<int>(allocationResidualDenominator);
+    map['source_document_id'] = Variable<String>(sourceDocumentId);
+    map['effective_date'] = Variable<DateTime>(effectiveDate);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_by_user_id'] = Variable<String>(createdByUserId);
+    if (!nullToAbsent || reversalOfEventId != null) {
+      map['reversal_of_event_id'] = Variable<String>(reversalOfEventId);
+    }
+    if (!nullToAbsent || reason != null) {
+      map['reason'] = Variable<String>(reason);
+    }
+    if (!nullToAbsent || evidenceReference != null) {
+      map['evidence_reference'] = Variable<String>(evidenceReference);
+    }
+    return map;
+  }
+
+  InventoryValuationEventsCompanion toCompanion(bool nullToAbsent) {
+    return InventoryValuationEventsCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      eventType: Value(eventType),
+      quantityBeforeKg: Value(quantityBeforeKg),
+      quantityDeltaKg: Value(quantityDeltaKg),
+      quantityAfterKg: Value(quantityAfterKg),
+      valueBeforeQirsh: Value(valueBeforeQirsh),
+      valueDeltaQirsh: Value(valueDeltaQirsh),
+      valueAfterQirsh: Value(valueAfterQirsh),
+      unitCostMicrosQirshPerKg: Value(unitCostMicrosQirshPerKg),
+      allocationResidualNumerator: Value(allocationResidualNumerator),
+      allocationResidualDenominator: Value(allocationResidualDenominator),
+      sourceDocumentId: Value(sourceDocumentId),
+      effectiveDate: Value(effectiveDate),
+      createdAt: Value(createdAt),
+      createdByUserId: Value(createdByUserId),
+      reversalOfEventId: reversalOfEventId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reversalOfEventId),
+      reason:
+          reason == null && nullToAbsent ? const Value.absent() : Value(reason),
+      evidenceReference: evidenceReference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(evidenceReference),
+    );
+  }
+
+  factory InventoryValuationEventRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryValuationEventRow(
+      id: serializer.fromJson<String>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      eventType: serializer.fromJson<String>(json['eventType']),
+      quantityBeforeKg: serializer.fromJson<int>(json['quantityBeforeKg']),
+      quantityDeltaKg: serializer.fromJson<int>(json['quantityDeltaKg']),
+      quantityAfterKg: serializer.fromJson<int>(json['quantityAfterKg']),
+      valueBeforeQirsh: serializer.fromJson<int>(json['valueBeforeQirsh']),
+      valueDeltaQirsh: serializer.fromJson<int>(json['valueDeltaQirsh']),
+      valueAfterQirsh: serializer.fromJson<int>(json['valueAfterQirsh']),
+      unitCostMicrosQirshPerKg:
+          serializer.fromJson<int>(json['unitCostMicrosQirshPerKg']),
+      allocationResidualNumerator:
+          serializer.fromJson<int>(json['allocationResidualNumerator']),
+      allocationResidualDenominator:
+          serializer.fromJson<int>(json['allocationResidualDenominator']),
+      sourceDocumentId: serializer.fromJson<String>(json['sourceDocumentId']),
+      effectiveDate: serializer.fromJson<DateTime>(json['effectiveDate']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdByUserId: serializer.fromJson<String>(json['createdByUserId']),
+      reversalOfEventId:
+          serializer.fromJson<String?>(json['reversalOfEventId']),
+      reason: serializer.fromJson<String?>(json['reason']),
+      evidenceReference:
+          serializer.fromJson<String?>(json['evidenceReference']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'productId': serializer.toJson<String>(productId),
+      'eventType': serializer.toJson<String>(eventType),
+      'quantityBeforeKg': serializer.toJson<int>(quantityBeforeKg),
+      'quantityDeltaKg': serializer.toJson<int>(quantityDeltaKg),
+      'quantityAfterKg': serializer.toJson<int>(quantityAfterKg),
+      'valueBeforeQirsh': serializer.toJson<int>(valueBeforeQirsh),
+      'valueDeltaQirsh': serializer.toJson<int>(valueDeltaQirsh),
+      'valueAfterQirsh': serializer.toJson<int>(valueAfterQirsh),
+      'unitCostMicrosQirshPerKg':
+          serializer.toJson<int>(unitCostMicrosQirshPerKg),
+      'allocationResidualNumerator':
+          serializer.toJson<int>(allocationResidualNumerator),
+      'allocationResidualDenominator':
+          serializer.toJson<int>(allocationResidualDenominator),
+      'sourceDocumentId': serializer.toJson<String>(sourceDocumentId),
+      'effectiveDate': serializer.toJson<DateTime>(effectiveDate),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdByUserId': serializer.toJson<String>(createdByUserId),
+      'reversalOfEventId': serializer.toJson<String?>(reversalOfEventId),
+      'reason': serializer.toJson<String?>(reason),
+      'evidenceReference': serializer.toJson<String?>(evidenceReference),
+    };
+  }
+
+  InventoryValuationEventRow copyWith(
+          {String? id,
+          String? productId,
+          String? eventType,
+          int? quantityBeforeKg,
+          int? quantityDeltaKg,
+          int? quantityAfterKg,
+          int? valueBeforeQirsh,
+          int? valueDeltaQirsh,
+          int? valueAfterQirsh,
+          int? unitCostMicrosQirshPerKg,
+          int? allocationResidualNumerator,
+          int? allocationResidualDenominator,
+          String? sourceDocumentId,
+          DateTime? effectiveDate,
+          DateTime? createdAt,
+          String? createdByUserId,
+          Value<String?> reversalOfEventId = const Value.absent(),
+          Value<String?> reason = const Value.absent(),
+          Value<String?> evidenceReference = const Value.absent()}) =>
+      InventoryValuationEventRow(
+        id: id ?? this.id,
+        productId: productId ?? this.productId,
+        eventType: eventType ?? this.eventType,
+        quantityBeforeKg: quantityBeforeKg ?? this.quantityBeforeKg,
+        quantityDeltaKg: quantityDeltaKg ?? this.quantityDeltaKg,
+        quantityAfterKg: quantityAfterKg ?? this.quantityAfterKg,
+        valueBeforeQirsh: valueBeforeQirsh ?? this.valueBeforeQirsh,
+        valueDeltaQirsh: valueDeltaQirsh ?? this.valueDeltaQirsh,
+        valueAfterQirsh: valueAfterQirsh ?? this.valueAfterQirsh,
+        unitCostMicrosQirshPerKg:
+            unitCostMicrosQirshPerKg ?? this.unitCostMicrosQirshPerKg,
+        allocationResidualNumerator:
+            allocationResidualNumerator ?? this.allocationResidualNumerator,
+        allocationResidualDenominator:
+            allocationResidualDenominator ?? this.allocationResidualDenominator,
+        sourceDocumentId: sourceDocumentId ?? this.sourceDocumentId,
+        effectiveDate: effectiveDate ?? this.effectiveDate,
+        createdAt: createdAt ?? this.createdAt,
+        createdByUserId: createdByUserId ?? this.createdByUserId,
+        reversalOfEventId: reversalOfEventId.present
+            ? reversalOfEventId.value
+            : this.reversalOfEventId,
+        reason: reason.present ? reason.value : this.reason,
+        evidenceReference: evidenceReference.present
+            ? evidenceReference.value
+            : this.evidenceReference,
+      );
+  InventoryValuationEventRow copyWithCompanion(
+      InventoryValuationEventsCompanion data) {
+    return InventoryValuationEventRow(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      eventType: data.eventType.present ? data.eventType.value : this.eventType,
+      quantityBeforeKg: data.quantityBeforeKg.present
+          ? data.quantityBeforeKg.value
+          : this.quantityBeforeKg,
+      quantityDeltaKg: data.quantityDeltaKg.present
+          ? data.quantityDeltaKg.value
+          : this.quantityDeltaKg,
+      quantityAfterKg: data.quantityAfterKg.present
+          ? data.quantityAfterKg.value
+          : this.quantityAfterKg,
+      valueBeforeQirsh: data.valueBeforeQirsh.present
+          ? data.valueBeforeQirsh.value
+          : this.valueBeforeQirsh,
+      valueDeltaQirsh: data.valueDeltaQirsh.present
+          ? data.valueDeltaQirsh.value
+          : this.valueDeltaQirsh,
+      valueAfterQirsh: data.valueAfterQirsh.present
+          ? data.valueAfterQirsh.value
+          : this.valueAfterQirsh,
+      unitCostMicrosQirshPerKg: data.unitCostMicrosQirshPerKg.present
+          ? data.unitCostMicrosQirshPerKg.value
+          : this.unitCostMicrosQirshPerKg,
+      allocationResidualNumerator: data.allocationResidualNumerator.present
+          ? data.allocationResidualNumerator.value
+          : this.allocationResidualNumerator,
+      allocationResidualDenominator: data.allocationResidualDenominator.present
+          ? data.allocationResidualDenominator.value
+          : this.allocationResidualDenominator,
+      sourceDocumentId: data.sourceDocumentId.present
+          ? data.sourceDocumentId.value
+          : this.sourceDocumentId,
+      effectiveDate: data.effectiveDate.present
+          ? data.effectiveDate.value
+          : this.effectiveDate,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      createdByUserId: data.createdByUserId.present
+          ? data.createdByUserId.value
+          : this.createdByUserId,
+      reversalOfEventId: data.reversalOfEventId.present
+          ? data.reversalOfEventId.value
+          : this.reversalOfEventId,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      evidenceReference: data.evidenceReference.present
+          ? data.evidenceReference.value
+          : this.evidenceReference,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryValuationEventRow(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('eventType: $eventType, ')
+          ..write('quantityBeforeKg: $quantityBeforeKg, ')
+          ..write('quantityDeltaKg: $quantityDeltaKg, ')
+          ..write('quantityAfterKg: $quantityAfterKg, ')
+          ..write('valueBeforeQirsh: $valueBeforeQirsh, ')
+          ..write('valueDeltaQirsh: $valueDeltaQirsh, ')
+          ..write('valueAfterQirsh: $valueAfterQirsh, ')
+          ..write('unitCostMicrosQirshPerKg: $unitCostMicrosQirshPerKg, ')
+          ..write('allocationResidualNumerator: $allocationResidualNumerator, ')
+          ..write(
+              'allocationResidualDenominator: $allocationResidualDenominator, ')
+          ..write('sourceDocumentId: $sourceDocumentId, ')
+          ..write('effectiveDate: $effectiveDate, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('reversalOfEventId: $reversalOfEventId, ')
+          ..write('reason: $reason, ')
+          ..write('evidenceReference: $evidenceReference')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      productId,
+      eventType,
+      quantityBeforeKg,
+      quantityDeltaKg,
+      quantityAfterKg,
+      valueBeforeQirsh,
+      valueDeltaQirsh,
+      valueAfterQirsh,
+      unitCostMicrosQirshPerKg,
+      allocationResidualNumerator,
+      allocationResidualDenominator,
+      sourceDocumentId,
+      effectiveDate,
+      createdAt,
+      createdByUserId,
+      reversalOfEventId,
+      reason,
+      evidenceReference);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryValuationEventRow &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.eventType == this.eventType &&
+          other.quantityBeforeKg == this.quantityBeforeKg &&
+          other.quantityDeltaKg == this.quantityDeltaKg &&
+          other.quantityAfterKg == this.quantityAfterKg &&
+          other.valueBeforeQirsh == this.valueBeforeQirsh &&
+          other.valueDeltaQirsh == this.valueDeltaQirsh &&
+          other.valueAfterQirsh == this.valueAfterQirsh &&
+          other.unitCostMicrosQirshPerKg == this.unitCostMicrosQirshPerKg &&
+          other.allocationResidualNumerator ==
+              this.allocationResidualNumerator &&
+          other.allocationResidualDenominator ==
+              this.allocationResidualDenominator &&
+          other.sourceDocumentId == this.sourceDocumentId &&
+          other.effectiveDate == this.effectiveDate &&
+          other.createdAt == this.createdAt &&
+          other.createdByUserId == this.createdByUserId &&
+          other.reversalOfEventId == this.reversalOfEventId &&
+          other.reason == this.reason &&
+          other.evidenceReference == this.evidenceReference);
+}
+
+class InventoryValuationEventsCompanion
+    extends UpdateCompanion<InventoryValuationEventRow> {
+  final Value<String> id;
+  final Value<String> productId;
+  final Value<String> eventType;
+  final Value<int> quantityBeforeKg;
+  final Value<int> quantityDeltaKg;
+  final Value<int> quantityAfterKg;
+  final Value<int> valueBeforeQirsh;
+  final Value<int> valueDeltaQirsh;
+  final Value<int> valueAfterQirsh;
+  final Value<int> unitCostMicrosQirshPerKg;
+  final Value<int> allocationResidualNumerator;
+  final Value<int> allocationResidualDenominator;
+  final Value<String> sourceDocumentId;
+  final Value<DateTime> effectiveDate;
+  final Value<DateTime> createdAt;
+  final Value<String> createdByUserId;
+  final Value<String?> reversalOfEventId;
+  final Value<String?> reason;
+  final Value<String?> evidenceReference;
+  final Value<int> rowid;
+  const InventoryValuationEventsCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.eventType = const Value.absent(),
+    this.quantityBeforeKg = const Value.absent(),
+    this.quantityDeltaKg = const Value.absent(),
+    this.quantityAfterKg = const Value.absent(),
+    this.valueBeforeQirsh = const Value.absent(),
+    this.valueDeltaQirsh = const Value.absent(),
+    this.valueAfterQirsh = const Value.absent(),
+    this.unitCostMicrosQirshPerKg = const Value.absent(),
+    this.allocationResidualNumerator = const Value.absent(),
+    this.allocationResidualDenominator = const Value.absent(),
+    this.sourceDocumentId = const Value.absent(),
+    this.effectiveDate = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.createdByUserId = const Value.absent(),
+    this.reversalOfEventId = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.evidenceReference = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InventoryValuationEventsCompanion.insert({
+    required String id,
+    required String productId,
+    required String eventType,
+    required int quantityBeforeKg,
+    required int quantityDeltaKg,
+    required int quantityAfterKg,
+    required int valueBeforeQirsh,
+    required int valueDeltaQirsh,
+    required int valueAfterQirsh,
+    required int unitCostMicrosQirshPerKg,
+    required int allocationResidualNumerator,
+    required int allocationResidualDenominator,
+    required String sourceDocumentId,
+    required DateTime effectiveDate,
+    required DateTime createdAt,
+    required String createdByUserId,
+    this.reversalOfEventId = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.evidenceReference = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        productId = Value(productId),
+        eventType = Value(eventType),
+        quantityBeforeKg = Value(quantityBeforeKg),
+        quantityDeltaKg = Value(quantityDeltaKg),
+        quantityAfterKg = Value(quantityAfterKg),
+        valueBeforeQirsh = Value(valueBeforeQirsh),
+        valueDeltaQirsh = Value(valueDeltaQirsh),
+        valueAfterQirsh = Value(valueAfterQirsh),
+        unitCostMicrosQirshPerKg = Value(unitCostMicrosQirshPerKg),
+        allocationResidualNumerator = Value(allocationResidualNumerator),
+        allocationResidualDenominator = Value(allocationResidualDenominator),
+        sourceDocumentId = Value(sourceDocumentId),
+        effectiveDate = Value(effectiveDate),
+        createdAt = Value(createdAt),
+        createdByUserId = Value(createdByUserId);
+  static Insertable<InventoryValuationEventRow> custom({
+    Expression<String>? id,
+    Expression<String>? productId,
+    Expression<String>? eventType,
+    Expression<int>? quantityBeforeKg,
+    Expression<int>? quantityDeltaKg,
+    Expression<int>? quantityAfterKg,
+    Expression<int>? valueBeforeQirsh,
+    Expression<int>? valueDeltaQirsh,
+    Expression<int>? valueAfterQirsh,
+    Expression<int>? unitCostMicrosQirshPerKg,
+    Expression<int>? allocationResidualNumerator,
+    Expression<int>? allocationResidualDenominator,
+    Expression<String>? sourceDocumentId,
+    Expression<DateTime>? effectiveDate,
+    Expression<DateTime>? createdAt,
+    Expression<String>? createdByUserId,
+    Expression<String>? reversalOfEventId,
+    Expression<String>? reason,
+    Expression<String>? evidenceReference,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (eventType != null) 'event_type': eventType,
+      if (quantityBeforeKg != null) 'quantity_before_kg': quantityBeforeKg,
+      if (quantityDeltaKg != null) 'quantity_delta_kg': quantityDeltaKg,
+      if (quantityAfterKg != null) 'quantity_after_kg': quantityAfterKg,
+      if (valueBeforeQirsh != null) 'value_before_qirsh': valueBeforeQirsh,
+      if (valueDeltaQirsh != null) 'value_delta_qirsh': valueDeltaQirsh,
+      if (valueAfterQirsh != null) 'value_after_qirsh': valueAfterQirsh,
+      if (unitCostMicrosQirshPerKg != null)
+        'unit_cost_micros_qirsh_per_kg': unitCostMicrosQirshPerKg,
+      if (allocationResidualNumerator != null)
+        'allocation_residual_numerator': allocationResidualNumerator,
+      if (allocationResidualDenominator != null)
+        'allocation_residual_denominator': allocationResidualDenominator,
+      if (sourceDocumentId != null) 'source_document_id': sourceDocumentId,
+      if (effectiveDate != null) 'effective_date': effectiveDate,
+      if (createdAt != null) 'created_at': createdAt,
+      if (createdByUserId != null) 'created_by_user_id': createdByUserId,
+      if (reversalOfEventId != null) 'reversal_of_event_id': reversalOfEventId,
+      if (reason != null) 'reason': reason,
+      if (evidenceReference != null) 'evidence_reference': evidenceReference,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InventoryValuationEventsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? productId,
+      Value<String>? eventType,
+      Value<int>? quantityBeforeKg,
+      Value<int>? quantityDeltaKg,
+      Value<int>? quantityAfterKg,
+      Value<int>? valueBeforeQirsh,
+      Value<int>? valueDeltaQirsh,
+      Value<int>? valueAfterQirsh,
+      Value<int>? unitCostMicrosQirshPerKg,
+      Value<int>? allocationResidualNumerator,
+      Value<int>? allocationResidualDenominator,
+      Value<String>? sourceDocumentId,
+      Value<DateTime>? effectiveDate,
+      Value<DateTime>? createdAt,
+      Value<String>? createdByUserId,
+      Value<String?>? reversalOfEventId,
+      Value<String?>? reason,
+      Value<String?>? evidenceReference,
+      Value<int>? rowid}) {
+    return InventoryValuationEventsCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      eventType: eventType ?? this.eventType,
+      quantityBeforeKg: quantityBeforeKg ?? this.quantityBeforeKg,
+      quantityDeltaKg: quantityDeltaKg ?? this.quantityDeltaKg,
+      quantityAfterKg: quantityAfterKg ?? this.quantityAfterKg,
+      valueBeforeQirsh: valueBeforeQirsh ?? this.valueBeforeQirsh,
+      valueDeltaQirsh: valueDeltaQirsh ?? this.valueDeltaQirsh,
+      valueAfterQirsh: valueAfterQirsh ?? this.valueAfterQirsh,
+      unitCostMicrosQirshPerKg:
+          unitCostMicrosQirshPerKg ?? this.unitCostMicrosQirshPerKg,
+      allocationResidualNumerator:
+          allocationResidualNumerator ?? this.allocationResidualNumerator,
+      allocationResidualDenominator:
+          allocationResidualDenominator ?? this.allocationResidualDenominator,
+      sourceDocumentId: sourceDocumentId ?? this.sourceDocumentId,
+      effectiveDate: effectiveDate ?? this.effectiveDate,
+      createdAt: createdAt ?? this.createdAt,
+      createdByUserId: createdByUserId ?? this.createdByUserId,
+      reversalOfEventId: reversalOfEventId ?? this.reversalOfEventId,
+      reason: reason ?? this.reason,
+      evidenceReference: evidenceReference ?? this.evidenceReference,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (eventType.present) {
+      map['event_type'] = Variable<String>(eventType.value);
+    }
+    if (quantityBeforeKg.present) {
+      map['quantity_before_kg'] = Variable<int>(quantityBeforeKg.value);
+    }
+    if (quantityDeltaKg.present) {
+      map['quantity_delta_kg'] = Variable<int>(quantityDeltaKg.value);
+    }
+    if (quantityAfterKg.present) {
+      map['quantity_after_kg'] = Variable<int>(quantityAfterKg.value);
+    }
+    if (valueBeforeQirsh.present) {
+      map['value_before_qirsh'] = Variable<int>(valueBeforeQirsh.value);
+    }
+    if (valueDeltaQirsh.present) {
+      map['value_delta_qirsh'] = Variable<int>(valueDeltaQirsh.value);
+    }
+    if (valueAfterQirsh.present) {
+      map['value_after_qirsh'] = Variable<int>(valueAfterQirsh.value);
+    }
+    if (unitCostMicrosQirshPerKg.present) {
+      map['unit_cost_micros_qirsh_per_kg'] =
+          Variable<int>(unitCostMicrosQirshPerKg.value);
+    }
+    if (allocationResidualNumerator.present) {
+      map['allocation_residual_numerator'] =
+          Variable<int>(allocationResidualNumerator.value);
+    }
+    if (allocationResidualDenominator.present) {
+      map['allocation_residual_denominator'] =
+          Variable<int>(allocationResidualDenominator.value);
+    }
+    if (sourceDocumentId.present) {
+      map['source_document_id'] = Variable<String>(sourceDocumentId.value);
+    }
+    if (effectiveDate.present) {
+      map['effective_date'] = Variable<DateTime>(effectiveDate.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (createdByUserId.present) {
+      map['created_by_user_id'] = Variable<String>(createdByUserId.value);
+    }
+    if (reversalOfEventId.present) {
+      map['reversal_of_event_id'] = Variable<String>(reversalOfEventId.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (evidenceReference.present) {
+      map['evidence_reference'] = Variable<String>(evidenceReference.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryValuationEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('eventType: $eventType, ')
+          ..write('quantityBeforeKg: $quantityBeforeKg, ')
+          ..write('quantityDeltaKg: $quantityDeltaKg, ')
+          ..write('quantityAfterKg: $quantityAfterKg, ')
+          ..write('valueBeforeQirsh: $valueBeforeQirsh, ')
+          ..write('valueDeltaQirsh: $valueDeltaQirsh, ')
+          ..write('valueAfterQirsh: $valueAfterQirsh, ')
+          ..write('unitCostMicrosQirshPerKg: $unitCostMicrosQirshPerKg, ')
+          ..write('allocationResidualNumerator: $allocationResidualNumerator, ')
+          ..write(
+              'allocationResidualDenominator: $allocationResidualDenominator, ')
+          ..write('sourceDocumentId: $sourceDocumentId, ')
+          ..write('effectiveDate: $effectiveDate, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdByUserId: $createdByUserId, ')
+          ..write('reversalOfEventId: $reversalOfEventId, ')
+          ..write('reason: $reason, ')
+          ..write('evidenceReference: $evidenceReference, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PurchasesTable extends Purchases
     with TableInfo<$PurchasesTable, Purchase> {
   @override
@@ -8361,6 +10027,12 @@ class $ExpensesTable extends Expenses
       GeneratedColumn<String>(
           'operation_request_fingerprint', aliasedName, true,
           type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _accountingClassificationMeta =
+      const VerificationMeta('accountingClassification');
+  @override
+  late final GeneratedColumn<String> accountingClassification =
+      GeneratedColumn<String>('accounting_classification', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -8373,7 +10045,8 @@ class $ExpensesTable extends Expenses
         paymentMethod,
         createdByUserId,
         operationRequestId,
-        operationRequestFingerprint
+        operationRequestFingerprint,
+        accountingClassification
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8451,6 +10124,13 @@ class $ExpensesTable extends Expenses
               data['operation_request_fingerprint']!,
               _operationRequestFingerprintMeta));
     }
+    if (data.containsKey('accounting_classification')) {
+      context.handle(
+          _accountingClassificationMeta,
+          accountingClassification.isAcceptableOrUnknown(
+              data['accounting_classification']!,
+              _accountingClassificationMeta));
+    }
     return context;
   }
 
@@ -8483,6 +10163,9 @@ class $ExpensesTable extends Expenses
       operationRequestFingerprint: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}operation_request_fingerprint']),
+      accountingClassification: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}accounting_classification']),
     );
   }
 
@@ -8504,6 +10187,7 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
   final String? createdByUserId;
   final String? operationRequestId;
   final String? operationRequestFingerprint;
+  final String? accountingClassification;
   const ExpenseRow(
       {required this.id,
       required this.date,
@@ -8515,7 +10199,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       this.paymentMethod,
       this.createdByUserId,
       this.operationRequestId,
-      this.operationRequestFingerprint});
+      this.operationRequestFingerprint,
+      this.accountingClassification});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -8542,6 +10227,10 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
     if (!nullToAbsent || operationRequestFingerprint != null) {
       map['operation_request_fingerprint'] =
           Variable<String>(operationRequestFingerprint);
+    }
+    if (!nullToAbsent || accountingClassification != null) {
+      map['accounting_classification'] =
+          Variable<String>(accountingClassification);
     }
     return map;
   }
@@ -8571,6 +10260,9 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           operationRequestFingerprint == null && nullToAbsent
               ? const Value.absent()
               : Value(operationRequestFingerprint),
+      accountingClassification: accountingClassification == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountingClassification),
     );
   }
 
@@ -8592,6 +10284,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           serializer.fromJson<String?>(json['operationRequestId']),
       operationRequestFingerprint:
           serializer.fromJson<String?>(json['operationRequestFingerprint']),
+      accountingClassification:
+          serializer.fromJson<String?>(json['accountingClassification']),
     );
   }
   @override
@@ -8610,6 +10304,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       'operationRequestId': serializer.toJson<String?>(operationRequestId),
       'operationRequestFingerprint':
           serializer.toJson<String?>(operationRequestFingerprint),
+      'accountingClassification':
+          serializer.toJson<String?>(accountingClassification),
     };
   }
 
@@ -8624,7 +10320,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           Value<String?> paymentMethod = const Value.absent(),
           Value<String?> createdByUserId = const Value.absent(),
           Value<String?> operationRequestId = const Value.absent(),
-          Value<String?> operationRequestFingerprint = const Value.absent()}) =>
+          Value<String?> operationRequestFingerprint = const Value.absent(),
+          Value<String?> accountingClassification = const Value.absent()}) =>
       ExpenseRow(
         id: id ?? this.id,
         date: date ?? this.date,
@@ -8646,6 +10343,9 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
         operationRequestFingerprint: operationRequestFingerprint.present
             ? operationRequestFingerprint.value
             : this.operationRequestFingerprint,
+        accountingClassification: accountingClassification.present
+            ? accountingClassification.value
+            : this.accountingClassification,
       );
   ExpenseRow copyWithCompanion(ExpensesCompanion data) {
     return ExpenseRow(
@@ -8671,6 +10371,9 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       operationRequestFingerprint: data.operationRequestFingerprint.present
           ? data.operationRequestFingerprint.value
           : this.operationRequestFingerprint,
+      accountingClassification: data.accountingClassification.present
+          ? data.accountingClassification.value
+          : this.accountingClassification,
     );
   }
 
@@ -8687,7 +10390,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('createdByUserId: $createdByUserId, ')
           ..write('operationRequestId: $operationRequestId, ')
-          ..write('operationRequestFingerprint: $operationRequestFingerprint')
+          ..write('operationRequestFingerprint: $operationRequestFingerprint, ')
+          ..write('accountingClassification: $accountingClassification')
           ..write(')'))
         .toString();
   }
@@ -8704,7 +10408,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
       paymentMethod,
       createdByUserId,
       operationRequestId,
-      operationRequestFingerprint);
+      operationRequestFingerprint,
+      accountingClassification);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8720,7 +10425,8 @@ class ExpenseRow extends DataClass implements Insertable<ExpenseRow> {
           other.createdByUserId == this.createdByUserId &&
           other.operationRequestId == this.operationRequestId &&
           other.operationRequestFingerprint ==
-              this.operationRequestFingerprint);
+              this.operationRequestFingerprint &&
+          other.accountingClassification == this.accountingClassification);
 }
 
 class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
@@ -8735,6 +10441,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
   final Value<String?> createdByUserId;
   final Value<String?> operationRequestId;
   final Value<String?> operationRequestFingerprint;
+  final Value<String?> accountingClassification;
   final Value<int> rowid;
   const ExpensesCompanion({
     this.id = const Value.absent(),
@@ -8748,6 +10455,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     this.createdByUserId = const Value.absent(),
     this.operationRequestId = const Value.absent(),
     this.operationRequestFingerprint = const Value.absent(),
+    this.accountingClassification = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ExpensesCompanion.insert({
@@ -8762,6 +10470,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     this.createdByUserId = const Value.absent(),
     this.operationRequestId = const Value.absent(),
     this.operationRequestFingerprint = const Value.absent(),
+    this.accountingClassification = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         date = Value(date),
@@ -8780,6 +10489,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
     Expression<String>? createdByUserId,
     Expression<String>? operationRequestId,
     Expression<String>? operationRequestFingerprint,
+    Expression<String>? accountingClassification,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8797,6 +10507,8 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
         'operation_request_id': operationRequestId,
       if (operationRequestFingerprint != null)
         'operation_request_fingerprint': operationRequestFingerprint,
+      if (accountingClassification != null)
+        'accounting_classification': accountingClassification,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8813,6 +10525,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       Value<String?>? createdByUserId,
       Value<String?>? operationRequestId,
       Value<String?>? operationRequestFingerprint,
+      Value<String?>? accountingClassification,
       Value<int>? rowid}) {
     return ExpensesCompanion(
       id: id ?? this.id,
@@ -8827,6 +10540,8 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       operationRequestId: operationRequestId ?? this.operationRequestId,
       operationRequestFingerprint:
           operationRequestFingerprint ?? this.operationRequestFingerprint,
+      accountingClassification:
+          accountingClassification ?? this.accountingClassification,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8868,6 +10583,10 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
       map['operation_request_fingerprint'] =
           Variable<String>(operationRequestFingerprint.value);
     }
+    if (accountingClassification.present) {
+      map['accounting_classification'] =
+          Variable<String>(accountingClassification.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8888,6 +10607,7 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
           ..write('createdByUserId: $createdByUserId, ')
           ..write('operationRequestId: $operationRequestId, ')
           ..write('operationRequestFingerprint: $operationRequestFingerprint, ')
+          ..write('accountingClassification: $accountingClassification, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -14104,6 +15824,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final $SuppliersTable suppliers = $SuppliersTable(this);
   late final $InventoryMovementsTable inventoryMovements =
       $InventoryMovementsTable(this);
+  late final $ProfitabilityActivationsTable profitabilityActivations =
+      $ProfitabilityActivationsTable(this);
+  late final $InventoryValuationStatesTable inventoryValuationStates =
+      $InventoryValuationStatesTable(this);
+  late final $InventoryValuationEventsTable inventoryValuationEvents =
+      $InventoryValuationEventsTable(this);
   late final $PurchasesTable purchases = $PurchasesTable(this);
   late final $SalesTable sales = $SalesTable(this);
   late final $FinancialAccountsTable financialAccounts =
@@ -14152,6 +15878,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index inventoryMovementsDocumentIdx = Index(
       'inventory_movements_document_idx',
       'CREATE INDEX inventory_movements_document_idx ON inventory_movements (original_document_id)');
+  late final Index inventoryValuationEventsProductCreatedIdx = Index(
+      'inventory_valuation_events_product_created_idx',
+      'CREATE INDEX inventory_valuation_events_product_created_idx ON inventory_valuation_events (product_id, created_at, id)');
+  late final Index inventoryValuationEventsSourceIdx = Index(
+      'inventory_valuation_events_source_idx',
+      'CREATE INDEX inventory_valuation_events_source_idx ON inventory_valuation_events (source_document_id)');
   late final Index purchasesSupplierIdx = Index('purchases_supplier_idx',
       'CREATE INDEX purchases_supplier_idx ON purchases (supplier_id)');
   late final Index purchasesCreatedIdx = Index('purchases_created_idx',
@@ -14241,6 +15973,9 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         customers,
         suppliers,
         inventoryMovements,
+        profitabilityActivations,
+        inventoryValuationStates,
+        inventoryValuationEvents,
         purchases,
         sales,
         financialAccounts,
@@ -14265,6 +16000,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         inventoryMovementsProductIdx,
         inventoryMovementsCreatedIdx,
         inventoryMovementsDocumentIdx,
+        inventoryValuationEventsProductCreatedIdx,
+        inventoryValuationEventsSourceIdx,
         purchasesSupplierIdx,
         purchasesCreatedIdx,
         purchasesProductIdx,
@@ -15608,6 +17345,806 @@ typedef $$InventoryMovementsTableProcessedTableManager = ProcessedTableManager<
     ),
     InventoryMovement,
     PrefetchHooks Function()>;
+typedef $$ProfitabilityActivationsTableCreateCompanionBuilder
+    = ProfitabilityActivationsCompanion Function({
+  required String id,
+  required String status,
+  Value<DateTime?> activationDate,
+  Value<DateTime?> approvedAt,
+  Value<String?> approvedByUserId,
+  Value<String?> evidenceNote,
+  Value<int> rowid,
+});
+typedef $$ProfitabilityActivationsTableUpdateCompanionBuilder
+    = ProfitabilityActivationsCompanion Function({
+  Value<String> id,
+  Value<String> status,
+  Value<DateTime?> activationDate,
+  Value<DateTime?> approvedAt,
+  Value<String?> approvedByUserId,
+  Value<String?> evidenceNote,
+  Value<int> rowid,
+});
+
+class $$ProfitabilityActivationsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $ProfitabilityActivationsTable> {
+  $$ProfitabilityActivationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get activationDate => $composableBuilder(
+      column: $table.activationDate,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get approvedAt => $composableBuilder(
+      column: $table.approvedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get approvedByUserId => $composableBuilder(
+      column: $table.approvedByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get evidenceNote => $composableBuilder(
+      column: $table.evidenceNote, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProfitabilityActivationsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $ProfitabilityActivationsTable> {
+  $$ProfitabilityActivationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get activationDate => $composableBuilder(
+      column: $table.activationDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get approvedAt => $composableBuilder(
+      column: $table.approvedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get approvedByUserId => $composableBuilder(
+      column: $table.approvedByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get evidenceNote => $composableBuilder(
+      column: $table.evidenceNote,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProfitabilityActivationsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $ProfitabilityActivationsTable> {
+  $$ProfitabilityActivationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get activationDate => $composableBuilder(
+      column: $table.activationDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get approvedAt => $composableBuilder(
+      column: $table.approvedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get approvedByUserId => $composableBuilder(
+      column: $table.approvedByUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get evidenceNote => $composableBuilder(
+      column: $table.evidenceNote, builder: (column) => column);
+}
+
+class $$ProfitabilityActivationsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $ProfitabilityActivationsTable,
+    ProfitabilityActivationRow,
+    $$ProfitabilityActivationsTableFilterComposer,
+    $$ProfitabilityActivationsTableOrderingComposer,
+    $$ProfitabilityActivationsTableAnnotationComposer,
+    $$ProfitabilityActivationsTableCreateCompanionBuilder,
+    $$ProfitabilityActivationsTableUpdateCompanionBuilder,
+    (
+      ProfitabilityActivationRow,
+      BaseReferences<_$FoundationDatabase, $ProfitabilityActivationsTable,
+          ProfitabilityActivationRow>
+    ),
+    ProfitabilityActivationRow,
+    PrefetchHooks Function()> {
+  $$ProfitabilityActivationsTableTableManager(
+      _$FoundationDatabase db, $ProfitabilityActivationsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProfitabilityActivationsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProfitabilityActivationsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProfitabilityActivationsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<DateTime?> activationDate = const Value.absent(),
+            Value<DateTime?> approvedAt = const Value.absent(),
+            Value<String?> approvedByUserId = const Value.absent(),
+            Value<String?> evidenceNote = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProfitabilityActivationsCompanion(
+            id: id,
+            status: status,
+            activationDate: activationDate,
+            approvedAt: approvedAt,
+            approvedByUserId: approvedByUserId,
+            evidenceNote: evidenceNote,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String status,
+            Value<DateTime?> activationDate = const Value.absent(),
+            Value<DateTime?> approvedAt = const Value.absent(),
+            Value<String?> approvedByUserId = const Value.absent(),
+            Value<String?> evidenceNote = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProfitabilityActivationsCompanion.insert(
+            id: id,
+            status: status,
+            activationDate: activationDate,
+            approvedAt: approvedAt,
+            approvedByUserId: approvedByUserId,
+            evidenceNote: evidenceNote,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProfitabilityActivationsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $ProfitabilityActivationsTable,
+        ProfitabilityActivationRow,
+        $$ProfitabilityActivationsTableFilterComposer,
+        $$ProfitabilityActivationsTableOrderingComposer,
+        $$ProfitabilityActivationsTableAnnotationComposer,
+        $$ProfitabilityActivationsTableCreateCompanionBuilder,
+        $$ProfitabilityActivationsTableUpdateCompanionBuilder,
+        (
+          ProfitabilityActivationRow,
+          BaseReferences<_$FoundationDatabase, $ProfitabilityActivationsTable,
+              ProfitabilityActivationRow>
+        ),
+        ProfitabilityActivationRow,
+        PrefetchHooks Function()>;
+typedef $$InventoryValuationStatesTableCreateCompanionBuilder
+    = InventoryValuationStatesCompanion Function({
+  required String productId,
+  required int quantityKg,
+  required int totalValueQirsh,
+  required DateTime updatedAt,
+  required String lastEventId,
+  Value<int> rowid,
+});
+typedef $$InventoryValuationStatesTableUpdateCompanionBuilder
+    = InventoryValuationStatesCompanion Function({
+  Value<String> productId,
+  Value<int> quantityKg,
+  Value<int> totalValueQirsh,
+  Value<DateTime> updatedAt,
+  Value<String> lastEventId,
+  Value<int> rowid,
+});
+
+class $$InventoryValuationStatesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationStatesTable> {
+  $$InventoryValuationStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalValueQirsh => $composableBuilder(
+      column: $table.totalValueQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastEventId => $composableBuilder(
+      column: $table.lastEventId, builder: (column) => ColumnFilters(column));
+}
+
+class $$InventoryValuationStatesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationStatesTable> {
+  $$InventoryValuationStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalValueQirsh => $composableBuilder(
+      column: $table.totalValueQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastEventId => $composableBuilder(
+      column: $table.lastEventId, builder: (column) => ColumnOrderings(column));
+}
+
+class $$InventoryValuationStatesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationStatesTable> {
+  $$InventoryValuationStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityKg => $composableBuilder(
+      column: $table.quantityKg, builder: (column) => column);
+
+  GeneratedColumn<int> get totalValueQirsh => $composableBuilder(
+      column: $table.totalValueQirsh, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get lastEventId => $composableBuilder(
+      column: $table.lastEventId, builder: (column) => column);
+}
+
+class $$InventoryValuationStatesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $InventoryValuationStatesTable,
+    InventoryValuationStateRow,
+    $$InventoryValuationStatesTableFilterComposer,
+    $$InventoryValuationStatesTableOrderingComposer,
+    $$InventoryValuationStatesTableAnnotationComposer,
+    $$InventoryValuationStatesTableCreateCompanionBuilder,
+    $$InventoryValuationStatesTableUpdateCompanionBuilder,
+    (
+      InventoryValuationStateRow,
+      BaseReferences<_$FoundationDatabase, $InventoryValuationStatesTable,
+          InventoryValuationStateRow>
+    ),
+    InventoryValuationStateRow,
+    PrefetchHooks Function()> {
+  $$InventoryValuationStatesTableTableManager(
+      _$FoundationDatabase db, $InventoryValuationStatesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InventoryValuationStatesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InventoryValuationStatesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InventoryValuationStatesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> productId = const Value.absent(),
+            Value<int> quantityKg = const Value.absent(),
+            Value<int> totalValueQirsh = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> lastEventId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryValuationStatesCompanion(
+            productId: productId,
+            quantityKg: quantityKg,
+            totalValueQirsh: totalValueQirsh,
+            updatedAt: updatedAt,
+            lastEventId: lastEventId,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String productId,
+            required int quantityKg,
+            required int totalValueQirsh,
+            required DateTime updatedAt,
+            required String lastEventId,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryValuationStatesCompanion.insert(
+            productId: productId,
+            quantityKg: quantityKg,
+            totalValueQirsh: totalValueQirsh,
+            updatedAt: updatedAt,
+            lastEventId: lastEventId,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$InventoryValuationStatesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $InventoryValuationStatesTable,
+        InventoryValuationStateRow,
+        $$InventoryValuationStatesTableFilterComposer,
+        $$InventoryValuationStatesTableOrderingComposer,
+        $$InventoryValuationStatesTableAnnotationComposer,
+        $$InventoryValuationStatesTableCreateCompanionBuilder,
+        $$InventoryValuationStatesTableUpdateCompanionBuilder,
+        (
+          InventoryValuationStateRow,
+          BaseReferences<_$FoundationDatabase, $InventoryValuationStatesTable,
+              InventoryValuationStateRow>
+        ),
+        InventoryValuationStateRow,
+        PrefetchHooks Function()>;
+typedef $$InventoryValuationEventsTableCreateCompanionBuilder
+    = InventoryValuationEventsCompanion Function({
+  required String id,
+  required String productId,
+  required String eventType,
+  required int quantityBeforeKg,
+  required int quantityDeltaKg,
+  required int quantityAfterKg,
+  required int valueBeforeQirsh,
+  required int valueDeltaQirsh,
+  required int valueAfterQirsh,
+  required int unitCostMicrosQirshPerKg,
+  required int allocationResidualNumerator,
+  required int allocationResidualDenominator,
+  required String sourceDocumentId,
+  required DateTime effectiveDate,
+  required DateTime createdAt,
+  required String createdByUserId,
+  Value<String?> reversalOfEventId,
+  Value<String?> reason,
+  Value<String?> evidenceReference,
+  Value<int> rowid,
+});
+typedef $$InventoryValuationEventsTableUpdateCompanionBuilder
+    = InventoryValuationEventsCompanion Function({
+  Value<String> id,
+  Value<String> productId,
+  Value<String> eventType,
+  Value<int> quantityBeforeKg,
+  Value<int> quantityDeltaKg,
+  Value<int> quantityAfterKg,
+  Value<int> valueBeforeQirsh,
+  Value<int> valueDeltaQirsh,
+  Value<int> valueAfterQirsh,
+  Value<int> unitCostMicrosQirshPerKg,
+  Value<int> allocationResidualNumerator,
+  Value<int> allocationResidualDenominator,
+  Value<String> sourceDocumentId,
+  Value<DateTime> effectiveDate,
+  Value<DateTime> createdAt,
+  Value<String> createdByUserId,
+  Value<String?> reversalOfEventId,
+  Value<String?> reason,
+  Value<String?> evidenceReference,
+  Value<int> rowid,
+});
+
+class $$InventoryValuationEventsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationEventsTable> {
+  $$InventoryValuationEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get eventType => $composableBuilder(
+      column: $table.eventType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityBeforeKg => $composableBuilder(
+      column: $table.quantityBeforeKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityDeltaKg => $composableBuilder(
+      column: $table.quantityDeltaKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get quantityAfterKg => $composableBuilder(
+      column: $table.quantityAfterKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get valueBeforeQirsh => $composableBuilder(
+      column: $table.valueBeforeQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get valueDeltaQirsh => $composableBuilder(
+      column: $table.valueDeltaQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get valueAfterQirsh => $composableBuilder(
+      column: $table.valueAfterQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get unitCostMicrosQirshPerKg => $composableBuilder(
+      column: $table.unitCostMicrosQirshPerKg,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get allocationResidualNumerator => $composableBuilder(
+      column: $table.allocationResidualNumerator,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get allocationResidualDenominator => $composableBuilder(
+      column: $table.allocationResidualDenominator,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get effectiveDate => $composableBuilder(
+      column: $table.effectiveDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reversalOfEventId => $composableBuilder(
+      column: $table.reversalOfEventId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get evidenceReference => $composableBuilder(
+      column: $table.evidenceReference,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$InventoryValuationEventsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationEventsTable> {
+  $$InventoryValuationEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+      column: $table.productId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get eventType => $composableBuilder(
+      column: $table.eventType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityBeforeKg => $composableBuilder(
+      column: $table.quantityBeforeKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityDeltaKg => $composableBuilder(
+      column: $table.quantityDeltaKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get quantityAfterKg => $composableBuilder(
+      column: $table.quantityAfterKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get valueBeforeQirsh => $composableBuilder(
+      column: $table.valueBeforeQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get valueDeltaQirsh => $composableBuilder(
+      column: $table.valueDeltaQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get valueAfterQirsh => $composableBuilder(
+      column: $table.valueAfterQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get unitCostMicrosQirshPerKg => $composableBuilder(
+      column: $table.unitCostMicrosQirshPerKg,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get allocationResidualNumerator => $composableBuilder(
+      column: $table.allocationResidualNumerator,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get allocationResidualDenominator => $composableBuilder(
+      column: $table.allocationResidualDenominator,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get effectiveDate => $composableBuilder(
+      column: $table.effectiveDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reversalOfEventId => $composableBuilder(
+      column: $table.reversalOfEventId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get evidenceReference => $composableBuilder(
+      column: $table.evidenceReference,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$InventoryValuationEventsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $InventoryValuationEventsTable> {
+  $$InventoryValuationEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get eventType =>
+      $composableBuilder(column: $table.eventType, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityBeforeKg => $composableBuilder(
+      column: $table.quantityBeforeKg, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityDeltaKg => $composableBuilder(
+      column: $table.quantityDeltaKg, builder: (column) => column);
+
+  GeneratedColumn<int> get quantityAfterKg => $composableBuilder(
+      column: $table.quantityAfterKg, builder: (column) => column);
+
+  GeneratedColumn<int> get valueBeforeQirsh => $composableBuilder(
+      column: $table.valueBeforeQirsh, builder: (column) => column);
+
+  GeneratedColumn<int> get valueDeltaQirsh => $composableBuilder(
+      column: $table.valueDeltaQirsh, builder: (column) => column);
+
+  GeneratedColumn<int> get valueAfterQirsh => $composableBuilder(
+      column: $table.valueAfterQirsh, builder: (column) => column);
+
+  GeneratedColumn<int> get unitCostMicrosQirshPerKg => $composableBuilder(
+      column: $table.unitCostMicrosQirshPerKg, builder: (column) => column);
+
+  GeneratedColumn<int> get allocationResidualNumerator => $composableBuilder(
+      column: $table.allocationResidualNumerator, builder: (column) => column);
+
+  GeneratedColumn<int> get allocationResidualDenominator => $composableBuilder(
+      column: $table.allocationResidualDenominator,
+      builder: (column) => column);
+
+  GeneratedColumn<String> get sourceDocumentId => $composableBuilder(
+      column: $table.sourceDocumentId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get effectiveDate => $composableBuilder(
+      column: $table.effectiveDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByUserId => $composableBuilder(
+      column: $table.createdByUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get reversalOfEventId => $composableBuilder(
+      column: $table.reversalOfEventId, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get evidenceReference => $composableBuilder(
+      column: $table.evidenceReference, builder: (column) => column);
+}
+
+class $$InventoryValuationEventsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $InventoryValuationEventsTable,
+    InventoryValuationEventRow,
+    $$InventoryValuationEventsTableFilterComposer,
+    $$InventoryValuationEventsTableOrderingComposer,
+    $$InventoryValuationEventsTableAnnotationComposer,
+    $$InventoryValuationEventsTableCreateCompanionBuilder,
+    $$InventoryValuationEventsTableUpdateCompanionBuilder,
+    (
+      InventoryValuationEventRow,
+      BaseReferences<_$FoundationDatabase, $InventoryValuationEventsTable,
+          InventoryValuationEventRow>
+    ),
+    InventoryValuationEventRow,
+    PrefetchHooks Function()> {
+  $$InventoryValuationEventsTableTableManager(
+      _$FoundationDatabase db, $InventoryValuationEventsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InventoryValuationEventsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InventoryValuationEventsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InventoryValuationEventsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> productId = const Value.absent(),
+            Value<String> eventType = const Value.absent(),
+            Value<int> quantityBeforeKg = const Value.absent(),
+            Value<int> quantityDeltaKg = const Value.absent(),
+            Value<int> quantityAfterKg = const Value.absent(),
+            Value<int> valueBeforeQirsh = const Value.absent(),
+            Value<int> valueDeltaQirsh = const Value.absent(),
+            Value<int> valueAfterQirsh = const Value.absent(),
+            Value<int> unitCostMicrosQirshPerKg = const Value.absent(),
+            Value<int> allocationResidualNumerator = const Value.absent(),
+            Value<int> allocationResidualDenominator = const Value.absent(),
+            Value<String> sourceDocumentId = const Value.absent(),
+            Value<DateTime> effectiveDate = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<String> createdByUserId = const Value.absent(),
+            Value<String?> reversalOfEventId = const Value.absent(),
+            Value<String?> reason = const Value.absent(),
+            Value<String?> evidenceReference = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryValuationEventsCompanion(
+            id: id,
+            productId: productId,
+            eventType: eventType,
+            quantityBeforeKg: quantityBeforeKg,
+            quantityDeltaKg: quantityDeltaKg,
+            quantityAfterKg: quantityAfterKg,
+            valueBeforeQirsh: valueBeforeQirsh,
+            valueDeltaQirsh: valueDeltaQirsh,
+            valueAfterQirsh: valueAfterQirsh,
+            unitCostMicrosQirshPerKg: unitCostMicrosQirshPerKg,
+            allocationResidualNumerator: allocationResidualNumerator,
+            allocationResidualDenominator: allocationResidualDenominator,
+            sourceDocumentId: sourceDocumentId,
+            effectiveDate: effectiveDate,
+            createdAt: createdAt,
+            createdByUserId: createdByUserId,
+            reversalOfEventId: reversalOfEventId,
+            reason: reason,
+            evidenceReference: evidenceReference,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String productId,
+            required String eventType,
+            required int quantityBeforeKg,
+            required int quantityDeltaKg,
+            required int quantityAfterKg,
+            required int valueBeforeQirsh,
+            required int valueDeltaQirsh,
+            required int valueAfterQirsh,
+            required int unitCostMicrosQirshPerKg,
+            required int allocationResidualNumerator,
+            required int allocationResidualDenominator,
+            required String sourceDocumentId,
+            required DateTime effectiveDate,
+            required DateTime createdAt,
+            required String createdByUserId,
+            Value<String?> reversalOfEventId = const Value.absent(),
+            Value<String?> reason = const Value.absent(),
+            Value<String?> evidenceReference = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InventoryValuationEventsCompanion.insert(
+            id: id,
+            productId: productId,
+            eventType: eventType,
+            quantityBeforeKg: quantityBeforeKg,
+            quantityDeltaKg: quantityDeltaKg,
+            quantityAfterKg: quantityAfterKg,
+            valueBeforeQirsh: valueBeforeQirsh,
+            valueDeltaQirsh: valueDeltaQirsh,
+            valueAfterQirsh: valueAfterQirsh,
+            unitCostMicrosQirshPerKg: unitCostMicrosQirshPerKg,
+            allocationResidualNumerator: allocationResidualNumerator,
+            allocationResidualDenominator: allocationResidualDenominator,
+            sourceDocumentId: sourceDocumentId,
+            effectiveDate: effectiveDate,
+            createdAt: createdAt,
+            createdByUserId: createdByUserId,
+            reversalOfEventId: reversalOfEventId,
+            reason: reason,
+            evidenceReference: evidenceReference,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$InventoryValuationEventsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $InventoryValuationEventsTable,
+        InventoryValuationEventRow,
+        $$InventoryValuationEventsTableFilterComposer,
+        $$InventoryValuationEventsTableOrderingComposer,
+        $$InventoryValuationEventsTableAnnotationComposer,
+        $$InventoryValuationEventsTableCreateCompanionBuilder,
+        $$InventoryValuationEventsTableUpdateCompanionBuilder,
+        (
+          InventoryValuationEventRow,
+          BaseReferences<_$FoundationDatabase, $InventoryValuationEventsTable,
+              InventoryValuationEventRow>
+        ),
+        InventoryValuationEventRow,
+        PrefetchHooks Function()>;
 typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   required String id,
   required String supplierId,
@@ -18435,6 +20972,7 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   Value<String?> createdByUserId,
   Value<String?> operationRequestId,
   Value<String?> operationRequestFingerprint,
+  Value<String?> accountingClassification,
   Value<int> rowid,
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
@@ -18449,6 +20987,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<String?> createdByUserId,
   Value<String?> operationRequestId,
   Value<String?> operationRequestFingerprint,
+  Value<String?> accountingClassification,
   Value<int> rowid,
 });
 
@@ -18496,6 +21035,10 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get operationRequestFingerprint => $composableBuilder(
       column: $table.operationRequestFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountingClassification => $composableBuilder(
+      column: $table.accountingClassification,
       builder: (column) => ColumnFilters(column));
 }
 
@@ -18545,6 +21088,10 @@ class $$ExpensesTableOrderingComposer
   ColumnOrderings<String> get operationRequestFingerprint => $composableBuilder(
       column: $table.operationRequestFingerprint,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountingClassification => $composableBuilder(
+      column: $table.accountingClassification,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$ExpensesTableAnnotationComposer
@@ -18588,6 +21135,9 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<String> get operationRequestFingerprint => $composableBuilder(
       column: $table.operationRequestFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get accountingClassification => $composableBuilder(
+      column: $table.accountingClassification, builder: (column) => column);
 }
 
 class $$ExpensesTableTableManager extends RootTableManager<
@@ -18627,6 +21177,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             Value<String?> createdByUserId = const Value.absent(),
             Value<String?> operationRequestId = const Value.absent(),
             Value<String?> operationRequestFingerprint = const Value.absent(),
+            Value<String?> accountingClassification = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ExpensesCompanion(
@@ -18641,6 +21192,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             createdByUserId: createdByUserId,
             operationRequestId: operationRequestId,
             operationRequestFingerprint: operationRequestFingerprint,
+            accountingClassification: accountingClassification,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -18655,6 +21207,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             Value<String?> createdByUserId = const Value.absent(),
             Value<String?> operationRequestId = const Value.absent(),
             Value<String?> operationRequestFingerprint = const Value.absent(),
+            Value<String?> accountingClassification = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ExpensesCompanion.insert(
@@ -18669,6 +21222,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             createdByUserId: createdByUserId,
             operationRequestId: operationRequestId,
             operationRequestFingerprint: operationRequestFingerprint,
+            accountingClassification: accountingClassification,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -21622,6 +24176,15 @@ class $FoundationDatabaseManager {
       $$SuppliersTableTableManager(_db, _db.suppliers);
   $$InventoryMovementsTableTableManager get inventoryMovements =>
       $$InventoryMovementsTableTableManager(_db, _db.inventoryMovements);
+  $$ProfitabilityActivationsTableTableManager get profitabilityActivations =>
+      $$ProfitabilityActivationsTableTableManager(
+          _db, _db.profitabilityActivations);
+  $$InventoryValuationStatesTableTableManager get inventoryValuationStates =>
+      $$InventoryValuationStatesTableTableManager(
+          _db, _db.inventoryValuationStates);
+  $$InventoryValuationEventsTableTableManager get inventoryValuationEvents =>
+      $$InventoryValuationEventsTableTableManager(
+          _db, _db.inventoryValuationEvents);
   $$PurchasesTableTableManager get purchases =>
       $$PurchasesTableTableManager(_db, _db.purchases);
   $$SalesTableTableManager get sales =>

@@ -461,7 +461,7 @@ void main() {
     });
 
     test('backup version is 6', () {
-      expect(BackupExportService.backupVersion, 7);
+      expect(BackupExportService.backupVersion, 8);
     });
 
     test('backup includes base64-encoded logo in businessIdentity', () async {

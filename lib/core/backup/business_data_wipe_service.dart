@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
@@ -34,6 +35,7 @@ class BusinessDataWipeService {
     LocalFinancialAccountRepository? financialAccountRepository,
     DurableNegativeBalanceApprovalRequestRepository?
         negativeBalanceApprovalRequestRepository,
+    DurableInventoryValuationRepository? inventoryValuationRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _backupExportService = backupExportService,
@@ -59,6 +61,8 @@ class BusinessDataWipeService {
         _negativeBalanceApprovalRequestRepository =
             negativeBalanceApprovalRequestRepository ??
                 LocalNegativeBalanceApprovalRequestRepository(),
+        _inventoryValuationRepository =
+            inventoryValuationRepository ?? LocalInventoryValuationRepository(),
         _previewService = previewService;
 
   static const confirmationPhrase =
@@ -80,6 +84,7 @@ class BusinessDataWipeService {
   final LocalFinancialAccountRepository _financialAccountRepository;
   final DurableNegativeBalanceApprovalRequestRepository
       _negativeBalanceApprovalRequestRepository;
+  final DurableInventoryValuationRepository _inventoryValuationRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BusinessDataWipeResult> wipeBusinessData({
@@ -128,6 +133,7 @@ class BusinessDataWipeService {
       await _saleRepository.clearForOwnerDataWipe();
       await _purchaseRepository.clearForOwnerDataWipe();
       await _supplierAccountRepository.clearForOwnerDataWipe();
+      await _inventoryValuationRepository.clearForOwnerDataWipe();
       await _inventoryRepository.clearForOwnerDataWipe();
       await _supplierRepository.clearForOwnerDataWipe();
       await _productRepository.clearForOwnerDataWipe();

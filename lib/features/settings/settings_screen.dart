@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
@@ -10,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/shared/widgets/business_identity_header
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_theme_selector.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -42,6 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeController = ThemeScope.of(context);
     final identityController = BusinessIdentityScope.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final user = AuthScope.maybeOf(context)?.state.user;
     final identityName = identityController.identity.establishmentName ?? '';
     if (_lastIdentityName != identityName) {
       _lastIdentityName = identityName;
@@ -168,6 +171,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               addressController: _addressController,
               phoneController: _phoneController,
             ),
+            if (user?.permissions.canExportBackups == true) ...[
+              const SizedBox(height: AppSpacing.md),
+              PremiumCard(
+                key: const Key('settings-backup-administration-card'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('إدارة البيانات', style: textTheme.titleLarge),
+                    const SizedBox(height: AppSpacing.xs),
+                    const Text(
+                      'النسخ الاحتياطي أداة إدارية للمالك، لذلك توجد هنا بعيدًا عن لوحة التشغيل اليومية.',
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const BackupExportScreen(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.backup_rounded),
+                      label: const Text('النسخ الاحتياطي والاسترجاع'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         );
       },

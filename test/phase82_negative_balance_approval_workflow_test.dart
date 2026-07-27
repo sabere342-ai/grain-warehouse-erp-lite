@@ -149,6 +149,7 @@ void main() {
         fixture.workflow.submitExpense(
           requester: fixture.employee,
           draft: ExpenseDraft(
+            accountingClassification: ExpenseAccountingClassification.operating,
             date: draft.date,
             category: draft.category,
             amountQirsh: 600,
@@ -700,6 +701,7 @@ class _Fixture {
 
   ExpenseDraft expense(String requestId, {required AppUser actor}) =>
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime(2026, 7, 2),
         category: 'Utilities',
         amountQirsh: 500,

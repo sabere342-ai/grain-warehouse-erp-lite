@@ -268,6 +268,7 @@ void main() {
 
       expect(
         () => expenseRepo.createExpense(ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: DateTime(2026, 1, 2),
           category: 'مصاريف إدارية',
           amountQirsh: 5000,
@@ -302,6 +303,7 @@ void main() {
       );
 
       await expenseRepo.createExpense(ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime(2026, 1, 2),
         category: 'مصاريف إدارية',
         amountQirsh: 5000,
@@ -546,6 +548,7 @@ void main() {
       await setBalance(treasury, 50000);
 
       final expense = await expenseRepo.createExpense(ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime(2026, 1, 1),
         category: 'مصاريف',
         amountQirsh: 5000,

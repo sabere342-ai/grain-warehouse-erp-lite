@@ -31,6 +31,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balanc
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -59,6 +61,7 @@ class BackupRestoreService {
     LocalFinancialAccountRepository? financialAccountRepository,
     DurableNegativeBalanceApprovalRequestRepository?
         negativeBalanceApprovalRequestRepository,
+    DurableInventoryValuationRepository? inventoryValuationRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _productRepository = productRepository,
@@ -83,6 +86,8 @@ class BackupRestoreService {
         _negativeBalanceApprovalRequestRepository =
             negativeBalanceApprovalRequestRepository ??
                 LocalNegativeBalanceApprovalRequestRepository(),
+        _inventoryValuationRepository =
+            inventoryValuationRepository ?? LocalInventoryValuationRepository(),
         _previewService = previewService;
 
   final ProductDataRepository _productRepository;
@@ -100,6 +105,7 @@ class BackupRestoreService {
   final LocalFinancialAccountRepository _financialAccountRepository;
   final DurableNegativeBalanceApprovalRequestRepository
       _negativeBalanceApprovalRequestRepository;
+  final DurableInventoryValuationRepository _inventoryValuationRepository;
   final BackupRestorePreviewService _previewService;
 
   Future<BackupRestoreResult> restoreToEmpty({
@@ -123,8 +129,13 @@ class BackupRestoreService {
 
     try {
       final decoded = jsonDecode(jsonText) as Map<String, Object?>;
+      final metadata = decoded['metadata'] as Map<String, Object?>;
+      final backupVersion = metadata['backupVersion'] as int;
       final data = decoded['data'] as Map<String, Object?>;
-      final restored = _parseBackupData(data);
+      final restored = _parseBackupData(
+        data,
+        restoreInventoryValuation: backupVersion >= 8,
+      );
       _validateRelationships(restored);
       final emptyCheck = await _checkEmptySystem();
       if (emptyCheck != null) {
@@ -147,6 +158,7 @@ class BackupRestoreService {
         _auditLogRepository.createTransactionSnapshot(),
         _financialAccountRepository.createTransactionSnapshot(),
         _negativeBalanceApprovalRequestRepository.createTransactionSnapshot(),
+        _inventoryValuationRepository.createTransactionSnapshot(),
       ];
 
       await RepositoryTransaction.execute(snapshots, () async {
@@ -158,6 +170,8 @@ class BackupRestoreService {
           restored.purchases,
         );
         await _saleRepository.restoreSalesIntoEmpty(restored.sales);
+        await _inventoryValuationRepository
+            .restoreIntoEmpty(restored.inventoryValuation);
         await _customerRepository.restoreCustomersIntoEmpty(restored.customers);
         await _customerAccountRepository.restoreCustomerAccountsIntoEmpty(
           entries: restored.customerAccountEntries,
@@ -238,6 +252,8 @@ class BackupRestoreService {
         await _financialAccountRepository.listAccounts(includeInactive: true);
     final negativeBalanceApprovalRequests =
         await _negativeBalanceApprovalRequestRepository.listAll();
+    final inventoryValuation =
+        await _inventoryValuationRepository.exportRestoreData();
 
     if (products.isNotEmpty ||
         movements.isNotEmpty ||
@@ -253,14 +269,20 @@ class BackupRestoreService {
         expenses.isNotEmpty ||
         auditLogs.isNotEmpty ||
         financialAccounts.isNotEmpty ||
-        negativeBalanceApprovalRequests.isNotEmpty) {
+        negativeBalanceApprovalRequests.isNotEmpty ||
+        inventoryValuation.activation.isActivated ||
+        inventoryValuation.states.isNotEmpty ||
+        inventoryValuation.events.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
     }
 
     return null;
   }
 
-  _RestoredBackupData _parseBackupData(Map<String, Object?> data) {
+  _RestoredBackupData _parseBackupData(
+    Map<String, Object?> data, {
+    required bool restoreInventoryValuation,
+  }) {
     final products = _list(data, 'products').map(_parseProduct).toList();
     final suppliers = _list(data, 'suppliers').map(_parseSupplier).toList();
     final movements =
@@ -326,6 +348,23 @@ class BackupRestoreService {
         _optionalList(data, 'negativeBalanceApprovalRequestTransitions')
             .map(_parseNegativeBalanceApprovalRequestTransition)
             .toList();
+    final inventoryValuation = restoreInventoryValuation
+        ? InventoryValuationRestoreData(
+            activation: _parseProfitabilityActivation(
+              data['profitabilityActivation'],
+            ),
+            states: _optionalList(data, 'inventoryValuationStates')
+                .map(_parseInventoryValuationState)
+                .toList(),
+            events: _optionalList(data, 'inventoryValuationEvents')
+                .map(_parseInventoryValuationEvent)
+                .toList(),
+          )
+        : const InventoryValuationRestoreData(
+            activation: ProfitabilityActivation.notActivated(),
+            states: [],
+            events: [],
+          );
     final settings = data['settings'];
     final settingsMap =
         settings is Map<String, Object?> ? settings : <String, Object?>{};
@@ -375,6 +414,7 @@ class BackupRestoreService {
       negativeBalanceApprovalRequests: negativeBalanceApprovalRequests,
       negativeBalanceApprovalRequestTransitions:
           negativeBalanceApprovalRequestTransitions,
+      inventoryValuation: inventoryValuation,
       businessIdentity: businessIdentity,
       documentHistoryCount: _list(data, 'documentHistory').length,
       logoRestoreWarning: _logoRestoreWarning,
@@ -560,6 +600,17 @@ class BackupRestoreService {
       quantityKg: _int(map, 'quantityKg'),
       salePriceQirshPerKg: _int(map, 'salePriceQirshPerKg'),
       lineTotalQirsh: _int(map, 'lineTotalQirsh'),
+      valuationEventId: _optionalString(map, 'valuationEventId'),
+      unitCostMicrosQirshPerKg: _optionalInt(map, 'unitCostMicrosQirshPerKg'),
+      costOfGoodsSoldQirsh: _optionalInt(map, 'costOfGoodsSoldQirsh'),
+      inventoryQuantityBeforeKg: _optionalInt(map, 'inventoryQuantityBeforeKg'),
+      inventoryQuantityAfterKg: _optionalInt(map, 'inventoryQuantityAfterKg'),
+      inventoryValueBeforeQirsh: _optionalInt(map, 'inventoryValueBeforeQirsh'),
+      inventoryValueAfterQirsh: _optionalInt(map, 'inventoryValueAfterQirsh'),
+      costAllocationResidualNumerator:
+          _optionalInt(map, 'costAllocationResidualNumerator'),
+      costAllocationResidualDenominator:
+          _optionalInt(map, 'costAllocationResidualDenominator'),
     );
   }
 
@@ -778,6 +829,62 @@ class BackupRestoreService {
       operationRequestId: _optionalString(map, 'operationRequestId'),
       operationRequestFingerprint:
           _optionalString(map, 'operationRequestFingerprint'),
+      accountingClassification: map['accountingClassification'] == null
+          ? null
+          : ExpenseAccountingClassification.values
+              .byName(_string(map, 'accountingClassification')),
+    );
+  }
+
+  ProfitabilityActivation _parseProfitabilityActivation(Object? value) {
+    if (value == null) return const ProfitabilityActivation.notActivated();
+    final map = _map(value);
+    final status =
+        ProfitabilityActivationStatus.values.byName(_string(map, 'status'));
+    if (status == ProfitabilityActivationStatus.profitabilityNotActivated) {
+      return const ProfitabilityActivation.notActivated();
+    }
+    return ProfitabilityActivation.activated(
+      activationDate: _date(map, 'activationDate'),
+      approvedAt: _date(map, 'approvedAt'),
+      approvedByUserId: _string(map, 'approvedByUserId'),
+      evidenceNote: _string(map, 'evidenceNote'),
+    );
+  }
+
+  InventoryValuationState _parseInventoryValuationState(Object? value) {
+    final map = _map(value);
+    return InventoryValuationState(
+      productId: _string(map, 'productId'),
+      quantityKg: _int(map, 'quantityKg'),
+      totalValueQirsh: _int(map, 'totalValueQirsh'),
+      updatedAt: _date(map, 'updatedAt'),
+      lastEventId: _string(map, 'lastEventId'),
+    );
+  }
+
+  InventoryValuationEvent _parseInventoryValuationEvent(Object? value) {
+    final map = _map(value);
+    return InventoryValuationEvent(
+      id: _string(map, 'id'),
+      productId: _string(map, 'productId'),
+      type: InventoryValuationEventType.values.byName(_string(map, 'type')),
+      quantityBeforeKg: _int(map, 'quantityBeforeKg'),
+      quantityDeltaKg: _int(map, 'quantityDeltaKg'),
+      quantityAfterKg: _int(map, 'quantityAfterKg'),
+      valueBeforeQirsh: _int(map, 'valueBeforeQirsh'),
+      valueDeltaQirsh: _int(map, 'valueDeltaQirsh'),
+      valueAfterQirsh: _int(map, 'valueAfterQirsh'),
+      unitCostMicrosQirshPerKg: _int(map, 'unitCostMicrosQirshPerKg'),
+      allocationResidualNumerator: _int(map, 'allocationResidualNumerator'),
+      allocationResidualDenominator: _int(map, 'allocationResidualDenominator'),
+      sourceDocumentId: _string(map, 'sourceDocumentId'),
+      effectiveDate: _date(map, 'effectiveDate'),
+      createdAt: _date(map, 'createdAt'),
+      createdByUserId: _string(map, 'createdByUserId'),
+      reversalOfEventId: _optionalString(map, 'reversalOfEventId'),
+      reason: _optionalString(map, 'reason'),
+      evidenceReference: _optionalString(map, 'evidenceReference'),
     );
   }
 
@@ -1413,6 +1520,7 @@ class _RestoredBackupData {
     required this.financialClosings,
     required this.negativeBalanceApprovalRequests,
     required this.negativeBalanceApprovalRequestTransitions,
+    required this.inventoryValuation,
     required this.businessIdentity,
     required this.documentHistoryCount,
     this.logoRestoreWarning,
@@ -1443,6 +1551,7 @@ class _RestoredBackupData {
   final List<NegativeBalanceApprovalRequest> negativeBalanceApprovalRequests;
   final List<NegativeBalanceApprovalRequestTransition>
       negativeBalanceApprovalRequestTransitions;
+  final InventoryValuationRestoreData inventoryValuation;
   final BusinessIdentity businessIdentity;
   final int documentHistoryCount;
   final String? logoRestoreWarning;

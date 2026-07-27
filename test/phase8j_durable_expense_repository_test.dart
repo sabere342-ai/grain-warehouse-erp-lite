@@ -26,8 +26,9 @@ void main() {
     });
     var database = openDatabaseFile(file);
     var repository = DriftExpenseRepository(database);
-    expect(database.schemaVersion, 14);
+    expect(database.schemaVersion, 15);
     final created = await repository.createExpense(ExpenseDraft(
+      accountingClassification: ExpenseAccountingClassification.operating,
       date: DateTime.utc(2026, 7, 15, 18),
       category: ' نقل ',
       amountQirsh: 12550,
@@ -80,6 +81,7 @@ void main() {
     ]);
     final created = await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'وقود',
         amountQirsh: 1,
@@ -96,6 +98,7 @@ void main() {
     final repository = DriftExpenseRepository(database);
     final first = await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'أول',
         amountQirsh: 1,
@@ -107,6 +110,7 @@ void main() {
     await snapshot.capture();
     await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'يلغى',
         amountQirsh: 2,
@@ -118,6 +122,7 @@ void main() {
     expect((await repository.listExpenses()).single.id, first.id);
     final after = await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'بعد',
         amountQirsh: 3,
@@ -134,6 +139,7 @@ void main() {
     final repository = DriftExpenseRepository(database);
     await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'قبل',
         amountQirsh: 1,
@@ -145,6 +151,7 @@ void main() {
     expect(await repository.listExpenses(), isEmpty);
     final after = await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'بعد',
         amountQirsh: 1,
@@ -178,6 +185,7 @@ void main() {
     );
     await expectLater(
       repository.createExpense(ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'فشل مالي',
         amountQirsh: 1,
@@ -191,6 +199,7 @@ void main() {
     expect(await repository.listExpenses(), isEmpty);
     final after = await repository.createExpense(
       ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'بعد',
         amountQirsh: 1,
@@ -220,6 +229,7 @@ void main() {
     );
     await expectLater(
       repository.createExpense(ExpenseDraft(
+        accountingClassification: ExpenseAccountingClassification.operating,
         date: DateTime.utc(2026),
         category: 'فشل تدقيق',
         amountQirsh: 10,

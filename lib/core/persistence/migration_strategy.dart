@@ -121,6 +121,24 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
             .createTable(database.negativeBalanceApprovalRequestTransitions);
         await _createNegativeBalancePendingSignatureIndex(database);
       },
+      15: (migrator) async {
+        // Phase 102B is intentionally additive. No legacy quantity, purchase,
+        // reference cost, or sale data is converted into accounting cost.
+        // Absence of an activation row means profitabilityNotActivated.
+        await migrator.createTable(database.profitabilityActivations);
+        await migrator.createTable(database.inventoryValuationStates);
+        await migrator.createTable(database.inventoryValuationEvents);
+        if (!await _columnExists(
+          database,
+          'expenses',
+          'accounting_classification',
+        )) {
+          await migrator.addColumn(
+            database.expenses,
+            database.expenses.accountingClassification,
+          );
+        }
+      },
     };
 
 Future<void> _createNegativeBalancePendingSignatureIndex(

@@ -26,6 +26,8 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
   late final InventoryController _controller;
   late final bool _ownsController;
   final Map<String, TextEditingController> _actualControllers = {};
+  final Map<String, TextEditingController> _surplusCostControllers = {};
+  final Map<String, TextEditingController> _surplusEvidenceControllers = {};
   String? _errorMessage;
   bool _isApplying = false;
 
@@ -37,6 +39,11 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
           productRepository: AppRepositories.productRepository,
+          inventoryValuationRepository:
+              AppRepositories.inventoryValuationRepository,
+          financialAccountRepository:
+              AppRepositories.financialAccountRepository,
+          auditLogRepository: AppRepositories.auditLogRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -49,6 +56,12 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
   @override
   void dispose() {
     for (final c in _actualControllers.values) {
+      c.dispose();
+    }
+    for (final c in _surplusCostControllers.values) {
+      c.dispose();
+    }
+    for (final c in _surplusEvidenceControllers.values) {
       c.dispose();
     }
     if (_ownsController) {
@@ -77,7 +90,12 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
       animation: _controller,
       builder: (context, _) {
         return ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
           children: [
             GhalalPageHeader(
               title: 'جرد المخزون',
@@ -109,8 +127,24 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
                 icon: Icons.inventory_2_outlined,
               )
             else ...[
-              ..._controller.products.map(
-                (product) => _buildProductRow(product, textTheme),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const gap = AppSpacing.md;
+                  final columns = constraints.maxWidth >= 980 ? 2 : 1;
+                  final width =
+                      (constraints.maxWidth - gap * (columns - 1)) / columns;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (final product in _controller.products)
+                        SizedBox(
+                          width: width,
+                          child: _buildProductRow(product, textTheme),
+                        ),
+                    ],
+                  );
+                },
               ),
               if (_controller.products.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -198,6 +232,26 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
                 ),
               ],
             ),
+            if (variance > 0 && _controller.isProfitabilityActivated) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _surplusCostControllerFor(productId),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'تكلفة الفائض بالقروش لكل كجم *',
+                  helperText: 'قيمة صحيحة من فاتورة أو دليل موثوق',
+                ),
+                textDirection: TextDirection.ltr,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _surplusEvidenceControllerFor(productId),
+                decoration: const InputDecoration(
+                  labelText: 'مرجع دليل تكلفة الفائض *',
+                ),
+                textDirection: TextDirection.rtl,
+              ),
+            ],
           ],
         ),
       ),
@@ -210,6 +264,18 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
     }
     return _actualControllers[productId]!;
   }
+
+  TextEditingController _surplusCostControllerFor(String productId) =>
+      _surplusCostControllers.putIfAbsent(
+        productId,
+        TextEditingController.new,
+      );
+
+  TextEditingController _surplusEvidenceControllerFor(String productId) =>
+      _surplusEvidenceControllers.putIfAbsent(
+        productId,
+        TextEditingController.new,
+      );
 
   Future<void> _applyStockTake() async {
     final user = AuthScope.of(context).state.user;
@@ -243,12 +309,34 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
       final variance = actualKg - balanceKg;
       if (variance == 0) continue;
 
+      int? surplusCostQirshPerKg;
+      String? surplusEvidenceReference;
+      if (variance > 0 && _controller.isProfitabilityActivated) {
+        surplusCostQirshPerKg = int.tryParse(
+          _surplusCostControllers[productId]?.text.trim() ?? '',
+        );
+        surplusEvidenceReference =
+            _surplusEvidenceControllers[productId]?.text.trim();
+        if (surplusCostQirshPerKg == null ||
+            surplusCostQirshPerKg <= 0 ||
+            surplusEvidenceReference == null ||
+            surplusEvidenceReference.isEmpty) {
+          setState(() {
+            _errorMessage =
+                'أدخل تكلفة صحيحة ومرجع دليل موثوق لفائض ${product.name}.';
+          });
+          return;
+        }
+      }
+
       adjustments.add(_StockTakeAdjustment(
         product: product,
         productId: productId,
         balanceKg: balanceKg,
         actualKg: actualKg,
         variance: variance,
+        surplusUnitCostQirshPerKg: surplusCostQirshPerKg,
+        surplusEvidenceReference: surplusEvidenceReference,
       ));
     }
 
@@ -282,12 +370,16 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
               productId: adj.productId,
               quantityKg: quantityKg,
               note: _stockTakeAdjustmentNote,
+              unitCostQirshPerKg: adj.surplusUnitCostQirshPerKg,
+              evidenceReference: adj.surplusEvidenceReference,
+              isStocktake: true,
             )
           : await _controller.createManualDecrease(
               user: user,
               productId: adj.productId,
               quantityKg: quantityKg,
               note: _stockTakeAdjustmentNote,
+              isStocktake: true,
             );
 
       if (success) {
@@ -304,6 +396,12 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
       if (failCount == 0) {
         _errorMessage = null;
         for (final c in _actualControllers.values) {
+          c.clear();
+        }
+        for (final c in _surplusCostControllers.values) {
+          c.clear();
+        }
+        for (final c in _surplusEvidenceControllers.values) {
           c.clear();
         }
       }
@@ -331,6 +429,8 @@ class _StockTakeAdjustment {
     required this.balanceKg,
     required this.actualKg,
     required this.variance,
+    this.surplusUnitCostQirshPerKg,
+    this.surplusEvidenceReference,
   });
 
   final Product product;
@@ -338,6 +438,8 @@ class _StockTakeAdjustment {
   final int balanceKg;
   final int actualKg;
   final int variance;
+  final int? surplusUnitCostQirshPerKg;
+  final String? surplusEvidenceReference;
 }
 
 class _StockTakeConfirmationDialog extends StatelessWidget {

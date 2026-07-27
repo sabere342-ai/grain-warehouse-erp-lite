@@ -44,6 +44,28 @@ class ExpenseController extends ChangeNotifier {
     }
   }
 
+  Future<bool> reclassifyExpense({
+    required AppUser user,
+    required String expenseId,
+    required ExpenseAccountingClassification classification,
+    required String reason,
+  }) async {
+    try {
+      await _repository.reclassifyExpense(
+        user: user,
+        expenseId: expenseId,
+        classification: classification,
+        reason: reason,
+      );
+      await loadExpenses(user);
+      return true;
+    } catch (error) {
+      _errorMessage = _messageForError(error);
+      notifyListeners();
+      return false;
+    }
+  }
+
   bool _canCreate(AppUser user) {
     if (!user.canProceed) {
       _errorMessage = 'يجب تسجيل الدخول بمستخدم صالح.';

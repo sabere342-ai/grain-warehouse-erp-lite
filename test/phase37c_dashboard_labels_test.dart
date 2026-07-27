@@ -206,6 +206,7 @@ void main() {
 
       test('todayExpensesQirsh filters by date', () async {
         await expenseRepo.createExpense(ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: DateTime.now(),
           category: 'إيجار',
           amountQirsh: 5000,
@@ -302,6 +303,7 @@ void main() {
 
         final oldDate = DateTime(2020, 1, 1);
         await expenseRepo.createExpense(ExpenseDraft(
+          accountingClassification: ExpenseAccountingClassification.operating,
           date: oldDate,
           category: 'قديم',
           amountQirsh: 99999,

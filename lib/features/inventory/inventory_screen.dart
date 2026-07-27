@@ -36,6 +36,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
           productRepository: AppRepositories.productRepository,
+          inventoryValuationRepository:
+              AppRepositories.inventoryValuationRepository,
+          financialAccountRepository:
+              AppRepositories.financialAccountRepository,
+          auditLogRepository: AppRepositories.auditLogRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -229,6 +234,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       builder: (context) => _MovementFormDialog(
         products: _controller.products,
         hasOpeningBalance: _controller.hasOpeningBalance,
+        requiresValuation: _controller.isProfitabilityActivated,
       ),
     );
 
@@ -258,6 +264,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
           productId: draft.productId,
           quantityKg: draft.quantityKg,
           note: draft.note,
+          unitCostQirshPerKg: draft.unitCostQirshPerKg,
+          evidenceReference: draft.evidenceReference,
         );
       case StockMovementType.manualDecrease:
         await _controller.createManualDecrease(
@@ -492,10 +500,12 @@ class _MovementFormDialog extends StatefulWidget {
   const _MovementFormDialog({
     required this.products,
     required this.hasOpeningBalance,
+    required this.requiresValuation,
   });
 
   final List<Product> products;
   final bool Function(String productId) hasOpeningBalance;
+  final bool requiresValuation;
 
   @override
   State<_MovementFormDialog> createState() => _MovementFormDialogState();
@@ -507,12 +517,16 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
   GrainUnit _inputUnit = GrainUnit.kilogram;
   final _quantityController = TextEditingController();
   final _noteController = TextEditingController();
+  final _unitCostController = TextEditingController();
+  final _evidenceController = TextEditingController();
   String? _errorMessage;
 
   @override
   void dispose() {
     _quantityController.dispose();
     _noteController.dispose();
+    _unitCostController.dispose();
+    _evidenceController.dispose();
     super.dispose();
   }
 
@@ -604,6 +618,26 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
+          if (_movementType == StockMovementType.manualIncrease &&
+              widget.requiresValuation) ...[
+            TextField(
+              controller: _unitCostController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'تكلفة الزيادة بالقروش لكل كجم *',
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: _evidenceController,
+              decoration: const InputDecoration(
+                labelText: 'مرجع دليل التكلفة *',
+              ),
+              textDirection: TextDirection.rtl,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           TextField(
             controller: _noteController,
             decoration: const InputDecoration(
@@ -627,7 +661,9 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
           onPressed: () => GhalalResponsiveDialog.requestClose(
             context,
             isDirty: _quantityController.text.isNotEmpty ||
-                _noteController.text.isNotEmpty,
+                _noteController.text.isNotEmpty ||
+                _unitCostController.text.isNotEmpty ||
+                _evidenceController.text.isNotEmpty,
           ),
           child: const Text('إلغاء'),
         ),
@@ -642,7 +678,8 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
   List<StockMovementType> _availableMovementTypes() {
     final hasOpening = widget.hasOpeningBalance(_productId);
     return [
-      if (!hasOpening) StockMovementType.openingBalance,
+      if (!hasOpening && !widget.requiresValuation)
+        StockMovementType.openingBalance,
       StockMovementType.manualIncrease,
       StockMovementType.manualDecrease,
     ];
@@ -652,6 +689,22 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
     final quantity = int.tryParse(_quantityController.text.trim());
     if (quantity == null || quantity <= 0) {
       setState(() => _errorMessage = 'اكتب كمية صحيحة أكبر من صفر.');
+      return;
+    }
+    if ((_movementType == StockMovementType.manualIncrease ||
+            _movementType == StockMovementType.manualDecrease) &&
+        _noteController.text.trim().isEmpty) {
+      setState(() => _errorMessage = 'اكتب سبب حركة التسوية.');
+      return;
+    }
+    final unitCost = int.tryParse(_unitCostController.text.trim());
+    if (_movementType == StockMovementType.manualIncrease &&
+        widget.requiresValuation &&
+        (unitCost == null ||
+            unitCost <= 0 ||
+            _evidenceController.text.trim().isEmpty)) {
+      setState(
+          () => _errorMessage = 'أدخل تكلفة صحيحة ومرجع دليل موثوق للزيادة.');
       return;
     }
 
@@ -665,6 +718,8 @@ class _MovementFormDialogState extends State<_MovementFormDialog> {
         movementType: _movementType,
         quantityKg: quantityKg,
         note: _noteController.text,
+        unitCostQirshPerKg: unitCost,
+        evidenceReference: _evidenceController.text.trim(),
       ),
     );
   }
@@ -676,10 +731,14 @@ class _MovementFormResult {
     required this.movementType,
     required this.quantityKg,
     this.note,
+    this.unitCostQirshPerKg,
+    this.evidenceReference,
   });
 
   final String productId;
   final StockMovementType movementType;
   final int quantityKg;
   final String? note;
+  final int? unitCostQirshPerKg;
+  final String? evidenceReference;
 }

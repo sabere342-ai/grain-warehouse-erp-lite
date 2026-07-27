@@ -26,6 +26,10 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/drift_inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/drift_inventory_valuation_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/profitability_activation_service.dart';
+import 'package:grain_warehouse_erp_lite/core/profitability/profitability_report_service.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/drift_purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
@@ -150,6 +154,7 @@ class AppRepositories {
       database,
       productRepository: productRepository,
     );
+    _inventoryValuationRepository = DriftInventoryValuationRepository(database);
     _purchaseRepository = DriftPurchaseRepository(
       database,
       supplierRepository: supplierRepository,
@@ -158,11 +163,14 @@ class AppRepositories {
       supplierAccountRepository: supplierAccountRepository,
       financialAccountRepository: financialAccountRepository,
       auditLogRepository: auditLogRepository,
+      inventoryValuationRepository: inventoryValuationRepository,
     );
     _saleRepository = DriftSaleRepository(
       database,
       productRepository: productRepository,
       inventoryRepository: inventoryRepository,
+      inventoryValuationRepository: inventoryValuationRepository,
+      financialAccountRepository: financialAccountRepository,
     );
   }
 
@@ -174,6 +182,27 @@ class AppRepositories {
   );
   static DurableInventoryRepository get inventoryRepository =>
       _inventoryRepository;
+
+  static DurableInventoryValuationRepository _inventoryValuationRepository =
+      LocalInventoryValuationRepository();
+  static DurableInventoryValuationRepository get inventoryValuationRepository =>
+      _inventoryValuationRepository;
+
+  static ProfitabilityActivationService get profitabilityActivationService =>
+      ProfitabilityActivationService(
+        productRepository: productRepository,
+        inventoryRepository: inventoryRepository,
+        valuationRepository: inventoryValuationRepository,
+        auditLogRepository: auditLogRepository,
+        ensureDateOpen: financialAccountRepository.ensureDateIsOpen,
+      );
+
+  static ProfitabilityReportService get profitabilityReportService =>
+      ProfitabilityReportService(
+        inventoryValuationRepository: inventoryValuationRepository,
+        saleRepository: saleRepository,
+        expenseRepository: expenseRepository,
+      );
 
   static DurableSupplierAccountRepository supplierAccountRepository =
       LocalSupplierAccountRepository(
@@ -190,11 +219,14 @@ class AppRepositories {
     inventoryRepository: inventoryRepository,
     supplierAccountRepository: supplierAccountRepository,
     financialAccountRepository: financialAccountRepository,
+    inventoryValuationRepository: inventoryValuationRepository,
   );
 
   static DurableSaleRepository _saleRepository = LocalSaleRepository(
     productRepository: productRepository,
     inventoryRepository: inventoryRepository,
+    inventoryValuationRepository: inventoryValuationRepository,
+    financialAccountRepository: financialAccountRepository,
   );
   static DurableSaleRepository get saleRepository => _saleRepository;
 
@@ -232,6 +264,7 @@ class AppRepositories {
         financialAccountRepository: financialAccountRepository,
         negativeBalanceApprovalRequestRepository:
             negativeBalanceApprovalRequestRepository,
+        inventoryValuationRepository: inventoryValuationRepository,
       );
   static DurablePurchaseRepository get purchaseRepository =>
       _purchaseRepository;
@@ -270,6 +303,7 @@ class AppRepositories {
         financialAccountRepository: financialAccountRepository,
         negativeBalanceApprovalRequestRepository:
             negativeBalanceApprovalRequestRepository,
+        inventoryValuationRepository: inventoryValuationRepository,
       );
 
   static BusinessDataWipeService get businessDataWipeService =>
@@ -290,5 +324,6 @@ class AppRepositories {
         financialAccountRepository: financialAccountRepository,
         negativeBalanceApprovalRequestRepository:
             negativeBalanceApprovalRequestRepository,
+        inventoryValuationRepository: inventoryValuationRepository,
       );
 }

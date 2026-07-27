@@ -25,6 +25,8 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balanc
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
@@ -53,6 +55,7 @@ class BackupExportService {
     FinancialAccountRepository? financialAccountRepository,
     NegativeBalanceApprovalRequestRepository?
         negativeBalanceApprovalRequestRepository,
+    DurableInventoryValuationRepository? inventoryValuationRepository,
     DateTime Function()? now,
   })  : _productRepository = productRepository,
         _inventoryRepository = inventoryRepository,
@@ -70,9 +73,11 @@ class BackupExportService {
         _negativeBalanceApprovalRequestRepository =
             negativeBalanceApprovalRequestRepository ??
                 LocalNegativeBalanceApprovalRequestRepository(),
+        _inventoryValuationRepository =
+            inventoryValuationRepository ?? LocalInventoryValuationRepository(),
         _now = now;
 
-  static const int backupVersion = 7;
+  static const int backupVersion = 8;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
@@ -89,6 +94,7 @@ class BackupExportService {
   final FinancialAccountRepository? _financialAccountRepository;
   final NegativeBalanceApprovalRequestRepository
       _negativeBalanceApprovalRequestRepository;
+  final DurableInventoryValuationRepository _inventoryValuationRepository;
   final DateTime Function()? _now;
 
   Future<BackupExportResult> createBackup() async {
@@ -148,6 +154,7 @@ class BackupExportService {
         await _negativeBalanceApprovalRequestRepository.listAll();
     final negativeBalanceApprovalRequestTransitions =
         await _negativeBalanceApprovalRequestRepository.listTransitions();
+    final valuation = await _inventoryValuationRepository.exportRestoreData();
     final businessIdentity =
         await _businessIdentityRepository?.loadIdentity() ??
             BusinessIdentity.empty;
@@ -248,6 +255,14 @@ class BackupExportService {
             negativeBalanceApprovalRequestTransitions
                 .map(_negativeBalanceApprovalRequestTransitionToJson)
                 .toList(growable: false),
+        'profitabilityActivation':
+            _profitabilityActivationToJson(valuation.activation),
+        'inventoryValuationStates': valuation.states
+            .map(_inventoryValuationStateToJson)
+            .toList(growable: false),
+        'inventoryValuationEvents': valuation.events
+            .map(_inventoryValuationEventToJson)
+            .toList(growable: false),
         'settings': {
           'businessIdentity': await _identityWithLogoJson(businessIdentity),
         },
@@ -387,6 +402,16 @@ class BackupExportService {
       'quantityKg': item.quantityKg,
       'salePriceQirshPerKg': item.salePriceQirshPerKg,
       'lineTotalQirsh': item.lineTotalQirsh,
+      'valuationEventId': item.valuationEventId,
+      'unitCostMicrosQirshPerKg': item.unitCostMicrosQirshPerKg,
+      'costOfGoodsSoldQirsh': item.costOfGoodsSoldQirsh,
+      'inventoryQuantityBeforeKg': item.inventoryQuantityBeforeKg,
+      'inventoryQuantityAfterKg': item.inventoryQuantityAfterKg,
+      'inventoryValueBeforeQirsh': item.inventoryValueBeforeQirsh,
+      'inventoryValueAfterQirsh': item.inventoryValueAfterQirsh,
+      'costAllocationResidualNumerator': item.costAllocationResidualNumerator,
+      'costAllocationResidualDenominator':
+          item.costAllocationResidualDenominator,
     };
   }
 
@@ -646,8 +671,56 @@ class BackupExportService {
       'createdByUserId': expense.createdByUserId,
       'operationRequestId': expense.operationRequestId,
       'operationRequestFingerprint': expense.operationRequestFingerprint,
+      'accountingClassification': expense.accountingClassification?.name,
     };
   }
+
+  Map<String, Object?> _profitabilityActivationToJson(
+    ProfitabilityActivation value,
+  ) =>
+      {
+        'status': value.status.name,
+        'activationDate': value.activationDate?.toUtc().toIso8601String(),
+        'approvedAt': value.approvedAt?.toUtc().toIso8601String(),
+        'approvedByUserId': value.approvedByUserId,
+        'evidenceNote': value.evidenceNote,
+      };
+
+  Map<String, Object?> _inventoryValuationStateToJson(
+    InventoryValuationState value,
+  ) =>
+      {
+        'productId': value.productId,
+        'quantityKg': value.quantityKg,
+        'totalValueQirsh': value.totalValueQirsh,
+        'updatedAt': value.updatedAt.toUtc().toIso8601String(),
+        'lastEventId': value.lastEventId,
+      };
+
+  Map<String, Object?> _inventoryValuationEventToJson(
+    InventoryValuationEvent value,
+  ) =>
+      {
+        'id': value.id,
+        'productId': value.productId,
+        'type': value.type.name,
+        'quantityBeforeKg': value.quantityBeforeKg,
+        'quantityDeltaKg': value.quantityDeltaKg,
+        'quantityAfterKg': value.quantityAfterKg,
+        'valueBeforeQirsh': value.valueBeforeQirsh,
+        'valueDeltaQirsh': value.valueDeltaQirsh,
+        'valueAfterQirsh': value.valueAfterQirsh,
+        'unitCostMicrosQirshPerKg': value.unitCostMicrosQirshPerKg,
+        'allocationResidualNumerator': value.allocationResidualNumerator,
+        'allocationResidualDenominator': value.allocationResidualDenominator,
+        'sourceDocumentId': value.sourceDocumentId,
+        'effectiveDate': value.effectiveDate.toUtc().toIso8601String(),
+        'createdAt': value.createdAt.toUtc().toIso8601String(),
+        'createdByUserId': value.createdByUserId,
+        'reversalOfEventId': value.reversalOfEventId,
+        'reason': value.reason,
+        'evidenceReference': value.evidenceReference,
+      };
 
   Map<String, Object?> _auditLogToJson(AuditLogEntry entry) {
     return {

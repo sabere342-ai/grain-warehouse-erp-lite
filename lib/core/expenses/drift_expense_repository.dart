@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
@@ -37,6 +39,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
   Future<ExpenseRecord> createExpense(ExpenseDraft draft) async {
     _validateDraft(draft);
     await _validateNewPaymentRoute(draft);
+    await _financialAccountRepository?.ensureDateIsOpen(draft.date);
     final requestId = _optional(draft.operationRequestId)!;
     final fingerprint = _expenseFingerprint(draft);
     final replay = await (_database.select(_database.expenses)
@@ -79,6 +82,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         paymentMethod: draft.paymentMethod,
         operationRequestId: requestId,
         operationRequestFingerprint: fingerprint,
+        accountingClassification: draft.accountingClassification,
       );
       await _database.into(_database.expenses).insert(_companion(expense));
       if (financialRepository != null &&
@@ -121,6 +125,42 @@ class DriftExpenseRepository implements DurableExpenseRepository {
       ..where(_database.expenses.date.isBiggerOrEqualValue(start) &
           _database.expenses.date.isSmallerThanValue(end));
     return (await query.getSingle()).read(amount) ?? 0;
+  }
+
+  @override
+  Future<ExpenseRecord> reclassifyExpense({
+    required AppUser user,
+    required String expenseId,
+    required ExpenseAccountingClassification classification,
+    required String reason,
+  }) async {
+    if (user.role != UserRole.owner) {
+      throw StateError('Only the owner can reclassify historical expenses.');
+    }
+    final normalizedReason = _optional(reason);
+    if (normalizedReason == null) {
+      throw ArgumentError.value(reason, 'reason', 'Reason is required.');
+    }
+    final row = await (_database.select(_database.expenses)
+          ..where((value) => value.id.equals(expenseId)))
+        .getSingleOrNull();
+    if (row == null) throw StateError('Expense was not found.');
+    final previous = _toDomain(row);
+    final updated = previous.copyWithAccountingClassification(classification);
+    return RepositoryTransaction.execute([createTransactionSnapshot()],
+        () async {
+      await (_database.update(_database.expenses)
+            ..where((value) => value.id.equals(expenseId)))
+          .write(_companion(updated));
+      await _auditLogRepository.record(AuditLogDraft(
+        actionType: 'expense.accountingClassification.changed',
+        descriptionAr:
+            'تغيير تصنيف المصروف من ${previous.accountingClassification?.name ?? 'غير مصنف'} إلى ${classification.name}. السبب: $normalizedReason',
+        referenceId: expenseId,
+        actorId: user.id,
+      ));
+      return updated;
+    });
   }
 
   @override
@@ -184,6 +224,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         createdByUserId: Value(expense.createdByUserId),
         operationRequestId: Value(expense.operationRequestId),
         operationRequestFingerprint: Value(expense.operationRequestFingerprint),
+        accountingClassification: Value(expense.accountingClassification?.name),
       );
 
   ExpenseRecord _toDomain(db.ExpenseRow row) => ExpenseRecord(
@@ -198,6 +239,10 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         paymentMethod: _decodePaymentMethod(row.paymentMethod),
         operationRequestId: row.operationRequestId,
         operationRequestFingerprint: row.operationRequestFingerprint,
+        accountingClassification: row.accountingClassification == null
+            ? null
+            : ExpenseAccountingClassification.values
+                .byName(row.accountingClassification!),
       );
 
   PaymentMethod? _decodePaymentMethod(String? value) {
@@ -282,6 +327,7 @@ class DriftExpenseRepository implements DurableExpenseRepository {
         draft.financialAccountId?.trim() ?? '',
         draft.paymentMethod?.name ?? '',
         draft.createdByUserId.trim(),
+        draft.accountingClassification.name,
       ].join('|');
 }
 

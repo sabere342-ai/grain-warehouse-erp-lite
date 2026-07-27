@@ -4,6 +4,8 @@ import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.da
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 
 class MinimumSalePriceViolation implements Exception {
@@ -41,13 +43,19 @@ class LocalSaleRepository implements DurableSaleRepository {
   LocalSaleRepository({
     required ProductRepository productRepository,
     required InventoryRepository inventoryRepository,
+    InventoryValuationRepository? inventoryValuationRepository,
+    FinancialAccountRepository? financialAccountRepository,
   })  : _productRepository = productRepository,
-        _inventoryRepository = inventoryRepository;
+        _inventoryRepository = inventoryRepository,
+        _inventoryValuationRepository = inventoryValuationRepository,
+        _financialAccountRepository = financialAccountRepository;
 
   static const int _maxSafeTotalQirsh = 9223372036854775807;
 
   final ProductRepository _productRepository;
   final InventoryRepository _inventoryRepository;
+  final InventoryValuationRepository? _inventoryValuationRepository;
+  final FinancialAccountRepository? _financialAccountRepository;
   final List<SaleRecord> _sales = [];
   final Map<String, String> _operationRequestIds = {};
   int _generatedIdCounter = 0;
@@ -74,6 +82,7 @@ class LocalSaleRepository implements DurableSaleRepository {
 
     final now = DateTime.now();
     final saleId = _generateSaleId(now);
+    await _financialAccountRepository?.ensureDateIsOpen(now);
 
     final customerId = _normalizedOptionalText(draft.customerId);
 
@@ -85,8 +94,16 @@ class LocalSaleRepository implements DurableSaleRepository {
       throw stockCheck;
     }
 
-    final movementIds = <String>[];
-    try {
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    snapshots.add(_requiredSnapshot(_inventoryRepository, 'inventory'));
+    if (_inventoryValuationRepository != null) {
+      snapshots.add(_requiredSnapshot(
+          _inventoryValuationRepository, 'inventory valuation'));
+    }
+
+    return RepositoryTransaction.execute(snapshots, () async {
+      final movementIds = <String>[];
+      final costedItems = <SaleLineItem>[];
       for (final item in items) {
         final product = await _validateProduct(item.productId);
         final movement = await _inventoryRepository.createMovement(
@@ -100,53 +117,73 @@ class LocalSaleRepository implements DurableSaleRepository {
           ),
         );
         movementIds.add(movement.id);
+        final cost = await _inventoryValuationRepository?.recordSale(
+          productId: item.productId,
+          quantityKg: item.quantityKg,
+          sourceDocumentId: saleId,
+          effectiveDate: now,
+          createdByUserId: draft.createdByUserId.trim(),
+        );
+        costedItems.add(cost == null
+            ? item
+            : item.copyWithCostSnapshot(
+                valuationEventId: cost.valuationEventId,
+                unitCostMicrosQirshPerKg: cost.unitCostMicrosQirshPerKg,
+                costOfGoodsSoldQirsh: cost.costOfGoodsSoldQirsh,
+                inventoryQuantityBeforeKg: cost.inventoryQuantityBeforeKg,
+                inventoryQuantityAfterKg: cost.inventoryQuantityAfterKg,
+                inventoryValueBeforeQirsh: cost.inventoryValueBeforeQirsh,
+                inventoryValueAfterQirsh: cost.inventoryValueAfterQirsh,
+                costAllocationResidualNumerator:
+                    cost.allocationResidualNumerator,
+                costAllocationResidualDenominator:
+                    cost.allocationResidualDenominator,
+              ));
       }
-    } catch (_) {
-      rethrow;
-    }
 
-    final paidAmountQirsh = _resolvePaidAmount(draft, totalQirsh);
-    final paymentAllocations = _resolvePaymentAllocations(
-      draft,
-      paidAmountQirsh,
-    );
-    final sale = SaleRecord(
-      id: saleId,
-      productId: items.first.productId,
-      quantityKg: items.first.quantityKg,
-      salePriceQirshPerKg: items.first.salePriceQirshPerKg,
-      totalQirsh: totalQirsh,
-      createdByUserId: draft.createdByUserId.trim(),
-      createdByUserName: _normalizedOptionalText(draft.createdByUserName),
-      createdAt: now,
-      stockMovementId: movementIds.first,
-      paymentMode: draft.paymentMode,
-      customerId: customerId,
-      notes: _normalizedOptionalText(draft.notes),
-      items: items,
-      paidAmountQirsh: paidAmountQirsh,
-      financialAccountId: paymentAllocations.length == 1
-          ? paymentAllocations.single.financialAccountId
-          : null,
-      paymentMethod: paymentAllocations.length == 1
-          ? paymentAllocations.single.paymentMethod
-          : null,
-      paymentAllocations: paymentAllocations,
-      operationRequestId: operationRequestId,
-    );
+      final paidAmountQirsh = _resolvePaidAmount(draft, totalQirsh);
+      final paymentAllocations = _resolvePaymentAllocations(
+        draft,
+        paidAmountQirsh,
+      );
+      final sale = SaleRecord(
+        id: saleId,
+        productId: items.first.productId,
+        quantityKg: items.first.quantityKg,
+        salePriceQirshPerKg: items.first.salePriceQirshPerKg,
+        totalQirsh: totalQirsh,
+        createdByUserId: draft.createdByUserId.trim(),
+        createdByUserName: _normalizedOptionalText(draft.createdByUserName),
+        createdAt: now,
+        stockMovementId: movementIds.first,
+        paymentMode: draft.paymentMode,
+        customerId: customerId,
+        notes: _normalizedOptionalText(draft.notes),
+        items: costedItems,
+        paidAmountQirsh: paidAmountQirsh,
+        financialAccountId: paymentAllocations.length == 1
+            ? paymentAllocations.single.financialAccountId
+            : null,
+        paymentMethod: paymentAllocations.length == 1
+            ? paymentAllocations.single.paymentMethod
+            : null,
+        paymentAllocations: paymentAllocations,
+        operationRequestId: operationRequestId,
+      );
 
-    if (!sale.hasValidId) {
-      throw StateError('Sale id is required.');
-    }
-    if (sale.stockMovementId.trim().isEmpty) {
-      throw StateError('Sale stock movement id is required.');
-    }
+      if (!sale.hasValidId) {
+        throw StateError('Sale id is required.');
+      }
+      if (sale.stockMovementId.trim().isEmpty) {
+        throw StateError('Sale stock movement id is required.');
+      }
 
-    _sales.add(sale);
-    if (operationRequestId != null) {
-      _operationRequestIds[operationRequestId] = sale.id;
-    }
-    return sale;
+      _sales.add(sale);
+      if (operationRequestId != null) {
+        _operationRequestIds[operationRequestId] = sale.id;
+      }
+      return sale;
+    });
   }
 
   @override
@@ -192,34 +229,53 @@ class LocalSaleRepository implements DurableSaleRepository {
             ),
           ];
 
-    final reversalIds = <String>[];
-    for (final item in items) {
-      final reversal = await _inventoryRepository.createMovement(
-        StockMovementDraft(
-          productId: item.productId,
-          movementType: StockMovementType.saleCancellation,
-          quantityKg: item.quantityKg,
-          createdByUserId: userId,
-          note:
-              '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 ${sale.id}: $reason',
-          reversedMovementId: sale.stockMovementId,
+    final cancelledAt = DateTime.now();
+    await _financialAccountRepository?.ensureDateIsOpen(cancelledAt);
+    final snapshots = <SnapshotHolder>[createTransactionSnapshot()];
+    snapshots.add(_requiredSnapshot(_inventoryRepository, 'inventory'));
+    if (_inventoryValuationRepository != null) {
+      snapshots.add(_requiredSnapshot(
+          _inventoryValuationRepository, 'inventory valuation'));
+    }
+    return RepositoryTransaction.execute(snapshots, () async {
+      final reversalIds = <String>[];
+      for (final item in items) {
+        final reversal = await _inventoryRepository.createMovement(
+          StockMovementDraft(
+            productId: item.productId,
+            movementType: StockMovementType.saleCancellation,
+            quantityKg: item.quantityKg,
+            createdByUserId: userId,
+            note:
+                '\u0625\u0644\u063a\u0627\u0621 \u0628\u064a\u0639 ${sale.id}: $reason',
+            reversedMovementId: sale.stockMovementId,
+            originalDocumentId: sale.id,
+          ),
+        );
+        reversalIds.add(reversal.id);
+        if (item.valuationEventId != null) {
+          await _inventoryValuationRepository?.reverseSale(
+            originalValuationEventId: item.valuationEventId!,
+            sourceDocumentId: sale.id,
+            effectiveDate: cancelledAt,
+            createdByUserId: userId,
+            reason: reason,
+          );
+        }
+      }
+
+      final cancelled = sale.copyWith(
+        cancellation: CancellationMetadata(
+          cancelledAt: cancelledAt,
+          cancelledByUserId: userId,
+          cancellationReason: reason,
           originalDocumentId: sale.id,
+          reversalMovementIds: reversalIds,
         ),
       );
-      reversalIds.add(reversal.id);
-    }
-
-    final cancelled = sale.copyWith(
-      cancellation: CancellationMetadata(
-        cancelledAt: DateTime.now(),
-        cancelledByUserId: userId,
-        cancellationReason: reason,
-        originalDocumentId: sale.id,
-        reversalMovementIds: reversalIds,
-      ),
-    );
-    _sales[saleIndex] = cancelled;
-    return cancelled;
+      _sales[saleIndex] = cancelled;
+      return cancelled;
+    });
   }
 
   @override
@@ -272,6 +328,14 @@ class LocalSaleRepository implements DurableSaleRepository {
           _generatedIdCounter = state.$3;
         },
       );
+
+  SnapshotHolder _requiredSnapshot(Object repository, String name) {
+    if (repository is! TransactionSnapshotProvider) {
+      throw StateError(
+          'Sale $name repository cannot participate in a transaction.');
+    }
+    return repository.createTransactionSnapshot();
+  }
 
   List<SaleLineItem> _buildItems(SaleDraft draft) {
     if (draft.items.isNotEmpty) {
