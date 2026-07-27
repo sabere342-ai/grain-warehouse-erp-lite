@@ -31,6 +31,11 @@ void main() {
       await tester.pumpWidget(_dashboardHarness(user: _owner));
       await _pumpExpectedState(tester);
 
+      await tester.scrollUntilVisible(
+        find.text('تصدير نسخة احتياطية'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('النسخ الاحتياطي'), findsOneWidget);
       expect(find.text('تصدير نسخة احتياطية'), findsOneWidget);
 

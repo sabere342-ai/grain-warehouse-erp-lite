@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
+import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_route_scaffold.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
@@ -88,8 +89,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => StockTakeScreen(
-                            controller: _controller,
+                          builder: (_) => GhalalRouteScaffold(
+                            scaffoldKey: const Key('stock-take-route-scaffold'),
+                            child: StockTakeScreen(
+                              controller: _controller,
+                            ),
                           ),
                         ),
                       );

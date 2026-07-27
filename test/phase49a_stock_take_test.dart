@@ -193,6 +193,47 @@ void main() {
           find.byKey(const ValueKey('stock-take-back-button')), findsOneWidget);
     });
 
+    for (final brightness in Brightness.values) {
+      testWidgets(
+          'inventory route paints the $brightness stock-take theme surface',
+          (tester) async {
+        final auth = await _signedInController(
+          phone: '01000000000',
+          password: 'owner123',
+        );
+        final products = LocalProductRepository();
+        final controller = InventoryController(
+          inventoryRepository: LocalInventoryRepository(
+            productRepository: products,
+          ),
+          productRepository: products,
+        );
+        await controller.load(_owner);
+        final theme =
+            brightness == Brightness.light ? AppTheme.light : AppTheme.dark;
+
+        await tester.pumpWidget(
+          _inventoryHarness(
+            auth: auth,
+            controller: controller,
+            theme: theme,
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.balance_rounded));
+        await tester.pumpAndSettle();
+
+        final routeScaffold = tester.widget<Scaffold>(
+          find.byKey(const Key('stock-take-route-scaffold')),
+        );
+        expect(routeScaffold.backgroundColor, theme.scaffoldBackgroundColor);
+        if (brightness == Brightness.light) {
+          expect(routeScaffold.backgroundColor, isNot(Colors.black));
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+
     testWidgets(
         'back control pops the inventory route once without creating a write',
         (tester) async {
@@ -667,11 +708,12 @@ Widget _stockTakeHarness({
 Widget _inventoryHarness({
   required AuthController auth,
   required InventoryController controller,
+  ThemeData? theme,
 }) {
   return AuthScope(
     controller: auth,
     child: MaterialApp(
-      theme: AppTheme.light,
+      theme: theme ?? AppTheme.light,
       locale: const Locale('ar'),
       builder: (context, child) => Directionality(
         textDirection: TextDirection.rtl,

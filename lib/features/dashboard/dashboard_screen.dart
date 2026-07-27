@@ -109,10 +109,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            if (ownerCanExport) ...[
-              const _BackupExportCard(),
-              const SizedBox(height: 16),
-            ],
             if (!canViewDashboardData)
               const PremiumCard(
                 child: Text('ملخصات لوحة المتابعة المالية متاحة للمالك فقط.'),
@@ -139,6 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             else ...[
               Text(
                 'ملخص التشغيل اليومي',
+                key: const Key('dashboard-daily-summary-section-title'),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -230,6 +227,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   'الأرقام هنا للمتابعة السريعة فقط. راجع شاشة المخزون وسجل المستندات قبل أي قرار مؤثر على الكميات.',
                 ),
               ),
+            if (ownerCanExport) ...[
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'أدوات الإدارة',
+                key: const Key('dashboard-administration-section-title'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              const _BackupExportCard(),
+            ],
           ],
         );
       },
@@ -243,6 +250,7 @@ class _BackupExportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PremiumCard(
+      key: const Key('dashboard-backup-administration-card'),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
