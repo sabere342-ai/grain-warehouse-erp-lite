@@ -79,7 +79,7 @@ void main() {
             .totalValueQirsh,
         25000,
       );
-      final logs = await fixture.audit.listLogs();
+      final logs = await fixture.audit.exportStoredAuditLogs();
       expect(logs.single.actionType, 'profitability.activated');
       expect(logs.single.metadata['productCount'], 1);
     });

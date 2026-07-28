@@ -311,7 +311,11 @@ ExpenseRecord _expense(
 class _FailingAuditRepository
     implements AuditLogRepository, TransactionSnapshotProvider {
   @override
-  Future<List<AuditLogEntry>> listLogs() async => const [];
+  Future<bool> hasRecordedAction({
+    required String actionType,
+    required String referenceId,
+  }) async =>
+      false;
 
   @override
   Future<AuditLogEntry> record(AuditLogDraft draft) {

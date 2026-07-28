@@ -247,7 +247,7 @@ class BackupRestoreService {
         await _supplierAccountRepository.listEntries();
     final supplierPayments = await _supplierAccountRepository.listPayments();
     final expenses = await _expenseRepository.listExpenses();
-    final auditLogs = await _auditLogRepository.listLogs();
+    final auditLogs = await _auditLogRepository.exportStoredAuditLogs();
     final financialAccounts =
         await _financialAccountRepository.listAccounts(includeInactive: true);
     final negativeBalanceApprovalRequests =

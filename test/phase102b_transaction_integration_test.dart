@@ -138,7 +138,7 @@ void main() {
       final events = await fixture.valuation.listEvents();
       expect(events[1].type, InventoryValuationEventType.stocktakeSurplus);
       expect(events[2].type, InventoryValuationEventType.stocktakeShortage);
-      expect(await audit.listLogs(), hasLength(2));
+      expect(await audit.exportStoredAuditLogs(), hasLength(2));
     });
 
     test(
@@ -172,7 +172,7 @@ void main() {
       );
       expect(updated.affectsOperatingProfit, isTrue);
       expect(
-        (await audit.listLogs()).map((entry) => entry.actionType),
+        (await audit.exportStoredAuditLogs()).map((entry) => entry.actionType),
         contains('expense.accountingClassification.changed'),
       );
     });

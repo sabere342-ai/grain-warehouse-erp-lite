@@ -709,7 +709,7 @@ void main() {
           createdByUserId: 'emp-1',
           negativeBalanceApprovalId: approvalId,
         );
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         final approvalLogs = logs
             .where((l) =>
                 l.actionType ==
@@ -745,7 +745,7 @@ void main() {
           effectiveDate: DateTime(2026, 1, 2),
           createdByUserId: 'u1',
         );
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         final approvalLogs = logs
             .where((l) =>
                 l.actionType ==

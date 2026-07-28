@@ -38,7 +38,7 @@ void main() {
             .fold<int>(0, (sum, state) => sum + state.totalValueQirsh),
         41199500,
       );
-      final log = (await fixture.audit.listLogs()).single;
+      final log = (await fixture.audit.exportStoredAuditLogs()).single;
       expect(log.actionType, 'profitability.synthetic_test_activated');
       expect(log.metadata['dataClassification'], 'SYNTHETIC_TEST_DATA');
       expect(log.metadata['databaseIdentity'],
@@ -71,7 +71,7 @@ void main() {
       expect(await fixture.inventory.listAllMovements(), hasLength(2));
       expect(
           await fixture.valuation.listEvents(), hasLength(beforeEvents.length));
-      expect(await fixture.audit.listLogs(), hasLength(1));
+      expect(await fixture.audit.exportStoredAuditLogs(), hasLength(1));
     });
 
     test('rollback removes every partial write when audit persistence fails',

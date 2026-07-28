@@ -7,15 +7,14 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_tran
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
 
-class DriftAuditLogRepository
-    implements DurableAuditLogRepository, AuditLogReadRepository {
+class DriftAuditLogRepository implements DurableAuditLogRepository {
   DriftAuditLogRepository(this._database);
 
   final db.FoundationDatabase _database;
   static const _sequenceKey = 'audit_logs';
 
   @override
-  Future<List<AuditLogEntry>> listLogs() async {
+  Future<List<AuditLogEntry>> exportStoredAuditLogs() async {
     final query = _database.select(_database.auditLogs)
       ..orderBy([
         (row) => OrderingTerm.desc(row.timestamp),
@@ -26,7 +25,7 @@ class DriftAuditLogRepository
 
   @override
   Future<List<AuditLogReadModel>> listAuditLogs() async {
-    final logs = await listLogs();
+    final logs = await exportStoredAuditLogs();
     return logs
         .map(
           (log) => AuditLogReadModel(
@@ -37,6 +36,18 @@ class DriftAuditLogRepository
           ),
         )
         .toList(growable: false);
+  }
+
+  @override
+  Future<bool> hasRecordedAction({
+    required String actionType,
+    required String referenceId,
+  }) async {
+    final logs = await exportStoredAuditLogs();
+    return logs.any(
+      (entry) =>
+          entry.actionType == actionType && entry.referenceId == referenceId,
+    );
   }
 
   @override
@@ -189,7 +200,8 @@ class _DriftAuditSnapshot extends SnapshotHolder {
   List<AuditLogEntry>? _entries;
 
   @override
-  Future<void> capture() async => _entries = await repository.listLogs();
+  Future<void> capture() async =>
+      _entries = await repository.exportStoredAuditLogs();
 
   @override
   Future<void> rollback() async {

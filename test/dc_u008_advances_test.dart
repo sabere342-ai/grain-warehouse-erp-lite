@@ -475,7 +475,7 @@ void main() {
         await fixture.supplierLedger.balanceForSupplier(fixture.supplierId);
     final financialBalanceBefore = await fixture.accounts
         .currentBalanceForAccount(fixture.financialAccount.id);
-    final auditBefore = (await fixture.audit.listLogs()).length;
+    final auditBefore = (await fixture.audit.exportStoredAuditLogs()).length;
 
     expect(customerAdvanceBefore, 100);
     expect(supplierAdvanceBefore, 100);
@@ -658,12 +658,12 @@ void main() {
             .currentBalanceForAccount(fixture.financialAccount.id),
         financialBalanceBefore);
 
-    final customerReversalAudits = (await fixture.audit.listLogs())
+    final customerReversalAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'customer.advance.application.reversed',
         )
         .toList();
-    final supplierReversalAudits = (await fixture.audit.listLogs())
+    final supplierReversalAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'supplier.advance.application.reversed',
         )
@@ -674,7 +674,8 @@ void main() {
         fixture.customerApplication.id);
     expect(supplierReversalAudits.single.referenceId,
         fixture.supplierApplication.id);
-    expect((await fixture.audit.listLogs()).length, auditBefore + 2);
+    expect(
+        (await fixture.audit.exportStoredAuditLogs()).length, auditBefore + 2);
   });
 
   test('customer refund reversal restores advance and financial balance',
@@ -687,7 +688,7 @@ void main() {
     expect(advanceBefore, 100);
     expect(financialBefore, 2100);
     final entriesBefore = (await fixture.ledger.listEntries()).length;
-    final auditBefore = (await fixture.audit.listLogs()).length;
+    final auditBefore = (await fixture.audit.exportStoredAuditLogs()).length;
 
     final result = await fixture.ledger.reverseAdvanceRefund(
       user: fixture.ownerUser,
@@ -723,14 +724,15 @@ void main() {
 
     expect(await fixture.ledger.balanceForCustomer(fixture.customerId), 0);
 
-    final refundAudits = (await fixture.audit.listLogs())
+    final refundAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'customer.advance.refund.reversed',
         )
         .toList();
     expect(refundAudits, hasLength(1));
     expect(refundAudits.single.referenceId, fixture.refund.id);
-    expect((await fixture.audit.listLogs()).length, auditBefore + 2);
+    expect(
+        (await fixture.audit.exportStoredAuditLogs()).length, auditBefore + 2);
 
     final replayResult = await fixture.ledger.reverseAdvanceRefund(
       user: fixture.ownerUser,
@@ -744,7 +746,8 @@ void main() {
     expect(await fixture.accounts.currentBalanceForAccount(fixture.account.id),
         2200);
     expect((await fixture.ledger.listEntries()).length, entriesBefore);
-    expect((await fixture.audit.listLogs()).length, auditBefore + 2);
+    expect(
+        (await fixture.audit.exportStoredAuditLogs()).length, auditBefore + 2);
   });
 
   test('supplier refund reversal restores advance and financial balance',
@@ -757,7 +760,7 @@ void main() {
     expect(advanceBefore, 100);
     expect(financialBefore, -100);
     final entriesBefore = (await fixture.ledger.listEntries()).length;
-    final auditBefore = (await fixture.audit.listLogs()).length;
+    final auditBefore = (await fixture.audit.exportStoredAuditLogs()).length;
 
     final reversalApprovalId = await fixture.approvals.requestApproval(
         draft: NegativeBalanceApprovalDraft(
@@ -816,14 +819,15 @@ void main() {
 
     expect(await fixture.ledger.balanceForSupplier(fixture.supplierId), 0);
 
-    final refundAudits = (await fixture.audit.listLogs())
+    final refundAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'supplier.advance.refund.reversed',
         )
         .toList();
     expect(refundAudits, hasLength(1));
     expect(refundAudits.single.referenceId, fixture.refund.id);
-    expect((await fixture.audit.listLogs()).length, auditBefore + 5);
+    expect(
+        (await fixture.audit.exportStoredAuditLogs()).length, auditBefore + 5);
 
     final replayApprovalId = await fixture.approvals.requestApproval(
         draft: NegativeBalanceApprovalDraft(
@@ -859,7 +863,8 @@ void main() {
     expect(await fixture.accounts.currentBalanceForAccount(fixture.account.id),
         -200);
     expect((await fixture.ledger.listEntries()).length, entriesBefore);
-    expect((await fixture.audit.listLogs()).length, auditBefore + 6);
+    expect(
+        (await fixture.audit.exportStoredAuditLogs()).length, auditBefore + 6);
   });
 
   test('concurrent customer refund reversals apply once', () async {
@@ -897,7 +902,7 @@ void main() {
             .toList();
     expect(refundReversals, hasLength(1));
     expect(
-        (await fixture.audit.listLogs()).where(
+        (await fixture.audit.exportStoredAuditLogs()).where(
           (l) => l.actionType == 'customer.advance.refund.reversed',
         ),
         hasLength(1));
@@ -986,7 +991,7 @@ void main() {
             .toList();
     expect(refundReversals, hasLength(1));
     expect(
-        (await fixture.audit.listLogs()).where(
+        (await fixture.audit.exportStoredAuditLogs()).where(
           (l) => l.actionType == 'supplier.advance.refund.reversed',
         ),
         hasLength(1));
@@ -1090,12 +1095,12 @@ void main() {
     expect((await fixture.supplierLedger.listEntries()).length,
         supplierEntriesBefore);
 
-    final customerAudits = (await fixture.audit.listLogs())
+    final customerAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'customer.advance.refund.reversed',
         )
         .toList();
-    final supplierAudits = (await fixture.audit.listLogs())
+    final supplierAudits = (await fixture.audit.exportStoredAuditLogs())
         .where(
           (l) => l.actionType == 'supplier.advance.refund.reversed',
         )

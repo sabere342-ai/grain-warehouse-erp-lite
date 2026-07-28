@@ -64,7 +64,8 @@ void main() {
         'all three operations create pending requests without business effects',
         () async {
       final fixture = await _Fixture.create();
-      final baselineAudit = (await fixture.audit.listLogs()).length;
+      final baselineAudit =
+          (await fixture.audit.exportStoredAuditLogs()).length;
 
       final supplierResult = await fixture.workflow.submitSupplierPayment(
         requester: fixture.owner,
@@ -94,13 +95,16 @@ void main() {
       expect(
           await fixture.accounts.currentBalanceForAccount(fixture.account.id),
           100);
-      final newAudit = (await fixture.audit.listLogs()).skip(0).where(
-            (entry) => entry.actionType == 'negative_balance.request.created',
-          );
+      final newAudit =
+          (await fixture.audit.exportStoredAuditLogs()).skip(0).where(
+                (entry) =>
+                    entry.actionType == 'negative_balance.request.created',
+              );
       expect(newAudit, hasLength(3));
       expect(
           newAudit.every((entry) => entry.actorId?.isNotEmpty == true), isTrue);
-      expect((await fixture.audit.listLogs()).length, baselineAudit + 3);
+      expect((await fixture.audit.exportStoredAuditLogs()).length,
+          baselineAudit + 3);
     });
 
     test('sufficient balance executes directly and disallowed deficit rejects',
@@ -474,7 +478,7 @@ void main() {
         draft: fixture.purchase('purchase-rollback'),
       ))
           .request!;
-      final auditBefore = (await audit.listLogs()).length;
+      final auditBefore = (await audit.exportStoredAuditLogs()).length;
       audit.failAction = 'purchase.created';
 
       await expectLater(fixture.approve(request.id), throwsStateError);
@@ -490,7 +494,7 @@ void main() {
           await fixture.supplierAccounts
               .balanceForSupplier(fixture.supplier.id),
           2000);
-      expect((await audit.listLogs()).length, auditBefore);
+      expect((await audit.exportStoredAuditLogs()).length, auditBefore);
     });
 
     test('durable transaction runner wraps request creation and execution',

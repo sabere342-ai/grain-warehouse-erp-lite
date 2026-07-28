@@ -23,7 +23,7 @@ void main() {
     var database = openDatabaseFile(file);
     var repository = DriftAuditLogRepository(database);
     expect(database.schemaVersion, 15);
-    expect(await repository.listLogs(), isEmpty);
+    expect(await repository.exportStoredAuditLogs(), isEmpty);
     final older = await repository.record(AuditLogDraft(
       actionType: ' sale.created ',
       descriptionAr: ' تم إنشاء البيع ',
@@ -41,7 +41,7 @@ void main() {
 
     database = openDatabaseFile(file);
     repository = DriftAuditLogRepository(database);
-    final restored = await repository.listLogs();
+    final restored = await repository.exportStoredAuditLogs();
     expect(restored.map((entry) => entry.id), [newer.id, older.id]);
     expect(restored.last.actionType, 'sale.created');
     expect(restored.last.descriptionAr, 'تم إنشاء البيع');
@@ -72,7 +72,8 @@ void main() {
       descriptionAr: 'اختبار البيانات',
       metadata: metadata,
     ));
-    expect((await repository.listLogs()).single.metadata, metadata);
+    expect(
+        (await repository.exportStoredAuditLogs()).single.metadata, metadata);
   });
 
   test('malformed persisted metadata fails closed', () async {
@@ -86,7 +87,7 @@ void main() {
           referenceId: const Value(null),
           metadataJson: '[1,2,3]',
         ));
-    expect(DriftAuditLogRepository(database).listLogs(),
+    expect(DriftAuditLogRepository(database).exportStoredAuditLogs(),
         throwsA(isA<FormatException>()));
   });
 
@@ -117,7 +118,7 @@ void main() {
       )),
     ));
     expect({first.id, ...created.map((entry) => entry.id)}, hasLength(13));
-    expect(await repository.listLogs(), hasLength(13));
+    expect(await repository.exportStoredAuditLogs(), hasLength(13));
     await database.close();
   });
 
@@ -144,7 +145,7 @@ void main() {
       }),
       throwsFormatException,
     );
-    expect((await repository.listLogs()).single.id, before.id);
+    expect((await repository.exportStoredAuditLogs()).single.id, before.id);
     final after = await repository.record(AuditLogDraft(
       actionType: 'after',
       descriptionAr: 'بعد',
@@ -166,10 +167,10 @@ void main() {
     );
     await expectLater(
         repository.restoreAuditLogsIntoEmpty([entry, entry]), throwsStateError);
-    expect(await repository.listLogs(), isEmpty);
+    expect(await repository.exportStoredAuditLogs(), isEmpty);
     await repository.restoreAuditLogsIntoEmpty([entry]);
     await repository.clearForOwnerDataWipe();
-    expect(await repository.listLogs(), isEmpty);
+    expect(await repository.exportStoredAuditLogs(), isEmpty);
     expect(
       (await repository.record(AuditLogDraft(
         actionType: 'fresh',
@@ -203,7 +204,7 @@ void main() {
       actionType: 'after.migration',
       descriptionAr: 'بعد الترحيل',
     ));
-    expect(await repository.listLogs(), hasLength(1));
+    expect(await repository.exportStoredAuditLogs(), hasLength(1));
     await upgraded.close();
   });
 

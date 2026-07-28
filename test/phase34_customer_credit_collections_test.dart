@@ -103,7 +103,7 @@ void main() {
 
       expect(await fixture.ledger.balanceForCustomer(customer.id), 48000);
       expect(collection.amountQirsh, 2000);
-      final logs = await fixture.audit.listLogs();
+      final logs = await fixture.audit.exportStoredAuditLogs();
       expect(
           logs.any(
               (entry) => entry.actionType == 'customer.collection.recorded'),

@@ -51,7 +51,7 @@ class BackupExportService {
     CustomerAccountRepository? customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
     ExpenseRepository? expenseRepository,
-    AuditLogRepository? auditLogRepository,
+    AuditLogStorageRepository? auditLogRepository,
     FinancialAccountRepository? financialAccountRepository,
     NegativeBalanceApprovalRequestRepository?
         negativeBalanceApprovalRequestRepository,
@@ -90,7 +90,7 @@ class BackupExportService {
   final CustomerAccountRepository? _customerAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final ExpenseRepository _expenseRepository;
-  final AuditLogRepository _auditLogRepository;
+  final AuditLogStorageRepository _auditLogRepository;
   final FinancialAccountRepository? _financialAccountRepository;
   final NegativeBalanceApprovalRequestRepository
       _negativeBalanceApprovalRequestRepository;
@@ -139,7 +139,7 @@ class BackupExportService {
         await _supplierAccountRepository?.listAdvanceRefunds() ??
             const <SupplierAdvanceRefund>[];
     final expenses = await _expenseRepository.listExpenses();
-    final auditLogs = await _auditLogRepository.listLogs();
+    final auditLogs = await _auditLogRepository.exportStoredAuditLogs();
     final financialAccounts = await _financialAccountRepository?.listAccounts(
             includeInactive: true) ??
         const <FinancialAccount>[];

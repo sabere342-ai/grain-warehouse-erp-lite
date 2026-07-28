@@ -11,7 +11,7 @@ void main() {
     final driftRepository = DriftAuditLogRepository(database);
     final AuditLogReadRepository repository = driftRepository;
 
-    expect(await driftRepository.listLogs(), isEmpty);
+    expect(await driftRepository.exportStoredAuditLogs(), isEmpty);
     expect(await repository.listAuditLogs(), isEmpty);
   });
 
@@ -28,7 +28,7 @@ void main() {
       timestamp: timestamp,
     ));
 
-    final legacy = (await driftRepository.listLogs()).single;
+    final legacy = (await driftRepository.exportStoredAuditLogs()).single;
     final mapped = (await driftRepository.listAuditLogs()).single;
 
     expect(mapped.id, legacy.id);
@@ -66,7 +66,7 @@ void main() {
       timestamp: newerTimestamp,
     ));
 
-    final legacy = await driftRepository.listLogs();
+    final legacy = await driftRepository.exportStoredAuditLogs();
     final mapped = await driftRepository.listAuditLogs();
 
     expect(mapped, hasLength(legacy.length));

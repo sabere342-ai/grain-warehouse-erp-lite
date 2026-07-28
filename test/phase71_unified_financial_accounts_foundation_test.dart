@@ -640,7 +640,7 @@ void main() {
           createdByUserId: 'owner',
         );
         await repo.createAccount(draft);
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         expect(logs.length, 1);
         expect(logs.first.actionType, 'financial_account.created');
       });
@@ -657,7 +657,7 @@ void main() {
         );
         final account = await repo.createAccount(draft);
         await repo.deactivateAccount(account.id, 'owner');
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         expect(logs.length, 2);
         final deactivatedLog = logs.firstWhere(
           (l) => l.actionType == 'financial_account.deactivated',
@@ -682,7 +682,7 @@ void main() {
           effectiveDate: DateTime(2026, 1, 1),
           createdByUserId: 'owner',
         );
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         expect(logs.length, 2);
         final setLog = logs.firstWhere(
           (l) => l.actionType == 'financial_account.opening_balance.set',
@@ -713,7 +713,7 @@ void main() {
           reason: 'تصحيح',
           createdByUserId: 'owner',
         ));
-        final logs = await auditRepo.listLogs();
+        final logs = await auditRepo.exportStoredAuditLogs();
         expect(logs.length, 3);
         final correctedLog = logs.firstWhere(
           (l) => l.actionType == 'financial_account.opening_balance.corrected',

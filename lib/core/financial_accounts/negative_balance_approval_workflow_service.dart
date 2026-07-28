@@ -487,10 +487,9 @@ class NegativeBalanceApprovalWorkflowService {
               reason: _requiredReason(reason),
             ),
           );
-          final existingAudit = (await _auditLogRepository.listLogs()).any(
-            (entry) =>
-                entry.actionType == 'negative_balance.request.created' &&
-                entry.referenceId == request.id,
+          final existingAudit = await _auditLogRepository.hasRecordedAction(
+            actionType: 'negative_balance.request.created',
+            referenceId: request.id,
           );
           if (!existingAudit) {
             await _auditLogRepository.record(AuditLogDraft(

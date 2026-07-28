@@ -74,7 +74,7 @@ void main() {
       );
       expect(controller.customers.single.isActive, isTrue);
 
-      final logs = await audit.listLogs();
+      final logs = await audit.exportStoredAuditLogs();
       expect(logs.map((log) => log.actionType), contains('customer.created'));
       expect(logs.map((log) => log.actionType), contains('customer.updated'));
       expect(logs.map((log) => log.actionType), contains('customer.disabled'));
@@ -234,7 +234,7 @@ void main() {
       expect(result.success, isTrue);
       expect(await target.customers.listCustomers(), hasLength(1));
       expect(await target.expenses.listExpenses(), hasLength(1));
-      final restoredLogs = await target.audit.listLogs();
+      final restoredLogs = await target.audit.exportStoredAuditLogs();
       expect(
           restoredLogs.map((log) => log.actionType), contains('manual.audit'));
     });

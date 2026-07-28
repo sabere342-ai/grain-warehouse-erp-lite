@@ -5,34 +5,34 @@ import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.da
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class AuditLogRepository {
-  Future<List<AuditLogEntry>> listLogs();
   Future<AuditLogEntry> record(AuditLogDraft draft);
+
+  Future<bool> hasRecordedAction({
+    required String actionType,
+    required String referenceId,
+  });
+}
+
+abstract interface class AuditLogStorageRepository {
+  Future<List<AuditLogEntry>> exportStoredAuditLogs();
+  Future<void> restoreAuditLogsIntoEmpty(List<AuditLogEntry> entries);
+  Future<void> clearForOwnerDataWipe();
 }
 
 abstract class DurableAuditLogRepository
     implements
         AuditLogRepository,
         AuditLogReadRepository,
-        TransactionSnapshotProvider {
-  Future<void> restoreAuditLogsIntoEmpty(List<AuditLogEntry> entries);
-  Future<void> clearForOwnerDataWipe();
-}
+        AuditLogStorageRepository,
+        TransactionSnapshotProvider {}
 
 class LocalAuditLogRepository implements DurableAuditLogRepository {
   final List<AuditLogEntry> _entries = [];
   int _generatedIdCounter = 0;
 
   @override
-  Future<List<AuditLogEntry>> listLogs() async {
-    final sorted = [..._entries]
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return List<AuditLogEntry>.unmodifiable(sorted);
-  }
-
-  @override
   Future<List<AuditLogReadModel>> listAuditLogs() async {
-    final logs = await listLogs();
-    return logs
+    return _sortedEntries()
         .map(
           (log) => AuditLogReadModel(
             id: log.id,
@@ -43,6 +43,20 @@ class LocalAuditLogRepository implements DurableAuditLogRepository {
         )
         .toList(growable: false);
   }
+
+  @override
+  Future<List<AuditLogEntry>> exportStoredAuditLogs() async =>
+      List<AuditLogEntry>.unmodifiable(_sortedEntries());
+
+  @override
+  Future<bool> hasRecordedAction({
+    required String actionType,
+    required String referenceId,
+  }) async =>
+      _entries.any(
+        (entry) =>
+            entry.actionType == actionType && entry.referenceId == referenceId,
+      );
 
   @override
   Future<AuditLogEntry> record(AuditLogDraft draft) async {
@@ -121,4 +135,7 @@ class LocalAuditLogRepository implements DurableAuditLogRepository {
     }
     return normalized;
   }
+
+  List<AuditLogEntry> _sortedEntries() =>
+      [..._entries]..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 }

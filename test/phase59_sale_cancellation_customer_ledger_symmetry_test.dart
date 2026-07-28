@@ -288,7 +288,7 @@ void main() {
 
       expect(reversal.creditAmountQirsh, 50000);
       expect(await f.ledger.balanceForCustomer(customer.id), 0);
-      final logs = await f.audit.listLogs();
+      final logs = await f.audit.exportStoredAuditLogs();
       expect(logs.any((e) => e.actionType == 'customer.sale.reversed'), isTrue);
     });
 
@@ -338,7 +338,7 @@ void main() {
             '\u062a\u062f\u0642\u064a\u0642 \u0627\u0644\u062a\u062f\u0642\u064a\u0642',
       );
 
-      final logs = await f.audit.listLogs();
+      final logs = await f.audit.exportStoredAuditLogs();
       expect(logs.any((e) => e.actionType == 'customer.sale.reversed'), isTrue);
     });
   });

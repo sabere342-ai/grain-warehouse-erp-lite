@@ -666,7 +666,7 @@ class _Fixture {
       refundCount: (await ledger.listAdvanceRefunds()).length,
       financialEntryCount:
           (await accounts.statementForAccount(account.id)).lines.length,
-      auditCount: (await audit.listLogs()).length,
+      auditCount: (await audit.exportStoredAuditLogs()).length,
     );
   }
 
@@ -676,7 +676,7 @@ class _Fixture {
     expect((await ledger.listAdvanceRefunds()).length, state.refundCount);
     expect((await accounts.statementForAccount(account.id)).lines.length,
         state.financialEntryCount);
-    expect((await audit.listLogs()).length, state.auditCount);
+    expect((await audit.exportStoredAuditLogs()).length, state.auditCount);
   }
 }
 

@@ -160,7 +160,7 @@ void main() {
       expect(history, hasLength(2));
       expect(history.map((entry) => entry.productName), contains(product.name));
 
-      final auditLogs = await source.audit.listLogs();
+      final auditLogs = await source.audit.exportStoredAuditLogs();
       expect(
           auditLogs.map((log) => log.actionType), contains('customer.created'));
       expect(
@@ -191,7 +191,7 @@ void main() {
       expect(await target.history.listHistory(), hasLength(2));
       expect(await target.customers.listCustomers(), hasLength(2));
       expect(await target.expenses.listExpenses(), hasLength(1));
-      expect(await target.audit.listLogs(), hasLength(3));
+      expect(await target.audit.exportStoredAuditLogs(), hasLength(3));
     });
 
     test('reports do not invent profit when reference cost is missing',
@@ -285,7 +285,7 @@ void main() {
       expect(await target.products.listProducts(), hasLength(1));
       expect(await target.customers.listCustomers(), isEmpty);
       expect(await target.expenses.listExpenses(), isEmpty);
-      expect(await target.audit.listLogs(), isEmpty);
+      expect(await target.audit.exportStoredAuditLogs(), isEmpty);
     });
   });
 }

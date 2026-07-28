@@ -84,7 +84,7 @@ Future<void> main(List<String> arguments) async {
   final persistedMovements = await source.inventory.listAllMovements();
   final persistedStates = await source.valuation.listStates();
   final persistedEvents = await source.valuation.listEvents();
-  final persistedAudit = await source.audit.listLogs();
+  final persistedAudit = await source.audit.exportStoredAuditLogs();
   _require(persistedActivation.isSyntheticTestActivated,
       'Synthetic activation did not survive database reopen.');
   _require(!persistedActivation.isActivated,

@@ -170,7 +170,7 @@ class BusinessDataWipeService {
     final customers =
         await _customerRepository.listCustomers(includeInactive: true);
     final expenses = await _expenseRepository.listExpenses();
-    final auditLogs = await _auditLogRepository.listLogs();
+    final auditLogs = await _auditLogRepository.exportStoredAuditLogs();
 
     return BusinessDataWipeCounts(
       products: products.length,

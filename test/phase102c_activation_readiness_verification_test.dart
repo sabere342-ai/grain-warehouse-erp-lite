@@ -437,7 +437,7 @@ void main() {
       expect(shortageEvent.quantityDeltaKg, -5);
       expect(shortageEvent.valueDeltaQirsh, -2500);
 
-      final logs = await audit.listLogs();
+      final logs = await audit.exportStoredAuditLogs();
       expect(logs, isNotEmpty);
     });
   });
