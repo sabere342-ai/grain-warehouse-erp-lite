@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
 
-class DriftAuditLogRepository implements DurableAuditLogRepository {
+class DriftAuditLogRepository
+    implements DurableAuditLogRepository, AuditLogReadRepository {
   DriftAuditLogRepository(this._database);
 
   final db.FoundationDatabase _database;
@@ -20,6 +22,21 @@ class DriftAuditLogRepository implements DurableAuditLogRepository {
         (row) => OrderingTerm.desc(row.id),
       ]);
     return (await query.get()).map(_toDomain).toList(growable: false);
+  }
+
+  @override
+  Future<List<AuditLogReadModel>> listAuditLogs() async {
+    final logs = await listLogs();
+    return logs
+        .map(
+          (log) => AuditLogReadModel(
+            id: log.id,
+            timestamp: log.timestamp,
+            descriptionAr: log.descriptionAr,
+            referenceId: log.referenceId,
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override
