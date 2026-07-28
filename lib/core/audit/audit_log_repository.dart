@@ -1,6 +1,7 @@
 export 'audit_log_entry.dart';
 
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 
 abstract class AuditLogRepository {
@@ -9,7 +10,10 @@ abstract class AuditLogRepository {
 }
 
 abstract class DurableAuditLogRepository
-    implements AuditLogRepository, TransactionSnapshotProvider {
+    implements
+        AuditLogRepository,
+        AuditLogReadRepository,
+        TransactionSnapshotProvider {
   Future<void> restoreAuditLogsIntoEmpty(List<AuditLogEntry> entries);
   Future<void> clearForOwnerDataWipe();
 }
@@ -23,6 +27,21 @@ class LocalAuditLogRepository implements DurableAuditLogRepository {
     final sorted = [..._entries]
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return List<AuditLogEntry>.unmodifiable(sorted);
+  }
+
+  @override
+  Future<List<AuditLogReadModel>> listAuditLogs() async {
+    final logs = await listLogs();
+    return logs
+        .map(
+          (log) => AuditLogReadModel(
+            id: log.id,
+            timestamp: log.timestamp,
+            descriptionAr: log.descriptionAr,
+            referenceId: log.referenceId,
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override

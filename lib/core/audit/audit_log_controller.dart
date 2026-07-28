@@ -1,17 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 
 class AuditLogController extends ChangeNotifier {
-  AuditLogController({required AuditLogRepository repository})
+  AuditLogController({required AuditLogReadRepository repository})
       : _repository = repository;
 
-  final AuditLogRepository _repository;
-  List<AuditLogEntry> _entries = const [];
+  final AuditLogReadRepository _repository;
+  List<AuditLogReadModel> _entries = const [];
   String? _errorMessage;
   bool _isLoading = false;
 
-  List<AuditLogEntry> get entries => List<AuditLogEntry>.unmodifiable(_entries);
+  List<AuditLogReadModel> get entries =>
+      List<AuditLogReadModel>.unmodifiable(_entries);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 
@@ -24,7 +25,7 @@ class AuditLogController extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-    _entries = await _repository.listLogs();
+    _entries = await _repository.listAuditLogs();
     _isLoading = false;
     notifyListeners();
     return true;

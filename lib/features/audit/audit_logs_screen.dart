@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/audit/audit_log_entry.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
@@ -96,7 +96,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
 class _AuditLogCard extends StatelessWidget {
   const _AuditLogCard({required this.entry});
 
-  final AuditLogEntry entry;
+  final AuditLogReadModel entry;
 
   @override
   Widget build(BuildContext context) {
