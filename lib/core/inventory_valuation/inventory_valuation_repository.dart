@@ -85,8 +85,21 @@ abstract class DurableInventoryValuationRepository
   Future<void> clearForOwnerDataWipe();
 }
 
+/// Kept outside [InventoryValuationRepository] so production coordinators do
+/// not receive a synthetic activation operation through their normal contract.
+abstract class SyntheticTestInventoryValuationRepository {
+  Future<void> activateSyntheticForTest({
+    required DateTime activationDate,
+    required String approvedByUserId,
+    required String evidenceNote,
+    required List<OpeningValuationInput> openings,
+  });
+}
+
 class LocalInventoryValuationRepository
-    implements DurableInventoryValuationRepository {
+    implements
+        DurableInventoryValuationRepository,
+        SyntheticTestInventoryValuationRepository {
   ProfitabilityActivation _activation =
       const ProfitabilityActivation.notActivated();
   final Map<String, InventoryValuationState> _states = {};
@@ -116,8 +129,40 @@ class LocalInventoryValuationRepository
     required String approvedByUserId,
     required String evidenceNote,
     required List<OpeningValuationInput> openings,
+  }) =>
+      _activate(
+        activationDate: activationDate,
+        approvedByUserId: approvedByUserId,
+        evidenceNote: evidenceNote,
+        openings: openings,
+        syntheticTest: false,
+      );
+
+  @override
+  Future<void> activateSyntheticForTest({
+    required DateTime activationDate,
+    required String approvedByUserId,
+    required String evidenceNote,
+    required List<OpeningValuationInput> openings,
+  }) =>
+      _activate(
+        activationDate: activationDate,
+        approvedByUserId: approvedByUserId,
+        evidenceNote: evidenceNote,
+        openings: openings,
+        syntheticTest: true,
+      );
+
+  Future<void> _activate({
+    required DateTime activationDate,
+    required String approvedByUserId,
+    required String evidenceNote,
+    required List<OpeningValuationInput> openings,
+    required bool syntheticTest,
   }) async {
-    if (_activation.isActivated) {
+    if (!_activation.isNotActivated ||
+        _states.isNotEmpty ||
+        _events.isNotEmpty) {
       throw StateError('Profitability is already activated.');
     }
     final actor = approvedByUserId.trim();
@@ -174,12 +219,19 @@ class LocalInventoryValuationRepository
         lastEventId: event.id,
       );
     }
-    _activation = ProfitabilityActivation.activated(
-      activationDate: activationDate,
-      approvedAt: now,
-      approvedByUserId: actor,
-      evidenceNote: note,
-    );
+    _activation = syntheticTest
+        ? ProfitabilityActivation.syntheticTestActivated(
+            activationDate: activationDate,
+            approvedAt: now,
+            approvedByUserId: actor,
+            evidenceNote: note,
+          )
+        : ProfitabilityActivation.activated(
+            activationDate: activationDate,
+            approvedAt: now,
+            approvedByUserId: actor,
+            evidenceNote: note,
+          );
   }
 
   @override
@@ -209,7 +261,7 @@ class LocalInventoryValuationRepository
     required DateTime effectiveDate,
     required String createdByUserId,
   }) async {
-    if (!_activation.isActivated) return null;
+    if (!_activation.supportsValuationOperations) return null;
     final state = _requiredState(productId);
     _validatePositive(quantityKg, 'sale quantity');
     if (quantityKg > state.quantityKg || state.quantityKg <= 0) {
@@ -263,7 +315,7 @@ class LocalInventoryValuationRepository
     required String createdByUserId,
     required String reason,
   }) async {
-    if (!_activation.isActivated) return null;
+    if (!_activation.supportsValuationOperations) return null;
     final original = _events.firstWhere(
       (event) => event.id == originalValuationEventId,
       orElse: () => throw StateError('Original sale valuation was not found.'),
@@ -297,7 +349,7 @@ class LocalInventoryValuationRepository
 
   @override
   Future<bool> canDirectlyCancelPurchase(String sourceDocumentId) async {
-    if (!_activation.isActivated) return true;
+    if (!_activation.supportsValuationOperations) return true;
     final purchaseEvents = _events.where((event) =>
         event.type == InventoryValuationEventType.purchase &&
         event.sourceDocumentId == sourceDocumentId);
@@ -322,7 +374,7 @@ class LocalInventoryValuationRepository
     required String createdByUserId,
     required String reason,
   }) async {
-    if (!_activation.isActivated) return null;
+    if (!_activation.supportsValuationOperations) return null;
     if (!await canDirectlyCancelPurchase(originalPurchaseDocumentId)) {
       throw StateError(
         'Purchase inventory has been mixed or used; direct cancellation is forbidden.',
@@ -401,7 +453,7 @@ class LocalInventoryValuationRepository
     required String createdByUserId,
     required String reason,
   }) async {
-    if (!_activation.isActivated) return null;
+    if (!_activation.supportsValuationOperations) return null;
     if (type != InventoryValuationEventType.stocktakeShortage &&
         type != InventoryValuationEventType.manualDecrease) {
       throw ArgumentError('Valued decrease type is invalid.');
@@ -456,7 +508,7 @@ class LocalInventoryValuationRepository
     String? reason,
     String? evidenceReference,
   }) async {
-    if (!_activation.isActivated) return null;
+    if (!_activation.supportsValuationOperations) return null;
     _validatePositive(quantityKg, 'increase quantity');
     _validatePositive(unitCostQirshPerKg, 'unit cost');
     final state = _states[productId] ??
@@ -638,10 +690,12 @@ class LocalInventoryValuationRepository
 
   @override
   Future<void> restoreIntoEmpty(InventoryValuationRestoreData data) async {
-    if (_activation.isActivated || _states.isNotEmpty || _events.isNotEmpty) {
+    if (!_activation.isNotActivated ||
+        _states.isNotEmpty ||
+        _events.isNotEmpty) {
       throw StateError('Inventory valuation repository is not empty.');
     }
-    if (!data.activation.isActivated &&
+    if (!data.activation.supportsValuationOperations &&
         (data.states.isNotEmpty || data.events.isNotEmpty)) {
       throw StateError('Inactive profitability cannot contain valuation data.');
     }

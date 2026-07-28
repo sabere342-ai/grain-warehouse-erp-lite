@@ -32,7 +32,7 @@ class ProfitabilityReportService {
     }
 
     final activation = await _inventoryValuationRepository.getActivation();
-    if (!activation.isActivated) {
+    if (!activation.supportsValuationOperations) {
       return ProfitabilityReport.notAvailable(
         messageAr: ProfitabilityReport.unavailableBeforeActivationAr,
         activation: activation,

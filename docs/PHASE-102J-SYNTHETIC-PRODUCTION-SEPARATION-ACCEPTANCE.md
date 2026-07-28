@@ -2,42 +2,38 @@
 
 ## Decision
 
-**Outcome B — SAFE BLOCKED: APPROVED SYNTHETIC PACKAGE NOT FOUND**
+**ACCEPTED FOR SYNTHETIC TEST EVIDENCE ONLY**
 
-The synthetic trial did not start. Production separation is preserved through
-non-execution, not through a claimed successful trial.
+Phase 102J proves the owner-approved synthetic trial. It does not grant
+production profitability activation, commercial acceptance, or permission to
+replace genuine physical inventory evidence.
 
 ## Separation evidence
 
 | Control | Actual result |
 | --- | --- |
 | Owner approval type | `TEST ACTIVATION APPROVAL ONLY` |
-| Approved data class | `SYNTHETIC_TEST_DATA` only |
-| Approved environment | An isolated `TEST-SANDBOX` only |
-| Concrete sandbox identity/path | Not created or selected |
+| Approved class | `SYNTHETIC_TEST_DATA` |
+| Approved environment identity | `PHASE-102J-TEST-SANDBOX` |
+| Synthetic state | `syntheticProfitabilityActivatedForTest` |
+| Synthetic `isActivated` | `false` |
+| Fresh production-shaped database probe | `profitabilityNotActivated` |
+| Synthetic service in production app wiring | Not present |
+| UI confusion control | Explicit synthetic-test warning banner |
 | Production database access | Not performed |
-| Customer database access | Not performed |
-| Existing transaction modification/deletion | Not performed |
-| Synthetic database or backup committed to Git | No |
-| Owner workbook committed to Git | No; workbook was not present |
-| Production profitability baseline | `ProfitabilityNotActivated` |
-| Synthetic activation state | Not created |
-| Production profitability after Phase 102J | `ProfitabilityNotActivated` by accepted baseline and absence of mutation |
+| Existing transaction mutation/deletion | Not performed |
+| Owner workbook committed | No — `owner-input/` is ignored |
+| Test database/backup committed | No — created under system temp |
 
-## Acceptance and publication
+## Acceptance boundary
 
-The following are **not** claimed: twelve validated or written rows, package-hash
-verification, duplicate prevention, persistence, backup, restore, profitability
-calculation, successful Windows build, or native smoke. No production acceptance
-or commercial acceptance is granted by this phase.
+The result accepts only these claims:
 
-Push: **NOT PERFORMED**.
+1. The exact approved package contains 12 valid synthetic openings totaling
+   73,650 kg and 1,680,090.00 EGP.
+2. Those rows can atomically activate valuation in a separate test-only state.
+3. Duplicate replay, persistence, COGS, sale cancellation, backup, and restore
+   operate correctly in the isolated trial.
+4. Production profitability remains not activated.
 
-Tag: **NOT CREATED**.
-
-The exact blocker is the missing file
-`phase_102j_synthetic_inventory_test_package.xlsx`. To resume safely, the owner
-must supply that exact workbook at the expected path or another readable path,
-and its locally computed SHA-256 must equal
-`461F3EE16B2895E3AC898352384EA0D927A49688912A3B6DB4C7C62B96271DFC`
-before any worksheet is read or any sandbox is created.
+Push was not performed and no tag was created.

@@ -270,7 +270,7 @@ class BackupRestoreService {
         auditLogs.isNotEmpty ||
         financialAccounts.isNotEmpty ||
         negativeBalanceApprovalRequests.isNotEmpty ||
-        inventoryValuation.activation.isActivated ||
+        !inventoryValuation.activation.isNotActivated ||
         inventoryValuation.states.isNotEmpty ||
         inventoryValuation.events.isNotEmpty) {
       return 'النظام الحالي ليس فارغا. لا يمكن استرجاع النسخة لأن النظام يحتوي على بيانات حالية. الاسترجاع في هذه المرحلة متاح فقط على نظام فارغ لحماية بيانات المخزن من الاستبدال أو التكرار.';
@@ -844,12 +844,23 @@ class BackupRestoreService {
     if (status == ProfitabilityActivationStatus.profitabilityNotActivated) {
       return const ProfitabilityActivation.notActivated();
     }
-    return ProfitabilityActivation.activated(
-      activationDate: _date(map, 'activationDate'),
-      approvedAt: _date(map, 'approvedAt'),
-      approvedByUserId: _string(map, 'approvedByUserId'),
-      evidenceNote: _string(map, 'evidenceNote'),
-    );
+    final activationDate = _date(map, 'activationDate');
+    final approvedAt = _date(map, 'approvedAt');
+    final approvedByUserId = _string(map, 'approvedByUserId');
+    final evidenceNote = _string(map, 'evidenceNote');
+    return status == ProfitabilityActivationStatus.activated
+        ? ProfitabilityActivation.activated(
+            activationDate: activationDate,
+            approvedAt: approvedAt,
+            approvedByUserId: approvedByUserId,
+            evidenceNote: evidenceNote,
+          )
+        : ProfitabilityActivation.syntheticTestActivated(
+            activationDate: activationDate,
+            approvedAt: approvedAt,
+            approvedByUserId: approvedByUserId,
+            evidenceNote: evidenceNote,
+          );
   }
 
   InventoryValuationState _parseInventoryValuationState(Object? value) {

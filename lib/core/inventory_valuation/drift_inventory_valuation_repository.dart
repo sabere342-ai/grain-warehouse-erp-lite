@@ -8,7 +8,9 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
     as db;
 
 class DriftInventoryValuationRepository
-    implements DurableInventoryValuationRepository {
+    implements
+        DurableInventoryValuationRepository,
+        SyntheticTestInventoryValuationRepository {
   DriftInventoryValuationRepository(this._database);
 
   static const _activationId = 'profitability';
@@ -48,7 +50,7 @@ class DriftInventoryValuationRepository
     final activation = activationRow == null
         ? const ProfitabilityActivation.notActivated()
         : _activationFromRow(activationRow);
-    if (activation.isActivated ||
+    if (activation.supportsValuationOperations ||
         stateRows.isNotEmpty ||
         eventRows.isNotEmpty) {
       await _delegate.restoreIntoEmpty(InventoryValuationRestoreData(
@@ -110,6 +112,20 @@ class DriftInventoryValuationRepository
     required List<OpeningValuationInput> openings,
   }) =>
       _write(() => _delegate.activate(
+            activationDate: activationDate,
+            approvedByUserId: approvedByUserId,
+            evidenceNote: evidenceNote,
+            openings: openings,
+          ));
+
+  @override
+  Future<void> activateSyntheticForTest({
+    required DateTime activationDate,
+    required String approvedByUserId,
+    required String evidenceNote,
+    required List<OpeningValuationInput> openings,
+  }) =>
+      _write(() => _delegate.activateSyntheticForTest(
             activationDate: activationDate,
             approvedByUserId: approvedByUserId,
             evidenceNote: evidenceNote,
@@ -245,7 +261,7 @@ class DriftInventoryValuationRepository
       _serialized(() async {
         await _ensureLoaded();
         final current = await _delegate.exportRestoreData();
-        if (current.activation.isActivated ||
+        if (!current.activation.isNotActivated ||
             current.states.isNotEmpty ||
             current.events.isNotEmpty) {
           throw StateError('Inventory valuation repository is not empty.');
@@ -279,7 +295,7 @@ class DriftInventoryValuationRepository
   Future<void> _persistAll(InventoryValuationRestoreData data) async {
     await _clearTables();
     final activation = data.activation;
-    if (activation.isActivated) {
+    if (activation.supportsValuationOperations) {
       await _database.profitabilityActivations.insertOne(
         db.ProfitabilityActivationsCompanion.insert(
           id: _activationId,
@@ -317,19 +333,27 @@ class DriftInventoryValuationRepository
   ProfitabilityActivation _activationFromRow(
     db.ProfitabilityActivationRow row,
   ) {
-    if (row.status != ProfitabilityActivationStatus.activated.name ||
+    final status = ProfitabilityActivationStatus.values.byName(row.status);
+    if (status == ProfitabilityActivationStatus.profitabilityNotActivated ||
         row.activationDate == null ||
         row.approvedAt == null ||
         row.approvedByUserId == null ||
         row.evidenceNote == null) {
       throw StateError('Stored profitability activation is incomplete.');
     }
-    return ProfitabilityActivation.activated(
-      activationDate: row.activationDate!,
-      approvedAt: row.approvedAt!,
-      approvedByUserId: row.approvedByUserId!,
-      evidenceNote: row.evidenceNote!,
-    );
+    return status == ProfitabilityActivationStatus.activated
+        ? ProfitabilityActivation.activated(
+            activationDate: row.activationDate!,
+            approvedAt: row.approvedAt!,
+            approvedByUserId: row.approvedByUserId!,
+            evidenceNote: row.evidenceNote!,
+          )
+        : ProfitabilityActivation.syntheticTestActivated(
+            activationDate: row.activationDate!,
+            approvedAt: row.approvedAt!,
+            approvedByUserId: row.approvedByUserId!,
+            evidenceNote: row.evidenceNote!,
+          );
   }
 
   InventoryValuationState _stateFromRow(

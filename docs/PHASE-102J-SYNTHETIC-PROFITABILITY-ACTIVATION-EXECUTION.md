@@ -2,57 +2,55 @@
 
 ## Outcome
 
-**Outcome B — SAFE BLOCKED: APPROVED SYNTHETIC PACKAGE NOT FOUND**
+**Outcome A — PASSED IN AN ISOLATED SYNTHETIC SANDBOX**
 
-The mandatory file-existence and SHA-256 gate failed before a test environment
-was created or selected. No activation execution occurred.
+The trial ran through `tool/run_phase102j_synthetic_trial.dart` against a new
+SQLite database outside the repository. The production application repository
+wiring does not expose the synthetic activation service.
 
-## Authorization boundary
-
-The owner authorizes only a synthetic trial using the exact workbook with
-expected SHA-256
-`461F3EE16B2895E3AC898352384EA0D927A49688912A3B6DB4C7C62B96271DFC`.
-The authorization does not permit production activation, customer-data access,
-real opening balances, final commercial acceptance, or a manually reconstructed
-workbook.
-
-## Execution record
+## Execution identity
 
 | Item | Actual result |
 | --- | --- |
 | Branch | `codex/phase-102j-owner-approved-synthetic-inventory-profitability-activation-trial` |
-| Starting commit | `f1aa2d027fac636934ea39f402aae6bcf4caf65d` |
-| Actual package path | Not available |
-| Computed package SHA-256 | Not available |
-| Test environment identity | Not created — package gate failed first |
-| Test data-file identity | Not created |
-| Database classification | No database selected or opened |
-| Profitability before | Accepted production baseline is `ProfitabilityNotActivated`; no live database was read |
-| Synthetic state after | Not created |
-| Production state after | `ProfitabilityNotActivated` by accepted baseline and absence of mutation |
-| Activation operation ID | Not created |
-| Submitted / validated / rejected / written | `0 / 0 / 0 / 0` |
-| Quantity / valuation | Not established / not established |
-| Atomic write | Not started |
-| Rollback | Not applicable — no write began |
+| Resumption commit | `3e2446b10b1e984422c2871a80f5ac9915e5cd04` |
+| Database identity | `PHASE-102J-TEST-SANDBOX` |
+| Data classification | `SYNTHETIC_TEST_DATA` |
+| Database path | `C:\Users\saber\AppData\Local\Temp\phase102j-trial-20260728-1805\phase102j_sandbox.sqlite3` |
+| Evidence file | `C:\Users\saber\AppData\Local\Temp\phase102j-trial-20260728-1805\phase102j_execution_evidence.json` |
+| Package SHA-256 | `461F3EE16B2895E3AC898352384EA0D927A49688912A3B6DB4C7C62B96271DFC` |
+| Submitted / validated / rejected / written | `12 / 12 / 0 / 12` |
+| Quantity / valuation | `73,650 kg / 1,680,090.00 EGP` |
+| Activation state | `syntheticProfitabilityActivatedForTest` |
+| Production activation boolean | `false` |
 
-No code change was justified because the authorized workbook was unavailable.
-Implementing a reader, DTO, synthetic state, or import workflow without the
-exact workbook could not complete the requested trial and would expand the
-product surface without executable evidence.
+## Safety design
 
-## Verification disposition
+- `ProfitabilityActivation.isActivated` remains true only for genuine
+  production activation.
+- Synthetic valuation operations require the separate
+  `syntheticProfitabilityActivatedForTest` state.
+- The intake coordinator requires an active owner, the exact sandbox identity,
+  a 64-character package hash, an empty database, unique rows, exact valuation,
+  and a synthetic classification.
+- Product creation, opening inventory, opening valuation, and audit logging
+  share one rollback boundary.
+- A simulated audit failure test proved that products, movements, valuation,
+  events, and activation all roll back.
+- The profitability screen displays an explicit synthetic-test warning if such
+  a backup is ever opened there.
 
-| Gate | Result |
-| --- | --- |
-| Package existence | Failed |
-| Package hash match | Not executable |
-| Twelve-row validation | Not executable |
-| Isolated-environment proof | Not attempted after the earlier gate failure |
-| Pre-activation backup | Not performed |
-| First import | Not performed |
-| Profitability scenario | Not performed |
-| Production separation | Preserved by performing no runtime or data mutation |
+## Profitability scenario
 
-No quantity, cost, valuation, product, sale, COGS, profit, package content, or
-test result was fabricated.
+The first workbook row was used for a 100 kg synthetic sale:
+
+| Measure | Result |
+| --- | ---: |
+| Sale price | 25.00 EGP/kg |
+| Revenue | 2,500.00 EGP |
+| COGS | 1,875.00 EGP |
+| Gross profit | 625.00 EGP |
+| Stock restored after cancellation | Yes |
+| Inventory value restored after cancellation | Yes |
+
+No production or customer database was selected, read, or modified.

@@ -26,3 +26,6 @@ tmp/
 
 # Inno Setup output
 windows/installer/Output/
+
+# Owner-supplied intake packages and isolated trial artifacts.
+owner-input/

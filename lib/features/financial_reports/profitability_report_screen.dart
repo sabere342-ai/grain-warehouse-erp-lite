@@ -272,6 +272,28 @@ class _AvailableReport extends StatelessWidget {
     ];
     return Column(
       children: [
+        if (report.activation.isSyntheticTestActivated)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: PremiumCard(
+              key: const Key('synthetic-profitability-test-warning'),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.science_rounded,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'بيانات اختبار اصطناعية فقط — ليست ربحية إنتاجية ولا يجوز اعتمادها كبيانات فعلية.',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         for (final value in values)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),

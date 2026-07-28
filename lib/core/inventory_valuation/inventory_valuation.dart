@@ -1,5 +1,6 @@
 enum ProfitabilityActivationStatus {
   profitabilityNotActivated,
+  syntheticProfitabilityActivatedForTest,
   activated,
 }
 
@@ -18,6 +19,14 @@ class ProfitabilityActivation {
     required this.evidenceNote,
   }) : status = ProfitabilityActivationStatus.activated;
 
+  const ProfitabilityActivation.syntheticTestActivated({
+    required this.activationDate,
+    required this.approvedAt,
+    required this.approvedByUserId,
+    required this.evidenceNote,
+  }) : status = ProfitabilityActivationStatus
+            .syntheticProfitabilityActivatedForTest;
+
   final ProfitabilityActivationStatus status;
   final DateTime? activationDate;
   final DateTime? approvedAt;
@@ -25,6 +34,16 @@ class ProfitabilityActivation {
   final String? evidenceNote;
 
   bool get isActivated => status == ProfitabilityActivationStatus.activated;
+
+  bool get isSyntheticTestActivated =>
+      status ==
+      ProfitabilityActivationStatus.syntheticProfitabilityActivatedForTest;
+
+  bool get supportsValuationOperations =>
+      isActivated || isSyntheticTestActivated;
+
+  bool get isNotActivated =>
+      status == ProfitabilityActivationStatus.profitabilityNotActivated;
 }
 
 class OpeningValuationInput {
