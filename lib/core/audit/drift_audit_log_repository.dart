@@ -43,11 +43,14 @@ class DriftAuditLogRepository implements DurableAuditLogRepository {
     required String actionType,
     required String referenceId,
   }) async {
-    final logs = await exportStoredAuditLogs();
-    return logs.any(
-      (entry) =>
-          entry.actionType == actionType && entry.referenceId == referenceId,
-    );
+    final query = _database.select(_database.auditLogs)
+      ..where(
+        (row) =>
+            row.actionType.equals(actionType) &
+            row.referenceId.equals(referenceId),
+      )
+      ..limit(1);
+    return await query.getSingleOrNull() != null;
   }
 
   @override
