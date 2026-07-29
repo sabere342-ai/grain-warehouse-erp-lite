@@ -131,6 +131,7 @@ void main() {
         createdByUserId: _owner.id,
         customerId: 'phase-102j-synthetic-customer',
       ));
+      final reportEnd = sale.createdAt.add(const Duration(microseconds: 1));
       final report = await ProfitabilityReportService(
         inventoryValuationRepository: fixture.valuation,
         saleRepository: sales,
@@ -138,7 +139,7 @@ void main() {
       ).build(
         user: _owner,
         start: _activationDate,
-        end: DateTime(2026, 7, 29),
+        end: reportEnd,
       );
 
       expect(sale.totalQirsh, 250000);

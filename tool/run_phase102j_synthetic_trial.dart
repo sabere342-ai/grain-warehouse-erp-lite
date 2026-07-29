@@ -115,6 +115,7 @@ Future<void> main(List<String> arguments) async {
     customerId: customer.id,
     notes: 'SYNTHETIC_TEST_DATA | PHASE 102J profitability scenario',
   ));
+  final reportEnd = sale.createdAt.add(const Duration(microseconds: 1));
   final report = await ProfitabilityReportService(
     inventoryValuationRepository: source.valuation,
     saleRepository: source.sales,
@@ -122,7 +123,7 @@ Future<void> main(List<String> arguments) async {
   ).build(
     user: owner,
     start: DateTime(2026, 7, 28),
-    end: DateTime(2026, 7, 29),
+    end: reportEnd,
   );
   _require(report.activation.isSyntheticTestActivated && report.isAvailable,
       'Synthetic profitability report was not available.');
