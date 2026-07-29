@@ -24,6 +24,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _ownerOnly =
     '\u0647\u0630\u0647 \u0627\u0644\u0623\u062f\u0627\u0629 \u0645\u062a\u0627\u062d\u0629 \u0644\u0644\u0645\u0627\u0644\u0643 \u0641\u0642\u0637.';
@@ -476,7 +477,8 @@ Future<_BackupFixture> _emptyFixture({
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final exportService = exportFails

@@ -26,6 +26,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 16 restore to empty system service', () {
@@ -529,7 +530,8 @@ Future<_BackupFixture> _emptyFixture() async {
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final exportService = BackupExportService(

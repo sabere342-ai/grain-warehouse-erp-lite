@@ -21,6 +21,7 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/reports/report_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 31 customers', () {
@@ -260,7 +261,8 @@ _Phase31Fixture _fixture() {
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final reports = LocalReportRepository(

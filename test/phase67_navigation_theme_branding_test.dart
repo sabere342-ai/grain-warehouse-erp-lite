@@ -29,6 +29,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_sales_invoice_view.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 67 - navigation, theme, and branding', () {
@@ -240,7 +241,8 @@ class _RepoSet {
     documentHistoryRepository = LocalDocumentHistoryRepository(
       purchaseRepository: purchaseRepository,
       saleRepository: saleRepository,
-      productRepository: productRepository,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepository),
       inventoryRepository: inventoryRepository,
     );
   }

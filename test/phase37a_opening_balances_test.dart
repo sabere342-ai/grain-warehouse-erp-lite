@@ -16,6 +16,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 37A - Opening balances', () {
@@ -212,7 +213,8 @@ void main() {
               productRepository: productRepo,
               inventoryRepository: inventoryRepo,
             ),
-            productRepository: productRepo,
+            productCatalogReadRepository:
+                ProductCatalogReadRepositoryTestAdapter(productRepo),
             inventoryRepository: inventoryRepo,
           ),
           now: () => DateTime(2026, 7, 7, 10, 0, 0),
@@ -407,7 +409,8 @@ void main() {
               productRepository: productRepo,
               inventoryRepository: inventoryRepo,
             ),
-            productRepository: productRepo,
+            productCatalogReadRepository:
+                ProductCatalogReadRepositoryTestAdapter(productRepo),
             inventoryRepository: inventoryRepo,
           ),
           now: () => DateTime(2026, 7, 7, 10, 0, 0),

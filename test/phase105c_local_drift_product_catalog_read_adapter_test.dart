@@ -148,7 +148,7 @@ void main() {
     expect(await fixture.database.readProbe('phase105c'), 'unchanged');
   });
 
-  test('adapter remains unwired from legacy runtime, UI, and cloud surfaces',
+  test('adapter is wired only in composition and stays isolated from UI/cloud',
       () {
     const adapterPath =
         'lib/core/catalog/drift_product_catalog_read_repository.dart';
@@ -161,9 +161,10 @@ void main() {
         .where((file) => file
             .readAsStringSync()
             .contains('DriftProductCatalogReadRepository'))
-        .map((file) => _relative(file.path));
+        .map((file) => _relative(file.path))
+        .toList();
 
-    expect(productionReferences, isEmpty);
+    expect(productionReferences, ['lib/app/app_repositories.dart']);
     expect(adapter, contains('_database.selectOnly(products)'));
     expect(adapter, isNot(contains('.transaction(')));
     expect(adapter, isNot(contains('.into(')));

@@ -30,6 +30,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.da
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 13 backup export', () {
@@ -224,7 +225,8 @@ Future<_BackupFixture> _fixture() async {
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final supplier = await suppliers.createSupplier(

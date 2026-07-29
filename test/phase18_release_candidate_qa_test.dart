@@ -30,6 +30,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_export_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/backup_restore_preview_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/backup/data_wipe_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _backupTitle =
     '\u0627\u0644\u0646\u0633\u062e \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a';
@@ -388,7 +389,8 @@ Future<_BackupFixture> _emptyFixture({
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final exportService = exportFails

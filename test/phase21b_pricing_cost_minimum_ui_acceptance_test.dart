@@ -29,6 +29,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 21B pricing, cost, minimum, UI acceptance', () {
@@ -246,7 +247,8 @@ Future<_Fixture> _fixture({
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final saleController = SaleController(
@@ -297,7 +299,8 @@ Future<_RestoreOutcome> _restoreIntoEmpty(String jsonText) async {
   final history = LocalDocumentHistoryRepository(
     purchaseRepository: purchases,
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
 

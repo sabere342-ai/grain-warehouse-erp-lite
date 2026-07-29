@@ -19,6 +19,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 39 - Customer-bound multi-item sales', () {
@@ -667,7 +668,8 @@ void main() {
         final history = LocalDocumentHistoryRepository(
           purchaseRepository: purchases,
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -870,7 +872,8 @@ void main() {
         final history = LocalDocumentHistoryRepository(
           purchaseRepository: purchases,
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final exportService = BackupExportService(
@@ -960,7 +963,8 @@ void main() {
         final sourceHistory = LocalDocumentHistoryRepository(
           purchaseRepository: sourcePurchases,
           saleRepository: sourceSales,
-          productRepository: sourceProducts,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(sourceProducts),
           inventoryRepository: sourceInventory,
         );
         final sourceExport = BackupExportService(
@@ -992,7 +996,8 @@ void main() {
         final targetHistory = LocalDocumentHistoryRepository(
           purchaseRepository: targetPurchases,
           saleRepository: targetSales,
-          productRepository: targetProducts,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(targetProducts),
           inventoryRepository: targetInventory,
         );
 
@@ -1148,7 +1153,8 @@ void main() {
         final history = LocalDocumentHistoryRepository(
           purchaseRepository: purchases,
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 

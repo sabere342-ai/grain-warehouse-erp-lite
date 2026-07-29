@@ -25,6 +25,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/prints/printable_sales_invoice_view.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 68 - LogoMetadata model', () {
@@ -1273,7 +1274,8 @@ class _RepoSet {
     documentHistoryRepository = LocalDocumentHistoryRepository(
       purchaseRepository: purchaseRepository,
       saleRepository: saleRepository,
-      productRepository: productRepository,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepository),
       inventoryRepository: inventoryRepository,
     );
   }

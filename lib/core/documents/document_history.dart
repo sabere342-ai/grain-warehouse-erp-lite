@@ -1,4 +1,4 @@
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -103,16 +103,16 @@ class LocalDocumentHistoryRepository implements DocumentHistoryRepository {
   const LocalDocumentHistoryRepository({
     required PurchaseRepository purchaseRepository,
     required SaleRepository saleRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
   })  : _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository;
 
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
 
   @override
@@ -133,7 +133,7 @@ class LocalDocumentHistoryRepository implements DocumentHistoryRepository {
   }
 
   Future<Map<String, String>> _productNamesById() async {
-    final products = await _productRepository.listProducts(
+    final products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: true,
     );
     return {

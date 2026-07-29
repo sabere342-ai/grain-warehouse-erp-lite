@@ -22,6 +22,7 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 final _owner = AppUser(
   id: 'owner',
@@ -674,7 +675,8 @@ class _RepoSet {
     documentHistoryRepository = LocalDocumentHistoryRepository(
       purchaseRepository: purchaseRepository,
       saleRepository: saleRepository,
-      productRepository: productRepository,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepository),
       inventoryRepository: inventoryRepository,
     );
   }

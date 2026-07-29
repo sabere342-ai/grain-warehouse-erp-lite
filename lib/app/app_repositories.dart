@@ -7,6 +7,8 @@ import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/business_data_wipe_service.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
@@ -104,6 +106,10 @@ class AppRepositories {
   static late final FoundationDatabase database;
   static ProductDataRepository _productRepository = LocalProductRepository();
   static ProductDataRepository get productRepository => _productRepository;
+  static ProductCatalogReadRepository _productCatalogReadRepository =
+      _LegacyProductCatalogReadRepository(productRepository);
+  static ProductCatalogReadRepository get productCatalogReadRepository =>
+      _productCatalogReadRepository;
 
   static Future<void> initializeProduction({
     Future<FoundationDatabase> Function()? databaseFactory,
@@ -126,6 +132,7 @@ class AppRepositories {
       negativeBalanceApprovalService: negativeBalanceApprovalService,
     );
     _productRepository = DriftProductRepository(database);
+    _productCatalogReadRepository = DriftProductCatalogReadRepository(database);
     _customerRepository = DriftCustomerRepository(
       database,
       auditLogRepository: auditLogRepository,
@@ -171,6 +178,12 @@ class AppRepositories {
       inventoryRepository: inventoryRepository,
       inventoryValuationRepository: inventoryValuationRepository,
       financialAccountRepository: financialAccountRepository,
+    );
+    _documentHistoryRepository = LocalDocumentHistoryRepository(
+      purchaseRepository: purchaseRepository,
+      saleRepository: saleRepository,
+      productCatalogReadRepository: productCatalogReadRepository,
+      inventoryRepository: inventoryRepository,
     );
   }
 
@@ -240,13 +253,15 @@ class AppRepositories {
     supplierAccountRepository: supplierAccountRepository,
   );
 
-  static final LocalDocumentHistoryRepository documentHistoryRepository =
+  static LocalDocumentHistoryRepository _documentHistoryRepository =
       LocalDocumentHistoryRepository(
     purchaseRepository: purchaseRepository,
     saleRepository: saleRepository,
-    productRepository: productRepository,
+    productCatalogReadRepository: productCatalogReadRepository,
     inventoryRepository: inventoryRepository,
   );
+  static LocalDocumentHistoryRepository get documentHistoryRepository =>
+      _documentHistoryRepository;
 
   static BackupExportService get backupExportService => BackupExportService(
         businessIdentityRepository: businessIdentityRepository,
@@ -326,4 +341,31 @@ class AppRepositories {
             negativeBalanceApprovalRequestRepository,
         inventoryValuationRepository: inventoryValuationRepository,
       );
+}
+
+final class _LegacyProductCatalogReadRepository
+    implements ProductCatalogReadRepository {
+  const _LegacyProductCatalogReadRepository(this._repository);
+
+  final ProductRepository _repository;
+
+  @override
+  Future<List<ProductCatalogReadModel>> listProductCatalog({
+    required bool includeInactive,
+  }) async {
+    final products = await _repository.listProducts(
+      includeInactive: includeInactive,
+    );
+    return products
+        .map(
+          (product) => ProductCatalogReadModel(
+            id: product.id,
+            name: product.name,
+            code: product.code,
+            unit: product.unit,
+            isActive: product.isActive,
+          ),
+        )
+        .toList(growable: false);
+  }
 }
