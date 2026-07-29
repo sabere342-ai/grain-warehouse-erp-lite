@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -276,7 +277,7 @@ class _TrialRepositories {
     final history = LocalDocumentHistoryRepository(
       purchaseRepository: purchases,
       saleRepository: sales,
-      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
       inventoryRepository: inventory,
     );
     return _TrialRepositories._(
