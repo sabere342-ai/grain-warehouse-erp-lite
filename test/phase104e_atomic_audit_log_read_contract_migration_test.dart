@@ -67,14 +67,14 @@ void main() {
     expect(controller.errorMessage, isNotNull);
 
     repository.error = StateError('read failed');
-    await expectLater(
-      controller.loadLogs(_owner),
-      throwsA(isA<StateError>()),
-    );
+    var notificationCount = 0;
+    controller.addListener(() => notificationCount++);
+    expect(await controller.loadLogs(_owner), isFalse);
     expect(repository.callCount, 3);
     expect(controller.entries.single.id, 'audit-reload');
-    expect(controller.isLoading, isTrue);
-    expect(controller.errorMessage, isNull);
+    expect(controller.isLoading, isFalse);
+    expect(controller.errorMessage, 'تعذر تحميل سجل التدقيق. حاول مرة أخرى.');
+    expect(notificationCount, 2);
   });
 
   test('local repository maps exact frozen fields and preserves read ordering',

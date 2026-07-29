@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_controller.dart';
@@ -28,10 +30,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
     _controller = widget.controller ??
         AuditLogController(repository: AppRepositories.auditLogRepository);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = AuthScope.of(context).state.user;
-      if (user != null) {
-        _controller.loadLogs(user);
-      }
+      if (mounted) _loadLogs();
     });
   }
 
@@ -41,6 +40,11 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
       _controller.dispose();
     }
     super.dispose();
+  }
+
+  void _loadLogs() {
+    final user = AuthScope.of(context).state.user;
+    if (user != null) unawaited(_controller.loadLogs(user));
   }
 
   @override
@@ -64,31 +68,66 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
               icon: Icons.fact_check_rounded,
             ),
             const SizedBox(height: AppSpacing.md),
-            if (_controller.errorMessage != null) ...[
+            if (_controller.isLoading)
+              const GhalalLoadingState()
+            else if (_controller.errorMessage != null &&
+                _controller.entries.isEmpty)
               GhalalErrorState(
                 message: _controller.errorMessage!,
-                onRetry: () {
-                  final user = AuthScope.of(context).state.user;
-                  if (user != null) _controller.loadLogs(user);
-                },
-              ),
-            ] else if (_controller.isLoading)
-              const GhalalLoadingState()
+                onRetry: _loadLogs,
+              )
             else if (_controller.entries.isEmpty)
               const GhalalEmptyState(
                 title:
                     '\u0644\u0627 \u062a\u0648\u062c\u062f \u0623\u062d\u062f\u0627\u062b \u062a\u062f\u0642\u064a\u0642 \u0645\u0633\u062c\u0644\u0629 \u0628\u0639\u062f.',
               )
-            else
+            else ...[
+              if (_controller.errorMessage != null) ...[
+                _AuditLogRefreshError(
+                  message: _controller.errorMessage!,
+                  onRetry: _loadLogs,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
               ..._controller.entries.map(
                 (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: _AuditLogCard(entry: entry),
                 ),
               ),
+            ],
           ],
         );
       },
+    );
+  }
+}
+
+class _AuditLogRefreshError extends StatelessWidget {
+  const _AuditLogRefreshError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return PremiumCard(
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: colors.error),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(message)),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('إعادة المحاولة'),
+          ),
+        ],
+      ),
     );
   }
 }
