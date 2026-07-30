@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = 'a813a70d5a41e272046f320387572022797e8fd4';
+const _phase106aCommit = 'fe618089672436d115ded9b02c4f1e17224cf7fb';
 const _reportPath =
     'docs/PHASE-106A-DISCOVER-FREEZE-SECOND-PRODUCT-READ-CONSUMER-TARGET.md';
 const _dashboardPath = 'lib/features/dashboard/dashboard_screen.dart';
@@ -69,9 +70,18 @@ void main() {
 
   test('complete executable listProducts inventory is explicit and current',
       () {
-    final discovered = _dartFilesUnder('lib')
-        .where((file) => file.readAsStringSync().contains('.listProducts('))
-        .map(_normalizedPath)
+    final discovered = _git([
+      'grep',
+      '-l',
+      '-F',
+      '.listProducts(',
+      _phase106aCommit,
+      '--',
+      'lib',
+    ])
+        .split(RegExp(r'\r?\n'))
+        .where((line) => line.trim().isNotEmpty)
+        .map((line) => line.substring(line.indexOf(':') + 1))
         .toSet()
       ..removeAll(_productReadInfrastructureFiles);
 
@@ -110,7 +120,7 @@ void main() {
 
   test('selected target is a live production read with a proven call chain',
       () {
-    final source = _read(_dashboardPath);
+    final source = _git(['show', '$_phase106aCommit:$_dashboardPath']);
     final stateBody = _classBody(source, 'class DashboardGuidanceState');
 
     expect(
@@ -129,7 +139,7 @@ void main() {
   });
 
   test('selected target is deliberately not migrated during Phase 106A', () {
-    final source = _read(_dashboardPath);
+    final source = _git(['show', '$_phase106aCommit:$_dashboardPath']);
     final stateBody = _classBody(source, 'class DashboardGuidanceState');
 
     expect(stateBody, contains('AppRepositories.productRepository'));
@@ -149,23 +159,24 @@ void main() {
 
   test('Phase 106A changes no production file or frozen implementation', () {
     expect(
-      _git(['diff', _baseline, '--name-only', '--', 'lib']).trim(),
+      _git([
+        'diff',
+        _baseline,
+        _phase106aCommit,
+        '--name-only',
+        '--',
+        'lib',
+      ]).trim(),
       isEmpty,
     );
 
-    final statusLines = _git([
-      'status',
-      '--porcelain=v1',
-      '--untracked-files=all',
-    ])
-        .split(RegExp(r'\r?\n'))
-        .where((line) => line.trim().isNotEmpty)
-        .toList(growable: false);
-    final changedPaths = statusLines
-        .map((line) => line.substring(3).replaceAll('\\', '/'))
-        .toSet();
-    expect(changedPaths.where((path) => path.startsWith('lib/')), isEmpty);
-    expect(changedPaths.difference(_phaseFiles), isEmpty);
+    final changedPaths = _git([
+      'diff',
+      _baseline,
+      _phase106aCommit,
+      '--name-only',
+    ]).split(RegExp(r'\r?\n')).where((line) => line.trim().isNotEmpty).toSet();
+    expect(changedPaths, _phaseFiles);
   });
 
   test('governing report freezes comparison, Phase 106B scope, and acceptance',
@@ -241,17 +252,6 @@ String _git(List<String> arguments) {
 
 int _gitExitCode(List<String> arguments) =>
     Process.runSync('git', arguments, runInShell: false).exitCode;
-
-List<File> _dartFilesUnder(String root) => Directory(root)
-    .listSync(recursive: true)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .toList(growable: false);
-
-String _normalizedPath(File file) {
-  final root = Directory.current.path.replaceAll('\\', '/');
-  return file.absolute.path.replaceAll('\\', '/').replaceFirst('$root/', '');
-}
 
 String _classBody(String source, String declaration) {
   final start = source.indexOf(declaration);

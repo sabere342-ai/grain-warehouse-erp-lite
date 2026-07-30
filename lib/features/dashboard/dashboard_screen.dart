@@ -252,9 +252,8 @@ class DashboardGuidanceState {
   }
 
   static Future<DashboardGuidanceState> load() async {
-    final products = await AppRepositories.productRepository.listProducts(
-      includeInactive: true,
-    );
+    final products = await AppRepositories.productCatalogReadRepository
+        .listProductCatalog(includeInactive: true);
     final movements =
         await AppRepositories.inventoryRepository.listAllMovements();
     final sales = await AppRepositories.saleRepository.listSales();
