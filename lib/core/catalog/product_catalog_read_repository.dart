@@ -7,6 +7,7 @@ final class ProductCatalogReadModel {
     required this.code,
     required this.unit,
     required this.isActive,
+    required this.referenceCostPricePiastersPerKg,
   });
 
   final String id;
@@ -16,6 +17,7 @@ final class ProductCatalogReadModel {
   final String? code;
   final GrainUnit unit;
   final bool isActive;
+  final int? referenceCostPricePiastersPerKg;
 }
 
 abstract interface class ProductCatalogReadRepository {

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '812face11ab3b63f2252402ec0cb8960cc4af563';
+const _phase106iCommit = '2b3f5fb93427efa68e66a383bed5873027081514';
 const _reportPath =
     'docs/PHASE-106I-DISCOVER-FREEZE-NEXT-PRODUCT-READ-CONTRACT-EXPANSION.md';
 const _selectedPath = 'lib/core/reports/report_repository.dart';
@@ -206,10 +207,10 @@ void main() {
     }
   });
 
-  test('Phase 106I freezes but does not implement the expansion', () {
-    final contract = File(_contractPath).readAsStringSync();
-    final adapter = File(_adapterPath).readAsStringSync();
-    final selected = File(_selectedPath).readAsStringSync();
+  test('Phase 106I commit freezes but does not implement the expansion', () {
+    final contract = _git(['show', '$_phase106iCommit:$_contractPath']);
+    final adapter = _git(['show', '$_phase106iCommit:$_adapterPath']);
+    final selected = _git(['show', '$_phase106iCommit:$_selectedPath']);
 
     expect(contract, isNot(contains('referenceCostPricePiastersPerKg')));
     expect(
@@ -217,7 +218,14 @@ void main() {
     expect(selected, contains('_productRepository.listProducts('));
     expect(selected, isNot(contains('_productCatalogReadRepository')));
     expect(
-      _git(['diff', '--name-only', _baseline, '--', 'lib']).trim(),
+      _git([
+        'diff',
+        '--name-only',
+        _baseline,
+        _phase106iCommit,
+        '--',
+        'lib',
+      ]).trim(),
       isEmpty,
     );
   });

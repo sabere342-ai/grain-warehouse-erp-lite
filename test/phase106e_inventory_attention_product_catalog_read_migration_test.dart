@@ -389,6 +389,7 @@ ProductCatalogReadModel _product(
       code: null,
       unit: GrainUnit.kilogram,
       isActive: isActive,
+      referenceCostPricePiastersPerKg: null,
     );
 
 final class _Catalog implements ProductCatalogReadRepository {

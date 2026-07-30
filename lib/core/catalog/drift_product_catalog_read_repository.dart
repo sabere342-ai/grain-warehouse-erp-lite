@@ -22,6 +22,7 @@ final class DriftProductCatalogReadRepository
         products.code,
         products.unit,
         products.isActive,
+        products.referenceCostPricePiastersPerKg,
       ])
       ..orderBy([
         OrderingTerm.asc(products.createdAt),
@@ -40,6 +41,8 @@ final class DriftProductCatalogReadRepository
             code: row.read(products.code),
             unit: GrainUnit.fromWireName(row.read(products.unit)!),
             isActive: row.read(products.isActive)!,
+            referenceCostPricePiastersPerKg:
+                row.read(products.referenceCostPricePiastersPerKg),
           ),
         )
         .toList(growable: false);

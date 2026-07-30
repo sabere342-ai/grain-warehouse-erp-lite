@@ -22,6 +22,8 @@ final class ProductCatalogReadRepositoryTestAdapter
             code: product.code,
             unit: product.unit,
             isActive: product.isActive,
+            referenceCostPricePiastersPerKg:
+                product.referenceCostPricePiastersPerKg,
           ),
         )
         .toList(growable: false);

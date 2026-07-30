@@ -10,6 +10,7 @@ void main() {
       code: 'WH-1',
       unit: GrainUnit.ton,
       isActive: true,
+      referenceCostPricePiastersPerKg: 2375,
     );
 
     final String id = model.id;
@@ -17,12 +18,15 @@ void main() {
     final String? code = model.code;
     final GrainUnit unit = model.unit;
     final bool isActive = model.isActive;
+    final int? referenceCostPricePiastersPerKg =
+        model.referenceCostPricePiastersPerKg;
 
     expect(id, 'prd-123456789-1');
     expect(name, 'Wheat');
     expect(code, 'WH-1');
     expect(unit, GrainUnit.ton);
     expect(isActive, isTrue);
+    expect(referenceCostPricePiastersPerKg, 2375);
   });
 
   test('optional product code accepts null without changing other fields', () {
@@ -32,12 +36,14 @@ void main() {
       code: null,
       unit: GrainUnit.kilogram,
       isActive: false,
+      referenceCostPricePiastersPerKg: null,
     );
 
     expect(model.id, 'prd-987654321-2');
     expect(model.code, isNull);
     expect(model.unit, GrainUnit.kilogram);
     expect(model.isActive, isFalse);
+    expect(model.referenceCostPricePiastersPerKg, isNull);
   });
 
   test('repository is a Future snapshot contract with required visibility',
@@ -49,6 +55,7 @@ void main() {
         code: null,
         unit: GrainUnit.kilogram,
         isActive: true,
+        referenceCostPricePiastersPerKg: null,
       ),
       ProductCatalogReadModel(
         id: 'prd-2-2',
@@ -56,6 +63,7 @@ void main() {
         code: 'SECOND',
         unit: GrainUnit.ton,
         isActive: false,
+        referenceCostPricePiastersPerKg: null,
       ),
     ];
     final fake = _FakeProductCatalogReadRepository(snapshot);

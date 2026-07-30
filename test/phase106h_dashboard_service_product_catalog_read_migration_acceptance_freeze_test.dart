@@ -18,6 +18,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
 const _phase106fCommit = 'ad56678ff58334d46b76dfa3757650b1aa718d70';
 const _phase106gCommit = '4e9af2034aca1694545027a50336ad15de46f2bf';
+const _phase106hCommit = '812face11ab3b63f2252402ec0cb8960cc4af563';
 const _servicePath = 'lib/core/dashboard/dashboard_service.dart';
 const _controllerPath = 'lib/core/dashboard/dashboard_controller.dart';
 const _screenPath = 'lib/features/dashboard/dashboard_screen.dart';
@@ -44,7 +45,7 @@ void main() {
         _changedFiles(_phase106fCommit, _phase106gCommit, 'lib'),
         {_servicePath, _screenPath},
       );
-      expect(_changedFiles(_phase106gCommit, null, 'lib'), isEmpty);
+      expect(_changedFiles(_phase106gCommit, _phase106hCommit, 'lib'), isEmpty);
 
       for (final path in const [
         'lib/core/catalog/product_catalog_read_repository.dart',
@@ -55,7 +56,14 @@ void main() {
         'lib/core/sales/sale_repository.dart',
       ]) {
         expect(
-          _gitExitCode(['diff', '--quiet', _phase106gCommit, '--', path]),
+          _gitExitCode([
+            'diff',
+            '--quiet',
+            _phase106gCommit,
+            _phase106hCommit,
+            '--',
+            path,
+          ]),
           0,
           reason: path,
         );
@@ -458,6 +466,7 @@ ProductCatalogReadModel _product(
       code: null,
       unit: GrainUnit.kilogram,
       isActive: isActive,
+      referenceCostPricePiastersPerKg: null,
     );
 
 final class _FixedSales implements SaleRepository {

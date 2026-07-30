@@ -15,6 +15,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
     as db;
 
 const _baseline = 'ad56678ff58334d46b76dfa3757650b1aa718d70';
+const _phase106gCommit = '4e9af2034aca1694545027a50336ad15de46f2bf';
 const _servicePath = 'lib/core/dashboard/dashboard_service.dart';
 const _screenPath = 'lib/features/dashboard/dashboard_screen.dart';
 
@@ -79,6 +80,7 @@ void main() {
         'diff',
         '--name-only',
         _baseline,
+        _phase106gCommit,
         '--',
         'lib',
       ])
@@ -97,7 +99,14 @@ void main() {
         'lib/core/documents/document_history.dart',
       ]) {
         expect(
-          _gitExitCode(['diff', '--quiet', _baseline, '--', path]),
+          _gitExitCode([
+            'diff',
+            '--quiet',
+            _baseline,
+            _phase106gCommit,
+            '--',
+            path,
+          ]),
           0,
           reason: path,
         );
@@ -437,6 +446,7 @@ ProductCatalogReadModel _product(
       code: null,
       unit: GrainUnit.kilogram,
       isActive: isActive,
+      referenceCostPricePiastersPerKg: null,
     );
 
 class _FixedCatalog implements ProductCatalogReadRepository {

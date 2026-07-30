@@ -39,6 +39,7 @@ void main() {
       code: 'WH-41',
       unit: GrainUnit.ton,
       isActive: false,
+      referenceCostPricePiastersPerKg: null,
     );
     final catalog = _CatalogFake([
       const [product],
@@ -103,6 +104,7 @@ void main() {
       code: null,
       unit: GrainUnit.kilogram,
       isActive: true,
+      referenceCostPricePiastersPerKg: null,
     );
     final catalog = _CatalogFake([
       StateError('first load fails'),
@@ -131,6 +133,7 @@ void main() {
           code: null,
           unit: GrainUnit.ton,
           isActive: true,
+          referenceCostPricePiastersPerKg: null,
         ),
         ProductCatalogReadModel(
           id: 'prd-a',
@@ -138,6 +141,7 @@ void main() {
           code: null,
           unit: GrainUnit.kilogram,
           isActive: true,
+          referenceCostPricePiastersPerKg: null,
         ),
       ],
     ]);
