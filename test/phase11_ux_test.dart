@@ -25,6 +25,8 @@ import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart'
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 11 Arabic UX clarity', () {
     testWidgets('shows clear Arabic empty state labels', (tester) async {
@@ -215,7 +217,8 @@ LocalReportRepository _emptyReportRepository() {
       inventoryRepository: inventory,
     ),
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
 }
 

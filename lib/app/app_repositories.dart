@@ -247,7 +247,7 @@ class AppRepositories {
     purchaseRepository: purchaseRepository,
     saleRepository: saleRepository,
     inventoryRepository: inventoryRepository,
-    productRepository: productRepository,
+    productCatalogReadRepository: productCatalogReadRepository,
     expenseRepository: expenseRepository,
     customerAccountRepository: customerAccountRepository,
     supplierAccountRepository: supplierAccountRepository,

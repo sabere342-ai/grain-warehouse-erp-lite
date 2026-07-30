@@ -23,6 +23,8 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Daily activity reports', () {
     test('empty report returns zero totals', () async {
@@ -365,7 +367,9 @@ LocalReportRepository _reportRepository({
       movements: movements,
       balances: balances,
     ),
-    productRepository: _FakeProductRepository(products ?? [_product]),
+    productCatalogReadRepository: ProductCatalogReadRepositoryTestAdapter(
+      _FakeProductRepository(products ?? [_product]),
+    ),
     supplierAccountRepository: _FakeSupplierAccountRepository(
       entries: supplierEntries,
       payments: supplierPayments,

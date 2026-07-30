@@ -113,7 +113,7 @@ void main() {
 
   test('selected target is production reachable, read-only, and still legacy',
       () {
-    final repository = File(_selectedPath).readAsStringSync();
+    final repository = _git(['show', '$_phase106iCommit:$_selectedPath']);
     final classStart = repository.indexOf('class LocalReportRepository');
     final methodStart = repository.indexOf(
       'Future<DailyActivityReport> dailyActivityReport(',
@@ -125,8 +125,10 @@ void main() {
         File('lib/core/reports/report_controller.dart').readAsStringSync();
     final screen =
         File('lib/features/reports/reports_screen.dart').readAsStringSync();
-    final composition =
-        File('lib/app/app_repositories.dart').readAsStringSync();
+    final composition = _git([
+      'show',
+      '$_phase106iCommit:lib/app/app_repositories.dart',
+    ]);
 
     expect(repository, contains('final ProductRepository _productRepository;'));
     expect(_occurrences(body, '_productRepository.listProducts('), 1);
@@ -155,8 +157,8 @@ void main() {
 
   test('selected target needs exactly the frozen nullable reference cost field',
       () {
-    final repository = File(_selectedPath).readAsStringSync();
-    final calculator = File(_calculatorPath).readAsStringSync();
+    final repository = _git(['show', '$_phase106iCommit:$_selectedPath']);
+    final calculator = _git(['show', '$_phase106iCommit:$_calculatorPath']);
 
     for (final field in const [
       'product.id',

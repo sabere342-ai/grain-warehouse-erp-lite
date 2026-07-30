@@ -249,7 +249,8 @@ Future<_Fixture> _seededFixture() async {
     purchaseRepository: purchases,
     saleRepository: sales,
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   final backupExport = BackupExportService(
     productRepository: products,

@@ -1,4 +1,5 @@
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -21,14 +22,14 @@ class LocalReportRepository implements ReportRepository {
     required PurchaseRepository purchaseRepository,
     required SaleRepository saleRepository,
     required InventoryRepository inventoryRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     ExpenseRepository? expenseRepository,
     CustomerAccountRepository? customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
   })  : _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _expenseRepository = expenseRepository ?? LocalExpenseRepository(),
         _customerAccountRepository = customerAccountRepository,
         _supplierAccountRepository = supplierAccountRepository;
@@ -36,7 +37,7 @@ class LocalReportRepository implements ReportRepository {
   final PurchaseRepository _purchaseRepository;
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final ExpenseRepository _expenseRepository;
   final CustomerAccountRepository? _customerAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
@@ -51,8 +52,9 @@ class LocalReportRepository implements ReportRepository {
       selectedDate.day,
     );
     final end = start.add(const Duration(days: 1));
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final productNames = {
       for (final product in products) product.id: product.name,
     };
@@ -109,7 +111,20 @@ class LocalReportRepository implements ReportRepository {
         .where((value) => value > 0)
         .fold<int>(0, (total, value) => total + value);
     final summary = BusinessSummaryCalculator.calculate(
-      products: products,
+      products: products
+          .map(
+            (product) => Product(
+              id: product.id,
+              name: product.name,
+              unit: product.unit,
+              isActive: product.isActive,
+              referenceCostPricePiastersPerKg:
+                  product.referenceCostPricePiastersPerKg,
+              createdAt: start,
+              updatedAt: start,
+            ),
+          )
+          .toList(growable: false),
       purchases: purchases,
       sales: sales,
       stockBalancesKg: balances,

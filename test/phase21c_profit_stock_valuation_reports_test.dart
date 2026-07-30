@@ -194,7 +194,8 @@ Future<_Fixture> _fixture({required int? referenceCost}) async {
     purchaseRepository: purchases,
     saleRepository: sales,
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   final backupExport = BackupExportService(
     productRepository: products,

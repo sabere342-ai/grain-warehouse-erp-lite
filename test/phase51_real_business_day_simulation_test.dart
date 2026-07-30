@@ -352,7 +352,8 @@ class _BusinessDayFixture {
       purchaseRepository: purchases,
       saleRepository: sales,
       inventoryRepository: inventory,
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       expenseRepository: expenses,
       customerAccountRepository: customerAccounts,
       supplierAccountRepository: supplierAccounts,

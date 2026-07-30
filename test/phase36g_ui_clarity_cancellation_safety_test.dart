@@ -590,7 +590,8 @@ LocalReportRepository _reportRepository({
     purchaseRepository: _FakePurchaseRepository(purchases),
     saleRepository: _FakeSaleRepository(sales),
     inventoryRepository: _FakeInventoryRepository(movements, balances ?? {}),
-    productRepository: productRepo,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(productRepo),
     expenseRepository: LocalExpenseRepository(),
     customerAccountRepository: LocalCustomerAccountRepository(
       customerRepository: LocalCustomerRepository(),

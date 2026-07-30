@@ -20,6 +20,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 35 customer credit UI backing flows', () {
     test('credit mode requires an active customer before posting', () async {
@@ -168,7 +170,8 @@ void main() {
         purchaseRepository: const _EmptyPurchaseRepository(),
         saleRepository: fixture.sales,
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         customerAccountRepository: fixture.ledger,
       );
 

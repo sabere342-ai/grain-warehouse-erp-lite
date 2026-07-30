@@ -516,7 +516,9 @@ LocalReportRepository _reportRepository({
       movements: movements,
       balances: balances,
     ),
-    productRepository: _FakeProductRepository(products ?? [_product]),
+    productCatalogReadRepository: ProductCatalogReadRepositoryTestAdapter(
+      _FakeProductRepository(products ?? [_product]),
+    ),
     supplierAccountRepository: LocalSupplierAccountRepository(
       supplierRepository: LocalSupplierRepository(),
     ),

@@ -24,6 +24,8 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 53 cloud migration readiness documentation', () {
     late final String content;
@@ -347,7 +349,8 @@ class _ReadinessFixture {
       purchaseRepository: purchases,
       saleRepository: sales,
       inventoryRepository: inventory,
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       expenseRepository: LocalExpenseRepository(),
       customerAccountRepository: customerAccounts,
       supplierAccountRepository: supplierAccounts,
