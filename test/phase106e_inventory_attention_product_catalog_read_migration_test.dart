@@ -107,7 +107,17 @@ void main() {
           'productCatalogReadRepository: productCatalogReadRepository',
         ),
       );
-      expect(service, contains('_productRepository.listProducts('));
+      expect(
+        service,
+        contains(
+          'final ProductCatalogReadRepository _productCatalogReadRepository;',
+        ),
+      );
+      expect(
+        service,
+        contains('_productCatalogReadRepository.listProductCatalog('),
+      );
+      expect(service, isNot(contains('_productRepository.listProducts(')));
     });
   });
 

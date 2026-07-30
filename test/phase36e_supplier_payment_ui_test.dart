@@ -258,7 +258,6 @@ void main() {
         service = DashboardService(
           saleRepository: saleRepo,
           inventoryRepository: inventoryRepo,
-          productRepository: productRepo,
           productCatalogReadRepository:
               ProductCatalogReadRepositoryTestAdapter(productRepo),
           expenseRepository: expenseRepo,

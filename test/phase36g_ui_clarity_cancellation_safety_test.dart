@@ -360,7 +360,6 @@ DashboardService _dashboardService() {
     inventoryRepository: LocalInventoryRepository(
       productRepository: LocalProductRepository(),
     ),
-    productRepository: LocalProductRepository(),
     productCatalogReadRepository:
         ProductCatalogReadRepositoryTestAdapter(LocalProductRepository()),
     expenseRepository: LocalExpenseRepository(),

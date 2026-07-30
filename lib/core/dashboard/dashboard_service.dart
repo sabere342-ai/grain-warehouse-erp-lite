@@ -2,7 +2,6 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
@@ -66,7 +65,6 @@ class DashboardService {
   DashboardService({
     required SaleRepository saleRepository,
     required InventoryRepository inventoryRepository,
-    required ProductRepository productRepository,
     required ProductCatalogReadRepository productCatalogReadRepository,
     required ExpenseRepository expenseRepository,
     required CustomerAccountRepository customerAccountRepository,
@@ -75,7 +73,7 @@ class DashboardService {
     InventoryAttentionService? inventoryAttentionService,
   })  : _saleRepository = saleRepository,
         _inventoryRepository = inventoryRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _expenseRepository = expenseRepository,
         _customerAccountRepository = customerAccountRepository,
         _financialAccountRepository = financialAccountRepository,
@@ -88,7 +86,7 @@ class DashboardService {
 
   final SaleRepository _saleRepository;
   final InventoryRepository _inventoryRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final ExpenseRepository _expenseRepository;
   final CustomerAccountRepository _customerAccountRepository;
   final FinancialAccountRepository _financialAccountRepository;
@@ -101,8 +99,9 @@ class DashboardService {
     final todayEnd = todayStart.add(const Duration(days: 1));
 
     final allSales = await _saleRepository.listSales();
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final todaySales = allSales
         .where((sale) =>
             !sale.isCancelled &&

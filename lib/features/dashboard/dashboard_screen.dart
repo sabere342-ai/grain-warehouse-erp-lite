@@ -46,7 +46,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           service: DashboardService(
             saleRepository: AppRepositories.saleRepository,
             inventoryRepository: AppRepositories.inventoryRepository,
-            productRepository: AppRepositories.productRepository,
             productCatalogReadRepository:
                 AppRepositories.productCatalogReadRepository,
             expenseRepository: AppRepositories.expenseRepository,

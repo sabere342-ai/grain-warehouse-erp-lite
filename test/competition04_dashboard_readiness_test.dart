@@ -194,7 +194,6 @@ DashboardService _service(FinancialAccountRepository financialAccounts) {
       inventoryRepository: inventory,
     ),
     inventoryRepository: inventory,
-    productRepository: products,
     productCatalogReadRepository:
         ProductCatalogReadRepositoryTestAdapter(products),
     expenseRepository: LocalExpenseRepository(),

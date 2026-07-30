@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '9f97637b71b91529a17faa7c2ce316294da02ac7';
+const _phase106fCommit = 'ad56678ff58334d46b76dfa3757650b1aa718d70';
 const _reportPath =
     'docs/PHASE-106F-DISCOVER-FREEZE-NEXT-PRODUCT-READ-CONSUMER-TARGET.md';
 const _selectedPath = 'lib/core/dashboard/dashboard_service.dart';
@@ -47,11 +48,18 @@ const _catalogInfrastructureFiles = {
 };
 
 void main() {
-  test('Phase 106E baseline exists and Phase 106F changes no production file',
-      () {
+  test('Phase 106F snapshot changed no production file', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
+    expect(_git(['rev-parse', _phase106fCommit]).trim(), _phase106fCommit);
     expect(
-      _git(['diff', '--name-only', _baseline, '--', 'lib']).trim(),
+      _git([
+        'diff',
+        '--name-only',
+        _baseline,
+        _phase106fCommit,
+        '--',
+        'lib',
+      ]).trim(),
       isEmpty,
     );
   });
@@ -65,7 +73,7 @@ void main() {
     expect(legacyFiles, _legacyConsumerFiles);
     expect(migratedFiles, _migratedConsumerFiles);
 
-    final report = _read(_reportPath);
+    final report = _readAtPhase106f(_reportPath);
     for (final path in {
       ..._legacyConsumerFiles,
       ..._legacyInfrastructureFiles,
@@ -81,13 +89,14 @@ void main() {
   });
 
   test('the three prior consumers use the frozen catalog boundary', () {
-    final history = _read('lib/core/documents/document_history.dart');
+    final history =
+        _readAtPhase106f('lib/core/documents/document_history.dart');
     final guidance = _classBody(
-      _read('lib/features/dashboard/dashboard_screen.dart'),
+      _readAtPhase106f('lib/features/dashboard/dashboard_screen.dart'),
       'class DashboardGuidanceState',
     );
     final attention =
-        _read('lib/core/inventory/inventory_attention_service.dart');
+        _readAtPhase106f('lib/core/inventory/inventory_attention_service.dart');
 
     expect(
         history, contains('_productCatalogReadRepository.listProductCatalog('));
@@ -99,7 +108,7 @@ void main() {
   });
 
   test('exactly DashboardService.load is frozen as the next target', () {
-    final report = _read(_reportPath);
+    final report = _readAtPhase106f(_reportPath);
     final selections = RegExp(
       r'^Selected target:\s*(.+)$',
       multiLine: true,
@@ -116,7 +125,7 @@ void main() {
   });
 
   test('selected method deliberately retains its exact legacy dependency', () {
-    final source = _read(_selectedPath);
+    final source = _readAtPhase106f(_selectedPath);
     final body = _methodBody(source, 'Future<DashboardData> load() async');
 
     expect(source, contains('final ProductRepository _productRepository;'));
@@ -129,7 +138,7 @@ void main() {
 
   test('selected product projection and observable behavior are frozen', () {
     final body = _methodBody(
-      _read(_selectedPath),
+      _readAtPhase106f(_selectedPath),
       'Future<DashboardData> load() async',
     );
 
@@ -162,10 +171,10 @@ void main() {
 
   test('frozen contract supplies every product field selected method needs',
       () {
-    final contract = _read(
+    final contract = _readAtPhase106f(
       'lib/core/catalog/product_catalog_read_repository.dart',
     );
-    final adapter = _read(
+    final adapter = _readAtPhase106f(
       'lib/core/catalog/drift_product_catalog_read_repository.dart',
     );
 
@@ -185,9 +194,11 @@ void main() {
   });
 
   test('protected production dashboard lifecycle reaches selected method', () {
-    final screen = _read('lib/features/dashboard/dashboard_screen.dart');
-    final controller = _read('lib/core/dashboard/dashboard_controller.dart');
-    final composition = _read('lib/app/app_repositories.dart');
+    final screen =
+        _readAtPhase106f('lib/features/dashboard/dashboard_screen.dart');
+    final controller =
+        _readAtPhase106f('lib/core/dashboard/dashboard_controller.dart');
+    final composition = _readAtPhase106f('lib/app/app_repositories.dart');
 
     expect(screen, contains('service: DashboardService('));
     expect(screen,
@@ -216,7 +227,7 @@ void main() {
 
   test('governing report freezes all required behavior and next phase only',
       () {
-    final report = _read(_reportPath);
+    final report = _readAtPhase106f(_reportPath);
     for (final heading in const [
       'Outcome',
       'Git baseline and scope',
@@ -257,7 +268,8 @@ void main() {
   });
 }
 
-String _read(String path) => File(path).readAsStringSync();
+String _readAtPhase106f(String path) =>
+    _git(['show', '$_phase106fCommit:$path']);
 
 Set<String> _gitGrepFiles(String pattern, String revision) {
   final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);
