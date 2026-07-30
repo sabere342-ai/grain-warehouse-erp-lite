@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
@@ -26,6 +27,7 @@ void main() {
     var inventory = DriftInventoryRepository(
       database,
       productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     final first = await inventory.createMovement(StockMovementDraft(
       productId: product.id,
@@ -45,7 +47,11 @@ void main() {
 
     database = openDatabaseFile(file);
     products = DriftProductRepository(database);
-    inventory = DriftInventoryRepository(database, productRepository: products);
+    inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     expect(await inventory.currentStockKg(product.id), 70);
     expect((await inventory.listAllMovements()).map((value) => value.id).first,
         first.id);
@@ -65,8 +71,11 @@ void main() {
     addTearDown(database.close);
     final products = DriftProductRepository(database);
     final product = await products.createProduct(_productDraft);
-    final inventory =
-        DriftInventoryRepository(database, productRepository: products);
+    final inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     await inventory.createMovement(StockMovementDraft(
       productId: product.id,
       movementType: StockMovementType.openingBalance,
@@ -101,8 +110,11 @@ void main() {
     addTearDown(database.close);
     final products = DriftProductRepository(database);
     final product = await products.createProduct(_productDraft);
-    final inventory =
-        DriftInventoryRepository(database, productRepository: products);
+    final inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     final movements = await Future.wait(List.generate(
       20,
       (_) => inventory.createMovement(StockMovementDraft(
@@ -122,8 +134,11 @@ void main() {
     addTearDown(database.close);
     final products = DriftProductRepository(database);
     final product = await products.createProduct(_productDraft);
-    final inventory =
-        DriftInventoryRepository(database, productRepository: products);
+    final inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     await expectLater(
       RepositoryTransaction.execute([inventory.createTransactionSnapshot()],
           () async {
@@ -153,8 +168,11 @@ void main() {
     addTearDown(database.close);
     final products = DriftProductRepository(database);
     final product = await products.createProduct(_productDraft);
-    final inventory =
-        DriftInventoryRepository(database, productRepository: products);
+    final inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     final original = await inventory.createMovement(StockMovementDraft(
       productId: product.id,
       movementType: StockMovementType.purchaseIntake,

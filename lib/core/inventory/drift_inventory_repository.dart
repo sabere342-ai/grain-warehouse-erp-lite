@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -11,11 +12,14 @@ class DriftInventoryRepository implements DurableInventoryRepository {
   DriftInventoryRepository(
     this._database, {
     required ProductRepository productRepository,
-  }) : _productRepository = productRepository;
+    required ProductCatalogReadRepository productCatalogReadRepository,
+  })  : _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository;
 
   static const _sequenceKey = 'inventory_movements';
   final db.FoundationDatabase _database;
   final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
 
   @override
   Future<StockMovement> createMovement(StockMovementDraft draft) async {
@@ -101,13 +105,18 @@ class DriftInventoryRepository implements DurableInventoryRepository {
   Future<Map<String, int>> allProductBalancesKg({
     bool activeProductsOnly = false,
   }) async {
-    final products = await _productRepository.listProducts(
+    final products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: !activeProductsOnly,
     );
-    return Map.unmodifiable({
-      for (final product in products)
-        product.id: await currentStockKg(product.id),
-    });
+    final balances = <String, int>{};
+    for (final product in products) {
+      final movements = await listMovementsByProduct(product.id);
+      balances[product.id] = movements.fold<int>(
+        0,
+        (total, movement) => total + movement.signedQuantityKg,
+      );
+    }
+    return Map<String, int>.unmodifiable(balances);
   }
 
   @override

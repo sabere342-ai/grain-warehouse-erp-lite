@@ -49,9 +49,10 @@ void main() {
   test('baseline architecture has 21 consumers classified by the report', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
 
-    final legacyFiles = _gitGrepFiles('.listProducts(')
+    final legacyFiles = _gitGrepFiles('.listProducts(', _phase106iCommit)
       ..removeAll(_legacyInfrastructureFiles);
-    final migratedFiles = _gitGrepFiles('.listProductCatalog(');
+    final migratedFiles =
+        _gitGrepFiles('.listProductCatalog(', _phase106iCommit);
 
     expect(legacyFiles, _legacyConsumerFiles);
     expect(migratedFiles, _migratedConsumerFiles);
@@ -267,8 +268,8 @@ void main() {
   });
 }
 
-Set<String> _gitGrepFiles(String pattern) {
-  final output = _git(['grep', '-l', '-F', pattern, 'HEAD', '--', 'lib']);
+Set<String> _gitGrepFiles(String pattern, String revision) {
+  final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);
   return output
       .split(RegExp(r'\r?\n'))
       .where((line) => line.trim().isNotEmpty)

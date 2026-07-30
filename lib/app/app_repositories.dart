@@ -160,6 +160,7 @@ class AppRepositories {
     _inventoryRepository = DriftInventoryRepository(
       database,
       productRepository: productRepository,
+      productCatalogReadRepository: productCatalogReadRepository,
     );
     _inventoryValuationRepository = DriftInventoryValuationRepository(database);
     _purchaseRepository = DriftPurchaseRepository(

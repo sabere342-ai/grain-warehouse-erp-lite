@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
@@ -163,8 +164,11 @@ class _Fixture {
     final supplier = existingSuppliers.isEmpty
         ? await suppliers.createSupplier(const SupplierDraft(name: 'Supplier'))
         : existingSuppliers.single;
-    final inventory =
-        DriftInventoryRepository(database, productRepository: products);
+    final inventory = DriftInventoryRepository(
+      database,
+      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
+    );
     final purchases = DriftPurchaseRepository(
       database,
       supplierRepository: suppliers,
