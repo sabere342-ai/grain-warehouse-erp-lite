@@ -23,6 +23,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/help/help_guide_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('COMPETITION-04 dashboard readiness', () {
@@ -194,6 +195,8 @@ DashboardService _service(FinancialAccountRepository financialAccounts) {
     ),
     inventoryRepository: inventory,
     productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     expenseRepository: LocalExpenseRepository(),
     customerAccountRepository:
         LocalCustomerAccountRepository(customerRepository: customers),

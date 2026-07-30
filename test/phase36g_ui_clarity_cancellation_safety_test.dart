@@ -31,6 +31,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/reports/reports_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 36G - UI clarity & cancellation safety', () {
@@ -360,6 +361,8 @@ DashboardService _dashboardService() {
       productRepository: LocalProductRepository(),
     ),
     productRepository: LocalProductRepository(),
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(LocalProductRepository()),
     expenseRepository: LocalExpenseRepository(),
     customerAccountRepository: LocalCustomerAccountRepository(
       customerRepository: LocalCustomerRepository(),

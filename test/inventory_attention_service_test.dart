@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -10,13 +9,13 @@ void main() {
   test('classifies canonical inventory attention and sorts deterministically',
       () async {
     final products = _Products([
-      _product('low-b', 'باء', minimumSalePrice: 1),
+      _product('low-b', 'باء'),
       _product('out-a', 'ألف'),
       _product('low-a', 'ألف'),
       _product('normal', 'عادي'),
     ]);
     final service = InventoryAttentionService(
-      productRepository: products,
+      productCatalogReadRepository: products,
       inventoryRepository: _Inventory({
         'low-b': 5,
         'out-a': 0,
@@ -38,8 +37,8 @@ void main() {
   test('negative and zero stock are out of stock and minimum price is ignored',
       () async {
     final service = InventoryAttentionService(
-      productRepository: _Products([
-        _product('negative', 'ناقص', minimumSalePrice: 9),
+      productCatalogReadRepository: _Products([
+        _product('negative', 'ناقص'),
         _product('zero', 'صفر'),
       ]),
       inventoryRepository: _Inventory({'negative': -2, 'zero': 0}),
@@ -55,7 +54,7 @@ void main() {
 
   test('returns an immutable empty result for normal stock', () async {
     final service = InventoryAttentionService(
-      productRepository: _Products([_product('normal', 'عادي')]),
+      productCatalogReadRepository: _Products([_product('normal', 'عادي')]),
       inventoryRepository: _Inventory({'normal': 6}),
     );
 
@@ -63,35 +62,24 @@ void main() {
   });
 }
 
-Product _product(String id, String name, {int? minimumSalePrice}) => Product(
+ProductCatalogReadModel _product(String id, String name) =>
+    ProductCatalogReadModel(
       id: id,
       name: name,
+      code: null,
       unit: GrainUnit.kilogram,
       isActive: true,
-      minimumSalePricePiastersPerKg: minimumSalePrice,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
     );
 
-final class _Products implements ProductRepository {
+final class _Products implements ProductCatalogReadRepository {
   _Products(this._items);
-  final List<Product> _items;
+  final List<ProductCatalogReadModel> _items;
 
   @override
-  Future<List<Product>> listProducts({bool includeInactive = true}) async =>
-      List<Product>.unmodifiable(_items);
-
-  @override
-  Future<Product> createProduct(ProductDraft draft) =>
-      throw UnimplementedError();
-  @override
-  Future<Product> setProductActive(
-          {required String productId, required bool isActive}) =>
-      throw UnimplementedError();
-  @override
-  Future<Product> updateProduct(
-          {required String productId, required ProductDraft draft}) =>
-      throw UnimplementedError();
+  Future<List<ProductCatalogReadModel>> listProductCatalog({
+    required bool includeInactive,
+  }) async =>
+      List<ProductCatalogReadModel>.unmodifiable(_items);
 }
 
 final class _Inventory implements InventoryRepository {

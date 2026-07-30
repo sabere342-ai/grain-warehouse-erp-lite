@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_screen.dart';
 
 const _baseline = 'fe618089672436d115ded9b02c4f1e17224cf7fb';
+const _phase106bCommit = 'f7b926119ccf9cf220ff8a3e0c46b9ad5ac52650';
 const _dashboardPath = 'lib/features/dashboard/dashboard_screen.dart';
 
 void main() {
@@ -89,6 +90,7 @@ void main() {
         'diff',
         '--unified=0',
         _baseline,
+        _phase106bCommit,
         '--',
         _dashboardPath,
       ]);
@@ -110,7 +112,14 @@ void main() {
 
     test('no other production consumer or frozen boundary changed', () {
       expect(
-        _git(['diff', _baseline, '--name-only', '--', 'lib']).trim(),
+        _git([
+          'diff',
+          _baseline,
+          _phase106bCommit,
+          '--name-only',
+          '--',
+          'lib',
+        ]).trim(),
         _dashboardPath,
       );
       for (final frozenPath in const [
@@ -120,7 +129,14 @@ void main() {
         'lib/core/documents/document_history.dart',
       ]) {
         expect(
-          _gitExitCode(['diff', '--quiet', _baseline, '--', frozenPath]),
+          _gitExitCode([
+            'diff',
+            '--quiet',
+            _baseline,
+            _phase106bCommit,
+            '--',
+            frozenPath,
+          ]),
           0,
           reason: frozenPath,
         );

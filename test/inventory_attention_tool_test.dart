@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -13,7 +12,7 @@ void main() {
       () async {
     final tool = InventoryAttentionTool(
       service: InventoryAttentionService(
-        productRepository: _Products(),
+        productCatalogReadRepository: _Products(),
         inventoryRepository: _Inventory(),
       ),
     );
@@ -43,7 +42,7 @@ void main() {
   test('wrong mode returns a structured validation failure', () async {
     final tool = InventoryAttentionTool(
       service: InventoryAttentionService(
-        productRepository: _Products(),
+        productCatalogReadRepository: _Products(),
         inventoryRepository: _Inventory(),
       ),
     );
@@ -74,21 +73,12 @@ void main() {
   });
 }
 
-final class _Products implements ProductRepository {
+final class _Products implements ProductCatalogReadRepository {
   @override
-  Future<List<Product>> listProducts({bool includeInactive = true}) async =>
+  Future<List<ProductCatalogReadModel>> listProductCatalog({
+    required bool includeInactive,
+  }) async =>
       const [];
-  @override
-  Future<Product> createProduct(ProductDraft draft) =>
-      throw UnimplementedError();
-  @override
-  Future<Product> setProductActive(
-          {required String productId, required bool isActive}) =>
-      throw UnimplementedError();
-  @override
-  Future<Product> updateProduct(
-          {required String productId, required ProductDraft draft}) =>
-      throw UnimplementedError();
 }
 
 final class _Inventory implements InventoryRepository {

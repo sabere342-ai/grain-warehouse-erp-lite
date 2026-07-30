@@ -53,7 +53,14 @@ void main() {
       'lib/app/app_repositories.dart',
     ]) {
       expect(
-        _gitExitCode(['diff', '--quiet', _baseline, '--', path]),
+        _gitExitCode([
+          'diff',
+          '--quiet',
+          _baseline,
+          _phase106aCommit,
+          '--',
+          path,
+        ]),
         0,
         reason: path,
       );

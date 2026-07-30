@@ -1,4 +1,4 @@
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 
 /// Read-only canonical classification for products requiring stock attention.
@@ -27,20 +27,21 @@ final class InventoryAttentionItem {
 /// Uses the authoritative inventory balance source without changing stock.
 final class InventoryAttentionService implements InventoryAttentionReader {
   InventoryAttentionService({
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
-  })  : _productRepository = productRepository,
+  })  : _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository;
 
   static const int lowStockMaximumKg = 5;
 
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
 
   @override
   Future<List<InventoryAttentionItem>> loadAttention() async {
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final balances = await _inventoryRepository.allProductBalancesKg();
     final items = <InventoryAttentionItem>[];
 

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
@@ -39,7 +39,7 @@ class OwnerAlertData {
     SupplierRepository? supplierRepository,
     CustomerAccountRepository? customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
-    ProductRepository? productRepository,
+    ProductCatalogReadRepository? productCatalogReadRepository,
     InventoryRepository? inventoryRepository,
     InventoryAttentionService? inventoryAttentionService,
   }) async {
@@ -81,8 +81,8 @@ class OwnerAlertData {
 
     final attentionService = inventoryAttentionService ??
         InventoryAttentionService(
-          productRepository:
-              productRepository ?? AppRepositories.productRepository,
+          productCatalogReadRepository: productCatalogReadRepository ??
+              AppRepositories.productCatalogReadRepository,
           inventoryRepository:
               inventoryRepository ?? AppRepositories.inventoryRepository,
         );

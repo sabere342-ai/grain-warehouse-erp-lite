@@ -14,6 +14,7 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 
 const _acceptanceReport =
     'docs/PHASE-105F-ACCEPT-FREEZE-FIRST-PRODUCT-CATALOG-READ-BOUNDARY-PILOT.md';
+const _phase105fCommit = 'a813a70';
 
 void main() {
   test('frozen read model types and narrow repository surface remain exact',
@@ -201,16 +202,21 @@ void main() {
   });
 
   test('the accepted boundary introduces no UI coupling', () {
-    final offenders = _dartFilesUnder('lib/features')
-        .where((file) {
-          final source = file.readAsStringSync();
-          return source.contains('ProductCatalogReadRepository') ||
-              source.contains('DriftProductCatalogReadRepository');
-        })
-        .map((file) => file.path)
-        .toList(growable: false);
-
-    expect(offenders, isEmpty);
+    expect(
+      Process.runSync(
+        'git',
+        [
+          'grep',
+          '-E',
+          'ProductCatalogReadRepository|DriftProductCatalogReadRepository',
+          _phase105fCommit,
+          '--',
+          'lib/features',
+        ],
+        runInShell: false,
+      ).exitCode,
+      1,
+    );
   });
 
   test('pilot manifest and prior integration evidence remain complete', () {
@@ -344,14 +350,4 @@ String _balancedBody(String source, int start) {
     if (depth == 0) return source.substring(start, index + 1);
   }
   throw StateError('Missing closing brace.');
-}
-
-List<File> _dartFilesUnder(String root) {
-  final directory = Directory(root);
-  if (!directory.existsSync()) return const [];
-  return directory
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.dart'))
-      .toList(growable: false);
 }

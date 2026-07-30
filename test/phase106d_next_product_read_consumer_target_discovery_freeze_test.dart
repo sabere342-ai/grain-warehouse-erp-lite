@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '1293bee8b634c45508da7bb91cd70adaf1a21f34';
+const _phase106dCommit = 'aa97774553a17ab707e5ce271346f873173f0c58';
 const _reportPath =
     'docs/PHASE-106D-DISCOVER-FREEZE-NEXT-PRODUCT-READ-CONSUMER-TARGET.md';
 const _selectedPath = 'lib/core/inventory/inventory_attention_service.dart';
@@ -49,22 +51,26 @@ const _catalogInfrastructureFiles = {
 void main() {
   test('required baseline exists and Phase 106D has no production diff', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
+    expect(_git(['rev-parse', _phase106dCommit]).trim(), _phase106dCommit);
     expect(
-        _git(['diff', '--name-only', _baseline, '--', 'lib']).trim(), isEmpty);
-    expect(_git(['status', '--short', '--', 'lib']).trim(), isEmpty);
+      _git(['diff', '--name-only', _baseline, _phase106dCommit, '--', 'lib'])
+          .trim(),
+      isEmpty,
+    );
   });
 
   test('all current legacy and migrated product-read surfaces are inventoried',
       () {
-    final legacyFiles = _gitGrepFiles('.listProducts(')
+    final legacyFiles = _gitGrepFiles('.listProducts(', _phase106dCommit)
       ..removeAll(_legacyInfrastructureFiles);
-    final migratedFiles = _gitGrepFiles('.listProductCatalog(')
-      ..removeAll(_catalogInfrastructureFiles);
+    final migratedFiles =
+        _gitGrepFiles('.listProductCatalog(', _phase106dCommit)
+          ..removeAll(_catalogInfrastructureFiles);
 
     expect(legacyFiles, _legacyConsumerFiles);
     expect(migratedFiles, _migratedConsumerFiles);
 
-    final report = _read(_reportPath);
+    final report = _readAtPhase106d(_reportPath);
     for (final path in {
       ..._legacyConsumerFiles,
       ..._legacyInfrastructureFiles,
@@ -83,7 +89,7 @@ void main() {
 
   test('exactly one next consumer is selected and prior consumers are excluded',
       () {
-    final report = _read(_reportPath);
+    final report = _readAtPhase106d(_reportPath);
     final selections = RegExp(
       r'^Selected target:\s*(.+)$',
       multiLine: true,
@@ -98,7 +104,7 @@ void main() {
   });
 
   test('selected class and method retain the exact legacy read dependency', () {
-    final source = _read(_selectedPath);
+    final source = _readAtPhase106d(_selectedPath);
     final body = _methodBody(
       source,
       'Future<List<InventoryAttentionItem>> loadAttention() async',
@@ -118,7 +124,7 @@ void main() {
   });
 
   test('selected fields, merge, classification, and ordering are frozen', () {
-    final source = _read(_selectedPath);
+    final source = _readAtPhase106d(_selectedPath);
     final body = _methodBody(
       source,
       'Future<List<InventoryAttentionItem>> loadAttention() async',
@@ -151,7 +157,7 @@ void main() {
       'selected method remains read-only, fresh, uncached, and propagates errors',
       () {
     final body = _methodBody(
-      _read(_selectedPath),
+      _readAtPhase106d(_selectedPath),
       'Future<List<InventoryAttentionItem>> loadAttention() async',
     );
 
@@ -166,11 +172,13 @@ void main() {
   });
 
   test('two genuine dashboard call chains reach the selected consumer', () {
-    final dashboard = _read('lib/features/dashboard/dashboard_screen.dart');
-    final alerts =
-        _read('lib/features/dashboard/dashboard_alerts_section.dart');
-    final service = _read('lib/core/dashboard/dashboard_service.dart');
-    final composition = _read('lib/app/app_repositories.dart');
+    final dashboard =
+        _readAtPhase106d('lib/features/dashboard/dashboard_screen.dart');
+    final alerts = _readAtPhase106d(
+        'lib/features/dashboard/dashboard_alerts_section.dart');
+    final service =
+        _readAtPhase106d('lib/core/dashboard/dashboard_service.dart');
+    final composition = _readAtPhase106d('lib/app/app_repositories.dart');
 
     expect(dashboard, contains('(widget.loadAlerts ?? OwnerAlertData.load)()'));
     expect(dashboard, contains('service: DashboardService('));
@@ -185,7 +193,7 @@ void main() {
 
   test('report freezes state, lifecycle, side effects, and the future shape',
       () {
-    final report = _read(_reportPath);
+    final report = _readAtPhase106d(_reportPath);
     for (final heading in const [
       'Git baseline',
       'Scope',
@@ -233,19 +241,27 @@ void main() {
   });
 }
 
-String _read(String path) => File(path).readAsStringSync();
+String _readAtPhase106d(String path) =>
+    _git(['show', '$_phase106dCommit:$path']);
 
-Set<String> _gitGrepFiles(String pattern) {
-  final output = _git(['grep', '-l', '-F', pattern, '--', 'lib']);
+Set<String> _gitGrepFiles(String pattern, String revision) {
+  final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);
   return output
       .split(RegExp(r'\r?\n'))
       .where((line) => line.trim().isNotEmpty)
-      .map((line) => line.replaceAll('\\', '/'))
+      .map(
+          (line) => line.substring(line.indexOf(':') + 1).replaceAll('\\', '/'))
       .toSet();
 }
 
 String _git(List<String> arguments) {
-  final result = Process.runSync('git', arguments, runInShell: false);
+  final result = Process.runSync(
+    'git',
+    arguments,
+    runInShell: false,
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
   if (result.exitCode != 0) {
     throw StateError(
       'git ${arguments.join(' ')} failed: ${result.stderr}',

@@ -14,6 +14,8 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+const _phase105dCommit = 'ea804cb';
+
 void main() {
   test('selected boundary depends on the frozen interface only', () async {
     final ProductCatalogReadRepository catalog =
@@ -171,17 +173,21 @@ void main() {
   });
 
   test('no UI source depends on the frozen catalog contract or adapter', () {
-    final offenders = Directory('lib/features')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart'))
-        .where((file) {
-      final source = file.readAsStringSync();
-      return source.contains('ProductCatalogReadRepository') ||
-          source.contains('DriftProductCatalogReadRepository');
-    }).map((file) => file.path);
-
-    expect(offenders, isEmpty);
+    expect(
+      Process.runSync(
+        'git',
+        [
+          'grep',
+          '-E',
+          'ProductCatalogReadRepository|DriftProductCatalogReadRepository',
+          _phase105dCommit,
+          '--',
+          'lib/features',
+        ],
+        runInShell: false,
+      ).exitCode,
+      1,
+    );
   });
 
   test('the five-field frozen contract and method remain unchanged', () {

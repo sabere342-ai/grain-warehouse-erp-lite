@@ -21,6 +21,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 36A - Dashboard live data', () {
@@ -54,6 +55,8 @@ void main() {
         saleRepository: saleRepo,
         inventoryRepository: inventoryRepo,
         productRepository: productRepo,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(productRepo),
         expenseRepository: expenseRepo,
         customerAccountRepository: customerAccountRepo,
         financialAccountRepository: LocalFinancialAccountRepository(),

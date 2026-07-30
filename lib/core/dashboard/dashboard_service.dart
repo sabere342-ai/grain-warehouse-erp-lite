@@ -1,6 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_attention_service.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -66,6 +67,7 @@ class DashboardService {
     required SaleRepository saleRepository,
     required InventoryRepository inventoryRepository,
     required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required ExpenseRepository expenseRepository,
     required CustomerAccountRepository customerAccountRepository,
     required FinancialAccountRepository financialAccountRepository,
@@ -80,7 +82,7 @@ class DashboardService {
         _supplierAccountRepository = supplierAccountRepository,
         _inventoryAttentionService = inventoryAttentionService ??
             InventoryAttentionService(
-              productRepository: productRepository,
+              productCatalogReadRepository: productCatalogReadRepository,
               inventoryRepository: inventoryRepository,
             );
 

@@ -11,6 +11,7 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_alerts_section.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 64 - Owner dashboard alerts data', () {
@@ -53,7 +54,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.hasAnyAlert, false);
@@ -75,7 +77,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.customerAlerts.length, 1);
@@ -96,7 +99,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.customerAlerts, isEmpty);
@@ -118,7 +122,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.supplierAlerts.length, 1);
@@ -138,7 +143,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.supplierAlerts, isEmpty);
@@ -164,7 +170,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.stockAlerts.length, 1);
@@ -193,7 +200,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.stockAlerts, isEmpty);
@@ -212,7 +220,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.stockAlerts, isEmpty);
@@ -244,7 +253,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.customerAlerts.length, 3);
@@ -271,7 +281,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.customerAlerts.length, 7);
@@ -303,7 +314,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.supplierAlerts.length, 3);
@@ -330,7 +342,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.supplierAlerts.length, 6);
@@ -346,7 +359,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
 
@@ -392,7 +406,8 @@ void main() {
           supplierRepository: supplierRepo,
           customerAccountRepository: customerAccountRepo,
           supplierAccountRepository: supplierAccountRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expect(data.customerAlerts.length, 1);
