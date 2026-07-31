@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '39744e6b2d1581293da9f79bd3b8af79ee897f5c';
 const _phase106oCommit = '4b7b1f2b2c32675a5c0f3aa0f96ef1227e7dd7b0';
+const _phase106pCommit = '80ede9595b51c17d1b82f16a9198b91a9d9422d9';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -62,9 +63,12 @@ void main() {
     final afterMigration = headSubject ==
             'PHASE 106P: migrate purchase controller product catalog read' &&
         _git(['rev-parse', '$head^']).trim() == _phase106oCommit;
-    expect(atBaseline || afterFreeze || afterMigration, isTrue,
+    final afterReaudit = headSubject ==
+            'PHASE 106Q: freeze next product read migration target' &&
+        _git(['rev-parse', '$head^']).trim() == _phase106pCommit;
+    expect(atBaseline || afterFreeze || afterMigration || afterReaudit, isTrue,
         reason:
-            'HEAD must be the baseline, the single Phase 106O commit, or the single Phase 106P migration commit.');
+            'HEAD must be the baseline, the single Phase 106O commit, the single Phase 106P migration commit, or the single Phase 106Q freeze commit.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);
