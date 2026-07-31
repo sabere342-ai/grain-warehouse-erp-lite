@@ -12,6 +12,9 @@ const _phase106rSubject =
 const _phase106sSubject =
     'PHASE 106S: prove runtime inventory controller product catalog '
     'integration';
+const _phase106sCommit = '7300f5569f0617cf81606eddd062e73ec75c2de6';
+const _phase106tSubject =
+    'PHASE 106T: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -82,17 +85,27 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106qCommit;
     final afterProve = headSubject == _phase106sSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106rCommit;
-    expect(atBaseline || afterFreeze || afterMigration || afterProve, isTrue,
+    final afterFreezeT = headSubject == _phase106tSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106sCommit;
+    expect(
+        atBaseline ||
+            afterFreeze ||
+            afterMigration ||
+            afterProve ||
+            afterFreezeT,
+        isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
             'Phase 106Q freeze commit, the single Phase 106R migration commit '
-            'whose parent is exactly the 106Q commit, or the single Phase '
-            '106S proof commit whose parent is exactly the 106R commit.');
+            'whose parent is exactly the 106Q commit, the single Phase '
+            '106S proof commit whose parent is exactly the 106R commit, or '
+            'the single Phase 106T freeze commit whose parent is exactly the '
+            '106S commit.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 3, isTrue,
-        reason: 'Zero, one, two, or three commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 4, isTrue,
+        reason: 'Zero through four commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 

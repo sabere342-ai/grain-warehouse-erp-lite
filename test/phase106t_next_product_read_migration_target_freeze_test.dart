@@ -1,0 +1,465 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+const _baseline = '7300f5569f0617cf81606eddd062e73ec75c2de6';
+const _phase106tSubject =
+    'PHASE 106T: freeze next product read migration target';
+const _reportPath =
+    'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
+const _targetPath = 'lib/core/sales/sale_controller.dart';
+const _salesScreenPath = 'lib/features/sales/sales_screen.dart';
+const _dashboardShellPath = 'lib/features/dashboard/dashboard_shell.dart';
+const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
+const _adapterPath =
+    'lib/core/catalog/drift_product_catalog_read_repository.dart';
+const _purchaseControllerPath = 'lib/core/purchases/purchase_controller.dart';
+const _inventoryControllerPath = 'lib/core/inventory/inventory_controller.dart';
+
+const _legacyConsumerFiles = {
+  'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
+  'lib/core/backup/business_data_wipe_service.dart',
+  'lib/core/catalog/product_controller.dart',
+  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
+  'lib/core/inventory/drift_inventory_repository.dart',
+  'lib/core/inventory/inventory_repository.dart',
+  'lib/core/inventory_valuation/profitability_activation_service.dart',
+  'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
+  'lib/core/purchases/drift_purchase_repository.dart',
+  'lib/core/purchases/purchase_repository.dart',
+  'lib/core/sales/sale_controller.dart',
+  'lib/core/sales/sale_repository.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
+};
+
+const _legacyInfrastructureFiles = {
+  'lib/app/app_repositories.dart',
+  'lib/core/catalog/drift_product_repository.dart',
+};
+
+const _migratedConsumerFiles = {
+  'lib/core/dashboard/dashboard_service.dart',
+  'lib/core/documents/document_history.dart',
+  'lib/core/inventory/drift_inventory_repository.dart',
+  'lib/core/inventory/inventory_attention_service.dart',
+  'lib/core/inventory/inventory_controller.dart',
+  'lib/core/purchases/purchase_controller.dart',
+  'lib/core/reports/report_repository.dart',
+  'lib/features/dashboard/dashboard_screen.dart',
+};
+
+const _frozenReadModelFields = {
+  'id',
+  'name',
+  'code',
+  'unit',
+  'isActive',
+  'referenceCostPricePiastersPerKg',
+};
+
+void main() {
+  test('baseline lineage: Phase 106T starts from the single Phase 106S commit',
+      () {
+    expect(_git(['rev-parse', _baseline]).trim(), _baseline);
+
+    final head = _git(['rev-parse', 'HEAD']).trim();
+    final headSubject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+    final atBaseline = head == _baseline;
+    final afterFreeze = headSubject == _phase106tSubject &&
+        _git(['rev-parse', '$head^']).trim() == _baseline;
+    expect(atBaseline || afterFreeze, isTrue,
+        reason:
+            'HEAD must be the 106S baseline (during development) or the single '
+            'Phase 106T freeze commit whose parent is exactly the 106S '
+            'baseline.');
+
+    final commitCount =
+        int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
+    expect(commitCount >= 0 && commitCount <= 1, isTrue,
+        reason: 'Zero or one commit may exist after the 106S baseline; an open '
+            'number of commits must fail loudly.');
+  });
+
+  test('Phase 106T is discovery/freeze only: no production diff', () {
+    expect(
+        _git([
+          'diff',
+          '--name-only',
+          _baseline,
+          'HEAD',
+          '--',
+          'lib',
+        ]).trim(),
+        isEmpty,
+        reason:
+            'No production file under lib/ may differ from the 106S baseline '
+            'at the 106T commit.');
+    expect(_git(['diff', '--name-only', '--', 'lib']).trim(), isEmpty,
+        reason: 'The working tree must have no lib/ diff during Phase 106T.');
+    final check = Process.runSync(
+      'git',
+      ['diff', '--check'],
+      runInShell: false,
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+    expect(check.exitCode, 0, reason: 'git diff --check must pass.');
+  });
+
+  test('reconciliation: total equals migrated plus remaining (24 = 8 + 16)',
+      () {
+    final report = File(_reportPath).readAsStringSync();
+    for (final statement in const [
+      'Total identified consumers | 24',
+      'Migrated | 8',
+      'Remaining | 16',
+      '`24 = 8 + 16` — exact match',
+    ]) {
+      expect(report, contains(statement), reason: statement);
+    }
+
+    final legacyFiles = _gitGrepFiles('.listProducts(', 'HEAD')
+      ..removeAll(_legacyInfrastructureFiles);
+    final migratedFiles = _gitGrepFiles('.listProductCatalog(', 'HEAD');
+    expect(legacyFiles, _legacyConsumerFiles,
+        reason:
+            'Exactly the 14 legacy consumer files must still call .listProducts(.');
+    expect(migratedFiles, _migratedConsumerFiles,
+        reason:
+            'Exactly the 8 migrated consumer files must call .listProductCatalog(.');
+  });
+
+  test('all eight accepted consumers remain on the catalog boundary', () {
+    for (final path in _migratedConsumerFiles) {
+      final source = File(path).readAsStringSync();
+      expect(source, contains('.listProductCatalog('), reason: path);
+    }
+    for (final path in const [
+      'lib/core/dashboard/dashboard_service.dart',
+      'lib/core/documents/document_history.dart',
+      'lib/core/inventory/inventory_attention_service.dart',
+      'lib/core/inventory/inventory_controller.dart',
+      'lib/core/purchases/purchase_controller.dart',
+      'lib/core/reports/report_repository.dart',
+      'lib/features/dashboard/dashboard_screen.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+      expect(source, isNot(contains('.listProducts(')), reason: path);
+      expect(source, isNot(contains('ProductRepository')), reason: path);
+    }
+  });
+
+  test('classification: every remaining consumer has exactly one A-I class',
+      () {
+    final report = File(_reportPath).readAsStringSync();
+    for (final total in const [
+      'C — Requires a Broader Read Contract | 2',
+      'F — Write-Coupled / Transaction-Integrity Read | 8',
+      'G — Financial / Inventory / Accounting Criticality | 1',
+      'H — Not Production-Reachable | 3',
+      'I — False Positive (Infrastructure) | 2',
+      'Sum of categories | 16',
+      'Remaining inventory | 16',
+      'Migrated and accepted | 8',
+      'Total identified | 24',
+    ]) {
+      expect(report, contains(total), reason: total);
+    }
+    expect(
+      RegExp(r'^\| PRC-\d{3} \|', multiLine: true).allMatches(report).length,
+      16,
+      reason: 'The 106T report must inventory exactly the 16 remaining rows.',
+    );
+    expect(report, contains('Variance vs Phase 106Q explained by name'));
+    expect(report, contains('`InventoryController.load` (PRC-107)'));
+  });
+
+  test('SaleController.load is the single selected migration target', () {
+    final report = File(_reportPath).readAsStringSync();
+    final decisions = RegExp(r'^\*\*Decision:\*\*\s+(.+)$', multiLine: true)
+        .allMatches(report)
+        .map((match) => match.group(1)!.trim())
+        .toList();
+    expect(decisions.length, 1,
+        reason: 'Exactly one decision line must exist in the report.');
+    expect(decisions.single, contains('SaleController.load'));
+    expect(
+      RegExp(r'^\| (PRC-\d{3}) \|.*\*\*C — selected \(expansion\)\*\*',
+              multiLine: true)
+          .allMatches(report)
+          .map((match) => match.group(1)!)
+          .toList(),
+      ['PRC-112'],
+    );
+    expect(
+        report,
+        contains('Classification of target | C — Requires a '
+            'Broader Read Contract'));
+    expect(report, contains('The single frozen target for Phase 106U is:'));
+    expect(report, contains('extend `ProductCatalogReadModel` with'));
+    expect(report, contains('`defaultSalePricePiastersPerKg` (`int?`)'));
+    expect(report, contains('`minimumSalePricePiastersPerKg` (`int?`)'));
+    expect(report, contains('so that `SaleController.load` can migrate to'));
+  });
+
+  test('selected target is read-only, production reachable, still legacy', () {
+    final controller = File(_targetPath).readAsStringSync();
+    final classStart = controller.indexOf('class SaleController');
+    final methodStart =
+        controller.indexOf('Future<void> load(AppUser user)', classStart);
+    final asyncStart = controller.indexOf(' async {', methodStart);
+    final body = _bracedBody(controller, asyncStart);
+
+    expect(
+        controller, contains('required ProductRepository productRepository'));
+    expect(_occurrences(body, '_productRepository.listProducts('), 1);
+    expect(body, contains('includeInactive: false'));
+    expect(body, isNot(contains('.listProductCatalog(')));
+    expect(body, isNot(contains('_productCatalogReadRepository')));
+    for (final forbidden in const [
+      '.transaction(',
+      'createProduct(',
+      'updateProduct(',
+      'setProductActive(',
+      'restoreProductsIntoEmpty(',
+      'clearForOwnerDataWipe(',
+      'createSale(',
+      'createPurchaseIntake(',
+    ]) {
+      expect(body, isNot(contains(forbidden)), reason: forbidden);
+    }
+
+    final screen = File(_salesScreenPath).readAsStringSync();
+    expect(screen, contains('SaleController('));
+    expect(
+      screen,
+      contains('productRepository: AppRepositories.productRepository'),
+      reason: _salesScreenPath,
+    );
+    expect(
+        File(_dashboardShellPath).readAsStringSync(), contains('SalesScreen'));
+  });
+
+  test('selected target needs exactly id, name, and the two sale prices', () {
+    final controller = File(_targetPath).readAsStringSync();
+    final screen = File(_salesScreenPath).readAsStringSync();
+    final consumerSource = '$controller\n$screen';
+
+    for (final field in const [
+      'product.id',
+      'product.name',
+      'product.defaultSalePricePiastersPerKg',
+      'product.minimumSalePricePiastersPerKg',
+    ]) {
+      expect(consumerSource, contains(field), reason: field);
+    }
+    for (final forbidden in const [
+      'product.code',
+      'product.unit',
+      'product.isActive',
+      'product.notes',
+      'product.createdAt',
+      'product.updatedAt',
+      'referenceCostPricePiastersPerKg',
+    ]) {
+      expect(consumerSource, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
+  test('frozen target contract shape is recorded in the report', () {
+    final report = File(_reportPath).readAsStringSync();
+    for (final statement in const [
+      'Frozen next target:',
+      'SaleController.load',
+      'Current call:',
+      'ProductRepository.listProducts(includeInactive: false)',
+      'Required future call:',
+      'ProductCatalogReadRepository.listProductCatalog(includeInactive: false)',
+      'Contract expansion (Phase 106U only):',
+      'ProductCatalogReadModel.defaultSalePricePiastersPerKg  — int?, nullable, piasters per kg',
+      'ProductCatalogReadModel.minimumSalePricePiastersPerKg  — int?, nullable, piasters per kg',
+      'products.defaultSalePricePiastersPerKg  (column exists)',
+      'products.minimumSalePricePiastersPerKg  (column exists)',
+      'A null value is preserved as null',
+      'includeInactive = false   (fixed, active products only)',
+      'createdAt ASC, id ASC',
+      'contract-expansion + single-consumer migration',
+      'No other consumer migration (ProductController.loadProducts stays legacy).',
+      'No fallback to the legacy listProducts anywhere.',
+      'No schema change, no migration, no schemaVersion bump.',
+    ]) {
+      expect(report, contains(statement), reason: statement);
+    }
+    for (final permittedFile in const [
+      'lib/core/catalog/product_catalog_read_repository.dart',
+      'lib/core/catalog/drift_product_catalog_read_repository.dart',
+      'lib/core/sales/sale_controller.dart',
+      'lib/features/sales/sales_screen.dart',
+    ]) {
+      expect(report, contains(permittedFile), reason: permittedFile);
+    }
+    expect(report, contains('Phase 106U'));
+  });
+
+  test('Phase 106T freezes but does not implement the migration', () {
+    final contract = _git(['show', '$_baseline:$_contractPath']);
+    final adapter = _git(['show', '$_baseline:$_adapterPath']);
+    final target = _git(['show', '$_baseline:$_targetPath']);
+
+    expect(target, contains('_productRepository.listProducts('));
+    expect(target, isNot(contains('_productCatalogReadRepository')));
+    expect(target, isNot(contains('.listProductCatalog(')));
+    expect(contract, contains('referenceCostPricePiastersPerKg'));
+    expect(adapter, contains('products.referenceCostPricePiastersPerKg'));
+    expect(contract, isNot(contains('defaultSalePricePiastersPerKg')));
+    expect(contract, isNot(contains('minimumSalePricePiastersPerKg')));
+    expect(adapter, isNot(contains('products.defaultSalePricePiastersPerKg')));
+    expect(adapter, isNot(contains('products.minimumSalePricePiastersPerKg')));
+    expect(
+      _git(['diff', '--name-only', _baseline, 'HEAD', '--', 'lib']).trim(),
+      isEmpty,
+    );
+  });
+
+  test('ProductCatalogReadModel contract is not expanded', () {
+    final source = File(_contractPath).readAsStringSync();
+    final modelBody = _bracedBody(
+      source,
+      source.indexOf('final class ProductCatalogReadModel'),
+    );
+    final fields = RegExp(r'final\s+(String\??|GrainUnit|bool|int\??)\s+'
+            r'(\w+)\s*;')
+        .allMatches(modelBody)
+        .map((match) => match.group(2)!)
+        .toSet();
+
+    expect(fields, _frozenReadModelFields);
+    expect(source, isNot(contains('defaultSalePricePiastersPerKg')));
+    expect(source, isNot(contains('minimumSalePricePiastersPerKg')));
+  });
+
+  test('schemaVersion stays 15 and no fallback appears', () {
+    final foundation = File('lib/core/persistence/foundation_database.dart')
+        .readAsStringSync();
+    expect(foundation, contains('int get schemaVersion => 15;'));
+
+    final contract = File(_contractPath).readAsStringSync();
+    final adapter = File(_adapterPath).readAsStringSync();
+    expect(contract, isNot(contains('listProducts(')));
+    expect(adapter, isNot(contains('listProducts(')));
+    expect(adapter, isNot(contains('catch (')));
+    expect(adapter, isNot(contains('retry')));
+  });
+
+  test('history is preserved: 106O and 106Q targets are not reopened', () {
+    final purchased = File(_purchaseControllerPath).readAsStringSync();
+    expect(purchased, contains('.listProductCatalog('));
+    expect(purchased, isNot(contains('.listProducts(')));
+    expect(purchased, isNot(contains('ProductRepository')));
+
+    final inventory = File(_inventoryControllerPath).readAsStringSync();
+    expect(inventory, contains('.listProductCatalog('));
+    expect(inventory, isNot(contains('.listProducts(')));
+    expect(inventory, isNot(contains('ProductRepository')));
+
+    final o = File(
+            'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md')
+        .readAsStringSync();
+    expect(o, contains('**A — selected**'));
+    expect(o, contains('PRC-110'));
+
+    final p = File(
+            'docs/PHASE-106P-MIGRATE-PURCHASE-CONTROLLER-PRODUCT-CATALOG-READ.md')
+        .readAsStringSync();
+    expect(p, contains('Outcome A — FULL SUCCESS'));
+    expect(p, contains('PurchaseController.load'));
+
+    final q = File(
+            'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md')
+        .readAsStringSync();
+    expect(q, contains('**B — selected**'));
+    expect(q, contains('PRC-107'));
+
+    final r = File(
+            'docs/PHASE-106R-MIGRATE-INVENTORY-CONTROLLER-PRODUCT-CATALOG-READ.md')
+        .readAsStringSync();
+    expect(r, contains('Outcome A — FULL SUCCESS'));
+    expect(r, contains('InventoryController.load'));
+
+    final s = File(
+            'docs/PHASE-106S-PROVE-RUNTIME-INVENTORY-CONTROLLER-PRODUCT-CATALOG-READ-INTEGRATION.md')
+        .readAsStringSync();
+    expect(s, contains('Outcome A — FULL SUCCESS'));
+    expect(s, contains('InventoryController.load'));
+  });
+
+  test('governing report contains every required freeze section', () {
+    final report = File(_reportPath).readAsStringSync();
+    for (final heading in const [
+      '14.1 Executive summary',
+      '14.2 Baseline verification',
+      '14.3 Search methodology',
+      '14.4 Reconciliation',
+      '14.5 Full consumer inventory',
+      '14.6 Migrated consumers',
+      '14.7 Remaining consumers',
+      '14.8 Candidate comparison',
+      '14.9 Selected target',
+      '14.10 Frozen migration contract (Phase 106U)',
+      '14.11 Non-goals',
+      '14.12 Files changed',
+      '14.13 Verification',
+      '14.14 Git evidence',
+      'Final outcome',
+    ]) {
+      expect(
+        report,
+        matches(RegExp('^## ${RegExp.escape(heading)}\\s*\$', multiLine: true)),
+        reason: heading,
+      );
+    }
+    expect(report, contains('open, read, copy, or modify the user database.'));
+    expect(report, contains('No Push was performed. No Tag was created.'));
+  });
+}
+
+Set<String> _gitGrepFiles(String pattern, String revision) {
+  final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);
+  return output
+      .split(RegExp(r'\r?\n'))
+      .where((line) => line.trim().isNotEmpty)
+      .map(
+          (line) => line.substring(line.indexOf(':') + 1).replaceAll('\\', '/'))
+      .toSet();
+}
+
+String _git(List<String> arguments) {
+  final result = Process.runSync(
+    'git',
+    arguments,
+    runInShell: false,
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
+  if (result.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${result.stderr}');
+  }
+  return result.stdout as String;
+}
+
+String _bracedBody(String source, int start) {
+  if (start < 0) throw StateError('Missing declaration.');
+  final openBrace = source.indexOf('{', start);
+  var depth = 0;
+  for (var index = openBrace; index < source.length; index++) {
+    if (source[index] == '{') depth++;
+    if (source[index] == '}') depth--;
+    if (depth == 0) return source.substring(start, index + 1);
+  }
+  throw StateError('Missing closing brace.');
+}
+
+int _occurrences(String source, String pattern) =>
+    RegExp(RegExp.escape(pattern)).allMatches(source).length;
