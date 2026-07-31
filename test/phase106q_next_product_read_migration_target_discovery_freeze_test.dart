@@ -6,8 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 const _baseline = '80ede9595b51c17d1b82f16a9198b91a9d9422d9';
 const _phase106pBaseline = '4b7b1f2b2c32675a5c0f3aa0f96ef1227e7dd7b0';
 const _phase106qCommit = 'f0341e9e070012953bce487c20401bf36eec1b87';
+const _phase106rCommit = 'ad03bd0b27109ac2ec97d80ffa32fca22d0f41d9';
 const _phase106rSubject =
     'PHASE 106R: migrate inventory controller product catalog read';
+const _phase106sSubject =
+    'PHASE 106S: prove runtime inventory controller product catalog '
+    'integration';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -76,17 +80,20 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _baseline;
     final afterMigration = headSubject == _phase106rSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106qCommit;
-    expect(atBaseline || afterFreeze || afterMigration, isTrue,
+    final afterProve = headSubject == _phase106sSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106rCommit;
+    expect(atBaseline || afterFreeze || afterMigration || afterProve, isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
-            'Phase 106Q freeze commit, or the single Phase 106R migration '
-            'commit whose parent is exactly the 106Q commit.');
+            'Phase 106Q freeze commit, the single Phase 106R migration commit '
+            'whose parent is exactly the 106Q commit, or the single Phase '
+            '106S proof commit whose parent is exactly the 106R commit.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 2, isTrue,
-        reason: 'Zero, one, or two commits may exist after the 106P baseline; '
-            'an open number of commits must fail loudly.');
+    expect(commitCount >= 0 && commitCount <= 3, isTrue,
+        reason: 'Zero, one, two, or three commits may exist after the 106P '
+            'baseline; an open number of commits must fail loudly.');
   });
 
   test('Phase 106Q is discovery/freeze only: no production diff', () {
