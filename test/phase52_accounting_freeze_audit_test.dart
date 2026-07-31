@@ -133,7 +133,8 @@ void main() {
 
       final inventoryController = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
       );
       await inventoryController.load(_owner);
       await inventoryController.createManualIncrease(
@@ -194,7 +195,8 @@ void main() {
       );
       final controller = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
       );
       await controller.load(_owner);
       await controller.createManualDecrease(

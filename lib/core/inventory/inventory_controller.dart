@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
@@ -13,23 +12,23 @@ import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valu
 class InventoryController extends ChangeNotifier {
   InventoryController({
     required InventoryRepository inventoryRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     InventoryValuationRepository? inventoryValuationRepository,
     FinancialAccountRepository? financialAccountRepository,
     AuditLogRepository? auditLogRepository,
   })  : _inventoryRepository = inventoryRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryValuationRepository = inventoryValuationRepository,
         _financialAccountRepository = financialAccountRepository,
         _auditLogRepository = auditLogRepository;
 
   final InventoryRepository _inventoryRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryValuationRepository? _inventoryValuationRepository;
   final FinancialAccountRepository? _financialAccountRepository;
   final AuditLogRepository? _auditLogRepository;
 
-  List<Product> _products = const [];
+  List<ProductCatalogReadModel> _products = const [];
   List<StockMovement> _movements = const [];
   Map<String, int> _balancesKg = const {};
   Set<String> _productsWithOpeningBalance = const {};
@@ -37,7 +36,8 @@ class InventoryController extends ChangeNotifier {
   bool _isLoading = false;
   bool _isProfitabilityActivated = false;
 
-  List<Product> get products => List<Product>.unmodifiable(_products);
+  List<ProductCatalogReadModel> get products =>
+      List<ProductCatalogReadModel>.unmodifiable(_products);
   List<StockMovement> get movements =>
       List<StockMovement>.unmodifiable(_movements);
   Map<String, int> get balancesKg => Map<String, int>.unmodifiable(_balancesKg);
@@ -50,7 +50,7 @@ class InventoryController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    _products = await _productRepository.listProducts(
+    _products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: user.permissions.canCreateStockAdjustment,
     );
     _movements = await _inventoryRepository.listAllMovements();

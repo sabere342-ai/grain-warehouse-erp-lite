@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
@@ -38,7 +38,8 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
     _controller = widget.controller ??
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
-          productRepository: AppRepositories.productRepository,
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
           inventoryValuationRepository:
               AppRepositories.inventoryValuationRepository,
           financialAccountRepository:
@@ -171,7 +172,8 @@ class _StockTakeScreenState extends State<StockTakeScreen> {
     );
   }
 
-  Widget _buildProductRow(Product product, TextTheme textTheme) {
+  Widget _buildProductRow(
+      ProductCatalogReadModel product, TextTheme textTheme) {
     final productId = product.id;
     final balanceKg = _controller.balanceForProduct(productId);
     final actualController = _controllerFor(productId);
@@ -433,7 +435,7 @@ class _StockTakeAdjustment {
     this.surplusEvidenceReference,
   });
 
-  final Product product;
+  final ProductCatalogReadModel product;
   final String productId;
   final int balanceKg;
   final int actualKg;

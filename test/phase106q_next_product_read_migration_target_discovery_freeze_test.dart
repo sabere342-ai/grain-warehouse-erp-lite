@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '80ede9595b51c17d1b82f16a9198b91a9d9422d9';
 const _phase106pBaseline = '4b7b1f2b2c32675a5c0f3aa0f96ef1227e7dd7b0';
+const _phase106qCommit = 'f0341e9e070012953bce487c20401bf36eec1b87';
+const _phase106rSubject =
+    'PHASE 106R: migrate inventory controller product catalog read';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -71,26 +74,50 @@ void main() {
     final afterFreeze = headSubject ==
             'PHASE 106Q: freeze next product read migration target' &&
         _git(['rev-parse', '$head^']).trim() == _baseline;
-    expect(atBaseline || afterFreeze, isTrue,
+    final afterMigration = headSubject == _phase106rSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106qCommit;
+    expect(atBaseline || afterFreeze || afterMigration, isTrue,
         reason:
-            'HEAD must be the 106P baseline (during development) or the single '
-            'Phase 106Q freeze commit whose parent is exactly the 106P commit.');
+            'HEAD must be the 106P baseline (during development), the single '
+            'Phase 106Q freeze commit, or the single Phase 106R migration '
+            'commit whose parent is exactly the 106Q commit.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount == 0 || commitCount == 1, isTrue,
-        reason: 'Exactly zero or one commit may exist after the 106P baseline; '
+    expect(commitCount >= 0 && commitCount <= 2, isTrue,
+        reason: 'Zero, one, or two commits may exist after the 106P baseline; '
             'an open number of commits must fail loudly.');
   });
 
   test('Phase 106Q is discovery/freeze only: no production diff', () {
-    expect(_git(['diff', '--name-only', _baseline, 'HEAD', '--', 'lib']).trim(),
+    expect(
+        _git([
+          'diff',
+          '--name-only',
+          _baseline,
+          _phase106qCommit,
+          '--',
+          'lib',
+        ]).trim(),
         isEmpty,
         reason: 'No production file under lib/ may differ from the 106P '
             'baseline at the 106Q commit.');
-    final worktree = _git(['diff', '--name-only', '--', 'lib']).trim();
-    expect(worktree, isEmpty,
-        reason: 'The working tree must not carry any lib/ diff.');
+    final worktree = _git(['diff', '--name-only', '--', 'lib'])
+        .trim()
+        .split(RegExp(r'\r?\n'))
+        .where((path) => path.trim().isNotEmpty)
+        .toSet();
+    expect(
+      worktree.difference(const {
+        'lib/core/inventory/inventory_controller.dart',
+        'lib/features/inventory/inventory_screen.dart',
+        'lib/features/inventory/stock_take_screen.dart',
+        'lib/features/inventory/stock_adjustment_report_screen.dart',
+      }),
+      isEmpty,
+      reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '
+          'migration files.',
+    );
     final check = Process.runSync(
       'git',
       ['diff', '--check'],
@@ -113,9 +140,9 @@ void main() {
       expect(report, contains(statement), reason: statement);
     }
 
-    final legacyFiles = _gitGrepFiles('.listProducts(', 'HEAD')
+    final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);
-    final migratedFiles = _gitGrepFiles('.listProductCatalog(', 'HEAD');
+    final migratedFiles = _gitGrepFiles('.listProductCatalog(', _baseline);
     expect(legacyFiles, _legacyConsumerFiles,
         reason:
             'Exactly the 15 legacy consumer files must still call .listProducts(.');
@@ -193,7 +220,7 @@ void main() {
   });
 
   test('selected target is read-only, production reachable, still legacy', () {
-    final controller = File(_targetPath).readAsStringSync();
+    final controller = _git(['show', '$_baseline:$_targetPath']);
     final classStart = controller.indexOf('class InventoryController');
     final methodStart =
         controller.indexOf('Future<void> load(AppUser user)', classStart);
@@ -238,7 +265,7 @@ void main() {
   });
 
   test('selected target needs exactly id and name', () {
-    final controller = File(_targetPath).readAsStringSync();
+    final controller = _git(['show', '$_baseline:$_targetPath']);
     final inventory = File(_inventoryScreenPath).readAsStringSync();
     final stockTake = File(_stockTakeScreenPath).readAsStringSync();
     final adjustment = File(_stockAdjustmentScreenPath).readAsStringSync();
@@ -288,9 +315,9 @@ void main() {
   });
 
   test('Phase 106Q freezes but does not implement the migration', () {
-    final contract = File(_contractPath).readAsStringSync();
-    final adapter = File(_adapterPath).readAsStringSync();
-    final target = File(_targetPath).readAsStringSync();
+    final contract = _git(['show', '$_baseline:$_contractPath']);
+    final adapter = _git(['show', '$_baseline:$_adapterPath']);
+    final target = _git(['show', '$_baseline:$_targetPath']);
 
     expect(target, contains('_productRepository.listProducts('));
     expect(target, isNot(contains('_productCatalogReadRepository')));
@@ -298,7 +325,14 @@ void main() {
     expect(contract, contains('referenceCostPricePiastersPerKg'));
     expect(adapter, contains('products.referenceCostPricePiastersPerKg'));
     expect(
-      _git(['diff', '--name-only', _baseline, 'HEAD', '--', 'lib']).trim(),
+      _git([
+        'diff',
+        '--name-only',
+        _baseline,
+        _phase106qCommit,
+        '--',
+        'lib',
+      ]).trim(),
       isEmpty,
     );
   });

@@ -143,7 +143,8 @@ void main() {
 
       final inventoryController = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
       );
       await inventoryController.load(_owner);
       final adjusted = await inventoryController.createManualIncrease(
@@ -237,7 +238,8 @@ void main() {
       final fixture = await _BusinessDayFixture.create();
       final controller = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
       );
       await controller.load(_owner);
       await controller.createManualIncrease(

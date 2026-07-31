@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
@@ -35,7 +35,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     _controller = widget.controller ??
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
-          productRepository: AppRepositories.productRepository,
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
           inventoryValuationRepository:
               AppRepositories.inventoryValuationRepository,
           financialAccountRepository:
@@ -184,7 +185,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Future<void> _addOpeningBalance(
     BuildContext context, {
     required user,
-    required Product product,
+    required ProductCatalogReadModel product,
   }) async {
     final quantityKg = await showDialog<int>(
       context: context,
@@ -324,7 +325,7 @@ class _InventoryProductCard extends StatelessWidget {
     this.onAddOpeningBalance,
   });
 
-  final Product product;
+  final ProductCatalogReadModel product;
   final int balanceKg;
   final List<StockMovement> movements;
   final bool canAdjust;
@@ -392,7 +393,7 @@ class _InventoryProductCard extends StatelessWidget {
 class _OpeningBalanceDialog extends StatefulWidget {
   const _OpeningBalanceDialog({required this.product});
 
-  final Product product;
+  final ProductCatalogReadModel product;
 
   @override
   State<_OpeningBalanceDialog> createState() => _OpeningBalanceDialogState();
@@ -503,7 +504,7 @@ class _MovementFormDialog extends StatefulWidget {
     required this.requiresValuation,
   });
 
-  final List<Product> products;
+  final List<ProductCatalogReadModel> products;
   final bool Function(String productId) hasOpeningBalance;
   final bool requiresValuation;
 

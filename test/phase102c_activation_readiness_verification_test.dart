@@ -18,6 +18,8 @@ import 'package:grain_warehouse_erp_lite/core/profitability/profitability_report
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 102C — Scenario A: activation state', () {
     test('re-activation is rejected after first successful activation',
@@ -415,7 +417,8 @@ void main() {
       final audit = LocalAuditLogRepository();
       final controller = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryValuationRepository: fixture.valuation,
         auditLogRepository: audit,
       );
@@ -448,7 +451,8 @@ void main() {
       final fixture = await _salesFixture();
       final controller = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryValuationRepository: fixture.valuation,
         auditLogRepository: LocalAuditLogRepository(),
       );
@@ -485,7 +489,8 @@ void main() {
       final fixture = await _salesFixture();
       final controller = InventoryController(
         inventoryRepository: fixture.inventory,
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryValuationRepository: fixture.valuation,
         auditLogRepository: LocalAuditLogRepository(),
       );

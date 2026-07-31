@@ -22,6 +22,8 @@ import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_shell.dart
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_take_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('StockTakeScreen UI', () {
     testWidgets('renders product list with system stock', (tester) async {
@@ -66,7 +68,8 @@ void main() {
       final inventory = LocalInventoryRepository(productRepository: products);
       final controller = InventoryController(
         inventoryRepository: inventory,
-        productRepository: products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(products),
       );
       addTearDown(controller.dispose);
       await controller.load(_owner);
@@ -179,7 +182,8 @@ void main() {
         inventoryRepository: LocalInventoryRepository(
           productRepository: products,
         ),
-        productRepository: products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(products),
       );
       addTearDown(controller.dispose);
       await controller.load(_owner);
@@ -211,7 +215,8 @@ void main() {
           inventoryRepository: LocalInventoryRepository(
             productRepository: products,
           ),
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
         );
         addTearDown(controller.dispose);
         await controller.load(_owner);
@@ -678,7 +683,8 @@ Future<_StockTakeFixture> _fixture() async {
   final inventory = LocalInventoryRepository(productRepository: products);
   final controller = InventoryController(
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   addTearDown(controller.dispose);
   await controller.load(_owner);

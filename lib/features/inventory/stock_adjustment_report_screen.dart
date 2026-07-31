@@ -36,7 +36,8 @@ class _StockAdjustmentReportScreenState
     _controller = widget.controller ??
         InventoryController(
           inventoryRepository: AppRepositories.inventoryRepository,
-          productRepository: AppRepositories.productRepository,
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
           inventoryValuationRepository:
               AppRepositories.inventoryValuationRepository,
           financialAccountRepository:

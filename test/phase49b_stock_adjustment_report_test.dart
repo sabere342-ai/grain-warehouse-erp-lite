@@ -22,6 +22,8 @@ import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_shell.dart
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/stock_adjustment_report_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('StockAdjustmentReportScreen', () {
     testWidgets('renders report page', (tester) async {
@@ -520,7 +522,8 @@ Future<_ReportFixture> _fixture() async {
   final inventory = LocalInventoryRepository(productRepository: products);
   final controller = InventoryController(
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   await controller.load(_owner);
 

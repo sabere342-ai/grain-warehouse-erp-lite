@@ -5,17 +5,25 @@ import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/purchases/purchase_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
-import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
-import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/inventory_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 
-const _controllerPath = 'lib/core/purchases/purchase_controller.dart';
+const _controllerPath = 'lib/core/inventory/inventory_controller.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
-const _purchasesScreenPath = 'lib/features/purchases/purchases_screen.dart';
-const _supplierPurchasesScreenPath =
-    'lib/features/purchases/supplier_purchases_screen.dart';
+const _inventoryScreenPath = 'lib/features/inventory/inventory_screen.dart';
+const _stockTakeScreenPath = 'lib/features/inventory/stock_take_screen.dart';
+const _stockAdjustmentReportScreenPath =
+    'lib/features/inventory/stock_adjustment_report_screen.dart';
+const _persistencePath = 'lib/core/persistence';
+const _phase106qBaseline = 'f0341e9e070012953bce487c20401bf36eec1b87';
+
+const _expectedProductionFiles = {
+  'lib/core/inventory/inventory_controller.dart',
+  'lib/features/inventory/inventory_screen.dart',
+  'lib/features/inventory/stock_take_screen.dart',
+  'lib/features/inventory/stock_adjustment_report_screen.dart',
+};
 
 const _frozenReadModelFields = {
   'id',
@@ -38,7 +46,7 @@ const _catalogCallers = {
 };
 
 void main() {
-  group('PurchaseController.load product catalog read migration', () {
+  group('InventoryController.load product catalog read migration', () {
     test('load reads products through ProductCatalogReadRepository only',
         () async {
       final catalog = _Catalog([
@@ -53,11 +61,11 @@ void main() {
       expect(catalog.includeInactiveValues, [true]);
       expect(fixture.controller.isLoading, isFalse);
       expect(fixture.controller.products, hasLength(2));
-      expect(fixture.purchases.readCalls, 1);
-      expect(fixture.suppliers.readCalls, 1);
+      expect(fixture.inventory.listAllMovementsCalls, 1);
+      expect(fixture.inventory.balancesCalls, 1);
     });
 
-    test('includeInactive follows the canCreatePurchaseIntake permission',
+    test('includeInactive follows the canCreateStockAdjustment permission',
         () async {
       final ownerCatalog = _Catalog([
         _model('prd-1', 'قمح', isActive: true),
@@ -80,7 +88,7 @@ void main() {
       expect(employeeFixture.controller.products.single.id, 'prd-1');
     });
 
-    test('load exposes id, name, and isActive from the read model', () async {
+    test('load exposes id and name from the read model', () async {
       final catalog = _Catalog([
         _model('prd-1', 'قمح', isActive: true),
         _model('prd-2', 'شعير', isActive: false),
@@ -93,12 +101,10 @@ void main() {
       expect(products, hasLength(2));
       expect(products[0].id, 'prd-1');
       expect(products[0].name, 'قمح');
-      expect(products[0].isActive, isTrue);
       expect(products[1].id, 'prd-2');
       expect(products[1].name, 'شعير');
-      expect(products[1].isActive, isFalse);
-      expect(fixture.controller.productName('prd-2'), 'شعير');
-      expect(fixture.controller.productName('missing'), 'صنف غير معروف');
+      expect(fixture.controller.balanceForProduct('prd-1'), 10);
+      expect(fixture.controller.hasOpeningBalance('prd-1'), isFalse);
     });
 
     test('empty catalog list loads without crash and stays empty', () async {
@@ -126,8 +132,7 @@ void main() {
       );
 
       expect(fixture.controller.errorMessage, isNull);
-      expect(fixture.purchases.writeCalls, 0);
-      expect(fixture.suppliers.writeCalls, 0);
+      expect(fixture.inventory.writeCalls, 0);
     });
 
     test('load is read-only and never writes', () async {
@@ -136,8 +141,7 @@ void main() {
 
       await fixture.controller.load(_owner);
 
-      expect(fixture.purchases.writeCalls, 0);
-      expect(fixture.suppliers.writeCalls, 0);
+      expect(fixture.inventory.writeCalls, 0);
       expect(catalog.readCalls, 1);
     });
 
@@ -157,9 +161,9 @@ void main() {
     });
   });
 
-  group('Phase 106P architecture freeze', () {
+  group('Phase 106R architecture freeze', () {
     test(
-        'PurchaseController.load no longer depends on the legacy read contract',
+        'InventoryController.load no longer depends on the legacy read contract',
         () {
       final source = _compact(File(_controllerPath).readAsStringSync());
       final loadBody = _compact(_methodBody(
@@ -174,9 +178,7 @@ void main() {
           contains('_productCatalogReadRepository.listProductCatalog('));
       expect(
         loadBody,
-        contains(
-          'includeInactive:user.permissions.canCreatePurchaseIntake',
-        ),
+        contains('includeInactive:user.permissions.canCreateStockAdjustment'),
       );
       expect(loadBody, isNot(contains('listProducts(')));
       for (final forbidden in const [
@@ -186,13 +188,18 @@ void main() {
         'setProductActive(',
         'restoreProductsIntoEmpty(',
         'clearForOwnerDataWipe(',
-        '_purchaseRepository.createPurchaseIntake(',
-        '_purchaseRepository.cancelPurchaseIntake(',
-        'createSupplier(',
-        'updateSupplier(',
-        'setSupplierActive(',
+        '_inventoryRepository.createMovement(',
       ]) {
         expect(loadBody, isNot(contains(forbidden)), reason: forbidden);
+      }
+    });
+
+    test('migrated controller carries no TODO, placeholder, or shim', () {
+      final source = File(_controllerPath).readAsStringSync();
+
+      for (final marker in const ['TODO', 'FIXME', 'placeholder', 'shim']) {
+        expect(source.toLowerCase(), isNot(contains(marker.toLowerCase())),
+            reason: marker);
       }
     });
 
@@ -211,13 +218,31 @@ void main() {
       expect(fields, _frozenReadModelFields);
     });
 
-    test('no additional consumer migrated beyond PurchaseController.load', () {
+    test('ProductCatalogReadRepository contract is not expanded', () {
+      final source = _compact(File(_contractPath).readAsStringSync());
+
+      expect(source,
+          contains('abstractinterfaceclassProductCatalogReadRepository'));
+      expect(source, contains('listProductCatalog('));
+      for (final forbidden in const [
+        'createProduct(',
+        'updateProduct(',
+        'setProductActive(',
+        'restoreProductsIntoEmpty(',
+        'clearForOwnerDataWipe(',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: forbidden);
+      }
+    });
+
+    test('no additional consumer migrated beyond InventoryController.load', () {
       final callers = _filesCalling('.listProductCatalog(')..sort();
 
       expect(callers, _catalogCallers.toList()..sort());
-      for (final path in [
-        _purchasesScreenPath,
-        _supplierPurchasesScreenPath,
+      for (final path in const [
+        _inventoryScreenPath,
+        _stockTakeScreenPath,
+        _stockAdjustmentReportScreenPath,
       ]) {
         final screen = _compact(File(path).readAsStringSync());
         expect(
@@ -227,7 +252,35 @@ void main() {
           ),
           reason: path,
         );
+        expect(screen, isNot(contains('productRepository:')), reason: path);
       }
+    });
+
+    test('production scope is limited to the migration files', () {
+      final diff = _git([
+        'diff',
+        '--name-only',
+        _phase106qBaseline,
+        '--',
+        'lib',
+      ]).map((path) => path.trim()).where((path) => path.isNotEmpty).toSet();
+
+      expect(diff, _expectedProductionFiles);
+    });
+
+    test('no schema or persistence migration changes', () {
+      final persistenceDiff = _git([
+        'diff',
+        '--name-only',
+        _phase106qBaseline,
+        '--',
+        _persistencePath
+      ]).map((path) => path.trim()).where((path) => path.isNotEmpty).toList();
+      final schema = _compact(File('$_persistencePath/foundation_database.dart')
+          .readAsStringSync());
+
+      expect(persistenceDiff, isEmpty);
+      expect(schema, contains('schemaVersion=>15'));
     });
   });
 }
@@ -245,18 +298,15 @@ ProductCatalogReadModel _model(String id, String name,
 }
 
 _Fixture _fixture({required _Catalog catalog}) {
-  final purchases = _Purchases(const []);
-  final suppliers = _Suppliers(const []);
-  final controller = PurchaseController(
-    purchaseRepository: purchases,
-    supplierRepository: suppliers,
+  final inventory = _Inventory();
+  final controller = InventoryController(
+    inventoryRepository: inventory,
     productCatalogReadRepository: catalog,
   );
   return _Fixture(
     controller: controller,
     catalog: catalog,
-    purchases: purchases,
-    suppliers: suppliers,
+    inventory: inventory,
   );
 }
 
@@ -264,14 +314,12 @@ final class _Fixture {
   const _Fixture({
     required this.controller,
     required this.catalog,
-    required this.purchases,
-    required this.suppliers,
+    required this.inventory,
   });
 
-  final PurchaseController controller;
+  final InventoryController controller;
   final _Catalog catalog;
-  final _Purchases purchases;
-  final _Suppliers suppliers;
+  final _Inventory inventory;
 }
 
 final class _Catalog implements ProductCatalogReadRepository {
@@ -297,78 +345,54 @@ final class _Catalog implements ProductCatalogReadRepository {
   }
 }
 
-final class _Purchases implements PurchaseRepository {
-  _Purchases(this.items);
-
-  final List<PurchaseIntake> items;
-  int readCalls = 0;
+final class _Inventory implements InventoryRepository {
+  int listAllMovementsCalls = 0;
+  int balancesCalls = 0;
   int writeCalls = 0;
 
   @override
-  Future<List<PurchaseIntake>> listPurchaseIntakes() async {
-    readCalls++;
-    return List<PurchaseIntake>.unmodifiable(items);
+  Future<List<StockMovement>> listAllMovements() async {
+    listAllMovementsCalls++;
+    return const [];
   }
 
   @override
-  Future<PurchaseIntake> createPurchaseIntake(PurchaseIntakeDraft draft) {
+  Future<Map<String, int>> allProductBalancesKg({
+    bool activeProductsOnly = false,
+  }) async {
+    balancesCalls++;
+    return const {'prd-1': 10};
+  }
+
+  @override
+  Future<StockMovement> createMovement(StockMovementDraft draft) {
     writeCalls++;
-    throw UnsupportedError('Phase 106P fake is read-only.');
+    throw UnsupportedError('Phase 106R fake is read-only.');
   }
 
   @override
-  Future<PurchaseIntake> cancelPurchaseIntake({
-    required String purchaseIntakeId,
-    required String cancelledByUserId,
-    required String cancellationReason,
-  }) {
+  Future<List<StockMovement>> listMovementsByProduct(String productId) {
     writeCalls++;
-    throw UnsupportedError('Phase 106P fake is read-only.');
-  }
-}
-
-final class _Suppliers implements SupplierRepository {
-  _Suppliers(this.items);
-
-  final List<Supplier> items;
-  int readCalls = 0;
-  int writeCalls = 0;
-
-  @override
-  Future<List<Supplier>> listSuppliers({bool includeInactive = true}) async {
-    readCalls++;
-    return List<Supplier>.unmodifiable(items);
+    throw UnsupportedError('Phase 106R fake is read-only.');
   }
 
   @override
-  Future<Supplier> createSupplier(SupplierDraft draft) {
+  Future<int> currentStockKg(String productId) {
     writeCalls++;
-    throw UnsupportedError('Phase 106P fake is read-only.');
+    throw UnsupportedError('Phase 106R fake is read-only.');
   }
 
   @override
-  Future<Supplier> updateSupplier({
-    required String supplierId,
-    required SupplierDraft draft,
-  }) {
+  Future<bool> hasOpeningBalance(String productId) {
     writeCalls++;
-    throw UnsupportedError('Phase 106P fake is read-only.');
-  }
-
-  @override
-  Future<Supplier> setSupplierActive({
-    required String supplierId,
-    required bool isActive,
-  }) {
-    writeCalls++;
-    throw UnsupportedError('Phase 106P fake is read-only.');
+    throw UnsupportedError('Phase 106R fake is read-only.');
   }
 }
 
 final DateTime _now = DateTime.utc(2026, 7, 30);
 
 final _owner = AppUser(
-  id: 'owner-106p',
+  id: 'owner-106r',
   name: 'مالك',
   phone: '01000000000',
   role: UserRole.owner,
@@ -378,7 +402,7 @@ final _owner = AppUser(
 );
 
 final _employee = AppUser(
-  id: 'employee-106p',
+  id: 'employee-106r',
   name: 'موظف',
   phone: '01100000000',
   role: UserRole.employee,
@@ -386,6 +410,14 @@ final _employee = AppUser(
   createdAt: _now,
   updatedAt: _now,
 );
+
+List<String> _git(List<String> arguments) {
+  final process = Process.runSync('git', arguments);
+  if (process.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${process.stderr}');
+  }
+  return (process.stdout as String).split('\n');
+}
 
 List<String> _filesCalling(String pattern) {
   final results = <String>[];

@@ -15,6 +15,8 @@ import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/inventory/inventory_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('InventoryRepository and controller', () {
     test('owner can create the first opening balance', () async {
@@ -497,7 +499,8 @@ Future<_InventoryFixture> _fixture() async {
   final inventory = LocalInventoryRepository(productRepository: products);
   final controller = InventoryController(
     inventoryRepository: inventory,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   await controller.load(_owner);
 
