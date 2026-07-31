@@ -24,6 +24,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('paid purchase financial contract', () {
@@ -526,7 +527,8 @@ Future<_Fixture> _fixture({int cashOpeningQirsh = 2000}) async {
   final controller = PurchaseController(
     purchaseRepository: purchases,
     supplierRepository: suppliers,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   final requestRepository = LocalNegativeBalanceApprovalRequestRepository();
   final workflowService = NegativeBalanceApprovalWorkflowService(

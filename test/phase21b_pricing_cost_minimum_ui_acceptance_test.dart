@@ -260,7 +260,8 @@ Future<_Fixture> _fixture({
   final purchaseController = PurchaseController(
     purchaseRepository: purchases,
     supplierRepository: suppliers,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
 
   return _Fixture(

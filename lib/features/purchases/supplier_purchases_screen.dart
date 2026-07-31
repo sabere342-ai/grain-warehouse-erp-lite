@@ -39,7 +39,8 @@ class _SupplierPurchasesScreenState extends State<SupplierPurchasesScreen> {
     _controller = PurchaseController(
       purchaseRepository: AppRepositories.purchaseRepository,
       supplierRepository: AppRepositories.supplierRepository,
-      productRepository: AppRepositories.productRepository,
+      productCatalogReadRepository:
+          AppRepositories.productCatalogReadRepository,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;

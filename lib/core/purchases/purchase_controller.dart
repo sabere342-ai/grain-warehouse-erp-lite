@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
@@ -11,25 +10,26 @@ class PurchaseController extends ChangeNotifier {
   PurchaseController({
     required PurchaseRepository purchaseRepository,
     required SupplierRepository supplierRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
   })  : _purchaseRepository = purchaseRepository,
         _supplierRepository = supplierRepository,
-        _productRepository = productRepository;
+        _productCatalogReadRepository = productCatalogReadRepository;
 
   final PurchaseRepository _purchaseRepository;
   final SupplierRepository _supplierRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
 
   List<PurchaseIntake> _intakes = const [];
   List<Supplier> _suppliers = const [];
-  List<Product> _products = const [];
+  List<ProductCatalogReadModel> _products = const [];
   String? _errorMessage;
   bool _isLoading = false;
 
   List<PurchaseIntake> get intakes =>
       List<PurchaseIntake>.unmodifiable(_intakes);
   List<Supplier> get suppliers => List<Supplier>.unmodifiable(_suppliers);
-  List<Product> get products => List<Product>.unmodifiable(_products);
+  List<ProductCatalogReadModel> get products =>
+      List<ProductCatalogReadModel>.unmodifiable(_products);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 
@@ -42,7 +42,7 @@ class PurchaseController extends ChangeNotifier {
     _suppliers = await _supplierRepository.listSuppliers(
       includeInactive: user.permissions.canCreatePurchaseIntake,
     );
-    _products = await _productRepository.listProducts(
+    _products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: user.permissions.canCreatePurchaseIntake,
     );
 

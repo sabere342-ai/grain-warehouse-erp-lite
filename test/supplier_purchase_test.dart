@@ -20,6 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/purchases/purchases_screen.dart';
 import 'package:grain_warehouse_erp_lite/features/suppliers/suppliers_screen.dart';
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Supplier management', () {
@@ -689,7 +690,8 @@ Future<_PurchaseFixture> _fixture() async {
   final purchaseController = PurchaseController(
     purchaseRepository: purchaseRepository,
     supplierRepository: suppliers,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
   );
   await purchaseController.load(_owner);
 

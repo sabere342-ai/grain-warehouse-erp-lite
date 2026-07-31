@@ -86,7 +86,8 @@ void main() {
         controller = PurchaseController(
           purchaseRepository: purchaseRepo,
           supplierRepository: supplierRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
         );
       });
 

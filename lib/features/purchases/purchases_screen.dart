@@ -3,7 +3,7 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
@@ -63,7 +63,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
         PurchaseController(
           purchaseRepository: AppRepositories.purchaseRepository,
           supplierRepository: AppRepositories.supplierRepository,
-          productRepository: AppRepositories.productRepository,
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
         );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
@@ -469,7 +470,7 @@ class _PurchaseFormDialog extends StatefulWidget {
   });
 
   final List<Supplier> suppliers;
-  final List<Product> products;
+  final List<ProductCatalogReadModel> products;
   final String userId;
   final List<FinancialAccount> financialAccounts;
   final Map<String, int> accountBalancesQirsh;

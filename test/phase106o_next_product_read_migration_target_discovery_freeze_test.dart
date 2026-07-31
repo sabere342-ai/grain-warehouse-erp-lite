@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '39744e6b2d1581293da9f79bd3b8af79ee897f5c';
+const _phase106oCommit = '4b7b1f2b2c32675a5c0f3aa0f96ef1227e7dd7b0';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -58,8 +59,12 @@ void main() {
     final afterFreeze = headSubject ==
             'PHASE 106O: freeze next product read migration target' &&
         _git(['rev-parse', '$head^']).trim() == _baseline;
-    expect(atBaseline || afterFreeze, isTrue,
-        reason: 'HEAD must be the baseline or the single Phase 106O commit.');
+    final afterMigration = headSubject ==
+            'PHASE 106P: migrate purchase controller product catalog read' &&
+        _git(['rev-parse', '$head^']).trim() == _phase106oCommit;
+    expect(atBaseline || afterFreeze || afterMigration, isTrue,
+        reason:
+            'HEAD must be the baseline, the single Phase 106O commit, or the single Phase 106P migration commit.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);
@@ -161,7 +166,15 @@ void main() {
     for (final path in [_purchasesScreenPath, _supplierPurchasesScreenPath]) {
       final screen = File(path).readAsStringSync();
       expect(screen, contains('PurchaseController('));
-      expect(screen, contains('AppRepositories.productRepository'));
+      expect(
+        screen,
+        matches(
+          RegExp(
+            r'AppRepositories\.(productRepository|productCatalogReadRepository)',
+          ),
+        ),
+        reason: path,
+      );
     }
   });
 
@@ -229,7 +242,8 @@ void main() {
     expect(contract, contains('referenceCostPricePiastersPerKg'));
     expect(adapter, contains('products.referenceCostPricePiastersPerKg'));
     expect(
-      _git(['diff', '--name-only', _baseline, 'HEAD', '--', 'lib']).trim(),
+      _git(['diff', '--name-only', _baseline, _phase106oCommit, '--', 'lib'])
+          .trim(),
       isEmpty,
     );
   });
