@@ -30,6 +30,8 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 72 — Transaction Integration', () {
     group('PaymentMethod enum', () {
@@ -609,7 +611,8 @@ void main() {
 
         saleController = SaleController(
           saleRepository: saleRepo,
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
           customerRepository: customerRepo,
           customerAccountRepository: customerAccountRepo,

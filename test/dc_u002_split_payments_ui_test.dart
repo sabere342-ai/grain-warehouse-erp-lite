@@ -20,6 +20,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 const _qtyLabel = 'الكمية (كجم)';
 const _priceLabel = 'السعر / كجم';
 const _amountLabel = 'المبلغ (ج.م)';
@@ -359,7 +361,8 @@ class _Fixture {
     );
     fixture.controller = SaleController(
       saleRepository: fixture.sales,
-      productRepository: fixture.products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(fixture.products),
       inventoryRepository: fixture.inventory,
       customerRepository: fixture.customers,
       customerAccountRepository: fixture.ledger,

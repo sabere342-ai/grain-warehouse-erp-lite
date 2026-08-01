@@ -19,6 +19,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
     as db;
 
 const _phase106rCommit = 'ad03bd0b27109ac2ec97d80ffa32fca22d0f41d9';
+const _phase106sCommit = '7300f5569f0617cf81606eddd062e73ec75c2de6';
 
 const _catalogCallers = {
   'lib/core/dashboard/dashboard_service.dart',
@@ -28,6 +29,7 @@ const _catalogCallers = {
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/reports/report_repository.dart',
+  'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
 };
 
@@ -403,6 +405,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106rCommit,
+        _phase106sCommit,
         '--',
         'lib',
       ])
@@ -425,6 +428,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106rCommit,
+        _phase106sCommit,
         '--',
         'lib/core/persistence',
       ])

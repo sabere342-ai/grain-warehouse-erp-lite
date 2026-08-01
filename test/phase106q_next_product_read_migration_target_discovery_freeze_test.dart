@@ -15,6 +15,9 @@ const _phase106sSubject =
 const _phase106sCommit = '7300f5569f0617cf81606eddd062e73ec75c2de6';
 const _phase106tSubject =
     'PHASE 106T: freeze next product read migration target';
+const _phase106uSubject =
+    'PHASE 106U: expand product catalog read and migrate sale controller';
+const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -87,25 +90,29 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106rCommit;
     final afterFreezeT = headSubject == _phase106tSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106sCommit;
+    final afterMigrateU = headSubject == _phase106uSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
     expect(
         atBaseline ||
             afterFreeze ||
             afterMigration ||
             afterProve ||
-            afterFreezeT,
+            afterFreezeT ||
+            afterMigrateU,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
             'Phase 106Q freeze commit, the single Phase 106R migration commit '
             'whose parent is exactly the 106Q commit, the single Phase '
-            '106S proof commit whose parent is exactly the 106R commit, or '
-            'the single Phase 106T freeze commit whose parent is exactly the '
-            '106S commit.');
+            '106S proof commit whose parent is exactly the 106R commit, the '
+            'single Phase 106T freeze commit whose parent is exactly the '
+            '106S commit, or the single Phase 106U commit whose parent is '
+            'exactly the 106T freeze commit.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 4, isTrue,
-        reason: 'Zero through four commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 5, isTrue,
+        reason: 'Zero through five commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 
@@ -133,10 +140,16 @@ void main() {
         'lib/features/inventory/inventory_screen.dart',
         'lib/features/inventory/stock_take_screen.dart',
         'lib/features/inventory/stock_adjustment_report_screen.dart',
+        'lib/core/catalog/product_catalog_read_repository.dart',
+        'lib/core/catalog/drift_product_catalog_read_repository.dart',
+        'lib/app/app_repositories.dart',
+        'lib/core/sales/sale_controller.dart',
+        'lib/features/sales/sales_screen.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '
-          'migration files.',
+          'migration files or the Phase 106U contract expansion and sale '
+          'controller migration files.',
     );
     final check = Process.runSync(
       'git',
@@ -357,8 +370,9 @@ void main() {
     );
   });
 
-  test('ProductCatalogReadModel contract is not expanded', () {
-    final source = File(_contractPath).readAsStringSync();
+  test('ProductCatalogReadModel contract at the 106P baseline is not expanded',
+      () {
+    final source = _git(['show', '$_baseline:$_contractPath']);
     final modelBody = _bracedBody(
       source,
       source.indexOf('final class ProductCatalogReadModel'),

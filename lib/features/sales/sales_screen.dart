@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
@@ -40,7 +40,8 @@ class _SalesScreenState extends State<SalesScreen> {
     _controller = widget.controller ??
         SaleController(
           saleRepository: AppRepositories.saleRepository,
-          productRepository: AppRepositories.productRepository,
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
           inventoryRepository: AppRepositories.inventoryRepository,
           customerRepository: AppRepositories.customerRepository,
           customerAccountRepository: AppRepositories.customerAccountRepository,
@@ -325,9 +326,9 @@ class _ProductSaleCards extends StatelessWidget {
     required this.onSelect,
   });
 
-  final List<Product> products;
+  final List<ProductCatalogReadModel> products;
   final Map<String, int> stockByProductId;
-  final ValueChanged<Product> onSelect;
+  final ValueChanged<ProductCatalogReadModel> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +391,7 @@ class _ProductSaleCard extends StatelessWidget {
     required this.onSelect,
   });
 
-  final Product product;
+  final ProductCatalogReadModel product;
   final int stockKg;
   final VoidCallback onSelect;
 
@@ -613,7 +614,7 @@ class _SaleFormDialog extends StatefulWidget {
     this.initialProductId,
   });
 
-  final List<Product> products;
+  final List<ProductCatalogReadModel> products;
   final List<Customer> customers;
   final List<FinancialAccount> financialAccounts;
   final String? initialProductId;
@@ -1540,7 +1541,7 @@ class _AllocationEntry {
 class _LineItemEntry {
   _LineItemEntry({
     required this.productId,
-    required List<Product> products,
+    required List<ProductCatalogReadModel> products,
   })  : quantityController = TextEditingController(),
         priceController = TextEditingController();
 

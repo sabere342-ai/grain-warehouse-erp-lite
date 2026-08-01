@@ -225,7 +225,8 @@ class _Fixture {
     );
     saleController = SaleController(
       saleRepository: sales,
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
       customerRepository: customers,
       customerAccountRepository: ledger,

@@ -16,6 +16,8 @@ void main() {
       unit: GrainUnit.kilogram,
       isActive: true,
       referenceCostPricePiastersPerKg: 2375,
+      defaultSalePricePiastersPerKg: 2750,
+      minimumSalePricePiastersPerKg: 2500,
     );
     const uncosted = ProductCatalogReadModel(
       id: 'prd-uncosted',
@@ -24,6 +26,8 @@ void main() {
       unit: GrainUnit.ton,
       isActive: false,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
 
     final int? exactCost = costed.referenceCostPricePiastersPerKg;

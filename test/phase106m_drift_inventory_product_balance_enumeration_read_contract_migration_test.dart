@@ -226,11 +226,9 @@ void main() {
       name: 'Production composition sentinel',
       isActive: false,
       referenceCost: 12345,
+      defaultSalePrice: 3000,
+      minimumSalePrice: 2500,
       createdAt: time,
-    );
-    await database.customStatement(
-      "UPDATE products SET default_sale_price_piasters_per_kg = "
-      "'legacy-read-sentinel' WHERE id = 'prd-phase106m-production'",
     );
 
     expect(AppRepositories.database, same(database));
@@ -245,6 +243,11 @@ void main() {
     expect(await AppRepositories.inventoryRepository.allProductBalancesKg(), {
       'prd-phase106m-production': 0,
     });
+    final catalog = await AppRepositories.productCatalogReadRepository
+        .listProductCatalog(includeInactive: true);
+    expect(catalog.single.id, 'prd-phase106m-production');
+    expect(catalog.single.defaultSalePricePiastersPerKg, 3000);
+    expect(catalog.single.minimumSalePricePiastersPerKg, 2500);
   });
 
   test('source guard confines the new dependency to balance enumeration', () {
@@ -342,6 +345,8 @@ Future<void> _seedProduct(
   required bool isActive,
   required int? referenceCost,
   required DateTime createdAt,
+  int? defaultSalePrice,
+  int? minimumSalePrice,
 }) async {
   await database.into(database.products).insert(
         db.ProductsCompanion.insert(
@@ -353,6 +358,8 @@ Future<void> _seedProduct(
           unit: GrainUnit.kilogram.name,
           isActive: isActive,
           referenceCostPricePiastersPerKg: Value(referenceCost),
+          defaultSalePricePiastersPerKg: Value(defaultSalePrice),
+          minimumSalePricePiastersPerKg: Value(minimumSalePrice),
           createdAt: createdAt,
           updatedAt: createdAt,
         ),

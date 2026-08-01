@@ -8,6 +8,8 @@ final class ProductCatalogReadModel {
     required this.unit,
     required this.isActive,
     required this.referenceCostPricePiastersPerKg,
+    required this.defaultSalePricePiastersPerKg,
+    required this.minimumSalePricePiastersPerKg,
   });
 
   final String id;
@@ -18,6 +20,8 @@ final class ProductCatalogReadModel {
   final GrainUnit unit;
   final bool isActive;
   final int? referenceCostPricePiastersPerKg;
+  final int? defaultSalePricePiastersPerKg;
+  final int? minimumSalePricePiastersPerKg;
 }
 
 abstract interface class ProductCatalogReadRepository {

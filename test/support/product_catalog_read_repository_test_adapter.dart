@@ -24,6 +24,10 @@ final class ProductCatalogReadRepositoryTestAdapter
             isActive: product.isActive,
             referenceCostPricePiastersPerKg:
                 product.referenceCostPricePiastersPerKg,
+            defaultSalePricePiastersPerKg:
+                product.defaultSalePricePiastersPerKg,
+            minimumSalePricePiastersPerKg:
+                product.minimumSalePricePiastersPerKg,
           ),
         )
         .toList(growable: false);

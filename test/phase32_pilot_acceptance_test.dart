@@ -85,7 +85,8 @@ void main() {
       );
       final salesController = SaleController(
         saleRepository: source.sales,
-        productRepository: source.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(source.products),
         inventoryRepository: source.inventory,
         customerRepository: source.customers,
       );

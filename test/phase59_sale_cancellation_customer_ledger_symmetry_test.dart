@@ -16,6 +16,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 59 - sale cancellation customer ledger symmetry', () {
     late _Fixture f;
@@ -397,7 +399,8 @@ Future<_Fixture> _createFixture() async {
   );
   f.controller = SaleController(
     saleRepository: f.sales,
-    productRepository: f.products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(f.products),
     inventoryRepository: f.inventory,
     customerRepository: f.customers,
     customerAccountRepository: f.ledger,

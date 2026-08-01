@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -17,27 +16,27 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 class SaleController extends ChangeNotifier {
   SaleController({
     required SaleRepository saleRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     CustomerRepository? customerRepository,
     CustomerAccountRepository? customerAccountRepository,
     FinancialAccountRepository? financialAccountRepository,
   })  : _saleRepository = saleRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _customerRepository = customerRepository,
         _customerAccountRepository = customerAccountRepository,
         _financialAccountRepository = financialAccountRepository;
 
   final SaleRepository _saleRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final CustomerRepository? _customerRepository;
   final CustomerAccountRepository? _customerAccountRepository;
   final FinancialAccountRepository? _financialAccountRepository;
 
   List<SaleRecord> _sales = const [];
-  List<Product> _products = const [];
+  List<ProductCatalogReadModel> _products = const [];
   List<Customer> _customers = const [];
   List<FinancialAccount> _financialAccounts = const [];
   Map<String, int> _stockByProductId = const {};
@@ -45,7 +44,8 @@ class SaleController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<SaleRecord> get sales => List<SaleRecord>.unmodifiable(_sales);
-  List<Product> get products => List<Product>.unmodifiable(_products);
+  List<ProductCatalogReadModel> get products =>
+      List<ProductCatalogReadModel>.unmodifiable(_products);
   List<Customer> get customers => List<Customer>.unmodifiable(_customers);
   List<FinancialAccount> get financialAccounts =>
       List<FinancialAccount>.unmodifiable(_financialAccounts);
@@ -62,7 +62,9 @@ class SaleController extends ChangeNotifier {
     notifyListeners();
 
     _sales = await _saleRepository.listSales();
-    _products = await _productRepository.listProducts(includeInactive: false);
+    _products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: false,
+    );
     _stockByProductId = await _inventoryRepository.allProductBalancesKg(
       activeProductsOnly: true,
     );

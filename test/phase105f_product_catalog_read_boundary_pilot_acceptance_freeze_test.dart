@@ -26,6 +26,8 @@ void main() {
       unit: GrainUnit.ton,
       isActive: false,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
 
     final String id = model.id;

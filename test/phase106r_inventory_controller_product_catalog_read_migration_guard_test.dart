@@ -17,6 +17,7 @@ const _stockAdjustmentReportScreenPath =
     'lib/features/inventory/stock_adjustment_report_screen.dart';
 const _persistencePath = 'lib/core/persistence';
 const _phase106qBaseline = 'f0341e9e070012953bce487c20401bf36eec1b87';
+const _phase106rCommit = 'ad03bd0b27109ac2ec97d80ffa32fca22d0f41d9';
 
 const _expectedProductionFiles = {
   'lib/core/inventory/inventory_controller.dart',
@@ -42,6 +43,7 @@ const _catalogCallers = {
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/reports/report_repository.dart',
+  'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
 };
 
@@ -203,8 +205,11 @@ void main() {
       }
     });
 
-    test('ProductCatalogReadModel contract is not expanded', () {
-      final source = File(_contractPath).readAsStringSync();
+    test(
+        'ProductCatalogReadModel contract at the 106Q baseline is not '
+        'expanded', () {
+      final source =
+          _git(['show', '$_phase106qBaseline:$_contractPath']).join('\n');
       final modelBody = _bracedBody(
         source,
         source.indexOf('final class ProductCatalogReadModel'),
@@ -261,6 +266,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106qBaseline,
+        _phase106rCommit,
         '--',
         'lib',
       ]).map((path) => path.trim()).where((path) => path.isNotEmpty).toSet();
@@ -273,6 +279,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106qBaseline,
+        _phase106rCommit,
         '--',
         _persistencePath
       ]).map((path) => path.trim()).where((path) => path.isNotEmpty).toList();
@@ -294,6 +301,8 @@ ProductCatalogReadModel _model(String id, String name,
     unit: GrainUnit.kilogram,
     isActive: isActive,
     referenceCostPricePiastersPerKg: null,
+    defaultSalePricePiastersPerKg: null,
+    minimumSalePricePiastersPerKg: null,
   );
 }
 

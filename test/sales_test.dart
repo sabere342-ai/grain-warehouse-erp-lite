@@ -17,6 +17,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/sales/sales_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Sales foundation', () {
     test('valid sale creates sale record', () async {
@@ -400,7 +402,8 @@ Future<_SalesFixture> _fixture() async {
   );
   final controller = SaleController(
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     customerRepository: customers,
   );

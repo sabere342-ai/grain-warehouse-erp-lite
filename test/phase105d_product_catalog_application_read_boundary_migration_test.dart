@@ -40,6 +40,8 @@ void main() {
       unit: GrainUnit.ton,
       isActive: false,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
     final catalog = _CatalogFake([
       const [product],
@@ -105,6 +107,8 @@ void main() {
       unit: GrainUnit.kilogram,
       isActive: true,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
     final catalog = _CatalogFake([
       StateError('first load fails'),
@@ -134,6 +138,8 @@ void main() {
           unit: GrainUnit.ton,
           isActive: true,
           referenceCostPricePiastersPerKg: null,
+          defaultSalePricePiastersPerKg: null,
+          minimumSalePricePiastersPerKg: null,
         ),
         ProductCatalogReadModel(
           id: 'prd-a',
@@ -142,6 +148,8 @@ void main() {
           unit: GrainUnit.kilogram,
           isActive: true,
           referenceCostPricePiastersPerKg: null,
+          defaultSalePricePiastersPerKg: null,
+          minimumSalePricePiastersPerKg: null,
         ),
       ],
     ]);

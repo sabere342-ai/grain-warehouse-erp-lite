@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '7300f5569f0617cf81606eddd062e73ec75c2de6';
+const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
 const _phase106tSubject =
     'PHASE 106T: freeze next product read migration target';
+const _phase106uSubject =
+    'PHASE 106U: expand product catalog read and migrate sale controller';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -29,7 +32,6 @@ const _legacyConsumerFiles = {
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/purchases/purchase_repository.dart',
-  'lib/core/sales/sale_controller.dart',
   'lib/core/sales/sale_repository.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
 };
@@ -47,6 +49,7 @@ const _migratedConsumerFiles = {
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/reports/report_repository.dart',
+  'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
 };
 
@@ -57,6 +60,8 @@ const _frozenReadModelFields = {
   'unit',
   'isActive',
   'referenceCostPricePiastersPerKg',
+  'defaultSalePricePiastersPerKg',
+  'minimumSalePricePiastersPerKg',
 };
 
 void main() {
@@ -69,17 +74,20 @@ void main() {
     final atBaseline = head == _baseline;
     final afterFreeze = headSubject == _phase106tSubject &&
         _git(['rev-parse', '$head^']).trim() == _baseline;
-    expect(atBaseline || afterFreeze, isTrue,
+    final afterMigrateU = headSubject == _phase106uSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
+    expect(atBaseline || afterFreeze || afterMigrateU, isTrue,
         reason:
-            'HEAD must be the 106S baseline (during development) or the single '
+            'HEAD must be the 106S baseline (during development), the single '
             'Phase 106T freeze commit whose parent is exactly the 106S '
-            'baseline.');
+            'baseline, or the single Phase 106U commit whose parent is exactly '
+            'the 106T freeze commit.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 1, isTrue,
-        reason: 'Zero or one commit may exist after the 106S baseline; an open '
-            'number of commits must fail loudly.');
+    expect(commitCount >= 0 && commitCount <= 2, isTrue,
+        reason: 'Zero, one, or two commits may exist after the 106S baseline; '
+            'an open number of commits must fail loudly.');
   });
 
   test('Phase 106T is discovery/freeze only: no production diff', () {
@@ -88,7 +96,7 @@ void main() {
           'diff',
           '--name-only',
           _baseline,
-          'HEAD',
+          _phase106tCommit,
           '--',
           'lib',
         ]).trim(),
@@ -96,8 +104,23 @@ void main() {
         reason:
             'No production file under lib/ may differ from the 106S baseline '
             'at the 106T commit.');
-    expect(_git(['diff', '--name-only', '--', 'lib']).trim(), isEmpty,
-        reason: 'The working tree must have no lib/ diff during Phase 106T.');
+    final worktree = _git(['diff', '--name-only', '--', 'lib'])
+        .trim()
+        .split(RegExp(r'\r?\n'))
+        .where((path) => path.trim().isNotEmpty)
+        .toSet();
+    expect(
+      worktree.difference(const {
+        'lib/core/catalog/product_catalog_read_repository.dart',
+        'lib/core/catalog/drift_product_catalog_read_repository.dart',
+        'lib/app/app_repositories.dart',
+        'lib/core/sales/sale_controller.dart',
+        'lib/features/sales/sales_screen.dart',
+      }),
+      isEmpty,
+      reason: 'Any working-tree lib/ diff must be limited to the five Phase '
+          '106U permitted production files.',
+    );
     final check = Process.runSync(
       'git',
       ['diff', '--check'],
@@ -120,18 +143,18 @@ void main() {
       expect(report, contains(statement), reason: statement);
     }
 
-    final legacyFiles = _gitGrepFiles('.listProducts(', 'HEAD')
+    final legacyFiles = _workingTreeFilesWith('.listProducts(')
       ..removeAll(_legacyInfrastructureFiles);
-    final migratedFiles = _gitGrepFiles('.listProductCatalog(', 'HEAD');
+    final migratedFiles = _workingTreeFilesWith('.listProductCatalog(');
     expect(legacyFiles, _legacyConsumerFiles,
         reason:
-            'Exactly the 14 legacy consumer files must still call .listProducts(.');
+            'Exactly the 13 legacy consumer files must still call .listProducts(.');
     expect(migratedFiles, _migratedConsumerFiles,
         reason:
-            'Exactly the 8 migrated consumer files must call .listProductCatalog(.');
+            'Exactly the 9 migrated consumer files must call .listProductCatalog(.');
   });
 
-  test('all eight accepted consumers remain on the catalog boundary', () {
+  test('all nine accepted consumers remain on the catalog boundary', () {
     for (final path in _migratedConsumerFiles) {
       final source = File(path).readAsStringSync();
       expect(source, contains('.listProductCatalog('), reason: path);
@@ -143,6 +166,7 @@ void main() {
       'lib/core/inventory/inventory_controller.dart',
       'lib/core/purchases/purchase_controller.dart',
       'lib/core/reports/report_repository.dart',
+      'lib/core/sales/sale_controller.dart',
       'lib/features/dashboard/dashboard_screen.dart',
     ]) {
       final source = File(path).readAsStringSync();
@@ -204,7 +228,8 @@ void main() {
     expect(report, contains('so that `SaleController.load` can migrate to'));
   });
 
-  test('selected target is read-only, production reachable, still legacy', () {
+  test('selected target is read-only, production reachable, on the boundary',
+      () {
     final controller = File(_targetPath).readAsStringSync();
     final classStart = controller.indexOf('class SaleController');
     final methodStart =
@@ -213,11 +238,15 @@ void main() {
     final body = _bracedBody(controller, asyncStart);
 
     expect(
-        controller, contains('required ProductRepository productRepository'));
-    expect(_occurrences(body, '_productRepository.listProducts('), 1);
+        controller,
+        contains('required ProductCatalogReadRepository '
+            'productCatalogReadRepository'));
+    expect(
+        _occurrences(body, '_productCatalogReadRepository.listProductCatalog('),
+        1);
     expect(body, contains('includeInactive: false'));
-    expect(body, isNot(contains('.listProductCatalog(')));
-    expect(body, isNot(contains('_productCatalogReadRepository')));
+    expect(body, contains('.listProductCatalog('));
+    expect(body, contains('_productCatalogReadRepository'));
     for (final forbidden in const [
       '.transaction(',
       'createProduct(',
@@ -235,7 +264,7 @@ void main() {
     expect(screen, contains('SaleController('));
     expect(
       screen,
-      contains('productRepository: AppRepositories.productRepository'),
+      contains('AppRepositories.productCatalogReadRepository'),
       reason: _salesScreenPath,
     );
     expect(
@@ -318,12 +347,23 @@ void main() {
     expect(adapter, isNot(contains('products.defaultSalePricePiastersPerKg')));
     expect(adapter, isNot(contains('products.minimumSalePricePiastersPerKg')));
     expect(
-      _git(['diff', '--name-only', _baseline, 'HEAD', '--', 'lib']).trim(),
+      _git([
+        'diff',
+        '--name-only',
+        _baseline,
+        _phase106tCommit,
+        '--',
+        'lib',
+      ]).trim(),
       isEmpty,
+      reason: 'The 106T commit itself must not change any production file; the '
+          'frozen expansion is implemented only by the single 106U commit.',
     );
   });
 
-  test('ProductCatalogReadModel contract is not expanded', () {
+  test(
+      'ProductCatalogReadModel contract reflects the frozen eight-field '
+      'expansion', () {
     final source = File(_contractPath).readAsStringSync();
     final modelBody = _bracedBody(
       source,
@@ -336,8 +376,8 @@ void main() {
         .toSet();
 
     expect(fields, _frozenReadModelFields);
-    expect(source, isNot(contains('defaultSalePricePiastersPerKg')));
-    expect(source, isNot(contains('minimumSalePricePiastersPerKg')));
+    expect(source, contains('defaultSalePricePiastersPerKg'));
+    expect(source, contains('minimumSalePricePiastersPerKg'));
   });
 
   test('schemaVersion stays 15 and no fallback appears', () {
@@ -425,14 +465,22 @@ void main() {
   });
 }
 
-Set<String> _gitGrepFiles(String pattern, String revision) {
-  final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);
-  return output
-      .split(RegExp(r'\r?\n'))
-      .where((line) => line.trim().isNotEmpty)
-      .map(
-          (line) => line.substring(line.indexOf(':') + 1).replaceAll('\\', '/'))
-      .toSet();
+Set<String> _workingTreeFilesWith(String pattern) {
+  final results = <String>{};
+  final pending = <Directory>[Directory('lib')];
+  while (pending.isNotEmpty) {
+    final directory = pending.removeLast();
+    for (final entity in directory.listSync(followLinks: false)) {
+      if (entity is Directory) {
+        pending.add(entity);
+      } else if (entity is File && entity.path.endsWith('.dart')) {
+        if (entity.readAsStringSync().contains(pattern)) {
+          results.add(entity.path.replaceAll('\\', '/'));
+        }
+      }
+    }
+  }
+  return results;
 }
 
 String _git(List<String> arguments) {

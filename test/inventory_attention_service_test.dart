@@ -70,6 +70,8 @@ ProductCatalogReadModel _product(String id, String name) =>
       unit: GrainUnit.kilogram,
       isActive: true,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
 
 final class _Products implements ProductCatalogReadRepository {

@@ -340,11 +340,9 @@ void main() {
         name: 'Production sentinel',
         isActive: false,
         referenceCost: 54321,
+        defaultSalePrice: 60000,
+        minimumSalePrice: 58000,
         createdAt: DateTime(2026, 7, 30, 8),
-      );
-      await database.customStatement(
-        "UPDATE products SET default_sale_price_piasters_per_kg = "
-        "'legacy-read-sentinel' WHERE id = 'prd-106n-production'",
       );
       await _seedMovement(
         database,
@@ -513,6 +511,8 @@ Future<void> _seedProduct(
   required bool isActive,
   required int? referenceCost,
   required DateTime createdAt,
+  int? defaultSalePrice,
+  int? minimumSalePrice,
 }) async {
   await database.into(database.products).insert(
         db.ProductsCompanion.insert(
@@ -524,6 +524,8 @@ Future<void> _seedProduct(
           unit: GrainUnit.kilogram.name,
           isActive: isActive,
           referenceCostPricePiastersPerKg: Value(referenceCost),
+          defaultSalePricePiastersPerKg: Value(defaultSalePrice),
+          minimumSalePricePiastersPerKg: Value(minimumSalePrice),
           createdAt: createdAt,
           updatedAt: createdAt,
         ),

@@ -278,7 +278,8 @@ void main() {
         );
         final controller = SaleController(
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           customerRepository: customers,
           customerAccountRepository: accountRepo,
@@ -742,7 +743,8 @@ void main() {
         );
         final controller = SaleController(
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           customerRepository: customers,
           customerAccountRepository: accountRepo,
@@ -794,7 +796,8 @@ void main() {
         );
         final controller = SaleController(
           saleRepository: sales,
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           customerRepository: customers,
           customerAccountRepository: accountRepo,

@@ -229,6 +229,8 @@ ProductCatalogReadModel _product(
     unit: GrainUnit.kilogram,
     isActive: isActive,
     referenceCostPricePiastersPerKg: referenceCost,
+    defaultSalePricePiastersPerKg: null,
+    minimumSalePricePiastersPerKg: null,
   );
 }
 

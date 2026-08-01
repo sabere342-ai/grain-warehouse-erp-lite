@@ -134,7 +134,7 @@ void main() {
       await database.customStatement(
         '''
         UPDATE products
-        SET default_sale_price_piasters_per_kg = 'legacy-read-sentinel'
+        SET updated_at = 'legacy-read-sentinel'
         WHERE id = 'prd-106c-legacy-sentinel'
         ''',
       );

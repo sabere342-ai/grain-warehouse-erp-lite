@@ -11,6 +11,9 @@ const _phase106rCommit = 'ad03bd0b27109ac2ec97d80ffa32fca22d0f41d9';
 const _phase106sCommit = '7300f5569f0617cf81606eddd062e73ec75c2de6';
 const _phase106tSubject =
     'PHASE 106T: freeze next product read migration target';
+const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
+const _phase106uSubject =
+    'PHASE 106U: expand product catalog read and migrate sale controller';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -80,6 +83,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106rCommit;
     final afterFreezeT = headSubject == _phase106tSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106sCommit;
+    final afterMigrateU = headSubject == _phase106uSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -87,10 +92,11 @@ void main() {
             afterReaudit ||
             afterMigrateR ||
             afterProveS ||
-            afterFreezeT,
+            afterFreezeT ||
+            afterMigrateU,
         isTrue,
         reason:
-            'HEAD must be the baseline, the single Phase 106O commit, the single Phase 106P migration commit, the single Phase 106Q freeze commit, the single Phase 106R migration commit, the single Phase 106S proof commit, or the single Phase 106T freeze commit whose parent is exactly the 106S commit.');
+            'HEAD must be the baseline, the single Phase 106O commit, the single Phase 106P migration commit, the single Phase 106Q freeze commit, the single Phase 106R migration commit, the single Phase 106S proof commit, the single Phase 106T freeze commit whose parent is exactly the 106S commit, or the single Phase 106U commit whose parent is exactly the 106T freeze commit.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);

@@ -11,6 +11,8 @@ void main() {
       unit: GrainUnit.ton,
       isActive: true,
       referenceCostPricePiastersPerKg: 2375,
+      defaultSalePricePiastersPerKg: 2750,
+      minimumSalePricePiastersPerKg: 2500,
     );
 
     final String id = model.id;
@@ -20,6 +22,10 @@ void main() {
     final bool isActive = model.isActive;
     final int? referenceCostPricePiastersPerKg =
         model.referenceCostPricePiastersPerKg;
+    final int? defaultSalePricePiastersPerKg =
+        model.defaultSalePricePiastersPerKg;
+    final int? minimumSalePricePiastersPerKg =
+        model.minimumSalePricePiastersPerKg;
 
     expect(id, 'prd-123456789-1');
     expect(name, 'Wheat');
@@ -27,6 +33,8 @@ void main() {
     expect(unit, GrainUnit.ton);
     expect(isActive, isTrue);
     expect(referenceCostPricePiastersPerKg, 2375);
+    expect(defaultSalePricePiastersPerKg, 2750);
+    expect(minimumSalePricePiastersPerKg, 2500);
   });
 
   test('optional product code accepts null without changing other fields', () {
@@ -37,6 +45,8 @@ void main() {
       unit: GrainUnit.kilogram,
       isActive: false,
       referenceCostPricePiastersPerKg: null,
+      defaultSalePricePiastersPerKg: null,
+      minimumSalePricePiastersPerKg: null,
     );
 
     expect(model.id, 'prd-987654321-2');
@@ -44,6 +54,8 @@ void main() {
     expect(model.unit, GrainUnit.kilogram);
     expect(model.isActive, isFalse);
     expect(model.referenceCostPricePiastersPerKg, isNull);
+    expect(model.defaultSalePricePiastersPerKg, isNull);
+    expect(model.minimumSalePricePiastersPerKg, isNull);
   });
 
   test('repository is a Future snapshot contract with required visibility',
@@ -56,6 +68,8 @@ void main() {
         unit: GrainUnit.kilogram,
         isActive: true,
         referenceCostPricePiastersPerKg: null,
+        defaultSalePricePiastersPerKg: null,
+        minimumSalePricePiastersPerKg: null,
       ),
       ProductCatalogReadModel(
         id: 'prd-2-2',
@@ -64,6 +78,8 @@ void main() {
         unit: GrainUnit.ton,
         isActive: false,
         referenceCostPricePiastersPerKg: null,
+        defaultSalePricePiastersPerKg: null,
+        minimumSalePricePiastersPerKg: null,
       ),
     ];
     final fake = _FakeProductCatalogReadRepository(snapshot);

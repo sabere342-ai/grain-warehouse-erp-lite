@@ -17,6 +17,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('DC-U002 atomic split payments', () {
     late _Fixture fixture;
@@ -307,7 +309,8 @@ class _Fixture {
     );
     fixture.controller = SaleController(
       saleRepository: fixture.sales,
-      productRepository: fixture.products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(fixture.products),
       inventoryRepository: fixture.inventory,
       customerRepository: fixture.customers,
       customerAccountRepository: fixture.ledger,

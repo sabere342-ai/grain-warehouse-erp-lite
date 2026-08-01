@@ -13,6 +13,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 
 const _controllerPath = 'lib/core/purchases/purchase_controller.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
+const _phase106pCommit = '80ede9595b51c17d1b82f16a9198b91a9d9422d9';
 const _purchasesScreenPath = 'lib/features/purchases/purchases_screen.dart';
 const _supplierPurchasesScreenPath =
     'lib/features/purchases/supplier_purchases_screen.dart';
@@ -34,6 +35,7 @@ const _catalogCallers = {
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/reports/report_repository.dart',
+  'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
 };
 
@@ -196,8 +198,9 @@ void main() {
       }
     });
 
-    test('ProductCatalogReadModel contract is not expanded', () {
-      final source = File(_contractPath).readAsStringSync();
+    test('ProductCatalogReadModel contract at the 106P commit is not expanded',
+        () {
+      final source = _git(['show', '$_phase106pCommit:$_contractPath']);
       final modelBody = _bracedBody(
         source,
         source.indexOf('final class ProductCatalogReadModel'),
@@ -241,6 +244,8 @@ ProductCatalogReadModel _model(String id, String name,
     unit: GrainUnit.kilogram,
     isActive: isActive,
     referenceCostPricePiastersPerKg: null,
+    defaultSalePricePiastersPerKg: null,
+    minimumSalePricePiastersPerKg: null,
   );
 }
 
@@ -403,6 +408,14 @@ List<String> _filesCalling(String pattern) {
     }
   }
   return results;
+}
+
+String _git(List<String> arguments) {
+  final process = Process.runSync('git', arguments);
+  if (process.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${process.stderr}');
+  }
+  return process.stdout as String;
 }
 
 String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');

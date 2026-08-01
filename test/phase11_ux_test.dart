@@ -190,7 +190,8 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
   }
   final controller = SaleController(
     saleRepository: sales,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     customerRepository: customers,
   );
