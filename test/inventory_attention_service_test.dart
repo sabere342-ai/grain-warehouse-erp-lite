@@ -72,6 +72,7 @@ ProductCatalogReadModel _product(String id, String name) =>
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
 
 final class _Products implements ProductCatalogReadRepository {

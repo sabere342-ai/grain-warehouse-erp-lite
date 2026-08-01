@@ -31,7 +31,7 @@ void main() {
   group('Phase 11 Arabic UX clarity', () {
     testWidgets('shows clear Arabic empty state labels', (tester) async {
       final auth = await _signedInOwner();
-      final products = ProductController(repository: LocalProductRepository());
+      final products = _productController(LocalProductRepository());
       final salesFixture = await _salesFixture(createSale: false);
 
       await tester.pumpWidget(
@@ -78,7 +78,7 @@ void main() {
 
     testWidgets('employee sees owner-only guidance text', (tester) async {
       final auth = await _signedInEmployee();
-      final products = ProductController(repository: LocalProductRepository());
+      final products = _productController(LocalProductRepository());
 
       await tester.pumpWidget(
         _harness(auth: auth, child: ProductsScreen(controller: products)),
@@ -152,6 +152,13 @@ void main() {
     });
   });
 }
+
+ProductController _productController(ProductRepository repository) =>
+    ProductController(
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(repository),
+      repository: repository,
+    );
 
 Future<_SalesFixture> _salesFixture({required bool createSale}) async {
   final products = LocalProductRepository();

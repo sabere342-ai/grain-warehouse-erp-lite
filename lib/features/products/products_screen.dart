@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_colors.dart';
@@ -30,7 +31,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     super.initState();
     _ownsController = widget.controller == null;
     _controller = widget.controller ??
-        ProductController(repository: AppRepositories.productRepository);
+        ProductController(
+          productCatalogReadRepository:
+              AppRepositories.productCatalogReadRepository,
+          repository: AppRepositories.productRepository,
+        );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
@@ -132,7 +137,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Future<void> _showProductForm(
     BuildContext context, {
     required user,
-    Product? product,
+    ProductCatalogReadModel? product,
   }) async {
     final draft = await showDialog<ProductDraft>(
       context: context,
@@ -163,7 +168,7 @@ class _ProductCard extends StatelessWidget {
     required this.onToggleActive,
   });
 
-  final Product product;
+  final ProductCatalogReadModel product;
   final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
@@ -282,7 +287,7 @@ class _StatusChip extends StatelessWidget {
 class _ProductFormDialog extends StatefulWidget {
   const _ProductFormDialog({this.product});
 
-  final Product? product;
+  final ProductCatalogReadModel? product;
 
   @override
   State<_ProductFormDialog> createState() => _ProductFormDialogState();

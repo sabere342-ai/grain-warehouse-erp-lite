@@ -20,8 +20,13 @@ import 'package:grain_warehouse_erp_lite/core/sales/drift_sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 
 const _phase106uCommit = '0ff8370b5cbc344973cdd968985a30c549f934d1';
+const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
+const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _phase106xSubject =
+    'PHASE 106X: extend product catalog notes and migrate product controller';
 
 const _catalogCallers = {
+  'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
@@ -489,13 +494,13 @@ void main() {
       );
     });
 
-    test('no production code changed and no consumer migrated in Phase 106V',
+    test('Phase 106V stayed production-only and Phase 106X adds one consumer',
         () {
-      final productionDiff = _git([
+      final phase106vProductionDiff = _git([
         'diff',
         '--name-only',
         _phase106uCommit,
-        'HEAD',
+        _phase106vCommit,
         '--',
         'lib',
       ])
@@ -503,13 +508,25 @@ void main() {
           .where((line) => line.trim().isNotEmpty)
           .toList();
 
-      expect(productionDiff, isEmpty);
+      expect(phase106vProductionDiff, isEmpty);
 
-      final worktreeDiff = _git(['diff', '--name-only', '--', 'lib'])
+      final phase106xProductionDiff = _git([
+        'diff',
+        '--name-only',
+        _phase106wCommit,
+        '--',
+        'lib',
+      ])
           .split(RegExp(r'\r?\n'))
           .where((line) => line.trim().isNotEmpty)
-          .toList();
-      expect(worktreeDiff, isEmpty);
+          .toSet();
+      expect(phase106xProductionDiff, {
+        'lib/app/app_repositories.dart',
+        'lib/core/catalog/drift_product_catalog_read_repository.dart',
+        'lib/core/catalog/product_catalog_read_repository.dart',
+        'lib/core/catalog/product_controller.dart',
+        'lib/features/products/products_screen.dart',
+      });
 
       final callers = _filesCalling('.listProductCatalog(')..sort();
       expect(callers, _catalogCallers.toList()..sort());
@@ -545,16 +562,20 @@ void main() {
               'PHASE 106V: prove runtime sale controller product catalog '
                   'integration' &&
           _git(['rev-parse', '$head^']).trim() == _phase106uCommit;
-      expect(atBaseline || afterProof, isTrue,
+      final afterFreeze = head == _phase106wCommit;
+      final afterMigration = headSubject == _phase106xSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
+      expect(atBaseline || afterProof || afterFreeze || afterMigration, isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
-              'single Phase 106V commit whose parent is exactly the 106U '
-              'commit.');
+              'single Phase 106V commit, the Phase 106W freeze, or its single '
+              'Phase 106X migration child.');
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 1, isTrue,
-          reason: 'Zero or one commit may exist after the 106U baseline; an '
+      expect(commitCount >= 0 && commitCount <= 3, isTrue,
+          reason: 'Zero through three commits may exist after the 106U '
+              'baseline; an '
               'open number of commits must fail loudly.');
     });
   });

@@ -371,6 +371,7 @@ final class _LegacyProductCatalogReadRepository
                 product.defaultSalePricePiastersPerKg,
             minimumSalePricePiastersPerKg:
                 product.minimumSalePricePiastersPerKg,
+            notes: product.notes,
           ),
         )
         .toList(growable: false);

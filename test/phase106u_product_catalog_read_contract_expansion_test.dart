@@ -25,6 +25,7 @@ void main() {
         referenceCostPricePiastersPerKg: 2800,
         defaultSalePricePiastersPerKg: 3000,
         minimumSalePricePiastersPerKg: 2500,
+        notes: null,
       );
 
       expect(model.id, 'prd-106u-model');
@@ -47,6 +48,7 @@ void main() {
         referenceCostPricePiastersPerKg: null,
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
+        notes: null,
       );
 
       expect(model.code, isNull);
@@ -201,6 +203,7 @@ void main() {
             referenceCostPricePiastersPerKg: null,
             defaultSalePricePiastersPerKg: null,
             minimumSalePricePiastersPerKg: null,
+            notes: null,
           ),
         ),
         throwsUnsupportedError,

@@ -1,18 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 
 class ProductController extends ChangeNotifier {
-  ProductController({required ProductRepository repository})
-      : _repository = repository;
+  ProductController({
+    required ProductCatalogReadRepository productCatalogReadRepository,
+    required ProductRepository repository,
+  })  : _productCatalogReadRepository = productCatalogReadRepository,
+        _repository = repository;
 
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final ProductRepository _repository;
-  List<Product> _products = const [];
+  List<ProductCatalogReadModel> _products = const [];
   String? _errorMessage;
   bool _isLoading = false;
 
-  List<Product> get products => List<Product>.unmodifiable(_products);
+  List<ProductCatalogReadModel> get products =>
+      List<ProductCatalogReadModel>.unmodifiable(_products);
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 
@@ -21,7 +27,7 @@ class ProductController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    _products = await _repository.listProducts(
+    _products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: user.permissions.canManageProducts,
     );
     _isLoading = false;

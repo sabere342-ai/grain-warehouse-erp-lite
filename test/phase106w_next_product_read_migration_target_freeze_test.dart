@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
 const _phaseSubject = 'PHASE 106W: freeze next product read migration target';
+const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _phase106xSubject =
+    'PHASE 106X: extend product catalog notes and migrate product controller';
 const _reportPath =
     'docs/PHASE-106W-REAUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -14,7 +17,6 @@ const _legacyConsumerFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
-  'lib/core/catalog/product_controller.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_repository.dart',
@@ -32,6 +34,7 @@ const _legacyInfrastructureFiles = {
 };
 
 const _migratedConsumerFiles = {
+  'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
@@ -52,6 +55,7 @@ const _frozenReadModelFields = {
   'referenceCostPricePiastersPerKg',
   'defaultSalePricePiastersPerKg',
   'minimumSalePricePiastersPerKg',
+  'notes',
 };
 
 const _nextPhaseProductionFiles = {
@@ -69,17 +73,27 @@ void main() {
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
     final validHead = head == _baseline ||
         (subject == _phaseSubject &&
-            _git(['rev-parse', '$head^']).trim() == _baseline);
+            _git(['rev-parse', '$head^']).trim() == _baseline) ||
+        (subject == _phase106xSubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106wCommit);
     expect(validHead, isTrue,
-        reason: 'HEAD must be the 106V baseline or its single 106W child.');
+        reason: 'HEAD must be the 106V baseline, its single 106W child, or '
+            'the single Phase 106X migration child.');
 
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty,
+    expect(_git(['diff', _baseline, _phase106wCommit, '--', 'lib']).trim(),
+        isEmpty,
         reason: 'Phase 106W is documentation/test-only; lib/ must not change.');
-    expect(_git(['diff', '--', 'lib']).trim(), isEmpty,
-        reason: 'The working tree must have no production diff.');
+    final phase106xProductionFiles = _git([
+      'diff',
+      '--name-only',
+      _phase106wCommit,
+      '--',
+      'lib',
+    ]).split(RegExp(r'\r?\n')).where((path) => path.trim().isNotEmpty).toSet();
+    expect(phase106xProductionFiles, _nextPhaseProductionFiles);
   });
 
-  test('the audit reconciles exactly 24 = 9 migrated + 15 remaining', () {
+  test('the audit remains frozen while current inventory is 10 migrated', () {
     final report = File(_reportPath).readAsStringSync();
     for (final statement in const [
       'Total identified inventory units | 24',
@@ -139,7 +153,7 @@ void main() {
         report, contains('FROZEN_TARGET_MEMBER: loadProducts(AppUser user)'));
   });
 
-  test('the selected target is still legacy and preserves permission filtering',
+  test('the selected target is migrated and preserves permission filtering',
       () {
     final source = File(_controllerPath).readAsStringSync();
     final body = _methodBody(
@@ -148,16 +162,17 @@ void main() {
     );
     final compact = _compact(body);
 
-    expect(_occurrences(compact, '_repository.listProducts('), 1);
+    expect(
+        _occurrences(
+            compact, '_productCatalogReadRepository.listProductCatalog('),
+        1);
     expect(compact,
         contains('includeInactive:user.permissions.canManageProducts'));
-    expect(body, isNot(contains('listProductCatalog(')));
-    expect(source, isNot(contains('ProductCatalogReadRepository')),
-        reason: 'Phase 106W must not execute the frozen migration.');
+    expect(body, isNot(contains('listProducts(')));
+    expect(source, contains('ProductCatalogReadRepository'));
   });
 
-  test('current contract is eight fields and the only frozen addition is notes',
-      () {
+  test('current contract is nine fields with the frozen notes addition', () {
     final source = File(_contractPath).readAsStringSync();
     final modelBody = _bracedBody(
       source,
@@ -169,7 +184,7 @@ void main() {
         .map((match) => match.group(2)!)
         .toSet();
     expect(fields, _frozenReadModelFields);
-    expect(modelBody, isNot(contains('notes')));
+    expect(modelBody, contains('final String? notes;'));
 
     final report = File(_reportPath).readAsStringSync();
     for (final statement in const [

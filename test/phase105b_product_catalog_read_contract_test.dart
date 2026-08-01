@@ -13,6 +13,7 @@ void main() {
       referenceCostPricePiastersPerKg: 2375,
       defaultSalePricePiastersPerKg: 2750,
       minimumSalePricePiastersPerKg: 2500,
+      notes: '  premium wheat  ',
     );
 
     final String id = model.id;
@@ -26,6 +27,7 @@ void main() {
         model.defaultSalePricePiastersPerKg;
     final int? minimumSalePricePiastersPerKg =
         model.minimumSalePricePiastersPerKg;
+    final String? notes = model.notes;
 
     expect(id, 'prd-123456789-1');
     expect(name, 'Wheat');
@@ -35,6 +37,7 @@ void main() {
     expect(referenceCostPricePiastersPerKg, 2375);
     expect(defaultSalePricePiastersPerKg, 2750);
     expect(minimumSalePricePiastersPerKg, 2500);
+    expect(notes, '  premium wheat  ');
   });
 
   test('optional product code accepts null without changing other fields', () {
@@ -47,6 +50,7 @@ void main() {
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
 
     expect(model.id, 'prd-987654321-2');
@@ -56,6 +60,7 @@ void main() {
     expect(model.referenceCostPricePiastersPerKg, isNull);
     expect(model.defaultSalePricePiastersPerKg, isNull);
     expect(model.minimumSalePricePiastersPerKg, isNull);
+    expect(model.notes, isNull);
   });
 
   test('repository is a Future snapshot contract with required visibility',
@@ -70,6 +75,7 @@ void main() {
         referenceCostPricePiastersPerKg: null,
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
+        notes: '',
       ),
       ProductCatalogReadModel(
         id: 'prd-2-2',
@@ -80,6 +86,7 @@ void main() {
         referenceCostPricePiastersPerKg: null,
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
+        notes: null,
       ),
     ];
     final fake = _FakeProductCatalogReadRepository(snapshot);
@@ -92,6 +99,8 @@ void main() {
     expect(fake.receivedIncludeInactive, [false]);
     expect(identical(result, snapshot), isTrue);
     expect(result.map((model) => model.id), ['prd-1-1', 'prd-2-2']);
+    expect(result.first.notes, '');
+    expect(result.last.notes, isNull);
 
     final secondResult =
         await repository.listProductCatalog(includeInactive: true);

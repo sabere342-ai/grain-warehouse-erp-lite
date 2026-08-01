@@ -28,6 +28,7 @@ const _frozenReadModelFields = {
 };
 
 const _catalogCallers = {
+  'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
@@ -214,7 +215,7 @@ void main() {
       expect(fields, _frozenReadModelFields);
     });
 
-    test('no additional consumer migrated beyond PurchaseController.load', () {
+    test('catalog callers include accepted consumers through Phase 106X', () {
       final callers = _filesCalling('.listProductCatalog(')..sort();
 
       expect(callers, _catalogCallers.toList()..sort());
@@ -246,6 +247,7 @@ ProductCatalogReadModel _model(String id, String name,
     referenceCostPricePiastersPerKg: null,
     defaultSalePricePiastersPerKg: null,
     minimumSalePricePiastersPerKg: null,
+    notes: null,
   );
 }
 

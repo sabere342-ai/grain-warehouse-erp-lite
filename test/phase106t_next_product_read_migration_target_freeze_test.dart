@@ -12,6 +12,9 @@ const _phase106uSubject =
 const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
 const _phase106wSubject =
     'PHASE 106W: freeze next product read migration target';
+const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _phase106xSubject =
+    'PHASE 106X: extend product catalog notes and migrate product controller';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -27,7 +30,6 @@ const _legacyConsumerFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
-  'lib/core/catalog/product_controller.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_repository.dart',
@@ -45,6 +47,7 @@ const _legacyInfrastructureFiles = {
 };
 
 const _migratedConsumerFiles = {
+  'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
@@ -65,6 +68,7 @@ const _frozenReadModelFields = {
   'referenceCostPricePiastersPerKg',
   'defaultSalePricePiastersPerKg',
   'minimumSalePricePiastersPerKg',
+  'notes',
 };
 
 void main() {
@@ -82,19 +86,27 @@ void main() {
     final atProvenV = head == _phase106vCommit;
     final afterFreezeW = headSubject == _phase106wSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
+    final afterMigrateX = headSubject == _phase106xSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
     expect(
-        atBaseline || afterFreeze || afterMigrateU || atProvenV || afterFreezeW,
+        atBaseline ||
+            afterFreeze ||
+            afterMigrateU ||
+            atProvenV ||
+            afterFreezeW ||
+            afterMigrateX,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
             'Phase 106T freeze commit whose parent is exactly the 106S '
             'baseline, the Phase 106U migration, the proven Phase 106V '
-            'commit, or its single Phase 106W freeze child.');
+            'commit, its single Phase 106W freeze child, or the single Phase '
+            '106X migration child.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 4, isTrue,
-        reason: 'Zero through four commits may exist after the 106S baseline; '
+    expect(commitCount >= 0 && commitCount <= 5, isTrue,
+        reason: 'Zero through five commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
@@ -124,10 +136,12 @@ void main() {
         'lib/app/app_repositories.dart',
         'lib/core/sales/sale_controller.dart',
         'lib/features/sales/sales_screen.dart',
+        'lib/core/catalog/product_controller.dart',
+        'lib/features/products/products_screen.dart',
       }),
       isEmpty,
-      reason: 'Any working-tree lib/ diff must be limited to the five Phase '
-          '106U permitted production files.',
+      reason: 'Any working-tree lib/ diff must be limited to the Phase 106U '
+          'or Phase 106X permitted production files.',
     );
     final check = Process.runSync(
       'git',
@@ -156,10 +170,10 @@ void main() {
     final migratedFiles = _workingTreeFilesWith('.listProductCatalog(');
     expect(legacyFiles, _legacyConsumerFiles,
         reason:
-            'Exactly the 13 legacy consumer files must still call .listProducts(.');
+            'Exactly the 12 legacy consumer files must still call .listProducts(.');
     expect(migratedFiles, _migratedConsumerFiles,
         reason:
-            'Exactly the 9 migrated consumer files must call .listProductCatalog(.');
+            'Exactly the 10 migrated consumer files must call .listProductCatalog(.');
   });
 
   test('all nine accepted consumers remain on the catalog boundary', () {
@@ -370,7 +384,7 @@ void main() {
   });
 
   test(
-      'ProductCatalogReadModel contract reflects the frozen eight-field '
+      'ProductCatalogReadModel contract reflects the frozen nine-field '
       'expansion', () {
     final source = File(_contractPath).readAsStringSync();
     final modelBody = _bracedBody(

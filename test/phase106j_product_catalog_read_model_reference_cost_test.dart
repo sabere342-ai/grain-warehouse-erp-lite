@@ -18,6 +18,7 @@ void main() {
       referenceCostPricePiastersPerKg: 2375,
       defaultSalePricePiastersPerKg: 2750,
       minimumSalePricePiastersPerKg: 2500,
+      notes: null,
     );
     const uncosted = ProductCatalogReadModel(
       id: 'prd-uncosted',
@@ -28,6 +29,7 @@ void main() {
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
 
     final int? exactCost = costed.referenceCostPricePiastersPerKg;

@@ -139,7 +139,11 @@ void main() {
         _harness(
           auth: auth,
           child: ProductsScreen(
-            controller: ProductController(repository: fixture.products),
+            controller: ProductController(
+              productCatalogReadRepository:
+                  ProductCatalogReadRepositoryTestAdapter(fixture.products),
+              repository: fixture.products,
+            ),
           ),
         ),
       );

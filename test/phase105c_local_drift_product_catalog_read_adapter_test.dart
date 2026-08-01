@@ -107,6 +107,67 @@ void main() {
     ]);
   });
 
+  test('maps notes verbatim with null, empty, activity, prices, and ordering',
+      () async {
+    final fixture = _fixture();
+    final older = DateTime.utc(2026, 7, 26);
+    final tied = DateTime.utc(2026, 7, 27);
+    await _seed(fixture.database, [
+      _product(
+        id: 'prd-tied-z',
+        name: 'Inactive notes',
+        isActive: false,
+        notes: '  inactive note  ',
+        referenceCostPricePiastersPerKg: null,
+        defaultSalePricePiastersPerKg: 4100,
+        minimumSalePricePiastersPerKg: null,
+        createdAt: tied,
+      ),
+      _product(
+        id: 'prd-older',
+        name: 'Null notes',
+        notes: null,
+        referenceCostPricePiastersPerKg: 2375,
+        defaultSalePricePiastersPerKg: null,
+        minimumSalePricePiastersPerKg: 2200,
+        createdAt: older,
+      ),
+      _product(
+        id: 'prd-tied-a',
+        name: 'Empty notes',
+        notes: '',
+        referenceCostPricePiastersPerKg: 3000,
+        defaultSalePricePiastersPerKg: 3600,
+        minimumSalePricePiastersPerKg: 3200,
+        createdAt: tied,
+      ),
+    ]);
+
+    final activeOnly =
+        await fixture.repository.listProductCatalog(includeInactive: false);
+    final withInactive =
+        await fixture.repository.listProductCatalog(includeInactive: true);
+
+    expect(activeOnly.map((product) => product.id), [
+      'prd-older',
+      'prd-tied-a',
+    ]);
+    expect(activeOnly.first.notes, isNull);
+    expect(activeOnly.last.notes, '');
+    expect(activeOnly.first.referenceCostPricePiastersPerKg, 2375);
+    expect(activeOnly.first.defaultSalePricePiastersPerKg, isNull);
+    expect(activeOnly.first.minimumSalePricePiastersPerKg, 2200);
+    expect(withInactive.map((product) => product.id), [
+      'prd-older',
+      'prd-tied-a',
+      'prd-tied-z',
+    ]);
+    expect(withInactive.last.notes, '  inactive note  ');
+    expect(withInactive.last.referenceCostPricePiastersPerKg, isNull);
+    expect(withInactive.last.defaultSalePricePiastersPerKg, 4100);
+    expect(withInactive.last.minimumSalePricePiastersPerKg, isNull);
+  });
+
   test('empty database returns an empty typed snapshot', () async {
     final fixture = _fixture();
 
@@ -220,6 +281,10 @@ Product _product({
   GrainUnit unit = GrainUnit.kilogram,
   bool isActive = true,
   DateTime? createdAt,
+  int? referenceCostPricePiastersPerKg,
+  int? defaultSalePricePiastersPerKg,
+  int? minimumSalePricePiastersPerKg,
+  String? notes,
 }) {
   final timestamp = createdAt ?? DateTime.utc(2026, 7, 28);
   return Product(
@@ -228,6 +293,10 @@ Product _product({
     code: code,
     unit: unit,
     isActive: isActive,
+    referenceCostPricePiastersPerKg: referenceCostPricePiastersPerKg,
+    defaultSalePricePiastersPerKg: defaultSalePricePiastersPerKg,
+    minimumSalePricePiastersPerKg: minimumSalePricePiastersPerKg,
+    notes: notes,
     createdAt: timestamp,
     updatedAt: timestamp,
   );

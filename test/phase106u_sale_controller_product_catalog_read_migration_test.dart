@@ -180,6 +180,7 @@ ProductCatalogReadModel _model(
     referenceCostPricePiastersPerKg: null,
     defaultSalePricePiastersPerKg: defaultSalePrice,
     minimumSalePricePiastersPerKg: minimumSalePrice,
+    notes: null,
   );
 }
 

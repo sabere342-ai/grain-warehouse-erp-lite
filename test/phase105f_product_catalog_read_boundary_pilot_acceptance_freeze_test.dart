@@ -28,6 +28,7 @@ void main() {
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
 
     final String id = model.id;

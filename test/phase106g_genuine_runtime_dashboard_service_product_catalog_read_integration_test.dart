@@ -449,6 +449,7 @@ ProductCatalogReadModel _product(
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
 
 class _FixedCatalog implements ProductCatalogReadRepository {

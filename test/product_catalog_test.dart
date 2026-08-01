@@ -11,11 +11,12 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('ProductRepository', () {
     test('owner can create product through controller', () async {
-      final controller =
-          ProductController(repository: LocalProductRepository());
+      final controller = _productController(LocalProductRepository());
       final created = await controller.createProduct(
         user: _owner,
         draft: _draft(name: 'قمح بلدي', code: 'WHEAT-1'),
@@ -28,8 +29,7 @@ void main() {
     });
 
     test('employee cannot create product', () async {
-      final controller =
-          ProductController(repository: LocalProductRepository());
+      final controller = _productController(LocalProductRepository());
       final created = await controller.createProduct(
         user: _employee,
         draft: _draft(name: 'ذرة صفراء'),
@@ -89,8 +89,7 @@ void main() {
     });
 
     test('product can be deactivated by owner', () async {
-      final controller =
-          ProductController(repository: LocalProductRepository());
+      final controller = _productController(LocalProductRepository());
       await controller.createProduct(user: _owner, draft: _draft(name: 'شعير'));
       final productId = controller.products.single.id;
 
@@ -107,7 +106,7 @@ void main() {
     test('employee cannot deactivate product', () async {
       final repository = LocalProductRepository();
       final product = await repository.createProduct(_draft(name: 'فول'));
-      final controller = ProductController(repository: repository);
+      final controller = _productController(repository);
 
       final changed = await controller.setProductActive(
         user: _employee,
@@ -128,7 +127,7 @@ void main() {
       await repository.setProductActive(
           productId: inactive.id, isActive: false);
 
-      final controller = ProductController(repository: repository);
+      final controller = _productController(repository);
       await controller.loadProducts(_employee);
 
       expect(controller.products, hasLength(1));
@@ -186,7 +185,7 @@ void main() {
     testWidgets('owner sees product management actions', (tester) async {
       final auth =
           await _signedInController(phone: '01000000000', password: 'owner123');
-      final products = ProductController(repository: LocalProductRepository());
+      final products = _productController(LocalProductRepository());
 
       await tester.pumpWidget(_productHarness(auth: auth, products: products));
       await tester.pumpAndSettle();
@@ -198,7 +197,7 @@ void main() {
         (tester) async {
       final auth = await _signedInController(
           phone: '01100000000', password: 'employee123');
-      final products = ProductController(repository: LocalProductRepository());
+      final products = _productController(LocalProductRepository());
 
       await tester.pumpWidget(_productHarness(auth: auth, products: products));
       await tester.pumpAndSettle();
@@ -211,6 +210,13 @@ void main() {
     });
   });
 }
+
+ProductController _productController(ProductRepository repository) =>
+    ProductController(
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(repository),
+      repository: repository,
+    );
 
 ProductDraft _draft({
   required String name,

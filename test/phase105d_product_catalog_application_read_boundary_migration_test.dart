@@ -42,6 +42,7 @@ void main() {
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
     final catalog = _CatalogFake([
       const [product],
@@ -109,6 +110,7 @@ void main() {
       referenceCostPricePiastersPerKg: null,
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
+      notes: null,
     );
     final catalog = _CatalogFake([
       StateError('first load fails'),
@@ -140,6 +142,7 @@ void main() {
           referenceCostPricePiastersPerKg: null,
           defaultSalePricePiastersPerKg: null,
           minimumSalePricePiastersPerKg: null,
+          notes: null,
         ),
         ProductCatalogReadModel(
           id: 'prd-a',
@@ -150,6 +153,7 @@ void main() {
           referenceCostPricePiastersPerKg: null,
           defaultSalePricePiastersPerKg: null,
           minimumSalePricePiastersPerKg: null,
+          notes: null,
         ),
       ],
     ]);

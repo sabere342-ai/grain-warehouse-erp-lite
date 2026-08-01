@@ -28,6 +28,7 @@ final class ProductCatalogReadRepositoryTestAdapter
                 product.defaultSalePricePiastersPerKg,
             minimumSalePricePiastersPerKg:
                 product.minimumSalePricePiastersPerKg,
+            notes: product.notes,
           ),
         )
         .toList(growable: false);

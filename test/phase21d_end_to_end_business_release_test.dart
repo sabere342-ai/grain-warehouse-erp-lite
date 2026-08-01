@@ -169,7 +169,11 @@ void main() {
       expect(find.textContaining(_egpMarker), findsWidgets);
       expect(find.textContaining(_rawQirsh), findsNothing);
 
-      final productController = ProductController(repository: fixture.products);
+      final productController = ProductController(
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
+        repository: fixture.products,
+      );
       addTearDown(productController.dispose);
       await productController.loadProducts(_owner);
       await tester.pumpWidget(
