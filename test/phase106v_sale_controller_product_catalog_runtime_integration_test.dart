@@ -30,6 +30,9 @@ const _phase106ySubject =
 const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
 const _phase106zSubject =
     'PHASE 106Z: migrate profitability report activation product read';
+const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
+const _phase106aaSubject =
+    'PHASE 106AA: freeze next product read migration target';
 
 const _catalogCallers = {
   'lib/core/catalog/product_controller.dart',
@@ -577,23 +580,26 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
       final afterMigrateZ = headSubject == _phase106zSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
+      final afterFreezeAA = headSubject == _phase106aaSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
       expect(
           atBaseline ||
               afterProof ||
               afterFreeze ||
               afterMigration ||
               afterFreezeY ||
-              afterMigrateZ,
+              afterMigrateZ ||
+              afterFreezeAA,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
               'single Phase 106V commit, the Phase 106W freeze, or its single '
-              'Phase 106X migration child.');
+              'Phase 106X migration child through the Phase 106AA freeze.');
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 5, isTrue,
-          reason: 'Zero through five commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 6, isTrue,
+          reason: 'Zero through six commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

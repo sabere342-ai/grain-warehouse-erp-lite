@@ -8,6 +8,9 @@ const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
 const _phaseSubject = 'PHASE 106Y: freeze next product read migration target';
 const _phase106zSubject =
     'PHASE 106Z: migrate profitability report activation product read';
+const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
+const _phase106aaSubject =
+    'PHASE 106AA: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106Y-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath =
@@ -130,14 +133,18 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _baseline;
     final afterPhase106z = subject == _phase106zSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
-    final validHead = head == _baseline || atPhase106y || afterPhase106z;
+    final afterPhase106aa = subject == _phase106aaSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
+    final validHead =
+        head == _baseline || atPhase106y || afterPhase106z || afterPhase106aa;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
-            '106Z child is valid.');
+            '106Z child, or Phase 106AA child is valid.');
     final productionDiff =
         _git(['diff', '--name-only', _phase106yCommit, 'HEAD', '--', 'lib'])
             .trim();
-    expect(productionDiff, afterPhase106z ? _targetPath : isEmpty,
+    expect(productionDiff,
+        (afterPhase106z || afterPhase106aa) ? _targetPath : isEmpty,
         reason: 'Phase 106Z may change only the frozen production target.');
   });
 

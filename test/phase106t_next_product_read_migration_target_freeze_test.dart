@@ -21,6 +21,9 @@ const _phase106ySubject =
 const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
 const _phase106zSubject =
     'PHASE 106Z: migrate profitability report activation product read';
+const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
+const _phase106aaSubject =
+    'PHASE 106AA: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -98,6 +101,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
     final afterMigrateZ = headSubject == _phase106zSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
+    final afterFreezeAA = headSubject == _phase106aaSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -106,7 +111,8 @@ void main() {
             afterFreezeW ||
             afterMigrateX ||
             afterFreezeY ||
-            afterMigrateZ,
+            afterMigrateZ ||
+            afterFreezeAA,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
@@ -114,12 +120,12 @@ void main() {
             'baseline, the Phase 106U migration, the proven Phase 106V '
             'commit, its single Phase 106W freeze child, or the single Phase '
             '106X migration child, the Phase 106Y freeze, or the Phase 106Z '
-            'PRC-113 migration.');
+            'PRC-113 migration, or the Phase 106AA freeze.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 7, isTrue,
-        reason: 'Zero through seven commits may exist after the 106S baseline; '
+    expect(commitCount >= 0 && commitCount <= 8, isTrue,
+        reason: 'Zero through eight commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 

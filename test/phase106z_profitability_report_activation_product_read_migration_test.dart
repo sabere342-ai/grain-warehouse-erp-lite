@@ -6,6 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 const _baseline = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
 const _phaseSubject =
     'PHASE 106Z: migrate profitability report activation product read';
+const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
+const _phase106aaSubject =
+    'PHASE 106AA: freeze next product read migration target';
 const _targetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 const _activationServicePath =
@@ -19,8 +22,12 @@ void main() {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phaseSubject);
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106z = subject == _phaseSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
+      final atPhase106aa = subject == _phase106aaSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106zCommit;
+      expect(atPhase106z || atPhase106aa, isTrue);
     }
   });
 
