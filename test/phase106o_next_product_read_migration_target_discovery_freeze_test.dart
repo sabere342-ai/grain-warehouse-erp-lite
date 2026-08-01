@@ -17,6 +17,10 @@ const _phase106uSubject =
 const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
 const _phase106wSubject =
     'PHASE 106W: freeze next product read migration target';
+const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106ySubject =
+    'PHASE 106Y: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -91,6 +95,10 @@ void main() {
     final atProvenV = head == _phase106vCommit;
     final afterFreezeW = headSubject == _phase106wSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
+    final atMigrationX = head == _phase106xCommit &&
+        _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
+    final afterFreezeY = headSubject == _phase106ySubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -101,11 +109,13 @@ void main() {
             afterFreezeT ||
             afterMigrateU ||
             atProvenV ||
-            afterFreezeW,
+            afterFreezeW ||
+            atMigrationX ||
+            afterFreezeY,
         isTrue,
         reason:
-            'HEAD must follow the frozen Phase 106O through 106W lineage, with '
-            'Phase 106W as the single child of the proven Phase 106V commit.');
+            'HEAD must follow the frozen Phase 106O through 106Y lineage, with '
+            '106X and the single 106Y child explicitly admitted.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);
