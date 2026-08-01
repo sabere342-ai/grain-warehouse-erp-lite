@@ -18,6 +18,9 @@ const _phase106tSubject =
 const _phase106uSubject =
     'PHASE 106U: expand product catalog read and migrate sale controller';
 const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
+const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
+const _phase106wSubject =
+    'PHASE 106W: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -92,13 +95,18 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106sCommit;
     final afterMigrateU = headSubject == _phase106uSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
+    final atProvenV = head == _phase106vCommit;
+    final afterFreezeW = headSubject == _phase106wSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
     expect(
         atBaseline ||
             afterFreeze ||
             afterMigration ||
             afterProve ||
             afterFreezeT ||
-            afterMigrateU,
+            afterMigrateU ||
+            atProvenV ||
+            afterFreezeW,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -106,13 +114,13 @@ void main() {
             'whose parent is exactly the 106Q commit, the single Phase '
             '106S proof commit whose parent is exactly the 106R commit, the '
             'single Phase 106T freeze commit whose parent is exactly the '
-            '106S commit, or the single Phase 106U commit whose parent is '
-            'exactly the 106T freeze commit.');
+            '106S commit, the Phase 106U migration, the proven Phase 106V '
+            'commit, or its single Phase 106W freeze child.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 5, isTrue,
-        reason: 'Zero through five commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 7, isTrue,
+        reason: 'Zero through seven commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 

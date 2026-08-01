@@ -14,6 +14,9 @@ const _phase106tSubject =
 const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
 const _phase106uSubject =
     'PHASE 106U: expand product catalog read and migrate sale controller';
+const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
+const _phase106wSubject =
+    'PHASE 106W: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -85,6 +88,9 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106sCommit;
     final afterMigrateU = headSubject == _phase106uSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
+    final atProvenV = head == _phase106vCommit;
+    final afterFreezeW = headSubject == _phase106wSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -93,10 +99,13 @@ void main() {
             afterMigrateR ||
             afterProveS ||
             afterFreezeT ||
-            afterMigrateU,
+            afterMigrateU ||
+            atProvenV ||
+            afterFreezeW,
         isTrue,
         reason:
-            'HEAD must be the baseline, the single Phase 106O commit, the single Phase 106P migration commit, the single Phase 106Q freeze commit, the single Phase 106R migration commit, the single Phase 106S proof commit, the single Phase 106T freeze commit whose parent is exactly the 106S commit, or the single Phase 106U commit whose parent is exactly the 106T freeze commit.');
+            'HEAD must follow the frozen Phase 106O through 106W lineage, with '
+            'Phase 106W as the single child of the proven Phase 106V commit.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)
       ..removeAll(_legacyInfrastructureFiles);

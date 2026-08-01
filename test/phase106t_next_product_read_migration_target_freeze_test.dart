@@ -9,6 +9,9 @@ const _phase106tSubject =
     'PHASE 106T: freeze next product read migration target';
 const _phase106uSubject =
     'PHASE 106U: expand product catalog read and migrate sale controller';
+const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
+const _phase106wSubject =
+    'PHASE 106W: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -76,17 +79,22 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _baseline;
     final afterMigrateU = headSubject == _phase106uSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106tCommit;
-    expect(atBaseline || afterFreeze || afterMigrateU, isTrue,
+    final atProvenV = head == _phase106vCommit;
+    final afterFreezeW = headSubject == _phase106wSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
+    expect(
+        atBaseline || afterFreeze || afterMigrateU || atProvenV || afterFreezeW,
+        isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
             'Phase 106T freeze commit whose parent is exactly the 106S '
-            'baseline, or the single Phase 106U commit whose parent is exactly '
-            'the 106T freeze commit.');
+            'baseline, the Phase 106U migration, the proven Phase 106V '
+            'commit, or its single Phase 106W freeze child.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 2, isTrue,
-        reason: 'Zero, one, or two commits may exist after the 106S baseline; '
+    expect(commitCount >= 0 && commitCount <= 4, isTrue,
+        reason: 'Zero through four commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
