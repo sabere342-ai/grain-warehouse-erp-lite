@@ -8,10 +8,18 @@ const _phaseSubject = 'PHASE 106W: freeze next product read migration target';
 const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
 const _phase106xSubject =
     'PHASE 106X: extend product catalog notes and migrate product controller';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106ySubject =
+    'PHASE 106Y: freeze next product read migration target';
+const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
+const _phase106zSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
 const _reportPath =
     'docs/PHASE-106W-REAUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
 const _controllerPath = 'lib/core/catalog/product_controller.dart';
+const _phase106zTargetPath =
+    'lib/features/financial_reports/profitability_report_screen.dart';
 
 const _legacyConsumerFiles = {
   'lib/core/backup/backup_export.dart',
@@ -25,7 +33,6 @@ const _legacyConsumerFiles = {
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/purchases/purchase_repository.dart',
   'lib/core/sales/sale_repository.dart',
-  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _legacyInfrastructureFiles = {
@@ -44,6 +51,7 @@ const _migratedConsumerFiles = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _frozenReadModelFields = {
@@ -75,10 +83,14 @@ void main() {
         (subject == _phaseSubject &&
             _git(['rev-parse', '$head^']).trim() == _baseline) ||
         (subject == _phase106xSubject &&
-            _git(['rev-parse', '$head^']).trim() == _phase106wCommit);
+            _git(['rev-parse', '$head^']).trim() == _phase106wCommit) ||
+        (subject == _phase106ySubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106xCommit) ||
+        (subject == _phase106zSubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106yCommit);
     expect(validHead, isTrue,
-        reason: 'HEAD must be the 106V baseline, its single 106W child, or '
-            'the single Phase 106X migration child.');
+        reason: 'HEAD must follow the single Phase 106W through Phase 106Z '
+            'lineage.');
 
     expect(_git(['diff', _baseline, _phase106wCommit, '--', 'lib']).trim(),
         isEmpty,
@@ -90,7 +102,10 @@ void main() {
       '--',
       'lib',
     ]).split(RegExp(r'\r?\n')).where((path) => path.trim().isNotEmpty).toSet();
-    expect(phase106xProductionFiles, _nextPhaseProductionFiles);
+    expect(phase106xProductionFiles, {
+      ..._nextPhaseProductionFiles,
+      _phase106zTargetPath,
+    });
   });
 
   test('the audit remains frozen while current inventory is 10 migrated', () {

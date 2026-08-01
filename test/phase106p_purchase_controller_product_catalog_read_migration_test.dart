@@ -38,6 +38,7 @@ const _catalogCallers = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 void main() {
@@ -215,7 +216,7 @@ void main() {
       expect(fields, _frozenReadModelFields);
     });
 
-    test('catalog callers include accepted consumers through Phase 106X', () {
+    test('catalog callers include accepted consumers through Phase 106Z', () {
       final callers = _filesCalling('.listProductCatalog(')..sort();
 
       expect(callers, _catalogCallers.toList()..sort());

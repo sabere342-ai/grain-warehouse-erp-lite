@@ -24,6 +24,12 @@ const _phase106wSubject =
 const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
 const _phase106xSubject =
     'PHASE 106X: extend product catalog notes and migrate product controller';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106ySubject =
+    'PHASE 106Y: freeze next product read migration target';
+const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
+const _phase106zSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -103,6 +109,10 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
     final afterMigrateX = headSubject == _phase106xSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
+    final afterFreezeY = headSubject == _phase106ySubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
+    final afterMigrateZ = headSubject == _phase106zSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -112,7 +122,9 @@ void main() {
             afterMigrateU ||
             atProvenV ||
             afterFreezeW ||
-            afterMigrateX,
+            afterMigrateX ||
+            afterFreezeY ||
+            afterMigrateZ,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -122,12 +134,13 @@ void main() {
             'single Phase 106T freeze commit whose parent is exactly the '
             '106S commit, the Phase 106U migration, the proven Phase 106V '
             'commit, its single Phase 106W freeze child, or the single Phase '
-            '106X migration child.');
+            '106X migration child, the Phase 106Y freeze, or the Phase 106Z '
+            'PRC-113 migration.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 8, isTrue,
-        reason: 'Zero through eight commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 10, isTrue,
+        reason: 'Zero through ten commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 
@@ -162,11 +175,13 @@ void main() {
         'lib/features/sales/sales_screen.dart',
         'lib/core/catalog/product_controller.dart',
         'lib/features/products/products_screen.dart',
+        'lib/features/financial_reports/profitability_report_screen.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '
           'migration files, the Phase 106U expansion and sale migration, or '
-          'the Phase 106X product controller migration files.',
+          'the Phase 106X product controller migration files, plus the Phase '
+          '106Z PRC-113 file.',
     );
     final check = Process.runSync(
       'git',

@@ -1,0 +1,237 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+const _baseline = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
+const _phaseSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
+const _targetPath =
+    'lib/features/financial_reports/profitability_report_screen.dart';
+const _activationServicePath =
+    'lib/core/inventory_valuation/profitability_activation_service.dart';
+const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
+const _adapterPath =
+    'lib/core/catalog/drift_product_catalog_read_repository.dart';
+
+void main() {
+  test('lineage starts at Phase 106Y and admits only its Phase 106Z child', () {
+    expect(_git(['rev-parse', _baseline]).trim(), _baseline);
+    final head = _git(['rev-parse', 'HEAD']).trim();
+    if (head != _baseline) {
+      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phaseSubject);
+      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+    }
+  });
+
+  test('the production diff is exactly the frozen PRC-113 file', () {
+    expect(
+      _git(['diff', '--name-only', _baseline, '--', 'lib']).trim(),
+      _targetPath,
+    );
+    expect(
+      _git(['diff', _baseline, '--', _activationServicePath]).trim(),
+      isEmpty,
+      reason: 'PRC-108 activation validation must remain unchanged.',
+    );
+    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
+    expect(
+      _git(['diff', _baseline, '--', 'lib/core/persistence']).trim(),
+      isEmpty,
+    );
+  });
+
+  test('target change is the exact four-part read-boundary substitution', () {
+    final before = _sourceAt(_baseline, _targetPath);
+    final expected = before
+        .replaceFirst(
+          "import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';",
+          "import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';",
+        )
+        .replaceFirst(
+          'AppRepositories.productRepository',
+          'AppRepositories.productCatalogReadRepository',
+        )
+        .replaceFirst('.listProducts(', '.listProductCatalog(')
+        .replaceFirst(
+          'final List<Product> products;',
+          'final List<ProductCatalogReadModel> products;',
+        );
+    expect(_normalizeNewlines(File(_targetPath).readAsStringSync()), expected);
+  });
+
+  test('PRC-113 uses the catalog read with inactive products included', () {
+    final source = File(_targetPath).readAsStringSync();
+    final activate =
+        _methodBody(source, 'Future<void> _activate(AppUser user) async');
+    final compact = _compact(activate);
+    expect(
+      compact,
+      contains(
+        'AppRepositories.productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true)',
+      ),
+    );
+    expect(_occurrences(activate, '.listProductCatalog('), 1);
+    expect(activate, isNot(contains('.listProducts(')));
+    expect(activate, isNot(contains('productRepository')));
+  });
+
+  test('dialog consumes exactly verbatim catalog id and name', () {
+    final source = File(_targetPath).readAsStringSync();
+    final dialog = _between(
+      source,
+      'class _ActivationDialog extends StatefulWidget',
+      'class _ActivationInput {',
+    );
+    expect(dialog, contains('final List<ProductCatalogReadModel> products;'));
+    final fields = RegExp(r'product\.(\w+)')
+        .allMatches(dialog)
+        .map((match) => match.group(1)!)
+        .toSet();
+    expect(fields, {'id', 'name'});
+    expect(dialog, isNot(contains('product.id.trim')),
+        reason: 'No product id normalization may be introduced.');
+    expect(dialog, isNot(contains('product.name.trim')),
+        reason: 'No product name normalization may be introduced.');
+  });
+
+  test('catalog semantics retain active plus inactive rows and stable order',
+      () {
+    final adapter = File(_adapterPath).readAsStringSync();
+    expect(adapter, contains('if (!includeInactive)'));
+    expect(adapter, contains('products.isActive.equals(true)'));
+    expect(adapter, contains('OrderingTerm.asc(products.createdAt)'));
+    expect(adapter, contains('OrderingTerm.asc(products.id)'));
+    expect(adapter, contains('id: row.read(products.id)!'));
+    expect(adapter, contains('name: row.read(products.name)!'));
+  });
+
+  test('catalog contract was not expanded and exposes no write operation', () {
+    final source = File(_contractPath).readAsStringSync();
+    final model = _between(
+      source,
+      'final class ProductCatalogReadModel {',
+      'abstract interface class ProductCatalogReadRepository',
+    );
+    final fields = RegExp(r'^  final ([^;]+);$', multiLine: true)
+        .allMatches(model)
+        .map((match) => match.group(1)!)
+        .toList(growable: false);
+    expect(fields, [
+      'String id',
+      'String name',
+      'String? code',
+      'GrainUnit unit',
+      'bool isActive',
+      'int? referenceCostPricePiastersPerKg',
+      'int? defaultSalePricePiastersPerKg',
+      'int? minimumSalePricePiastersPerKg',
+      'String? notes',
+    ]);
+    final repository = source.substring(
+      source.indexOf('abstract interface class ProductCatalogReadRepository'),
+    );
+    expect(_occurrences(repository, 'Future<'), 1);
+    expect(repository, contains('listProductCatalog({'));
+    expect(repository, isNot(matches(RegExp(r'create|update|delete|write'))));
+  });
+
+  test('PRC-108 and activation success and failure handling stay unchanged',
+      () {
+    final before = _sourceAt(_baseline, _targetPath);
+    final after = File(_targetPath).readAsStringSync();
+    final beforeActivate =
+        _methodBody(before, 'Future<void> _activate(AppUser user) async');
+    final afterActivate =
+        _methodBody(after, 'Future<void> _activate(AppUser user) async');
+    final normalizedBefore = _compact(beforeActivate)
+        .replaceFirst('AppRepositories.productRepository', 'PRODUCT_READ')
+        .replaceFirst('.listProducts(', '.list(');
+    final normalizedAfter = _compact(afterActivate)
+        .replaceFirst(
+            'AppRepositories.productCatalogReadRepository', 'PRODUCT_READ')
+        .replaceFirst('.listProductCatalog(', '.list(');
+    expect(normalizedAfter, normalizedBefore);
+    expect(
+      File(_activationServicePath).readAsStringSync(),
+      contains('productRepository.listProducts(includeInactive: true)'),
+      reason: 'PRC-108 remains on its legacy validation read.',
+    );
+  });
+
+  test('inventory moves exactly one consumer from legacy to catalog', () {
+    expect(_sourceOccurrenceCount('.listProducts('), 15);
+    expect(_sourceOccurrenceCount('.listProductCatalog('), 11);
+    expect(_sourceFilesWith('.listProducts('), isNot(contains(_targetPath)));
+    expect(_sourceFilesWith('.listProductCatalog('), contains(_targetPath));
+    expect(24, 11 + 13);
+  });
+}
+
+Set<String> _sourceFilesWith(String pattern) => Directory('lib')
+    .listSync(recursive: true, followLinks: false)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .where((file) => file.readAsStringSync().contains(pattern))
+    .map((file) => _relative(file.path))
+    .toSet();
+
+int _sourceOccurrenceCount(String pattern) => Directory('lib')
+    .listSync(recursive: true, followLinks: false)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .map((file) => _occurrences(file.readAsStringSync(), pattern))
+    .fold(0, (sum, count) => sum + count);
+
+String _sourceAt(String commit, String path) =>
+    _normalizeNewlines(_git(['show', '$commit:$path']));
+
+String _git(List<String> arguments) {
+  final result = Process.runSync(
+    'git',
+    arguments,
+    runInShell: false,
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
+  if (result.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${result.stderr}');
+  }
+  return result.stdout as String;
+}
+
+String _methodBody(String source, String declaration) {
+  final start = source.indexOf(declaration);
+  if (start < 0) throw StateError('Missing declaration: $declaration');
+  final openBrace = source.indexOf('{', start);
+  var depth = 0;
+  for (var index = openBrace; index < source.length; index++) {
+    if (source[index] == '{') depth++;
+    if (source[index] == '}') depth--;
+    if (depth == 0) return source.substring(start, index + 1);
+  }
+  throw StateError('Missing closing brace: $declaration');
+}
+
+String _between(String source, String start, String end) {
+  final startIndex = source.indexOf(start);
+  final endIndex = source.indexOf(end, startIndex);
+  if (startIndex < 0 || endIndex < 0) {
+    throw StateError('Expected source boundaries were not found.');
+  }
+  return source.substring(startIndex, endIndex);
+}
+
+int _occurrences(String source, String pattern) =>
+    RegExp(RegExp.escape(pattern)).allMatches(source).length;
+
+String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');
+
+String _normalizeNewlines(String source) => source.replaceAll('\r\n', '\n');
+
+String _relative(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  final root = Directory.current.path.replaceAll('\\', '/');
+  return normalized.replaceFirst('$root/', '');
+}

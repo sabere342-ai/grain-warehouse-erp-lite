@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/profitability/profitability_report.dart';
@@ -137,8 +137,8 @@ class _ProfitabilityReportScreenState extends State<ProfitabilityReportScreen> {
   }
 
   Future<void> _activate(AppUser user) async {
-    final products = await AppRepositories.productRepository
-        .listProducts(includeInactive: true);
+    final products = await AppRepositories.productCatalogReadRepository
+        .listProductCatalog(includeInactive: true);
     final balances =
         await AppRepositories.inventoryRepository.allProductBalancesKg();
     if (!mounted) return;
@@ -322,7 +322,7 @@ class _AvailableReport extends StatelessWidget {
 
 class _ActivationDialog extends StatefulWidget {
   const _ActivationDialog({required this.products, required this.balances});
-  final List<Product> products;
+  final List<ProductCatalogReadModel> products;
   final Map<String, int> balances;
 
   @override

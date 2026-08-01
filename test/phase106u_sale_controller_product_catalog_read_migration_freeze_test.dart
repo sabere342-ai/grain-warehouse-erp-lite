@@ -14,6 +14,12 @@ const _phase106wSubject =
 const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
 const _phase106xSubject =
     'PHASE 106X: extend product catalog notes and migrate product controller';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106ySubject =
+    'PHASE 106Y: freeze next product read migration target';
+const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
+const _phase106zSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
 const _reportPath =
     'docs/PHASE-106U-EXPAND-PRODUCT-CATALOG-READ-AND-MIGRATE-SALE-CONTROLLER.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -38,6 +44,7 @@ const _phase106xProductionFiles = {
   _appRepositoriesPath,
   'lib/core/catalog/product_controller.dart',
   'lib/features/products/products_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _legacyConsumerFiles = {
@@ -52,7 +59,6 @@ const _legacyConsumerFiles = {
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/purchases/purchase_repository.dart',
   'lib/core/sales/sale_repository.dart',
-  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _legacyInfrastructureFiles = {
@@ -71,6 +77,7 @@ const _migratedConsumerFiles = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _catalogCallers = {
@@ -84,6 +91,7 @@ const _catalogCallers = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 const _frozenReadModelFields = {
@@ -114,19 +122,30 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106vCommit;
     final afterMigrateX = headSubject == _phase106xSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
+    final afterFreezeY = headSubject == _phase106ySubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
+    final afterMigrateZ = headSubject == _phase106zSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
     expect(
-        atFreeze || afterMigrateU || atProvenV || afterFreezeW || afterMigrateX,
+        atFreeze ||
+            afterMigrateU ||
+            atProvenV ||
+            afterFreezeW ||
+            afterMigrateX ||
+            afterFreezeY ||
+            afterMigrateZ,
         isTrue,
         reason:
             'HEAD must be the Phase 106T freeze commit (during development) '
             'or follow its single Phase 106U migration, proven Phase 106V '
             'commit, single Phase 106W freeze child, and single Phase 106X '
-            'migration child.');
+            'migration child, Phase 106Y freeze, and Phase 106Z PRC-113 '
+            'migration.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 5, isTrue,
-        reason: 'Zero through five commits may exist after the 106S baseline; '
+    expect(commitCount >= 0 && commitCount <= 7, isTrue,
+        reason: 'Zero through seven commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
@@ -176,10 +195,10 @@ void main() {
     final migratedFiles = _workingTreeFilesWith('.listProductCatalog(');
     expect(legacyFiles, _legacyConsumerFiles,
         reason:
-            'Exactly the 12 legacy consumer files must still call .listProducts(.');
+            'Exactly the 11 legacy consumer files must still call .listProducts(.');
     expect(migratedFiles, _migratedConsumerFiles,
         reason:
-            'Exactly the 10 migrated consumer files must call .listProductCatalog(.');
+            'Exactly the 11 migrated consumer files must call .listProductCatalog(.');
   });
 
   test('all nine accepted consumers remain on the catalog boundary', () {
@@ -275,7 +294,7 @@ void main() {
     expect(source, contains('minimumSalePricePiastersPerKg'));
   });
 
-  test('catalog callers include only accepted consumers through Phase 106X',
+  test('catalog callers include only accepted consumers through Phase 106Z',
       () {
     final callers = _workingTreeFilesWith('.listProductCatalog(').toList()
       ..sort();

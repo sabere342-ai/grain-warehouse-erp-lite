@@ -198,8 +198,7 @@ void main() {
       expect(screen, contains('final ProductCatalogReadModel product;'));
     });
 
-    test('the migration adds exactly ProductController as one read consumer',
-        () {
+    test('accepted migrations add ProductController and PRC-113 consumers', () {
       final baselineConsumers = _gitGrepFiles(
         '.listProductCatalog(',
         revision: _baseline,
@@ -208,7 +207,10 @@ void main() {
       final addedConsumers = currentConsumers.difference(baselineConsumers);
       final removedConsumers = baselineConsumers.difference(currentConsumers);
 
-      expect(addedConsumers, {_controllerPath});
+      expect(addedConsumers, {
+        _controllerPath,
+        'lib/features/financial_reports/profitability_report_screen.dart',
+      });
       expect(removedConsumers, isEmpty);
     });
 

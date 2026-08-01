@@ -32,6 +32,7 @@ const _catalogCallers = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 void main() {
@@ -400,7 +401,7 @@ void main() {
       );
     });
 
-    test('Phase 106S changed no production code; callers include Phase 106X',
+    test('Phase 106S changed no production code; callers include Phase 106Z',
         () {
       final productionDiff = _git([
         'diff',

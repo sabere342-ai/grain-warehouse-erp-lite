@@ -24,6 +24,12 @@ const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
 const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
 const _phase106xSubject =
     'PHASE 106X: extend product catalog notes and migrate product controller';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106ySubject =
+    'PHASE 106Y: freeze next product read migration target';
+const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
+const _phase106zSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
 
 const _catalogCallers = {
   'lib/core/catalog/product_controller.dart',
@@ -36,6 +42,7 @@ const _catalogCallers = {
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
+  'lib/features/financial_reports/profitability_report_screen.dart',
 };
 
 void main() {
@@ -494,7 +501,7 @@ void main() {
       );
     });
 
-    test('Phase 106V stayed production-only and Phase 106X adds one consumer',
+    test('Phase 106V stayed production-only through the Phase 106Z consumer',
         () {
       final phase106vProductionDiff = _git([
         'diff',
@@ -525,6 +532,7 @@ void main() {
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
+        'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/features/products/products_screen.dart',
       });
 
@@ -565,7 +573,18 @@ void main() {
       final afterFreeze = head == _phase106wCommit;
       final afterMigration = headSubject == _phase106xSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106wCommit;
-      expect(atBaseline || afterProof || afterFreeze || afterMigration, isTrue,
+      final afterFreezeY = headSubject == _phase106ySubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106xCommit;
+      final afterMigrateZ = headSubject == _phase106zSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
+      expect(
+          atBaseline ||
+              afterProof ||
+              afterFreeze ||
+              afterMigration ||
+              afterFreezeY ||
+              afterMigrateZ,
+          isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
               'single Phase 106V commit, the Phase 106W freeze, or its single '
@@ -573,8 +592,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 3, isTrue,
-          reason: 'Zero through three commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 5, isTrue,
+          reason: 'Zero through five commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

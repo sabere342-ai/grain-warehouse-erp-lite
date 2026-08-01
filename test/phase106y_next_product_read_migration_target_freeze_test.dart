@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '30021696ab2667340e032832892d3c2ecc5dadd7';
+const _phase106yCommit = 'fe549ecde9eba4de9c3d4916f611eae8fb58720e';
 const _phaseSubject = 'PHASE 106Y: freeze next product read migration target';
+const _phase106zSubject =
+    'PHASE 106Z: migrate profitability report activation product read';
 const _reportPath =
     'docs/PHASE-106Y-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath =
@@ -122,14 +125,20 @@ void main() {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
-    final validHead = head == _baseline ||
-        (subject == _phaseSubject &&
-            _git(['rev-parse', '$head^']).trim() == _baseline);
+    final atPhase106y = head == _phase106yCommit &&
+        subject == _phaseSubject &&
+        _git(['rev-parse', '$head^']).trim() == _baseline;
+    final afterPhase106z = subject == _phase106zSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
+    final validHead = head == _baseline || atPhase106y || afterPhase106z;
     expect(validHead, isTrue,
-        reason:
-            'Only the exact 106X baseline or its single 106Y child is valid.');
-    expect(_git(['diff', _baseline, 'HEAD', '--', 'lib']).trim(), isEmpty,
-        reason: 'Phase 106Y must not change production files.');
+        reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
+            '106Z child is valid.');
+    final productionDiff =
+        _git(['diff', '--name-only', _phase106yCommit, 'HEAD', '--', 'lib'])
+            .trim();
+    expect(productionDiff, afterPhase106z ? _targetPath : isEmpty,
+        reason: 'Phase 106Z may change only the frozen production target.');
   });
 
   test('all direct legacy and catalog calls reconcile from current source', () {
@@ -157,7 +166,7 @@ void main() {
   test('each remaining unit is anchored to its current source and call count',
       () {
     for (final unit in _remainingUnits) {
-      final source = File(unit.file).readAsStringSync();
+      final source = _phaseSource(unit.file);
       expect(source, contains(unit.member), reason: unit.id);
       expect(_occurrences(source, '.listProducts('), unit.fileCallCount,
           reason: '${unit.id}: ${unit.file}');
@@ -193,8 +202,7 @@ void main() {
 
   test('Phase 106X ProductController stays migrated while writes stay legacy',
       () {
-    final source =
-        File('lib/core/catalog/product_controller.dart').readAsStringSync();
+    final source = _phaseSource('lib/core/catalog/product_controller.dart');
     final load = _between(source, 'Future<void> loadProducts(AppUser user)',
         'Future<bool> createProduct(');
     final compact = _compact(load);
@@ -215,7 +223,7 @@ void main() {
 
   test('catalog contract remains exactly nine fields including nullable notes',
       () {
-    final source = File(_contractPath).readAsStringSync();
+    final source = _phaseSource(_contractPath);
     final model = _between(source, 'final class ProductCatalogReadModel {',
         'abstract interface class ProductCatalogReadRepository');
     final fields = RegExp(r'^  final ([^;]+);$', multiLine: true)
@@ -228,7 +236,7 @@ void main() {
 
   test('Drift adapter preserves filter, order, nulls, and notes without N+1',
       () {
-    final source = File(_adapterPath).readAsStringSync();
+    final source = _phaseSource(_adapterPath);
     expect(_occurrences(source, 'await query.get()'), 1);
     expect(source, contains('query.where(products.isActive.equals(true))'));
     expect(source, contains('OrderingTerm.asc(products.createdAt)'));
@@ -241,7 +249,7 @@ void main() {
   });
 
   test('PRC-113 current read path and includeInactive behavior are exact', () {
-    final source = File(_targetPath).readAsStringSync();
+    final source = _phaseSource(_targetPath);
     final activate =
         _methodBody(source, 'Future<void> _activate(AppUser user) async');
     final compact = _compact(activate);
@@ -256,7 +264,7 @@ void main() {
   });
 
   test('PRC-113 consumes exactly id and name from each product', () {
-    final source = File(_targetPath).readAsStringSync();
+    final source = _phaseSource(_targetPath);
     final dialog = _between(
         source,
         'class _ActivationDialog extends StatefulWidget',
@@ -270,20 +278,18 @@ void main() {
 
   test('PRC-113 is genuinely production reachable through financial reports',
       () {
-    final shell =
-        File('lib/features/dashboard/dashboard_shell.dart').readAsStringSync();
-    final reports =
-        File('lib/features/financial_reports/financial_reports_screen.dart')
-            .readAsStringSync();
+    final shell = _phaseSource('lib/features/dashboard/dashboard_shell.dart');
+    final reports = _phaseSource(
+        'lib/features/financial_reports/financial_reports_screen.dart');
     expect(shell, contains('FinancialReportsScreen()'));
     expect(reports, contains('const ProfitabilityReportScreen()'));
     expect(reports, contains('canViewFinancialReports'));
-    expect(File(_targetPath).readAsStringSync(),
+    expect(_phaseSource(_targetPath),
         contains('AppRepositories.profitabilityActivationService.activate('));
   });
 
   test('PRC-113 is the sole frozen target and is not migrated in 106Y', () {
-    final report = File(_reportPath).readAsStringSync();
+    final report = _phaseSource(_reportPath);
     expect(_occurrences(report, 'FROZEN_TARGET_ID: PRC-113'), 1);
     expect(_occurrences(report, 'FROZEN_TARGET_ID:'), 1);
     expect(
@@ -291,13 +297,12 @@ void main() {
         contains(
             'FROZEN_TARGET_MEMBER: _ProfitabilityReportScreenState._activate(AppUser user)'));
     expect(report, contains('FROZEN_TARGET_CATEGORY: E'));
-    expect(File(_targetPath).readAsStringSync(),
-        isNot(contains('.listProductCatalog(')));
+    expect(_phaseSource(_targetPath), isNot(contains('.listProductCatalog(')));
   });
 
   test('next phase has one production file and requires no contract expansion',
       () {
-    final report = File(_reportPath).readAsStringSync();
+    final report = _phaseSource(_reportPath);
     final plan = _between(report, '## 11. Frozen Phase 106Z plan',
         '## 12. Phase 106Y guard scope');
     final allowlist =
@@ -316,7 +321,7 @@ void main() {
 
   test('report inventory rows, counts, and reconciliation are internally exact',
       () {
-    final report = File(_reportPath).readAsStringSync();
+    final report = _phaseSource(_reportPath);
     final rows =
         RegExp(r'^\| PRC-\d{3} \|', multiLine: true).allMatches(report).length;
     expect(rows, 14);
@@ -335,7 +340,7 @@ void main() {
 
   test('backup and transaction alternatives are explicitly kept out of scope',
       () {
-    final report = File(_reportPath).readAsStringSync();
+    final report = _phaseSource(_reportPath);
     for (final statement in const [
       'full-fidelity archival/restore shape is a separate architectural boundary',
       'PRC-108 service migration',
@@ -353,7 +358,10 @@ void main() {
       _git(['diff', _baseline, 'HEAD', '--', 'lib/core/persistence']).trim(),
       isEmpty,
     );
-    expect(_git(['diff', _baseline, 'HEAD', '--', 'lib']).trim(), isEmpty);
+    expect(
+      _git(['diff', _baseline, _phase106yCommit, '--', 'lib']).trim(),
+      isEmpty,
+    );
   });
 
   test('Phase 105 and 106 product-catalog timeline remains linear', () {
@@ -387,20 +395,26 @@ final class _InventoryUnit {
   final int fileCallCount;
 }
 
-Set<String> _sourceFilesWith(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .where((file) => file.readAsStringSync().contains(pattern))
-    .map((file) => _relative(file.path))
-    .toSet();
+Set<String> _sourceFilesWith(String pattern) => _git([
+      'grep',
+      '-l',
+      '-F',
+      pattern,
+      _phase106yCommit,
+      '--',
+      'lib',
+    ])
+        .split(RegExp(r'\r?\n'))
+        .where((line) => line.isNotEmpty)
+        .map((line) => line.replaceFirst('$_phase106yCommit:', ''))
+        .where((path) => path.endsWith('.dart'))
+        .toSet();
 
-int _sourceOccurrenceCount(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .map((file) => _occurrences(file.readAsStringSync(), pattern))
+int _sourceOccurrenceCount(String pattern) => _sourceFilesWith(pattern)
+    .map((path) => _occurrences(_phaseSource(path), pattern))
     .fold(0, (sum, count) => sum + count);
+
+String _phaseSource(String path) => _git(['show', '$_phase106yCommit:$path']);
 
 String _git(List<String> arguments) {
   final result = Process.runSync(
@@ -450,9 +464,3 @@ int _occurrences(String source, String pattern) =>
     RegExp(RegExp.escape(pattern)).allMatches(source).length;
 
 String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');
-
-String _relative(String path) {
-  final normalized = path.replaceAll('\\', '/');
-  final root = Directory.current.path.replaceAll('\\', '/');
-  return normalized.replaceFirst('$root/', '');
-}
