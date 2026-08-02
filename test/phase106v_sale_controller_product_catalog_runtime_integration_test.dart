@@ -42,9 +42,13 @@ const _phase106adSubject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 
 const _catalogCallers = {
   'lib/core/backup/backup_restore_service.dart',
+  'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -545,6 +549,7 @@ void main() {
         'lib/app/app_repositories.dart',
         'lib/core/backup/backup_export.dart',
         'lib/core/backup/backup_restore_service.dart',
+        'lib/core/backup/business_data_wipe_service.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
@@ -602,6 +607,8 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
       final afterFreezeAE = headSubject == _phase106aeSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106adCommit;
+      final afterMigrateAF = headSubject == _phase106afSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106aeCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -613,7 +620,8 @@ void main() {
               afterMigrateAB ||
               atFreezeAC ||
               afterMigrateAD ||
-              afterFreezeAE,
+              afterFreezeAE ||
+              afterMigrateAF,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -623,7 +631,7 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 10, isTrue,
+      expect(commitCount >= 0 && commitCount <= 11, isTrue,
           reason: 'Zero through ten commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');

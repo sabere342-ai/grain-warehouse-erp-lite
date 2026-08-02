@@ -22,6 +22,9 @@ const _subject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _servicePath = 'lib/core/backup/backup_restore_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -120,7 +123,11 @@ void main() {
       '--',
       'lib',
     ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(productionDiff, {_servicePath, _appRepositoriesPath});
+    expect(productionDiff, {
+      _servicePath,
+      _appRepositoriesPath,
+      'lib/core/backup/business_data_wipe_service.dart',
+    });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
       _git([
@@ -144,10 +151,12 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106ae = subject == _phase106aeSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106adCommit;
-      expect(atPhase106ad || atPhase106ae, isTrue);
+      final atPhase106af = subject == _phase106afSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106aeCommit;
+      expect(atPhase106ad || atPhase106ae || atPhase106af, isTrue);
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ae ? '2' : '1',
+        atPhase106af ? '3' : (atPhase106ae ? '2' : '1'),
       );
     }
   });

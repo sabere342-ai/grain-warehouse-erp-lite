@@ -328,6 +328,7 @@ class AppRepositories {
         backupExportService: backupExportService,
         backupFileWriter: const LocalBackupFileWriter(),
         productRepository: productRepository,
+        productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
         purchaseRepository: purchaseRepository,

@@ -417,6 +417,8 @@ Future<_BackupFixture> _emptyFixture({
     backupExportService: exportService,
     backupFileWriter: fileWriter,
     productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

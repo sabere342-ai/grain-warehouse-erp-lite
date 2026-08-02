@@ -26,6 +26,9 @@ const _phase106adSubject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _reportPath =
     'docs/PHASE-106W-REAUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -34,7 +37,6 @@ const _phase106zTargetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 
 const _legacyConsumerFiles = {
-  'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_repository.dart',
@@ -53,6 +55,7 @@ const _legacyInfrastructureFiles = {
 const _migratedConsumerFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
+  'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -108,7 +111,9 @@ void main() {
         (subject == _phase106adSubject &&
             _git(['rev-parse', '$head^']).trim() == _phase106acCommit) ||
         (subject == _phase106aeSubject &&
-            _git(['rev-parse', '$head^']).trim() == _phase106adCommit);
+            _git(['rev-parse', '$head^']).trim() == _phase106adCommit) ||
+        (subject == _phase106afSubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106aeCommit);
     expect(validHead, isTrue,
         reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');
@@ -128,6 +133,7 @@ void main() {
       _phase106zTargetPath,
       'lib/core/backup/backup_export.dart',
       'lib/core/backup/backup_restore_service.dart',
+      'lib/core/backup/business_data_wipe_service.dart',
     });
   });
 

@@ -42,6 +42,9 @@ const _phase106adSubject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -134,6 +137,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
     final afterFreezeAE = headSubject == _phase106aeSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106adCommit;
+    final afterMigrateAF = headSubject == _phase106afSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106aeCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -150,7 +155,8 @@ void main() {
             afterMigrateAB ||
             atFreezeAC ||
             afterMigrateAD ||
-            afterFreezeAE,
+            afterFreezeAE ||
+            afterMigrateAF,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -166,7 +172,7 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 15, isTrue,
+    expect(commitCount >= 0 && commitCount <= 16, isTrue,
         reason: 'Zero through fifteen commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
@@ -205,12 +211,14 @@ void main() {
         'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/core/backup/backup_export.dart',
         'lib/core/backup/backup_restore_service.dart',
+        'lib/core/backup/business_data_wipe_service.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '
           'migration files, the Phase 106U expansion and sale migration, or '
           'the Phase 106X product controller migration files, plus the Phase '
-          '106Z PRC-113 file, or the Phase 106AB backup migration.',
+          '106Z PRC-113 file, the Phase 106AB/106AD backup migrations, or '
+          'the Phase 106AF wipe-count migration.',
     );
     final check = Process.runSync(
       'git',

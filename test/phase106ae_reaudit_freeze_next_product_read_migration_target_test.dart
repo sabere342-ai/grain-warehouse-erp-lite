@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _subject = 'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _reportPath =
     'docs/PHASE-106AE-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _restorePath = 'lib/core/backup/backup_restore_service.dart';
@@ -22,6 +25,7 @@ const _migrated = <String, _Consumer>{
   'PRC-014': _Consumer('lib/core/reports/report_repository.dart', 1),
   'PRC-101': _Consumer('lib/core/backup/backup_export.dart', 1),
   'PRC-102': _Consumer(_restorePath, 1),
+  'PRC-103': _Consumer(_targetPath, 1),
   'PRC-104': _Consumer('lib/core/catalog/product_controller.dart', 1),
   'PRC-107': _Consumer('lib/core/inventory/inventory_controller.dart', 1),
   'PRC-110': _Consumer('lib/core/purchases/purchase_controller.dart', 1),
@@ -33,7 +37,6 @@ const _migrated = <String, _Consumer>{
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-103': _Consumer(_targetPath, 1, classification: 'F'),
   'PRC-105': _Consumer(
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
     1,
@@ -99,20 +102,35 @@ const _forbiddenProductionPaths = {
 };
 
 void main() {
-  test('Phase 106AE is the sole audit child and has no production diff', () {
+  test('Phase 106AF is the sole migration child of the frozen 106AE audit', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head != _baseline) {
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    if (head != _phase106aeCommit) {
+      expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106aeCommit);
+      expect(
+        _git(['log', '-1', '--format=%s', 'HEAD']).trim(),
+        _phase106afSubject,
+      );
+      expect(
+        _git(['rev-list', '--count', '$_phase106aeCommit..HEAD']).trim(),
+        '1',
+      );
     }
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
+    expect(
+        _git(['log', '-1', '--format=%s', _phase106aeCommit]).trim(), _subject);
+    final productionDiff = _git([
+      'diff',
+      '--name-only',
+      _phase106aeCommit,
+      '--',
+      'lib',
+    ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    expect(productionDiff, _expectedProductionFiles);
   });
 
-  test('inventory has 24 unique consumers: 13 migrated and 11 remaining', () {
-    expect(_migrated, hasLength(13));
-    expect(_remaining, hasLength(11));
+  test('inventory has 24 unique consumers: 14 migrated and 10 remaining', () {
+    expect(_migrated, hasLength(14));
+    expect(_remaining, hasLength(10));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -124,7 +142,7 @@ void main() {
     expect(_remaining.containsKey('PRC-102'), isFalse);
   });
 
-  test('remaining classifications reconcile exactly as F6 and I5', () {
+  test('remaining classifications reconcile exactly as F5 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -137,18 +155,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 6,
+      'F': 5,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production discovery finds exactly 13 legacy and 13 catalog calls', () {
+  test('production discovery finds exactly 12 legacy and 14 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 13);
-    expect(_occurrences(joined, '.listProductCatalog('), 13);
+    expect(_occurrences(joined, '.listProducts('), 12);
+    expect(_occurrences(joined, '.listProductCatalog('), 14);
 
     final actualLegacyFiles = sources.entries
         .where((entry) => entry.value.contains('.listProducts('))
@@ -207,10 +225,10 @@ void main() {
     );
   });
 
-  test('PRC-103 is the one frozen target and is not migrated in 106AE', () {
+  test('PRC-103 is the sole frozen target migrated by Phase 106AF', () {
     expect(_selectedTargets, hasLength(1));
-    expect(_remaining, contains(_selectedTargets.single));
-    expect(_migrated, isNot(contains(_selectedTargets.single)));
+    expect(_migrated, contains(_selectedTargets.single));
+    expect(_remaining, isNot(contains(_selectedTargets.single)));
 
     final source = File(_targetPath).readAsStringSync();
     final method = _methodBody(
@@ -219,11 +237,20 @@ void main() {
     );
     expect(
       _compact(method),
-      contains('_productRepository.listProducts(includeInactive:true,)'),
+      contains(
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true,)',
+      ),
     );
     expect(method, contains('products: products.length'));
     expect(RegExp(r'products\.').allMatches(method), hasLength(1));
-    expect(method, isNot(contains('listProductCatalog(')));
+    expect(method, isNot(contains('_productRepository.listProducts(')));
+    expect(
+      _compact(source),
+      contains(
+        'requiredProductCatalogReadRepositoryproductCatalogReadRepository',
+      ),
+    );
     expect(source, contains('final ProductDataRepository _productRepository;'));
     expect(source, contains('_productRepository.clearForOwnerDataWipe()'));
     expect(_requiredTargetFields, isEmpty);

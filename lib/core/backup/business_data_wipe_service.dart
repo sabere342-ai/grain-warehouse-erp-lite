@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_file_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -22,6 +23,7 @@ class BusinessDataWipeService {
     required BackupExportService backupExportService,
     required BackupFileWriter backupFileWriter,
     required ProductDataRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required DurableInventoryRepository inventoryRepository,
     required SupplierDataRepository supplierRepository,
     required DurablePurchaseRepository purchaseRepository,
@@ -41,6 +43,7 @@ class BusinessDataWipeService {
   })  : _backupExportService = backupExportService,
         _backupFileWriter = backupFileWriter,
         _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _supplierRepository = supplierRepository,
         _purchaseRepository = purchaseRepository,
@@ -71,6 +74,7 @@ class BusinessDataWipeService {
   final BackupExportService _backupExportService;
   final BackupFileWriter _backupFileWriter;
   final ProductDataRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final DurableInventoryRepository _inventoryRepository;
   final SupplierDataRepository _supplierRepository;
   final DurablePurchaseRepository _purchaseRepository;
@@ -157,7 +161,7 @@ class BusinessDataWipeService {
   }
 
   Future<BusinessDataWipeCounts> _currentCounts() async {
-    final products = await _productRepository.listProducts(
+    final products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: true,
     );
     final movements = await _inventoryRepository.listAllMovements();

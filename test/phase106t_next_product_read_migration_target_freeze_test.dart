@@ -33,6 +33,9 @@ const _phase106adSubject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -45,7 +48,6 @@ const _purchaseControllerPath = 'lib/core/purchases/purchase_controller.dart';
 const _inventoryControllerPath = 'lib/core/inventory/inventory_controller.dart';
 
 const _legacyConsumerFiles = {
-  'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_repository.dart',
@@ -64,6 +66,7 @@ const _legacyInfrastructureFiles = {
 const _migratedConsumerFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
+  'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -119,6 +122,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
     final afterFreezeAE = headSubject == _phase106aeSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106adCommit;
+    final afterMigrateAF = headSubject == _phase106afSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106aeCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -132,7 +137,8 @@ void main() {
             afterMigrateAB ||
             atFreezeAC ||
             afterMigrateAD ||
-            afterFreezeAE,
+            afterFreezeAE ||
+            afterMigrateAF,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
@@ -145,7 +151,7 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 12, isTrue,
+    expect(commitCount >= 0 && commitCount <= 13, isTrue,
         reason:
             'Zero through twelve commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
@@ -182,11 +188,13 @@ void main() {
         'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/core/backup/backup_export.dart',
         'lib/core/backup/backup_restore_service.dart',
+        'lib/core/backup/business_data_wipe_service.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106U '
           'or Phase 106X permitted production files, Phase 106Z PRC-113, or '
-          'the Phase 106AB backup migration.',
+          'the Phase 106AB/106AD backup migrations, or the Phase 106AF '
+          'wipe-count migration.',
     );
     final check = Process.runSync(
       'git',

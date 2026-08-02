@@ -17,6 +17,9 @@ const _phase106adSubject =
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
 const _phase106aeSubject =
     'PHASE 106AE: freeze next product read migration target';
+const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _phase106afSubject =
+    'PHASE 106AF: migrate business data wipe current counts product read';
 const _reportPath =
     'docs/PHASE-106AA-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_export.dart';
@@ -70,12 +73,15 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106acCommit;
       final atPhase106ae = subject == _phase106aeSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106adCommit;
+      final atPhase106af = subject == _phase106afSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106aeCommit;
       expect(
         atPhase106aa ||
             atPhase106ab ||
             atPhase106ac ||
             atPhase106ad ||
-            atPhase106ae,
+            atPhase106ae ||
+            atPhase106af,
         isTrue,
       );
     }
@@ -90,6 +96,7 @@ void main() {
         isEmpty,
         _phase106abProductionFiles,
         _phase106adCumulativeProductionFiles,
+        _phase106afCumulativeProductionFiles,
       ),
     );
   });
@@ -298,6 +305,11 @@ const _phase106abProductionFiles = {
 const _phase106adCumulativeProductionFiles = {
   ..._phase106abProductionFiles,
   'lib/core/backup/backup_restore_service.dart',
+};
+
+const _phase106afCumulativeProductionFiles = {
+  ..._phase106adCumulativeProductionFiles,
+  'lib/core/backup/business_data_wipe_service.dart',
 };
 
 Set<String> _sourceFilesWithAt(String revision, String pattern) =>
