@@ -12,6 +12,9 @@ const _phase106aaSubject =
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _targetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 const _activationServicePath =
@@ -32,7 +35,17 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106zCommit;
       final atPhase106ab = subject == _phase106abSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106aaCommit;
-      expect(atPhase106z || atPhase106aa || atPhase106ab, isTrue);
+      final atPhase106ac = head == _phase106acCommit;
+      final atPhase106ad = subject == _phase106adSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106acCommit;
+      expect(
+        atPhase106z ||
+            atPhase106aa ||
+            atPhase106ab ||
+            atPhase106ac ||
+            atPhase106ad,
+        isTrue,
+      );
     }
   });
 

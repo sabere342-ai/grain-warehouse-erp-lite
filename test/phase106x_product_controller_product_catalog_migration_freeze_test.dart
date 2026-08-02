@@ -210,6 +210,7 @@ void main() {
 
       expect(addedConsumers, {
         'lib/core/backup/backup_export.dart',
+        'lib/core/backup/backup_restore_service.dart',
         _controllerPath,
         'lib/features/financial_reports/profitability_report_screen.dart',
       });

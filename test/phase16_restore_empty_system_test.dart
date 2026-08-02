@@ -547,6 +547,8 @@ Future<_BackupFixture> _emptyFixture() async {
   );
   final restoreService = BackupRestoreService(
     productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

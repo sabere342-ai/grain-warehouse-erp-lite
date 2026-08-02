@@ -26,6 +26,9 @@ const _phase106aaSubject =
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _reportPath =
     'docs/PHASE-106U-EXPAND-PRODUCT-CATALOG-READ-AND-MIGRATE-SALE-CONTROLLER.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -52,10 +55,10 @@ const _phase106xProductionFiles = {
   'lib/features/products/products_screen.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
   'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
 };
 
 const _legacyConsumerFiles = {
-  'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
@@ -74,6 +77,7 @@ const _legacyInfrastructureFiles = {
 
 const _migratedConsumerFiles = {
   'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -89,6 +93,7 @@ const _migratedConsumerFiles = {
 
 const _catalogCallers = {
   'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -138,6 +143,9 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
     final afterMigrateAB = headSubject == _phase106abSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
+    final atFreezeAC = head == _phase106acCommit;
+    final afterMigrateAD = headSubject == _phase106adSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
     expect(
         atFreeze ||
             afterMigrateU ||
@@ -147,7 +155,9 @@ void main() {
             afterFreezeY ||
             afterMigrateZ ||
             afterFreezeAA ||
-            afterMigrateAB,
+            afterMigrateAB ||
+            atFreezeAC ||
+            afterMigrateAD,
         isTrue,
         reason:
             'HEAD must be the Phase 106T freeze commit (during development) '
@@ -158,8 +168,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 9, isTrue,
-        reason: 'Zero through nine commits may exist after the 106S baseline; '
+    expect(commitCount >= 0 && commitCount <= 11, isTrue,
+        reason:
+            'Zero through eleven commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 

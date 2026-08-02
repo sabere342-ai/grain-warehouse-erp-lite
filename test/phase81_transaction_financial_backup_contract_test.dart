@@ -565,6 +565,8 @@ class _Fixture {
 
   BackupRestoreService get restoreService => BackupRestoreService(
       productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
       supplierRepository: suppliers,
       purchaseRepository: purchases,

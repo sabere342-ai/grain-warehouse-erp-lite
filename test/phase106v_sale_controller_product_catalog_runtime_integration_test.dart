@@ -36,8 +36,12 @@ const _phase106aaSubject =
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 
 const _catalogCallers = {
+  'lib/core/backup/backup_restore_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -537,6 +541,7 @@ void main() {
       expect(phase106xProductionDiff, {
         'lib/app/app_repositories.dart',
         'lib/core/backup/backup_export.dart',
+        'lib/core/backup/backup_restore_service.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
@@ -589,6 +594,9 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
       final afterMigrateAB = headSubject == _phase106abSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
+      final atFreezeAC = head == _phase106acCommit;
+      final afterMigrateAD = headSubject == _phase106adSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -597,7 +605,9 @@ void main() {
               afterFreezeY ||
               afterMigrateZ ||
               afterFreezeAA ||
-              afterMigrateAB,
+              afterMigrateAB ||
+              atFreezeAC ||
+              afterMigrateAD,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -607,8 +617,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 7, isTrue,
-          reason: 'Zero through seven commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 9, isTrue,
+          reason: 'Zero through nine commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

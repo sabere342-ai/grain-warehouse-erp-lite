@@ -3,8 +3,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _baseline = '4d4720b2b5c61a0318615691e85ea98f1f1d58af';
-const _phaseSubject = 'PHASE 106AC: freeze next product read migration target';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _reportPath =
     'docs/PHASE-106AC-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_restore_service.dart';
@@ -25,6 +26,8 @@ const _migrated = <String, _Consumer>{
   'PRC-014':
       _Consumer('lib/core/reports/report_repository.dart', 'Accepted', 1),
   'PRC-101': _Consumer('lib/core/backup/backup_export.dart', 'Accepted', 1),
+  'PRC-102':
+      _Consumer('lib/core/backup/backup_restore_service.dart', 'Accepted', 1),
   'PRC-104':
       _Consumer('lib/core/catalog/product_controller.dart', 'Accepted', 1),
   'PRC-107':
@@ -39,7 +42,6 @@ const _migrated = <String, _Consumer>{
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-102': _Consumer('lib/core/backup/backup_restore_service.dart', 'F', 1),
   'PRC-103':
       _Consumer('lib/core/backup/business_data_wipe_service.dart', 'F', 1),
   'PRC-105': _Consumer(
@@ -67,20 +69,36 @@ const _remaining = <String, _Consumer>{
 };
 
 void main() {
-  test('baseline lineage is exact and Phase 106AC has no production diff', () {
-    expect(_git(['rev-parse', _baseline]).trim(), _baseline);
+  test('Phase 106AC lineage permits only its frozen Phase 106AD child', () {
+    expect(_git(['rev-parse', _phase106acCommit]).trim(), _phase106acCommit);
     final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head != _baseline) {
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phaseSubject);
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    if (head != _phase106acCommit) {
+      expect(
+        _git(['log', '-1', '--format=%s', 'HEAD']).trim(),
+        _phase106adSubject,
+      );
+      expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106acCommit);
+      expect(
+        _git(['rev-list', '--count', '$_phase106acCommit..HEAD']).trim(),
+        '1',
+      );
     }
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
+    final productionDiff = _git([
+      'diff',
+      '--name-only',
+      _phase106acCommit,
+      '--',
+      'lib',
+    ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    expect(productionDiff, {
+      'lib/app/app_repositories.dart',
+      'lib/core/backup/backup_restore_service.dart',
+    });
   });
 
   test('inventory has 24 unique consumers classified exactly once', () {
-    expect(_migrated, hasLength(12));
-    expect(_remaining, hasLength(12));
+    expect(_migrated, hasLength(13));
+    expect(_remaining, hasLength(11));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -90,7 +108,7 @@ void main() {
     expect(_remaining.containsKey('PRC-101'), isFalse);
   });
 
-  test('remaining categories reconcile exactly as F7 and I5', () {
+  test('remaining categories reconcile exactly as F6 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -103,17 +121,17 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 7,
+      'F': 6,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('source call sites reconcile to 14 legacy and 12 catalog calls', () {
+  test('source call sites reconcile to 13 legacy and 13 catalog calls', () {
     final sources = _dartSources();
-    expect(_occurrences(sources.values.join('\n'), '.listProducts('), 14);
-    expect(_occurrences(sources.values.join('\n'), '.listProductCatalog('), 12);
+    expect(_occurrences(sources.values.join('\n'), '.listProducts('), 13);
+    expect(_occurrences(sources.values.join('\n'), '.listProductCatalog('), 13);
 
     final expectedLegacyFiles = {
       for (final consumer in _remaining.values) consumer.path,
@@ -164,20 +182,22 @@ void main() {
         hasLength(11));
   });
 
-  test('PRC-102 is the sole frozen target and its current behavior is exact',
-      () {
+  test('PRC-102 is the sole migrated target and its behavior is exact', () {
     const selectedTargets = ['PRC-102'];
     expect(selectedTargets, hasLength(1));
-    expect(_remaining['PRC-102']!.classification, 'F');
+    expect(_migrated['PRC-102']!.classification, 'Accepted');
     final source = File(_targetPath).readAsStringSync();
     final method =
         _methodBody(source, 'Future<String?> _checkEmptySystem() async');
     expect(
       _compact(method),
-      contains('_productRepository.listProducts(includeInactive:true)'),
+      contains(
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true,)',
+      ),
     );
     expect(method, contains('products.isNotEmpty'));
-    expect(method, isNot(contains('listProductCatalog(')));
+    expect(method, isNot(contains('_productRepository.listProducts(')));
     expect(method, isNot(contains('product.')));
 
     final restore = _between(

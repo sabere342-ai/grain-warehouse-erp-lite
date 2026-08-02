@@ -30,6 +30,9 @@ const _phase106aaSubject =
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -114,6 +117,9 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
     final afterMigrateAB = headSubject == _phase106abSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
+    final atFreezeAC = head == _phase106acCommit;
+    final afterMigrateAD = headSubject == _phase106adSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -129,7 +135,9 @@ void main() {
             afterFreezeY ||
             afterMigrateZ ||
             afterFreezeAA ||
-            afterMigrateAB,
+            afterMigrateAB ||
+            atFreezeAC ||
+            afterMigrateAD,
         isTrue,
         reason:
             'HEAD must follow the frozen Phase 106O through 106AA lineage, with '

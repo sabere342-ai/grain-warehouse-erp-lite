@@ -37,6 +37,7 @@ const _frozenReadModelFields = {
 
 const _catalogCallers = {
   'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',

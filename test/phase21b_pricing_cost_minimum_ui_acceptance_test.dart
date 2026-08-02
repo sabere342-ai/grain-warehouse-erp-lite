@@ -313,6 +313,8 @@ Future<_RestoreOutcome> _restoreIntoEmpty(String jsonText) async {
 
   final result = await BackupRestoreService(
     productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

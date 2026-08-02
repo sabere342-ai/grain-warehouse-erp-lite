@@ -225,9 +225,9 @@ void main() {
         .where((file) => file.path.endsWith('.dart'))
         .map((file) => file.readAsStringSync())
         .join('\n');
-    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(14));
+    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(13));
     expect(
-        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(12));
+        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(13));
 
     final changed = (Process.runSync(
       'git',
@@ -242,6 +242,7 @@ void main() {
       {
         'lib/app/app_repositories.dart',
         'lib/core/backup/backup_export.dart',
+        'lib/core/backup/backup_restore_service.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
       },

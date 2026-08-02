@@ -331,6 +331,8 @@ class _TrialRepositories {
 
   BackupRestoreService restoreService() => BackupRestoreService(
         productRepository: products,
+        productCatalogReadRepository:
+            DriftProductCatalogReadRepository(database),
         inventoryRepository: inventory,
         supplierRepository: suppliers,
         purchaseRepository: purchases,

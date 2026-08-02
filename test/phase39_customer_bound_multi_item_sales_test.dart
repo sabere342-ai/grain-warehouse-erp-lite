@@ -1008,6 +1008,8 @@ void main() {
 
         final restoreService = BackupRestoreService(
           productRepository: targetProducts,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(targetProducts),
           inventoryRepository: targetInventory,
           supplierRepository: targetSuppliers,
           purchaseRepository: targetPurchases,
@@ -1165,6 +1167,8 @@ void main() {
 
         final restoreService = BackupRestoreService(
           productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           supplierRepository: suppliers,
           purchaseRepository: purchases,

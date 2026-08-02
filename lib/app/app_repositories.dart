@@ -306,6 +306,7 @@ class AppRepositories {
   static BackupRestoreService get backupRestoreService => BackupRestoreService(
         businessIdentityRepository: businessIdentityRepository,
         productRepository: productRepository,
+        productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
         purchaseRepository: purchaseRepository,

@@ -23,6 +23,7 @@ const _phase106sCommit = '7300f5569f0617cf81606eddd062e73ec75c2de6';
 
 const _catalogCallers = {
   'lib/core/backup/backup_export.dart',
+  'lib/core/backup/backup_restore_service.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',

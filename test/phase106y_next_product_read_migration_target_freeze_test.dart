@@ -14,6 +14,9 @@ const _phase106aaSubject =
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _reportPath =
     'docs/PHASE-106Y-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath =
@@ -140,11 +143,16 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
     final afterPhase106ab = subject == _phase106abSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
+    final atPhase106ac = head == _phase106acCommit;
+    final afterPhase106ad = subject == _phase106adSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
         afterPhase106aa ||
-        afterPhase106ab;
+        afterPhase106ab ||
+        atPhase106ac ||
+        afterPhase106ad;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -155,17 +163,26 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106ab
+      afterPhase106ad
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',
               'lib/core/backup/backup_export.dart',
+              'lib/core/backup/backup_restore_service.dart',
               'lib/core/catalog/drift_product_catalog_read_repository.dart',
               'lib/core/catalog/product_catalog_read_repository.dart',
             }
-          : (afterPhase106z || afterPhase106aa)
-              ? {_targetPath}
-              : isEmpty,
+          : (afterPhase106ab || atPhase106ac)
+              ? {
+                  _targetPath,
+                  'lib/app/app_repositories.dart',
+                  'lib/core/backup/backup_export.dart',
+                  'lib/core/catalog/drift_product_catalog_read_repository.dart',
+                  'lib/core/catalog/product_catalog_read_repository.dart',
+                }
+              : (afterPhase106z || afterPhase106aa)
+                  ? {_targetPath}
+                  : isEmpty,
       reason: 'Only the frozen Phase 106Z target and Phase 106AB allowlist '
           'may appear in the forward production lineage.',
     );

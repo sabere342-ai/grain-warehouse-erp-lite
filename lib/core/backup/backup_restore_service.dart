@@ -15,6 +15,7 @@ import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collect
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_advance.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -47,6 +48,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 class BackupRestoreService {
   BackupRestoreService({
     required ProductDataRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required DurableInventoryRepository inventoryRepository,
     required SupplierDataRepository supplierRepository,
     required DurablePurchaseRepository purchaseRepository,
@@ -65,6 +67,7 @@ class BackupRestoreService {
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
   })  : _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _supplierRepository = supplierRepository,
         _purchaseRepository = purchaseRepository,
@@ -91,6 +94,7 @@ class BackupRestoreService {
         _previewService = previewService;
 
   final ProductDataRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final DurableInventoryRepository _inventoryRepository;
   final SupplierDataRepository _supplierRepository;
   final DurablePurchaseRepository _purchaseRepository;
@@ -228,8 +232,9 @@ class BackupRestoreService {
   }
 
   Future<String?> _checkEmptySystem() async {
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final movements = await _inventoryRepository.listAllMovements();
     final suppliers = await _supplierRepository.listSuppliers(
       includeInactive: true,

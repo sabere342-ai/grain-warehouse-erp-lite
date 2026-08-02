@@ -279,6 +279,8 @@ class _RepoSet {
   BackupRestoreService get restoreService => BackupRestoreService(
         businessIdentityRepository: identityRepository,
         productRepository: productRepository,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(productRepository),
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
         purchaseRepository: purchaseRepository,

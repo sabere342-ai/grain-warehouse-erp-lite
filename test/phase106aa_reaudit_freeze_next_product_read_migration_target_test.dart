@@ -11,6 +11,9 @@ const _phase106abSubject =
 const _phase106abCommit = '4d4720b2b5c61a0318615691e85ea98f1f1d58af';
 const _phase106acSubject =
     'PHASE 106AC: freeze next product read migration target';
+const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _phase106adSubject =
+    'PHASE 106AD: migrate backup restore empty-system product read';
 const _reportPath =
     'docs/PHASE-106AA-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_export.dart';
@@ -49,7 +52,7 @@ const _remaining = <String, String>{
 };
 
 void main() {
-  test('lineage preserves Phase 106AA through its Phase 106AC child', () {
+  test('lineage preserves Phase 106AA through its Phase 106AD child', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
@@ -60,14 +63,26 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106aaCommit;
       final atPhase106ac = subject == _phase106acSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106abCommit;
-      expect(atPhase106aa || atPhase106ab || atPhase106ac, isTrue);
+      final atPhase106ad = subject == _phase106adSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106acCommit;
+      expect(
+        atPhase106aa || atPhase106ab || atPhase106ac || atPhase106ad,
+        isTrue,
+      );
     }
     expect(_git(['diff', _baseline, _phase106aaCommit, '--', 'lib']).trim(),
         isEmpty);
     final forwardDiff = _git(
       ['diff', '--name-only', _phase106aaCommit, '--', 'lib'],
     ).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(forwardDiff, anyOf(isEmpty, _phase106abProductionFiles));
+    expect(
+      forwardDiff,
+      anyOf(
+        isEmpty,
+        _phase106abProductionFiles,
+        _phase106adCumulativeProductionFiles,
+      ),
+    );
   });
 
   test('direct calls reconcile to 15 legacy and 11 catalog calls', () {
@@ -269,6 +284,11 @@ const _phase106abProductionFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/catalog/drift_product_catalog_read_repository.dart',
   'lib/core/catalog/product_catalog_read_repository.dart',
+};
+
+const _phase106adCumulativeProductionFiles = {
+  ..._phase106abProductionFiles,
+  'lib/core/backup/backup_restore_service.dart',
 };
 
 Set<String> _sourceFilesWithAt(String revision, String pattern) =>
