@@ -87,7 +87,8 @@ void main() {
     test('backup exports cost and restore keeps cost or old null', () async {
       final fixture = await _fixture(referenceCost: 760);
       final backup = await BackupExportService(
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryRepository: fixture.inventory,
         supplierRepository: fixture.suppliers,
         purchaseRepository: fixture.purchases,

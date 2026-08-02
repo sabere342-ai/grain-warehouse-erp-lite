@@ -535,7 +535,8 @@ Future<_BackupFixture> _emptyFixture() async {
     inventoryRepository: inventory,
   );
   final exportService = BackupExportService(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

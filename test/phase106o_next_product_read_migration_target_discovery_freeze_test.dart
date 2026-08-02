@@ -27,6 +27,9 @@ const _phase106zSubject =
 const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phase106aaSubject =
     'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 const _reportPath =
     'docs/PHASE-106O-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/purchases/purchase_controller.dart';
@@ -109,6 +112,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
     final afterFreezeAA = headSubject == _phase106aaSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
+    final afterMigrateAB = headSubject == _phase106abSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -123,11 +128,13 @@ void main() {
             atMigrationX ||
             afterFreezeY ||
             afterMigrateZ ||
-            afterFreezeAA,
+            afterFreezeAA ||
+            afterMigrateAB,
         isTrue,
         reason:
             'HEAD must follow the frozen Phase 106O through 106AA lineage, with '
-            'the Phase 106Z migration and Phase 106AA freeze children '
+            'the Phase 106Z migration, Phase 106AA freeze, and Phase 106AB '
+            'migration children '
             'explicitly admitted.');
 
     final legacyFiles = _gitGrepFiles('.listProducts(', _baseline)

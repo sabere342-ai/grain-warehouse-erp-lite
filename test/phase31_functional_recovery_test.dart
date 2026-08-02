@@ -274,7 +274,8 @@ _Phase31Fixture _fixture() {
     expenseRepository: expenses,
   );
   final exportService = BackupExportService(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

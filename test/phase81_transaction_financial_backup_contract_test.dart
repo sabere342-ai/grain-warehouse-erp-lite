@@ -546,7 +546,8 @@ class _Fixture {
   }
 
   BackupExportService get exportService => BackupExportService(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
       supplierRepository: suppliers,
       purchaseRepository: purchases,

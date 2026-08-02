@@ -24,6 +24,9 @@ const _phase106zSubject =
 const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phase106aaSubject =
     'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -36,7 +39,6 @@ const _purchaseControllerPath = 'lib/core/purchases/purchase_controller.dart';
 const _inventoryControllerPath = 'lib/core/inventory/inventory_controller.dart';
 
 const _legacyConsumerFiles = {
-  'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
@@ -55,6 +57,7 @@ const _legacyInfrastructureFiles = {
 };
 
 const _migratedConsumerFiles = {
+  'lib/core/backup/backup_export.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -103,6 +106,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
     final afterFreezeAA = headSubject == _phase106aaSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
+    final afterMigrateAB = headSubject == _phase106abSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -112,7 +117,8 @@ void main() {
             afterMigrateX ||
             afterFreezeY ||
             afterMigrateZ ||
-            afterFreezeAA,
+            afterFreezeAA ||
+            afterMigrateAB,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
@@ -120,11 +126,12 @@ void main() {
             'baseline, the Phase 106U migration, the proven Phase 106V '
             'commit, its single Phase 106W freeze child, or the single Phase '
             '106X migration child, the Phase 106Y freeze, or the Phase 106Z '
-            'PRC-113 migration, or the Phase 106AA freeze.');
+            'PRC-113 migration, the Phase 106AA freeze, or the Phase 106AB '
+            'migration.');
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 8, isTrue,
+    expect(commitCount >= 0 && commitCount <= 9, isTrue,
         reason: 'Zero through eight commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
@@ -158,10 +165,12 @@ void main() {
         'lib/core/catalog/product_controller.dart',
         'lib/features/products/products_screen.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
+        'lib/core/backup/backup_export.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106U '
-          'or Phase 106X permitted production files, plus Phase 106Z PRC-113.',
+          'or Phase 106X permitted production files, Phase 106Z PRC-113, or '
+          'the Phase 106AB backup migration.',
     );
     final check = Process.runSync(
       'git',
@@ -189,11 +198,11 @@ void main() {
       ..removeAll(_legacyInfrastructureFiles);
     final migratedFiles = _workingTreeFilesWith('.listProductCatalog(');
     expect(legacyFiles, _legacyConsumerFiles,
-        reason:
-            'Exactly the 11 legacy consumer files must still call .listProducts(.');
+        reason: 'The current forward lineage must retain exactly the remaining '
+            'legacy consumer files.');
     expect(migratedFiles, _migratedConsumerFiles,
         reason:
-            'Exactly the 11 migrated consumer files must call .listProductCatalog(.');
+            'The current forward lineage must retain all migrated consumer files.');
   });
 
   test('all nine accepted consumers remain on the catalog boundary', () {

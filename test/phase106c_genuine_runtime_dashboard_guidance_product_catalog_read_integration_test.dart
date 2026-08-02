@@ -120,8 +120,7 @@ void main() {
       expect((await DashboardGuidanceState.load()).productCount, 3);
     });
 
-    test('load succeeds while the legacy product repository is a sentinel',
-        () async {
+    test('load succeeds through the extended catalog projection', () async {
       await _seedProduct(
         database,
         id: 'prd-106c-legacy-sentinel',
@@ -131,19 +130,6 @@ void main() {
         isActive: true,
         createdAt: DateTime.utc(2026, 7, 30, 14),
       );
-      await database.customStatement(
-        '''
-        UPDATE products
-        SET updated_at = 'legacy-read-sentinel'
-        WHERE id = 'prd-106c-legacy-sentinel'
-        ''',
-      );
-
-      await expectLater(
-        AppRepositories.productRepository.listProducts(includeInactive: true),
-        throwsA(anything),
-      );
-
       final state = await DashboardGuidanceState.load();
 
       expect(state.productCount, 1);

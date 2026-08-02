@@ -266,7 +266,7 @@ class AppRepositories {
 
   static BackupExportService get backupExportService => BackupExportService(
         businessIdentityRepository: businessIdentityRepository,
-        productRepository: productRepository,
+        productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
         purchaseRepository: purchaseRepository,
@@ -372,6 +372,8 @@ final class _LegacyProductCatalogReadRepository
             minimumSalePricePiastersPerKg:
                 product.minimumSalePricePiastersPerKg,
             notes: product.notes,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
           ),
         )
         .toList(growable: false);

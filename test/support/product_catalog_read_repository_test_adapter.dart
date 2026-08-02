@@ -29,6 +29,8 @@ final class ProductCatalogReadRepositoryTestAdapter
             minimumSalePricePiastersPerKg:
                 product.minimumSalePricePiastersPerKg,
             notes: product.notes,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
           ),
         )
         .toList(growable: false);

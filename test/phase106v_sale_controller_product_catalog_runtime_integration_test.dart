@@ -33,6 +33,9 @@ const _phase106zSubject =
 const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phase106aaSubject =
     'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 
 const _catalogCallers = {
   'lib/core/catalog/product_controller.dart',
@@ -46,6 +49,7 @@ const _catalogCallers = {
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
+  'lib/core/backup/backup_export.dart',
 };
 
 void main() {
@@ -532,6 +536,7 @@ void main() {
           .toSet();
       expect(phase106xProductionDiff, {
         'lib/app/app_repositories.dart',
+        'lib/core/backup/backup_export.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
@@ -582,6 +587,8 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106yCommit;
       final afterFreezeAA = headSubject == _phase106aaSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106zCommit;
+      final afterMigrateAB = headSubject == _phase106abSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106aaCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -589,17 +596,19 @@ void main() {
               afterMigration ||
               afterFreezeY ||
               afterMigrateZ ||
-              afterFreezeAA,
+              afterFreezeAA ||
+              afterMigrateAB,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
               'single Phase 106V commit, the Phase 106W freeze, or its single '
-              'Phase 106X migration child through the Phase 106AA freeze.');
+              'Phase 106X migration child through the Phase 106AA freeze and '
+              'Phase 106AB migration.');
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 6, isTrue,
-          reason: 'Zero through six commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 7, isTrue,
+          reason: 'Zero through seven commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

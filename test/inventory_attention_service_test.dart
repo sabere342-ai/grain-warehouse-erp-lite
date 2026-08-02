@@ -73,6 +73,8 @@ ProductCatalogReadModel _product(String id, String name) =>
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
 
 final class _Products implements ProductCatalogReadRepository {

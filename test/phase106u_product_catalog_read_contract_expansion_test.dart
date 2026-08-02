@@ -16,7 +16,7 @@ const _adapterPath =
 void main() {
   group('Phase 106U ProductCatalogReadModel expansion', () {
     test('model carries the two new sale price fields with real values', () {
-      const model = ProductCatalogReadModel(
+      final model = ProductCatalogReadModel(
         id: 'prd-106u-model',
         name: 'قمح',
         code: 'WHEAT',
@@ -26,6 +26,8 @@ void main() {
         defaultSalePricePiastersPerKg: 3000,
         minimumSalePricePiastersPerKg: 2500,
         notes: null,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 2),
       );
 
       expect(model.id, 'prd-106u-model');
@@ -39,7 +41,7 @@ void main() {
     });
 
     test('all optional price fields remain nullable', () {
-      const model = ProductCatalogReadModel(
+      final model = ProductCatalogReadModel(
         id: 'prd-106u-null',
         name: 'شعير',
         code: null,
@@ -49,6 +51,8 @@ void main() {
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
         notes: null,
+        createdAt: DateTime.utc(2026, 2, 1),
+        updatedAt: DateTime.utc(2026, 2, 2),
       );
 
       expect(model.code, isNull);
@@ -194,7 +198,7 @@ void main() {
       expect(catalog, isEmpty);
       expect(
         () => catalog.add(
-          const ProductCatalogReadModel(
+          ProductCatalogReadModel(
             id: 'synthetic',
             name: 'Synthetic',
             code: null,
@@ -204,6 +208,8 @@ void main() {
             defaultSalePricePiastersPerKg: null,
             minimumSalePricePiastersPerKg: null,
             notes: null,
+            createdAt: DateTime.utc(2026),
+            updatedAt: DateTime.utc(2026),
           ),
         ),
         throwsUnsupportedError,

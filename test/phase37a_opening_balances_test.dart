@@ -191,7 +191,8 @@ void main() {
         );
 
         final service = BackupExportService(
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
           supplierRepository: supplierRepo,
           purchaseRepository: LocalPurchaseRepository(
@@ -387,7 +388,8 @@ void main() {
         );
 
         final service = BackupExportService(
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
           supplierRepository: supplierRepo,
           purchaseRepository: LocalPurchaseRepository(

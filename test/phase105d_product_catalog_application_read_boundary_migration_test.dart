@@ -33,7 +33,7 @@ void main() {
 
   test('successful load maps catalog identity and preserves frozen values',
       () async {
-    const product = ProductCatalogReadModel(
+    final product = ProductCatalogReadModel(
       id: 'prd-1722261600000000-41',
       name: 'Wheat',
       code: 'WH-41',
@@ -43,9 +43,11 @@ void main() {
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
     final catalog = _CatalogFake([
-      const [product],
+      [product],
     ]);
     final repository = _history(
       catalog: catalog,
@@ -101,7 +103,7 @@ void main() {
 
   test('a failed load can be retried without cached or duplicated history',
       () async {
-    const product = ProductCatalogReadModel(
+    final product = ProductCatalogReadModel(
       id: 'prd-retry',
       name: 'Retry product',
       code: null,
@@ -111,10 +113,12 @@ void main() {
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
     final catalog = _CatalogFake([
       StateError('first load fails'),
-      const [product],
+      [product],
     ]);
     final repository = _history(
       catalog: catalog,
@@ -132,7 +136,7 @@ void main() {
   test('catalog ordering is not changed inside the migrated lookup method',
       () async {
     final catalog = _CatalogFake([
-      const [
+      [
         ProductCatalogReadModel(
           id: 'prd-z',
           name: 'Zed',
@@ -143,6 +147,8 @@ void main() {
           defaultSalePricePiastersPerKg: null,
           minimumSalePricePiastersPerKg: null,
           notes: null,
+          createdAt: DateTime.utc(2026),
+          updatedAt: DateTime.utc(2026),
         ),
         ProductCatalogReadModel(
           id: 'prd-a',
@@ -154,6 +160,8 @@ void main() {
           defaultSalePricePiastersPerKg: null,
           minimumSalePricePiastersPerKg: null,
           notes: null,
+          createdAt: DateTime.utc(2026),
+          updatedAt: DateTime.utc(2026),
         ),
       ],
     ]);

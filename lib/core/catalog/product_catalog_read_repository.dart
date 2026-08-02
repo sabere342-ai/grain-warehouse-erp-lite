@@ -11,6 +11,8 @@ final class ProductCatalogReadModel {
     required this.defaultSalePricePiastersPerKg,
     required this.minimumSalePricePiastersPerKg,
     required this.notes,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   final String id;
@@ -24,6 +26,8 @@ final class ProductCatalogReadModel {
   final int? defaultSalePricePiastersPerKg;
   final int? minimumSalePricePiastersPerKg;
   final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 }
 
 abstract interface class ProductCatalogReadRepository {

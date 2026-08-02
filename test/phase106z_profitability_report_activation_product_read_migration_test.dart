@@ -9,6 +9,9 @@ const _phaseSubject =
 const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phase106aaSubject =
     'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 const _targetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 const _activationServicePath =
@@ -27,23 +30,30 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106aa = subject == _phase106aaSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106zCommit;
-      expect(atPhase106z || atPhase106aa, isTrue);
+      final atPhase106ab = subject == _phase106abSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106aaCommit;
+      expect(atPhase106z || atPhase106aa || atPhase106ab, isTrue);
     }
   });
 
   test('the production diff is exactly the frozen PRC-113 file', () {
     expect(
-      _git(['diff', '--name-only', _baseline, '--', 'lib']).trim(),
+      _git(['diff', '--name-only', _baseline, _phase106zCommit, '--', 'lib'])
+          .trim(),
       _targetPath,
     );
     expect(
-      _git(['diff', _baseline, '--', _activationServicePath]).trim(),
+      _git(['diff', _baseline, _phase106zCommit, '--', _activationServicePath])
+          .trim(),
       isEmpty,
       reason: 'PRC-108 activation validation must remain unchanged.',
     );
-    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
-      _git(['diff', _baseline, '--', 'lib/core/persistence']).trim(),
+        _git(['diff', _baseline, _phase106zCommit, '--', _contractPath]).trim(),
+        isEmpty);
+    expect(
+      _git(['diff', _baseline, _phase106zCommit, '--', 'lib/core/persistence'])
+          .trim(),
       isEmpty,
     );
   });
@@ -115,7 +125,7 @@ void main() {
   });
 
   test('catalog contract was not expanded and exposes no write operation', () {
-    final source = File(_contractPath).readAsStringSync();
+    final source = _sourceAt(_phase106zCommit, _contractPath);
     final model = _between(
       source,
       'final class ProductCatalogReadModel {',
@@ -168,28 +178,33 @@ void main() {
   });
 
   test('inventory moves exactly one consumer from legacy to catalog', () {
-    expect(_sourceOccurrenceCount('.listProducts('), 15);
-    expect(_sourceOccurrenceCount('.listProductCatalog('), 11);
-    expect(_sourceFilesWith('.listProducts('), isNot(contains(_targetPath)));
-    expect(_sourceFilesWith('.listProductCatalog('), contains(_targetPath));
+    expect(_sourceOccurrenceCountAt(_phase106zCommit, '.listProducts('), 15);
+    expect(
+        _sourceOccurrenceCountAt(_phase106zCommit, '.listProductCatalog('), 11);
+    expect(_sourceFilesWithAt(_phase106zCommit, '.listProducts('),
+        isNot(contains(_targetPath)));
+    expect(_sourceFilesWithAt(_phase106zCommit, '.listProductCatalog('),
+        contains(_targetPath));
     expect(24, 11 + 13);
   });
 }
 
-Set<String> _sourceFilesWith(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .where((file) => file.readAsStringSync().contains(pattern))
-    .map((file) => _relative(file.path))
-    .toSet();
+Set<String> _sourceFilesWithAt(String revision, String pattern) =>
+    _git(['grep', '-l', '-F', pattern, revision, '--', 'lib'])
+        .split(RegExp(r'\r?\n'))
+        .where((line) => line.isNotEmpty)
+        .map((line) => line.replaceFirst('$revision:', ''))
+        .toSet();
 
-int _sourceOccurrenceCount(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .map((file) => _occurrences(file.readAsStringSync(), pattern))
-    .fold(0, (sum, count) => sum + count);
+int _sourceOccurrenceCountAt(String revision, String pattern) => _git([
+      'grep',
+      '-o',
+      '-F',
+      pattern,
+      revision,
+      '--',
+      'lib',
+    ]).split(RegExp(r'\r?\n')).where((line) => line.isNotEmpty).length;
 
 String _sourceAt(String commit, String path) =>
     _normalizeNewlines(_git(['show', '$commit:$path']));
@@ -236,9 +251,3 @@ int _occurrences(String source, String pattern) =>
 String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');
 
 String _normalizeNewlines(String source) => source.replaceAll('\r\n', '\n');
-
-String _relative(String path) {
-  final normalized = path.replaceAll('\\', '/');
-  final root = Directory.current.path.replaceAll('\\', '/');
-  return normalized.replaceFirst('$root/', '');
-}

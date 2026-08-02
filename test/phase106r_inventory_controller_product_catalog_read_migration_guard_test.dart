@@ -36,6 +36,7 @@ const _frozenReadModelFields = {
 };
 
 const _catalogCallers = {
+  'lib/core/backup/backup_export.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -306,6 +307,8 @@ ProductCatalogReadModel _model(String id, String name,
     defaultSalePricePiastersPerKg: null,
     minimumSalePricePiastersPerKg: null,
     notes: null,
+    createdAt: DateTime.utc(2026),
+    updatedAt: DateTime.utc(2026),
   );
 }
 

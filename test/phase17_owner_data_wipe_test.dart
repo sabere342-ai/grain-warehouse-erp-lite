@@ -491,7 +491,8 @@ Future<_BackupFixture> _emptyFixture({
           history: history,
         )
       : BackupExportService(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           supplierRepository: suppliers,
           purchaseRepository: purchases,
@@ -621,7 +622,8 @@ class _ThrowingBackupExportService extends BackupExportService {
     required SaleRepository sales,
     required DocumentHistoryRepository history,
   }) : super(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
           supplierRepository: suppliers,
           purchaseRepository: purchases,

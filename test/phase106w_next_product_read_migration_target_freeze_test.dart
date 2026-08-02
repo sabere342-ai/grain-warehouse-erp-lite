@@ -17,6 +17,9 @@ const _phase106zSubject =
 const _phase106zCommit = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phase106aaSubject =
     'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 const _reportPath =
     'docs/PHASE-106W-REAUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -25,7 +28,6 @@ const _phase106zTargetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 
 const _legacyConsumerFiles = {
-  'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
@@ -44,6 +46,7 @@ const _legacyInfrastructureFiles = {
 };
 
 const _migratedConsumerFiles = {
+  'lib/core/backup/backup_export.dart',
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
@@ -92,9 +95,11 @@ void main() {
         (subject == _phase106zSubject &&
             _git(['rev-parse', '$head^']).trim() == _phase106yCommit) ||
         (subject == _phase106aaSubject &&
-            _git(['rev-parse', '$head^']).trim() == _phase106zCommit);
+            _git(['rev-parse', '$head^']).trim() == _phase106zCommit) ||
+        (subject == _phase106abSubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106aaCommit);
     expect(validHead, isTrue,
-        reason: 'HEAD must follow the single Phase 106W through Phase 106AA '
+        reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');
 
     expect(_git(['diff', _baseline, _phase106wCommit, '--', 'lib']).trim(),
@@ -110,6 +115,7 @@ void main() {
     expect(phase106xProductionFiles, {
       ..._nextPhaseProductionFiles,
       _phase106zTargetPath,
+      'lib/core/backup/backup_export.dart',
     });
   });
 

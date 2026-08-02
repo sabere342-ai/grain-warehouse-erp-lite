@@ -19,7 +19,7 @@ const _phase105fCommit = 'a813a70';
 void main() {
   test('frozen read model types and narrow repository surface remain exact',
       () {
-    const model = ProductCatalogReadModel(
+    final model = ProductCatalogReadModel(
       id: 'prd-105f-text-id',
       name: 'Frozen wheat',
       code: null,
@@ -29,6 +29,8 @@ void main() {
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
 
     final String id = model.id;

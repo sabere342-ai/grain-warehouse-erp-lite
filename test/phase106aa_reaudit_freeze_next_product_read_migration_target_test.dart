@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '33dccc824014d44265ab606b9f7d6a01713139e3';
 const _phaseSubject = 'PHASE 106AA: freeze next product read migration target';
+const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _phase106abSubject =
+    'PHASE 106AB: extend product catalog timestamps and migrate backup export';
 const _reportPath =
     'docs/PHASE-106AA-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_export.dart';
@@ -43,21 +46,34 @@ const _remaining = <String, String>{
 };
 
 void main() {
-  test('lineage is the exact Phase 106Z baseline or its Phase 106AA child', () {
+  test('lineage preserves Phase 106AA and admits only its Phase 106AB child',
+      () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phaseSubject);
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106aa = subject == _phaseSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
+      final atPhase106ab = subject == _phase106abSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106aaCommit;
+      expect(atPhase106aa || atPhase106ab, isTrue);
     }
-    expect(_git(['diff', _baseline, 'HEAD', '--', 'lib']).trim(), isEmpty);
+    expect(_git(['diff', _baseline, _phase106aaCommit, '--', 'lib']).trim(),
+        isEmpty);
+    final forwardDiff = _git(
+      ['diff', '--name-only', _phase106aaCommit, '--', 'lib'],
+    ).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    expect(forwardDiff, anyOf(isEmpty, _phase106abProductionFiles));
   });
 
   test('direct calls reconcile to 15 legacy and 11 catalog calls', () {
-    expect(_sourceOccurrenceCount('.listProducts('), 15);
-    expect(_sourceOccurrenceCount('.listProductCatalog('), 11);
-    expect(_sourceFilesWith('.listProductCatalog('), _migratedConsumerFiles);
-    expect(_sourceFilesWith('.listProducts('), hasLength(13));
+    expect(_sourceOccurrenceCountAt(_phase106aaCommit, '.listProducts('), 15);
+    expect(_sourceOccurrenceCountAt(_phase106aaCommit, '.listProductCatalog('),
+        11);
+    expect(_sourceFilesWithAt(_phase106aaCommit, '.listProductCatalog('),
+        _migratedConsumerFiles);
+    expect(
+        _sourceFilesWithAt(_phase106aaCommit, '.listProducts('), hasLength(13));
   });
 
   test('24 consumers reconcile as 11 migrated plus 13 remaining', () {
@@ -89,7 +105,7 @@ void main() {
   });
 
   test('PRC-101 remains on its exact legacy dependency and call in 106AA', () {
-    final source = File(_targetPath).readAsStringSync();
+    final source = _sourceAt(_phase106aaCommit, _targetPath);
     final constructor = _between(
       source,
       'class BackupExportService {',
@@ -110,7 +126,7 @@ void main() {
 
   test('PRC-101 serialization freezes all 11 fields and timestamp behavior',
       () {
-    final source = File(_targetPath).readAsStringSync();
+    final source = _sourceAt(_phase106aaCommit, _targetPath);
     final mapper = _methodBody(
       source,
       'Map<String, Object?> _productToJson(Product product)',
@@ -140,7 +156,7 @@ void main() {
   });
 
   test('current catalog contract is unchanged and lacks only timestamps', () {
-    final contract = File(_contractPath).readAsStringSync();
+    final contract = _sourceAt(_phase106aaCommit, _contractPath);
     final model = _between(
       contract,
       'final class ProductCatalogReadModel {',
@@ -163,7 +179,7 @@ void main() {
     ]);
     expect(model, isNot(contains('createdAt')));
     expect(model, isNot(contains('updatedAt')));
-    final adapter = File(_adapterPath).readAsStringSync();
+    final adapter = _sourceAt(_phase106aaCommit, _adapterPath);
     expect(adapter, isNot(contains('createdAt:')));
     expect(adapter, isNot(contains('updatedAt:')));
   });
@@ -237,26 +253,39 @@ void main() {
       _targetPath,
       'lib/app/app_repositories.dart',
     ]) {
-      expect(_git(['diff', _baseline, 'HEAD', '--', path]).trim(), isEmpty,
+      expect(_git(['diff', _baseline, _phase106aaCommit, '--', path]).trim(),
+          isEmpty,
           reason: path);
     }
   });
 }
 
-Set<String> _sourceFilesWith(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .where((file) => file.readAsStringSync().contains(pattern))
-    .map((file) => _relative(file.path))
-    .toSet();
+const _phase106abProductionFiles = {
+  'lib/app/app_repositories.dart',
+  'lib/core/backup/backup_export.dart',
+  'lib/core/catalog/drift_product_catalog_read_repository.dart',
+  'lib/core/catalog/product_catalog_read_repository.dart',
+};
 
-int _sourceOccurrenceCount(String pattern) => Directory('lib')
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .where((file) => file.path.endsWith('.dart'))
-    .map((file) => _occurrences(file.readAsStringSync(), pattern))
-    .fold(0, (sum, count) => sum + count);
+Set<String> _sourceFilesWithAt(String revision, String pattern) =>
+    _git(['grep', '-l', '-F', pattern, revision, '--', 'lib'])
+        .split(RegExp(r'\r?\n'))
+        .where((line) => line.isNotEmpty)
+        .map((line) => line.replaceFirst('$revision:', ''))
+        .toSet();
+
+int _sourceOccurrenceCountAt(String revision, String pattern) => _git([
+      'grep',
+      '-o',
+      '-F',
+      pattern,
+      revision,
+      '--',
+      'lib',
+    ]).split(RegExp(r'\r?\n')).where((line) => line.isNotEmpty).length;
+
+String _sourceAt(String revision, String path) =>
+    _git(['show', '$revision:$path']);
 
 String _git(List<String> arguments) {
   final result = Process.runSync(
@@ -298,9 +327,3 @@ int _occurrences(String source, String pattern) =>
     RegExp(RegExp.escape(pattern)).allMatches(source).length;
 
 String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');
-
-String _relative(String path) {
-  final normalized = path.replaceAll('\\', '/');
-  final root = Directory.current.path.replaceAll('\\', '/');
-  return normalized.replaceFirst('$root/', '');
-}

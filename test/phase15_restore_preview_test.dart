@@ -325,7 +325,8 @@ Future<_BackupFixture> _fixture() async {
   );
 
   final service = BackupExportService(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

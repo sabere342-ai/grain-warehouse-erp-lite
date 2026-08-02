@@ -4,7 +4,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repos
 
 void main() {
   test('read model preserves the five frozen fields and governing types', () {
-    const model = ProductCatalogReadModel(
+    final model = ProductCatalogReadModel(
       id: 'prd-123456789-1',
       name: 'Wheat',
       code: 'WH-1',
@@ -14,6 +14,8 @@ void main() {
       defaultSalePricePiastersPerKg: 2750,
       minimumSalePricePiastersPerKg: 2500,
       notes: '  premium wheat  ',
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 2),
     );
 
     final String id = model.id;
@@ -41,7 +43,7 @@ void main() {
   });
 
   test('optional product code accepts null without changing other fields', () {
-    const model = ProductCatalogReadModel(
+    final model = ProductCatalogReadModel(
       id: 'prd-987654321-2',
       name: 'Corn',
       code: null,
@@ -51,6 +53,8 @@ void main() {
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026, 2, 1),
+      updatedAt: DateTime.utc(2026, 2, 2),
     );
 
     expect(model.id, 'prd-987654321-2');
@@ -65,7 +69,7 @@ void main() {
 
   test('repository is a Future snapshot contract with required visibility',
       () async {
-    const snapshot = <ProductCatalogReadModel>[
+    final snapshot = <ProductCatalogReadModel>[
       ProductCatalogReadModel(
         id: 'prd-1-1',
         name: 'First',
@@ -76,6 +80,8 @@ void main() {
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
         notes: '',
+        createdAt: DateTime.utc(2026, 3, 1),
+        updatedAt: DateTime.utc(2026, 3, 2),
       ),
       ProductCatalogReadModel(
         id: 'prd-2-2',
@@ -87,6 +93,8 @@ void main() {
         defaultSalePricePiastersPerKg: null,
         minimumSalePricePiastersPerKg: null,
         notes: null,
+        createdAt: DateTime.utc(2026, 4, 1),
+        updatedAt: DateTime.utc(2026, 4, 2),
       ),
     ];
     final fake = _FakeProductCatalogReadRepository(snapshot);

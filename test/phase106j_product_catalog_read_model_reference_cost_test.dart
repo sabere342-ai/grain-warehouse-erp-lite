@@ -9,7 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 
 void main() {
   test('contract exposes a required nullable integer reference cost', () {
-    const costed = ProductCatalogReadModel(
+    final costed = ProductCatalogReadModel(
       id: 'prd-costed',
       name: 'Costed wheat',
       code: null,
@@ -19,8 +19,10 @@ void main() {
       defaultSalePricePiastersPerKg: 2750,
       minimumSalePricePiastersPerKg: 2500,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
-    const uncosted = ProductCatalogReadModel(
+    final uncosted = ProductCatalogReadModel(
       id: 'prd-uncosted',
       name: 'Uncosted corn',
       code: null,
@@ -30,6 +32,8 @@ void main() {
       defaultSalePricePiastersPerKg: null,
       minimumSalePricePiastersPerKg: null,
       notes: null,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
     );
 
     final int? exactCost = costed.referenceCostPricePiastersPerKg;

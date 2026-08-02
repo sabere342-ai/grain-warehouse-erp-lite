@@ -257,7 +257,8 @@ Future<_Fixture> _seededFixture() async {
         ProductCatalogReadRepositoryTestAdapter(products),
   );
   final backupExport = BackupExportService(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     supplierRepository: suppliers,
     purchaseRepository: purchases,

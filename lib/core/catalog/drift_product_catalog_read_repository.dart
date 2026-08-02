@@ -26,6 +26,8 @@ final class DriftProductCatalogReadRepository
         products.defaultSalePricePiastersPerKg,
         products.minimumSalePricePiastersPerKg,
         products.notes,
+        products.createdAt,
+        products.updatedAt,
       ])
       ..orderBy([
         OrderingTerm.asc(products.createdAt),
@@ -51,6 +53,8 @@ final class DriftProductCatalogReadRepository
             minimumSalePricePiastersPerKg:
                 row.read(products.minimumSalePricePiastersPerKg),
             notes: row.read(products.notes),
+            createdAt: row.read(products.createdAt)!,
+            updatedAt: row.read(products.updatedAt)!,
           ),
         )
         .toList(growable: false);

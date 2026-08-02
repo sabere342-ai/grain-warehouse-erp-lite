@@ -4,7 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_collection.dart';
@@ -13,7 +13,6 @@ import 'package:grain_warehouse_erp_lite/core/customers/customer.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
@@ -40,7 +39,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 
 class BackupExportService {
   BackupExportService({
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     required SupplierRepository supplierRepository,
     required PurchaseRepository purchaseRepository,
@@ -57,7 +56,7 @@ class BackupExportService {
         negativeBalanceApprovalRequestRepository,
     DurableInventoryValuationRepository? inventoryValuationRepository,
     DateTime Function()? now,
-  })  : _productRepository = productRepository,
+  })  : _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _supplierRepository = supplierRepository,
         _purchaseRepository = purchaseRepository,
@@ -79,7 +78,7 @@ class BackupExportService {
 
   static const int backupVersion = 8;
 
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final SupplierRepository _supplierRepository;
   final PurchaseRepository _purchaseRepository;
@@ -99,7 +98,7 @@ class BackupExportService {
 
   Future<BackupExportResult> createBackup() async {
     final generatedAt = (_now ?? DateTime.now)();
-    final products = await _productRepository.listProducts(
+    final products = await _productCatalogReadRepository.listProductCatalog(
       includeInactive: true,
     );
     final movements = await _inventoryRepository.listAllMovements();
@@ -290,7 +289,7 @@ class BackupExportService {
     );
   }
 
-  Map<String, Object?> _productToJson(Product product) {
+  Map<String, Object?> _productToJson(ProductCatalogReadModel product) {
     return {
       'id': product.id,
       'name': product.name,

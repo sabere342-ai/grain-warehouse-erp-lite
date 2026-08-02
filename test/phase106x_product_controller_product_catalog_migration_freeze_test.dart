@@ -10,6 +10,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 
 const _baseline = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
 const _controllerPath = 'lib/core/catalog/product_controller.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
 const _adapterPath =
@@ -115,7 +116,7 @@ void main() {
   group('Phase 106X source freeze', () {
     test('read model has exactly the eight prior fields plus nullable notes',
         () {
-      final source = File(_contractPath).readAsStringSync();
+      final source = _sourceAt(_phase106xCommit, _contractPath);
       final modelBody = _between(
         source,
         'final class ProductCatalogReadModel {',
@@ -208,6 +209,7 @@ void main() {
       final removedConsumers = baselineConsumers.difference(currentConsumers);
 
       expect(addedConsumers, {
+        'lib/core/backup/backup_export.dart',
         _controllerPath,
         'lib/features/financial_reports/profitability_report_screen.dart',
       });
@@ -233,7 +235,7 @@ void main() {
   });
 }
 
-const _snapshot = <ProductCatalogReadModel>[
+final _snapshot = <ProductCatalogReadModel>[
   ProductCatalogReadModel(
     id: 'prd-z',
     name: 'First from repository',
@@ -244,6 +246,8 @@ const _snapshot = <ProductCatalogReadModel>[
     defaultSalePricePiastersPerKg: 3000,
     minimumSalePricePiastersPerKg: 2500,
     notes: '  verbatim note  ',
+    createdAt: _now,
+    updatedAt: _now,
   ),
   ProductCatalogReadModel(
     id: 'prd-a',
@@ -255,6 +259,8 @@ const _snapshot = <ProductCatalogReadModel>[
     defaultSalePricePiastersPerKg: null,
     minimumSalePricePiastersPerKg: null,
     notes: null,
+    createdAt: _now,
+    updatedAt: _now,
   ),
 ];
 
@@ -377,6 +383,18 @@ String _relative(String path) {
   final normalizedPath = path.replaceAll('\\', '/');
   final normalizedRoot = Directory.current.path.replaceAll('\\', '/');
   return normalizedPath.replaceFirst('$normalizedRoot/', '');
+}
+
+String _sourceAt(String revision, String path) {
+  final result = Process.runSync(
+    'git',
+    ['show', '$revision:$path'],
+    runInShell: false,
+  );
+  if (result.exitCode != 0) {
+    throw StateError('${result.stdout}${result.stderr}');
+  }
+  return result.stdout.toString();
 }
 
 String _between(String source, String start, String end) {

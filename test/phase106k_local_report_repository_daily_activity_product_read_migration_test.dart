@@ -232,6 +232,8 @@ ProductCatalogReadModel _product(
     defaultSalePricePiastersPerKg: null,
     minimumSalePricePiastersPerKg: null,
     notes: null,
+    createdAt: DateTime.utc(2026),
+    updatedAt: DateTime.utc(2026),
   );
 }
 

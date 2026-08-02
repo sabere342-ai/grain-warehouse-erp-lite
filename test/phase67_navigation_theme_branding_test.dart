@@ -262,7 +262,8 @@ class _RepoSet {
 
   BackupExportService get exportService => BackupExportService(
         businessIdentityRepository: identityRepository,
-        productRepository: productRepository,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(productRepository),
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
         purchaseRepository: purchaseRepository,
