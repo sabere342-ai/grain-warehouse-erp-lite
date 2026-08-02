@@ -8,6 +8,9 @@ const _phaseSubject = 'PHASE 106AA: freeze next product read migration target';
 const _phase106aaCommit = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
 const _phase106abSubject =
     'PHASE 106AB: extend product catalog timestamps and migrate backup export';
+const _phase106abCommit = '4d4720b2b5c61a0318615691e85ea98f1f1d58af';
+const _phase106acSubject =
+    'PHASE 106AC: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106AA-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_export.dart';
@@ -46,8 +49,7 @@ const _remaining = <String, String>{
 };
 
 void main() {
-  test('lineage preserves Phase 106AA and admits only its Phase 106AB child',
-      () {
+  test('lineage preserves Phase 106AA through its Phase 106AC child', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
@@ -56,7 +58,9 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106ab = subject == _phase106abSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106aaCommit;
-      expect(atPhase106aa || atPhase106ab, isTrue);
+      final atPhase106ac = subject == _phase106acSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106abCommit;
+      expect(atPhase106aa || atPhase106ab || atPhase106ac, isTrue);
     }
     expect(_git(['diff', _baseline, _phase106aaCommit, '--', 'lib']).trim(),
         isEmpty);
