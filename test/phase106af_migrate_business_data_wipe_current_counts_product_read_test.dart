@@ -20,6 +20,9 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 const _baseline = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
 const _subject =
     'PHASE 106AF: migrate business data wipe current counts product read';
+const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
+const _phase106agSubject =
+    'PHASE 106AG: freeze next product read migration target';
 const _servicePath = 'lib/core/backup/business_data_wipe_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -156,9 +159,16 @@ void main() {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106af = subject == _subject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
+      final atPhase106ag = subject == _phase106agSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
+      expect(atPhase106af || atPhase106ag, isTrue);
+      expect(
+        _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
+        atPhase106ag ? '2' : '1',
+      );
     }
   });
 }

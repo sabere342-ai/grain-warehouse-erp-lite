@@ -12,6 +12,9 @@ const _phase106aeSubject =
 const _phase106aeCommit = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
 const _phase106afSubject =
     'PHASE 106AF: migrate business data wipe current counts product read';
+const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
+const _phase106agSubject =
+    'PHASE 106AG: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106AC-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_restore_service.dart';
@@ -86,10 +89,15 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106adCommit;
       final atPhase106af = subject == _phase106afSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106aeCommit;
-      expect(atPhase106ad || atPhase106ae || atPhase106af, isTrue);
+      final atPhase106ag = subject == _phase106agSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
+      expect(
+        atPhase106ad || atPhase106ae || atPhase106af || atPhase106ag,
+        isTrue,
+      );
       expect(
         _git(['rev-list', '--count', '$_phase106acCommit..HEAD']).trim(),
-        atPhase106af ? '3' : (atPhase106ae ? '2' : '1'),
+        atPhase106ag ? '4' : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1')),
       );
     }
     final productionDiff = _git([
