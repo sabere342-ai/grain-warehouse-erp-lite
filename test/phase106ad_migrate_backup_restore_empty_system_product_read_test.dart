@@ -19,6 +19,9 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 const _baseline = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _subject =
     'PHASE 106AD: migrate backup restore empty-system product read';
+const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
+const _phase106aeSubject =
+    'PHASE 106AE: freeze next product read migration target';
 const _servicePath = 'lib/core/backup/backup_restore_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -136,9 +139,16 @@ void main() {
       () {
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _baseline) {
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106ad = subject == _subject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
+      final atPhase106ae = subject == _phase106aeSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106adCommit;
+      expect(atPhase106ad || atPhase106ae, isTrue);
+      expect(
+        _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
+        atPhase106ae ? '2' : '1',
+      );
     }
   });
 }

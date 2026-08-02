@@ -39,6 +39,9 @@ const _phase106abSubject =
 const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _phase106adSubject =
     'PHASE 106AD: migrate backup restore empty-system product read';
+const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
+const _phase106aeSubject =
+    'PHASE 106AE: freeze next product read migration target';
 
 const _catalogCallers = {
   'lib/core/backup/backup_restore_service.dart',
@@ -597,6 +600,8 @@ void main() {
       final atFreezeAC = head == _phase106acCommit;
       final afterMigrateAD = headSubject == _phase106adSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
+      final afterFreezeAE = headSubject == _phase106aeSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106adCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -607,7 +612,8 @@ void main() {
               afterFreezeAA ||
               afterMigrateAB ||
               atFreezeAC ||
-              afterMigrateAD,
+              afterMigrateAD ||
+              afterFreezeAE,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -617,8 +623,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 9, isTrue,
-          reason: 'Zero through nine commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 10, isTrue,
+          reason: 'Zero through ten commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

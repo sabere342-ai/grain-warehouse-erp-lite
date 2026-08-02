@@ -6,6 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _phase106adSubject =
     'PHASE 106AD: migrate backup restore empty-system product read';
+const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
+const _phase106aeSubject =
+    'PHASE 106AE: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106AC-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/backup/backup_restore_service.dart';
@@ -73,14 +76,15 @@ void main() {
     expect(_git(['rev-parse', _phase106acCommit]).trim(), _phase106acCommit);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head != _phase106acCommit) {
-      expect(
-        _git(['log', '-1', '--format=%s', 'HEAD']).trim(),
-        _phase106adSubject,
-      );
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106acCommit);
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106ad = subject == _phase106adSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106acCommit;
+      final atPhase106ae = subject == _phase106aeSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106adCommit;
+      expect(atPhase106ad || atPhase106ae, isTrue);
       expect(
         _git(['rev-list', '--count', '$_phase106acCommit..HEAD']).trim(),
-        '1',
+        atPhase106ae ? '2' : '1',
       );
     }
     final productionDiff = _git([

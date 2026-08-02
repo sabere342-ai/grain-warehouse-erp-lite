@@ -23,6 +23,9 @@ const _phase106abSubject =
 const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _phase106adSubject =
     'PHASE 106AD: migrate backup restore empty-system product read';
+const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
+const _phase106aeSubject =
+    'PHASE 106AE: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106W-REAUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -103,7 +106,9 @@ void main() {
             _git(['rev-parse', '$head^']).trim() == _phase106aaCommit) ||
         head == _phase106acCommit ||
         (subject == _phase106adSubject &&
-            _git(['rev-parse', '$head^']).trim() == _phase106acCommit);
+            _git(['rev-parse', '$head^']).trim() == _phase106acCommit) ||
+        (subject == _phase106aeSubject &&
+            _git(['rev-parse', '$head^']).trim() == _phase106adCommit);
     expect(validHead, isTrue,
         reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');

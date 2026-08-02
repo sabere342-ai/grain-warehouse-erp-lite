@@ -29,6 +29,9 @@ const _phase106abSubject =
 const _phase106acCommit = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _phase106adSubject =
     'PHASE 106AD: migrate backup restore empty-system product read';
+const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
+const _phase106aeSubject =
+    'PHASE 106AE: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106U-EXPAND-PRODUCT-CATALOG-READ-AND-MIGRATE-SALE-CONTROLLER.md';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -146,6 +149,8 @@ void main() {
     final atFreezeAC = head == _phase106acCommit;
     final afterMigrateAD = headSubject == _phase106adSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106acCommit;
+    final afterFreezeAE = headSubject == _phase106aeSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106adCommit;
     expect(
         atFreeze ||
             afterMigrateU ||
@@ -157,7 +162,8 @@ void main() {
             afterFreezeAA ||
             afterMigrateAB ||
             atFreezeAC ||
-            afterMigrateAD,
+            afterMigrateAD ||
+            afterFreezeAE,
         isTrue,
         reason:
             'HEAD must be the Phase 106T freeze commit (during development) '
@@ -168,9 +174,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 11, isTrue,
+    expect(commitCount >= 0 && commitCount <= 12, isTrue,
         reason:
-            'Zero through eleven commits may exist after the 106S baseline; '
+            'Zero through twelve commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
