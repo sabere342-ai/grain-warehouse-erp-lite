@@ -180,7 +180,6 @@ class _Fixture {
         : existing.single;
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     if (!await inventory.hasOpeningBalance(product.id)) {

@@ -23,6 +23,9 @@ const _subject =
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
 const _phase106agSubject =
     'PHASE 106AG: freeze next product read migration target';
+const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _phase106ahSubject =
+    'PHASE 106AH: migrate drift inventory product lookup read';
 const _servicePath = 'lib/core/backup/business_data_wipe_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -128,7 +131,11 @@ void main() {
       '--',
       'lib',
     ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(productionDiff, {_servicePath, _appRepositoriesPath});
+    expect(productionDiff, {
+      _servicePath,
+      _appRepositoriesPath,
+      'lib/core/inventory/drift_inventory_repository.dart',
+    });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
       _git([
@@ -143,12 +150,12 @@ void main() {
     );
   });
 
-  test('live production inventory reconciles to 14 migrated and 10 remaining',
+  test('live production inventory reconciles to 15 migrated and 9 remaining',
       () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 12);
-    expect(_occurrences(joined, '.listProductCatalog('), 14);
+    expect(_occurrences(joined, '.listProducts('), 11);
+    expect(_occurrences(joined, '.listProductCatalog('), 15);
     expect(
       sources[_servicePath],
       isNot(contains('_productRepository.listProducts(')),
@@ -164,10 +171,12 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106ag = subject == _phase106agSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
-      expect(atPhase106af || atPhase106ag, isTrue);
+      final atPhase106ah = subject == _phase106ahSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
+      expect(atPhase106af || atPhase106ag || atPhase106ah, isTrue);
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ag ? '2' : '1',
+        atPhase106ah ? '3' : (atPhase106ag ? '2' : '1'),
       );
     }
   });

@@ -39,6 +39,9 @@ const _phase106afSubject =
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
 const _phase106agSubject =
     'PHASE 106AG: freeze next product read migration target';
+const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _phase106ahSubject =
+    'PHASE 106AH: migrate drift inventory product lookup read';
 const _reportPath =
     'docs/PHASE-106T-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/sales/sale_controller.dart';
@@ -52,7 +55,6 @@ const _inventoryControllerPath = 'lib/core/inventory/inventory_controller.dart';
 
 const _legacyConsumerFiles = {
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
-  'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_repository.dart',
   'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
@@ -129,6 +131,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106aeCommit;
     final afterFreezeAG = headSubject == _phase106agSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106afCommit;
+    final afterMigrateAH = headSubject == _phase106ahSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -144,7 +148,8 @@ void main() {
             afterMigrateAD ||
             afterFreezeAE ||
             afterMigrateAF ||
-            afterFreezeAG,
+            afterFreezeAG ||
+            afterMigrateAH,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
@@ -157,9 +162,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 14, isTrue,
+    expect(commitCount >= 0 && commitCount <= 15, isTrue,
         reason:
-            'Zero through fourteen commits may exist after the 106S baseline; '
+            'Zero through fifteen commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
@@ -195,6 +200,7 @@ void main() {
         'lib/core/backup/backup_export.dart',
         'lib/core/backup/backup_restore_service.dart',
         'lib/core/backup/business_data_wipe_service.dart',
+        'lib/core/inventory/drift_inventory_repository.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106U '

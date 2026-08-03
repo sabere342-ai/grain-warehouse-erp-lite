@@ -1,0 +1,323 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/drift_inventory_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
+import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
+
+const _baseline = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _subject = 'PHASE 106AH: migrate drift inventory product lookup read';
+const _repositoryPath = 'lib/core/inventory/drift_inventory_repository.dart';
+const _compositionPath = 'lib/app/app_repositories.dart';
+const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
+const _adapterPath =
+    'lib/core/catalog/drift_product_catalog_read_repository.dart';
+
+void main() {
+  group('Phase 106AH executable lookup behavior', () {
+    test('uses an exact id, includes inactive rows, and returns not-found',
+        () async {
+      final database = openInMemoryTestDatabase();
+      addTearDown(database.close);
+      final catalog = _CatalogSpy([
+        _product('prd-exact', isActive: true),
+        _product('prd-other', isActive: true),
+      ]);
+      final inventory = DriftInventoryRepository(
+        database,
+        productCatalogReadRepository: catalog,
+      );
+
+      expect(await inventory.currentStockKg('prd-exact'), 0);
+      expect(catalog.includeInactive, [true]);
+
+      await expectLater(
+        inventory.currentStockKg('PRD-EXACT'),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'Product was not found.',
+          ),
+        ),
+      );
+      expect(catalog.includeInactive, [true, true]);
+    });
+
+    test('the first exact inactive match reaches the unchanged rejection',
+        () async {
+      final database = openInMemoryTestDatabase();
+      addTearDown(database.close);
+      final catalog = _CatalogSpy([
+        _product('prd-duplicate', isActive: false),
+        _product('prd-duplicate', isActive: true),
+      ]);
+      final inventory = DriftInventoryRepository(
+        database,
+        productCatalogReadRepository: catalog,
+      );
+
+      await expectLater(
+        inventory.createMovement(
+          const StockMovementDraft(
+            productId: 'prd-duplicate',
+            movementType: StockMovementType.manualIncrease,
+            quantityKg: 4,
+            createdByUserId: 'phase-106ah',
+          ),
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'Inactive product cannot accept stock movements.',
+          ),
+        ),
+      );
+
+      expect(catalog.includeInactive, [true]);
+      expect(await database.select(database.inventoryMovements).get(), isEmpty);
+      expect(
+          await database.select(database.repositorySequences).get(), isEmpty);
+    });
+
+    test('catalog errors propagate once without fallback, retry, or writes',
+        () async {
+      final database = openInMemoryTestDatabase();
+      addTearDown(database.close);
+      final sentinel = StateError('Phase 106AH catalog read sentinel');
+      final catalog = _CatalogSpy(const [], error: sentinel);
+      final inventory = DriftInventoryRepository(
+        database,
+        productCatalogReadRepository: catalog,
+      );
+
+      await expectLater(
+        inventory.createMovement(
+          const StockMovementDraft(
+            productId: 'prd-error',
+            movementType: StockMovementType.manualIncrease,
+            quantityKg: 1,
+            createdByUserId: 'phase-106ah',
+          ),
+        ),
+        throwsA(same(sentinel)),
+      );
+
+      expect(catalog.includeInactive, [true]);
+      expect(await database.select(database.inventoryMovements).get(), isEmpty);
+      expect(
+          await database.select(database.repositorySequences).get(), isEmpty);
+    });
+
+    test('reads still precede the unchanged movement and sequence writes',
+        () async {
+      final database = openInMemoryTestDatabase();
+      addTearDown(database.close);
+      final catalog = _CatalogSpy([_product('prd-write', isActive: true)]);
+      catalog.beforeReturn = () async {
+        expect(
+          await database.select(database.inventoryMovements).get(),
+          isEmpty,
+        );
+        expect(
+          await database.select(database.repositorySequences).get(),
+          isEmpty,
+        );
+      };
+      final inventory = DriftInventoryRepository(
+        database,
+        productCatalogReadRepository: catalog,
+      );
+
+      final movement = await inventory.createMovement(
+        const StockMovementDraft(
+          productId: 'prd-write',
+          movementType: StockMovementType.manualIncrease,
+          quantityKg: 7,
+          createdByUserId: 'phase-106ah',
+        ),
+      );
+
+      expect(catalog.includeInactive, [true, true]);
+      expect(movement.productId, 'prd-write');
+      expect(movement.quantityKg, 7);
+      expect(await database.select(database.inventoryMovements).get(),
+          hasLength(1));
+      final sequence =
+          (await database.select(database.repositorySequences).get()).single;
+      expect(sequence.repository, 'inventory_movements');
+      expect(sequence.nextValue, 2);
+    });
+  });
+
+  group('Phase 106AH architecture and lineage guards', () {
+    test('repository constructor and lookup use only the catalog read contract',
+        () {
+      final source = File(_repositoryPath).readAsStringSync();
+      final constructor = _between(
+        source,
+        'DriftInventoryRepository(',
+        'static const _sequenceKey',
+      );
+      final lookup = _methodBody(
+        source,
+        'Future<ProductCatalogReadModel?> _findProductById(String id) async',
+      );
+
+      expect(source, isNot(contains('product_repository.dart')));
+      expect(source, isNot(contains('ProductRepository')));
+      expect(source, isNot(contains('_productRepository')));
+      expect(constructor, contains('required ProductCatalogReadRepository'));
+      expect(
+        _compact(lookup),
+        contains(
+          '_productCatalogReadRepository.listProductCatalog('
+          'includeInactive:true,)',
+        ),
+      );
+      expect(lookup, contains('if (product.id == id) return product;'));
+      expect(lookup, contains('return null;'));
+      expect(lookup, isNot(contains('try')));
+      expect(lookup, isNot(contains('catch')));
+    });
+
+    test('production composition passes only the catalog lookup dependency',
+        () {
+      final source = File(_compositionPath).readAsStringSync();
+      final compact = _compact(source);
+
+      expect(
+        compact,
+        contains(
+          '_inventoryRepository=DriftInventoryRepository('
+          'database,productCatalogReadRepository:'
+          'productCatalogReadRepository,)',
+        ),
+      );
+      expect(
+        compact,
+        isNot(
+          contains(
+            'DriftInventoryRepository('
+            'database,productRepository:productRepository,',
+          ),
+        ),
+      );
+    });
+
+    test('contract, adapter, schema, and generated files are unchanged', () {
+      expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
+      expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
+      final changed = _git(['diff', '--name-only', _baseline, '--', 'lib'])
+          .split(RegExp(r'\r?\n'))
+        ..removeWhere((path) => path.isEmpty);
+      expect(changed.toSet(), {_repositoryPath, _compositionPath});
+    });
+
+    test('production inventory is 15 migrated, 9 remaining, F4/I5', () {
+      final sources = _dartSources().values.join('\n');
+      expect(_occurrences(sources, '.listProducts('), 11);
+      expect(_occurrences(sources, '.listProductCatalog('), 15);
+    });
+
+    test('lineage is the baseline or its single Phase 106AH child', () {
+      final head = _git(['rev-parse', 'HEAD']).trim();
+      if (head == _baseline) return;
+      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
+      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    });
+  });
+}
+
+final class _CatalogSpy implements ProductCatalogReadRepository {
+  _CatalogSpy(this.products, {this.error});
+
+  final List<ProductCatalogReadModel> products;
+  final Object? error;
+  final List<bool> includeInactive = [];
+  Future<void> Function()? beforeReturn;
+
+  @override
+  Future<List<ProductCatalogReadModel>> listProductCatalog({
+    required bool includeInactive,
+  }) async {
+    this.includeInactive.add(includeInactive);
+    final callback = beforeReturn;
+    if (callback != null) await callback();
+    final failure = error;
+    if (failure != null) throw failure;
+    return products;
+  }
+}
+
+ProductCatalogReadModel _product(String id, {required bool isActive}) {
+  final timestamp = DateTime.utc(2026, 8, 3);
+  return ProductCatalogReadModel(
+    id: id,
+    name: id,
+    code: null,
+    unit: GrainUnit.kilogram,
+    isActive: isActive,
+    referenceCostPricePiastersPerKg: null,
+    defaultSalePricePiastersPerKg: null,
+    minimumSalePricePiastersPerKg: null,
+    notes: null,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  );
+}
+
+Map<String, String> _dartSources() {
+  final sources = <String, String>{};
+  for (final entity in Directory('lib').listSync(recursive: true)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    sources[entity.path.replaceAll('\\', '/')] = entity.readAsStringSync();
+  }
+  return sources;
+}
+
+String _git(List<String> arguments) {
+  final result = Process.runSync(
+    'git',
+    arguments,
+    runInShell: false,
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
+  if (result.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${result.stderr}');
+  }
+  return result.stdout as String;
+}
+
+String _methodBody(String source, String declaration) {
+  final start = source.indexOf(declaration);
+  if (start < 0) throw StateError('Missing declaration: $declaration');
+  final openBrace = source.indexOf('{', start);
+  var depth = 0;
+  for (var index = openBrace; index < source.length; index++) {
+    if (source[index] == '{') depth++;
+    if (source[index] == '}') depth--;
+    if (depth == 0) return source.substring(start, index + 1);
+  }
+  throw StateError('Missing closing brace: $declaration');
+}
+
+String _between(String source, String start, String end) {
+  final startIndex = source.indexOf(start);
+  final endIndex = source.indexOf(end, startIndex);
+  if (startIndex < 0 || endIndex < 0) {
+    throw StateError('Expected source boundaries were not found.');
+  }
+  return source.substring(startIndex, endIndex);
+}
+
+int _occurrences(String source, String pattern) =>
+    RegExp(RegExp.escape(pattern)).allMatches(source).length;
+
+String _compact(String source) => source.replaceAll(RegExp(r'\s+'), '');

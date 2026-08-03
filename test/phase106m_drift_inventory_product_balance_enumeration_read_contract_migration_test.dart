@@ -250,7 +250,7 @@ void main() {
     expect(catalog.single.minimumSalePricePiastersPerKg, 2500);
   });
 
-  test('source guard confines the new dependency to balance enumeration', () {
+  test('source guard preserves balance enumeration after lookup migration', () {
     final source = File(_repositoryPath).readAsStringSync();
     final balancesBody = _methodBody(
       source,
@@ -260,8 +260,13 @@ void main() {
       source,
       'Future<int> currentStockKg(String productId) async',
     );
+    final lookupBody = _methodBody(
+      source,
+      'Future<ProductCatalogReadModel?> _findProductById(String id) async',
+    );
 
-    expect(source, contains('required ProductCatalogReadRepository '));
+    expect(source, isNot(contains('required ProductRepository ')));
+    expect(source, isNot(contains('final ProductRepository ')));
     expect(
       source,
       contains('final ProductCatalogReadRepository '
@@ -277,7 +282,12 @@ void main() {
     expect(balancesBody, isNot(contains('try {')));
     expect(balancesBody, isNot(contains('catch (')));
     expect(currentStockBody, contains('_findProductById(productId)'));
-    expect(source, contains('_productRepository.listProducts('));
+    expect(
+      lookupBody,
+      contains('_productCatalogReadRepository.listProductCatalog('),
+    );
+    expect(lookupBody, contains('includeInactive: true'));
+    expect(source, isNot(contains('_productRepository')));
   });
 }
 
@@ -296,7 +306,6 @@ final class _Fixture {
       legacyProducts,
       DriftInventoryRepository(
         database,
-        productRepository: legacyProducts,
         productCatalogReadRepository:
             DriftProductCatalogReadRepository(database),
       ),

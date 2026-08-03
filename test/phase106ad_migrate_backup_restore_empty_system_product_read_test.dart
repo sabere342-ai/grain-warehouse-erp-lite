@@ -28,6 +28,9 @@ const _phase106afSubject =
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
 const _phase106agSubject =
     'PHASE 106AG: freeze next product read migration target';
+const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _phase106ahSubject =
+    'PHASE 106AH: migrate drift inventory product lookup read';
 const _servicePath = 'lib/core/backup/backup_restore_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -130,6 +133,7 @@ void main() {
       _servicePath,
       _appRepositoriesPath,
       'lib/core/backup/business_data_wipe_service.dart',
+      'lib/core/inventory/drift_inventory_repository.dart',
     });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
@@ -158,13 +162,23 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106aeCommit;
       final atPhase106ag = subject == _phase106agSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
+      final atPhase106ah = subject == _phase106ahSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
       expect(
-        atPhase106ad || atPhase106ae || atPhase106af || atPhase106ag,
+        atPhase106ad ||
+            atPhase106ae ||
+            atPhase106af ||
+            atPhase106ag ||
+            atPhase106ah,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ag ? '4' : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1')),
+        atPhase106ah
+            ? '5'
+            : (atPhase106ag
+                ? '4'
+                : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1'))),
       );
     }
   });

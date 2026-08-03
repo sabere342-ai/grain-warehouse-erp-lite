@@ -502,7 +502,6 @@ _TripwireFixture _tripwireFixture(
   final catalog = DriftProductCatalogReadRepository(database);
   final inventory = DriftInventoryRepository(
     database,
-    productRepository: legacy,
     productCatalogReadRepository: catalog,
   );
   final controller = InventoryController(

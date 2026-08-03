@@ -48,6 +48,9 @@ const _phase106afSubject =
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
 const _phase106agSubject =
     'PHASE 106AG: freeze next product read migration target';
+const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _phase106ahSubject =
+    'PHASE 106AH: migrate drift inventory product lookup read';
 
 const _catalogCallers = {
   'lib/core/backup/backup_restore_service.dart',
@@ -522,7 +525,7 @@ void main() {
       );
     });
 
-    test('Phase 106V stayed production-only through the Phase 106Z consumer',
+    test('Phase 106V stayed production-only through the Phase 106AH consumer',
         () {
       final phase106vProductionDiff = _git([
         'diff',
@@ -556,6 +559,7 @@ void main() {
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
+        'lib/core/inventory/drift_inventory_repository.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/features/products/products_screen.dart',
       });
@@ -614,6 +618,8 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106aeCommit;
       final afterFreezeAG = headSubject == _phase106agSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106afCommit;
+      final afterMigrateAH = headSubject == _phase106ahSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -627,7 +633,8 @@ void main() {
               afterMigrateAD ||
               afterFreezeAE ||
               afterMigrateAF ||
-              afterFreezeAG,
+              afterFreezeAG ||
+              afterMigrateAH,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -637,8 +644,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 12, isTrue,
-          reason: 'Zero through twelve commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 13, isTrue,
+          reason: 'Zero through thirteen commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });
@@ -676,7 +683,6 @@ _TripwireFixture _tripwireFixture(
   final catalog = DriftProductCatalogReadRepository(database);
   final inventory = DriftInventoryRepository(
     database,
-    productRepository: legacy,
     productCatalogReadRepository: catalog,
   );
   final sales = DriftSaleRepository(

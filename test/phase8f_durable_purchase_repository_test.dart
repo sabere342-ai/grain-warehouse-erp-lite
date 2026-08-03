@@ -166,7 +166,6 @@ class _Fixture {
         : existingSuppliers.single;
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     final purchases = DriftPurchaseRepository(

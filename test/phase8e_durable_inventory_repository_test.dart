@@ -26,7 +26,6 @@ void main() {
     final product = await products.createProduct(_productDraft);
     var inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     final first = await inventory.createMovement(StockMovementDraft(
@@ -49,7 +48,6 @@ void main() {
     products = DriftProductRepository(database);
     inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     expect(await inventory.currentStockKg(product.id), 70);
@@ -73,7 +71,6 @@ void main() {
     final product = await products.createProduct(_productDraft);
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     await inventory.createMovement(StockMovementDraft(
@@ -112,7 +109,6 @@ void main() {
     final product = await products.createProduct(_productDraft);
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     final movements = await Future.wait(List.generate(
@@ -136,7 +132,6 @@ void main() {
     final product = await products.createProduct(_productDraft);
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     await expectLater(
@@ -170,7 +165,6 @@ void main() {
     final product = await products.createProduct(_productDraft);
     final inventory = DriftInventoryRepository(
       database,
-      productRepository: products,
       productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     );
     final original = await inventory.createMovement(StockMovementDraft(

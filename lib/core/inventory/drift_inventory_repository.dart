@@ -1,7 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -11,14 +9,11 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 class DriftInventoryRepository implements DurableInventoryRepository {
   DriftInventoryRepository(
     this._database, {
-    required ProductRepository productRepository,
     required ProductCatalogReadRepository productCatalogReadRepository,
-  })  : _productRepository = productRepository,
-        _productCatalogReadRepository = productCatalogReadRepository;
+  }) : _productCatalogReadRepository = productCatalogReadRepository;
 
   static const _sequenceKey = 'inventory_movements';
   final db.FoundationDatabase _database;
-  final ProductRepository _productRepository;
   final ProductCatalogReadRepository _productCatalogReadRepository;
 
   @override
@@ -172,7 +167,8 @@ class DriftInventoryRepository implements DurableInventoryRepository {
     return value;
   }
 
-  Future<Product> _validateDraftAndLoadProduct(StockMovementDraft draft) async {
+  Future<ProductCatalogReadModel> _validateDraftAndLoadProduct(
+      StockMovementDraft draft) async {
     if (draft.productId.trim().isEmpty) {
       throw ArgumentError.value(
           draft.productId, 'productId', 'Product id is required.');
@@ -193,9 +189,10 @@ class DriftInventoryRepository implements DurableInventoryRepository {
     return product;
   }
 
-  Future<Product?> _findProductById(String id) async {
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+  Future<ProductCatalogReadModel?> _findProductById(String id) async {
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     for (final product in products) {
       if (product.id == id) return product;
     }

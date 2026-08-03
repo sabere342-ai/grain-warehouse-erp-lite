@@ -3,16 +3,17 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _baseline = 'b786e0869808182614ba301af4fdd615124d7a8e';
-const _subject = 'PHASE 106AG: freeze next product read migration target';
+const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
+const _baseline = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _subject = 'PHASE 106AH: migrate drift inventory product lookup read';
 const _predecessorSubject =
-    'PHASE 106AF: migrate business data wipe current counts product read';
+    'PHASE 106AG: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106AG-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
-    'docs/PHASE-106AF-MIGRATE-BUSINESS-DATA-WIPE-CURRENT-COUNTS-PRODUCT-READ.md';
+    'docs/PHASE-106AG-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorGuardPath =
-    'test/phase106af_migrate_business_data_wipe_current_counts_product_read_test.dart';
+    'test/phase106ag_reaudit_freeze_next_product_read_migration_target_test.dart';
 const _targetPath = 'lib/core/inventory/drift_inventory_repository.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -31,6 +32,7 @@ const _migrated = <String, _Consumer>{
   'PRC-102': _Consumer('lib/core/backup/backup_restore_service.dart', 1),
   'PRC-103': _Consumer('lib/core/backup/business_data_wipe_service.dart', 1),
   'PRC-104': _Consumer('lib/core/catalog/product_controller.dart', 1),
+  'PRC-106': _Consumer(_targetPath, 1),
   'PRC-107': _Consumer('lib/core/inventory/inventory_controller.dart', 1),
   'PRC-110': _Consumer('lib/core/purchases/purchase_controller.dart', 1),
   'PRC-112': _Consumer('lib/core/sales/sale_controller.dart', 1),
@@ -46,7 +48,6 @@ const _remaining = <String, _Consumer>{
     1,
     classification: 'F',
   ),
-  'PRC-106': _Consumer(_targetPath, 1, classification: 'F'),
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
@@ -96,7 +97,7 @@ const _expectedPhase106ahProductionFiles = {
 };
 
 void main() {
-  test('baseline lineage and direct Phase 106AF predecessor are exact', () {
+  test('baseline lineage and direct Phase 106AG predecessor are exact', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     expect(
       _git(['log', '-1', '--format=%s', _baseline]).trim(),
@@ -113,9 +114,9 @@ void main() {
     }
   });
 
-  test('inventory has 24 unique PRCs: 14 migrated and 10 remaining', () {
-    expect(_migrated, hasLength(14));
-    expect(_remaining, hasLength(10));
+  test('inventory has 24 unique PRCs: 15 migrated and 9 remaining', () {
+    expect(_migrated, hasLength(15));
+    expect(_remaining, hasLength(9));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -125,7 +126,7 @@ void main() {
     );
   });
 
-  test('remaining classification is exactly F5 and I5', () {
+  test('remaining classification is exactly F4 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -138,18 +139,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 5,
+      'F': 4,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production has exactly 12 legacy and 14 catalog calls', () {
+  test('production has exactly 11 legacy and 15 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 12);
-    expect(_occurrences(joined, '.listProductCatalog('), 14);
+    expect(_occurrences(joined, '.listProducts('), 11);
+    expect(_occurrences(joined, '.listProductCatalog('), 15);
 
     expect(
       sources.entries
@@ -165,42 +166,44 @@ void main() {
           .toSet(),
       {for (final consumer in _migrated.values) consumer.path},
     );
-    for (final consumer in _remaining.values) {
+    for (final entry in _callsByPath(_remaining).entries) {
       expect(
-        _occurrences(sources[consumer.path]!, '.listProducts('),
-        consumer.callSites,
-        reason: consumer.path,
+        _occurrences(sources[entry.key]!, '.listProducts('),
+        entry.value,
+        reason: entry.key,
       );
     }
-    for (final consumer in _migrated.values) {
+    for (final entry in _callsByPath(_migrated).entries) {
       expect(
-        _occurrences(sources[consumer.path]!, '.listProductCatalog('),
-        consumer.callSites,
-        reason: consumer.path,
+        _occurrences(sources[entry.key]!, '.listProductCatalog('),
+        entry.value,
+        reason: entry.key,
       );
     }
   });
 
-  test('PRC-106 is exactly one frozen target and remains legacy in 106AG', () {
+  test('PRC-106 is the single frozen target and is migrated in 106AH', () {
     expect(_selectedTargets, hasLength(1));
     expect(_selectedTargets.single, 'PRC-106');
-    expect(_remaining, contains(_selectedTargets.single));
+    expect(_migrated, contains(_selectedTargets.single));
 
     final source = File(_targetPath).readAsStringSync();
     final helper = _methodBody(
       source,
-      'Future<Product?> _findProductById(String id) async',
+      'Future<ProductCatalogReadModel?> _findProductById(String id) async',
     );
     expect(
       _compact(helper),
       contains(
-        '_productRepository.listProducts(includeInactive:true)',
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true,)',
       ),
     );
-    expect(helper, isNot(contains('.listProductCatalog(')));
+    expect(helper, isNot(contains('.listProducts(')));
     expect(helper, contains('if (product.id == id) return product;'));
     expect(helper, contains('return null;'));
-    expect(_occurrences(helper, '.listProducts('), 1);
+    expect(_occurrences(helper, '.listProductCatalog('), 1);
+    expect(source, isNot(contains('_productRepository')));
     expect(source, contains('if (!product.isActive)'));
     expect(
       source,
@@ -240,8 +243,7 @@ void main() {
       _compact(appRepositories),
       contains(
         '_inventoryRepository=DriftInventoryRepository('
-        'database,productRepository:productRepository,'
-        'productCatalogReadRepository:productCatalogReadRepository,)',
+        'database,productCatalogReadRepository:productCatalogReadRepository,)',
       ),
     );
   });
@@ -273,10 +275,19 @@ void main() {
     }
   });
 
-  test('Phase 106AG has no production diff or contract/adapter change', () {
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
+  test('Phase 106AG had no production diff or contract/adapter change', () {
+    expect(
+      _git(['diff', _phase106afCommit, _baseline, '--', 'lib']).trim(),
+      isEmpty,
+    );
+    expect(
+      _git(['diff', _phase106afCommit, _baseline, '--', _contractPath]).trim(),
+      isEmpty,
+    );
+    expect(
+      _git(['diff', _phase106afCommit, _baseline, '--', _adapterPath]).trim(),
+      isEmpty,
+    );
   });
 }
 
@@ -300,6 +311,18 @@ Map<String, String> _dartSources() {
     sources[path] = entity.readAsStringSync();
   }
   return sources;
+}
+
+Map<String, int> _callsByPath(Map<String, _Consumer> consumers) {
+  final calls = <String, int>{};
+  for (final consumer in consumers.values) {
+    calls.update(
+      consumer.path,
+      (value) => value + consumer.callSites,
+      ifAbsent: () => consumer.callSites,
+    );
+  }
+  return calls;
 }
 
 String _git(List<String> arguments) {
