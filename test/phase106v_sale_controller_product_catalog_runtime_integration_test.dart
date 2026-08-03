@@ -65,6 +65,7 @@ const _catalogCallers = {
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
+  'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
@@ -563,6 +564,7 @@ void main() {
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
         'lib/core/inventory/drift_inventory_repository.dart',
+        'lib/core/purchases/drift_purchase_repository.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/features/products/products_screen.dart',
       });
@@ -625,6 +627,10 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
       final afterFreezeAI = headSubject == _phase106aiSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106ahCommit;
+      final afterMigrateAJ = headSubject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', '$head^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
       expect(
           atBaseline ||
               afterProof ||
@@ -640,7 +646,8 @@ void main() {
               afterMigrateAF ||
               afterFreezeAG ||
               afterMigrateAH ||
-              afterFreezeAI,
+              afterFreezeAI ||
+              afterMigrateAJ,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -650,8 +657,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 14, isTrue,
-          reason: 'Zero through fourteen commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 15, isTrue,
+          reason: 'Zero through fifteen commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

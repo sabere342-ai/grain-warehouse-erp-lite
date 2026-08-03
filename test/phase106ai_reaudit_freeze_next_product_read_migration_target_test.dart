@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
-const _subject = 'PHASE 106AI: freeze next product read migration target';
+const _phase106aiCommit = '7acac87799fc8345671f356cce273d345c38b565';
+const _phase106ajSubject =
+    'PHASE 106AJ: migrate drift purchase product validation reads';
 const _predecessorSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
 const _reportPath =
@@ -39,6 +41,7 @@ const _migrated = <String, _Consumer>{
     'lib/features/financial_reports/profitability_report_screen.dart',
     1,
   ),
+  'PRC-109': _Consumer(_targetPath, 2),
 };
 
 const _remaining = <String, _Consumer>{
@@ -52,7 +55,6 @@ const _remaining = <String, _Consumer>{
     1,
     classification: 'F',
   ),
-  'PRC-109': _Consumer(_targetPath, 2, classification: 'F'),
   'PRC-111': _Consumer(
     'lib/core/sales/sale_repository.dart',
     1,
@@ -109,9 +111,9 @@ void main() {
     }
   });
 
-  test('inventory has 24 unique PRCs: 15 migrated and 9 remaining', () {
-    expect(_migrated, hasLength(15));
-    expect(_remaining, hasLength(9));
+  test('inventory has 24 unique PRCs: 16 migrated and 8 remaining', () {
+    expect(_migrated, hasLength(16));
+    expect(_remaining, hasLength(8));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -121,11 +123,11 @@ void main() {
     );
   });
 
-  test('live source has exactly 11 legacy and 15 catalog calls', () {
+  test('live source has exactly 9 legacy and 17 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 11);
-    expect(_occurrences(joined, '.listProductCatalog('), 15);
+    expect(_occurrences(joined, '.listProducts('), 9);
+    expect(_occurrences(joined, '.listProductCatalog('), 17);
 
     expect(
       sources.entries
@@ -157,7 +159,7 @@ void main() {
     }
   });
 
-  test('remaining classification is exactly F4 and I5', () {
+  test('remaining classification is exactly F3 and I5', () {
     final counts = <String, int>{};
     for (final consumer in _remaining.values) {
       counts.update(
@@ -166,7 +168,7 @@ void main() {
         ifAbsent: () => 1,
       );
     }
-    expect(counts, {'F': 4, 'I': 5});
+    expect(counts, {'F': 3, 'I': 5});
   });
 
   test('governing report contains one complete row for every PRC', () {
@@ -197,25 +199,28 @@ void main() {
     }
   });
 
-  test('PRC-109 is the only frozen target and remains legacy in 106AI', () {
+  test('PRC-109 was the only frozen target and is catalog-backed in 106AJ', () {
     expect(_selectedTargets, hasLength(1));
     expect(_selectedTargets.single, 'PRC-109');
-    expect(_remaining, contains(_selectedTargets.single));
+    expect(_migrated, contains(_selectedTargets.single));
 
     final source = File(_targetPath).readAsStringSync();
     final createValidation = _methodBody(
       source,
-      'Future<Product> _validateProduct(String id) async',
+      'Future<ProductCatalogReadModel> _validateProduct(String id) async',
     );
     final restoreValidation = _methodBody(
       source,
       'Future<void> _validateProductExists(String id) async',
     );
-    expect(_occurrences(source, '.listProducts('), 2);
-    expect(source, isNot(contains('.listProductCatalog(')));
+    expect(source, isNot(contains('.listProducts(')));
+    expect(_occurrences(source, '.listProductCatalog('), 2);
     expect(
       _compact(createValidation),
-      contains('_productRepository.listProducts(includeInactive:true)'),
+      contains(
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true',
+      ),
     );
     expect(
       createValidation,
@@ -228,7 +233,10 @@ void main() {
     );
     expect(
       _compact(restoreValidation),
-      contains('_productRepository.listProducts(includeInactive:true)'),
+      contains(
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true',
+      ),
     );
     expect(
         restoreValidation, contains('values.any((value) => value.id == id)'));
@@ -286,18 +294,23 @@ void main() {
 
   test('Phase 106AI has no production, contract, schema, or generated diff',
       () {
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
+    expect(
+      _git(['diff', _baseline, _phase106aiCommit, '--', 'lib']).trim(),
+      isEmpty,
+    );
+    expect(
+      _git(['diff', _baseline, _phase106aiCommit, '--', _contractPath]).trim(),
+      isEmpty,
+    );
+    expect(
+      _git(['diff', _baseline, _phase106aiCommit, '--', _adapterPath]).trim(),
+      isEmpty,
+    );
 
     final changed = <String>{
-      ..._git(['diff', '--name-only', _baseline])
+      ..._git(['diff', '--name-only', _baseline, _phase106aiCommit])
           .split(RegExp(r'\r?\n'))
           .where((path) => path.isNotEmpty),
-      ..._git(['status', '--short'])
-          .split(RegExp(r'\r?\n'))
-          .where((line) => line.isNotEmpty)
-          .map((line) => line.substring(3).replaceAll('\\', '/')),
     };
     expect(changed, isNotEmpty);
     for (final path in changed) {
@@ -321,12 +334,14 @@ void main() {
     }
   });
 
-  test('lineage is the baseline or its single exact Phase 106AI child', () {
+  test('lineage is Phase 106AI or its single exact Phase 106AJ child', () {
     final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head == _baseline) return;
-    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    if (head == _phase106aiCommit) return;
+    expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106aiCommit);
+    expect(
+        _git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phase106ajSubject);
+    expect(
+        _git(['rev-list', '--count', '$_phase106aiCommit..HEAD']).trim(), '1');
   });
 }
 

@@ -171,6 +171,10 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
     final afterPhase106ai = subject == _phase106aiSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106ahCommit;
+    final afterPhase106aj = subject ==
+            'PHASE 106AJ: migrate drift purchase product validation reads' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            '7acac87799fc8345671f356cce273d345c38b565';
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
@@ -182,7 +186,8 @@ void main() {
         afterPhase106af ||
         afterPhase106ag ||
         afterPhase106ah ||
-        afterPhase106ai;
+        afterPhase106ai ||
+        afterPhase106aj;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -193,18 +198,19 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106ah || afterPhase106ai
+      afterPhase106aj
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',
+              'lib/core/catalog/product_catalog_read_repository.dart',
+              'lib/core/catalog/drift_product_catalog_read_repository.dart',
               'lib/core/backup/backup_export.dart',
               'lib/core/backup/backup_restore_service.dart',
               'lib/core/backup/business_data_wipe_service.dart',
-              'lib/core/catalog/drift_product_catalog_read_repository.dart',
-              'lib/core/catalog/product_catalog_read_repository.dart',
               'lib/core/inventory/drift_inventory_repository.dart',
+              'lib/core/purchases/drift_purchase_repository.dart',
             }
-          : (afterPhase106af || afterPhase106ag)
+          : afterPhase106ah || afterPhase106ai
               ? {
                   _targetPath,
                   'lib/app/app_repositories.dart',
@@ -213,27 +219,38 @@ void main() {
                   'lib/core/backup/business_data_wipe_service.dart',
                   'lib/core/catalog/drift_product_catalog_read_repository.dart',
                   'lib/core/catalog/product_catalog_read_repository.dart',
+                  'lib/core/inventory/drift_inventory_repository.dart',
                 }
-              : (afterPhase106ad || afterPhase106ae)
+              : (afterPhase106af || afterPhase106ag)
                   ? {
                       _targetPath,
                       'lib/app/app_repositories.dart',
                       'lib/core/backup/backup_export.dart',
                       'lib/core/backup/backup_restore_service.dart',
+                      'lib/core/backup/business_data_wipe_service.dart',
                       'lib/core/catalog/drift_product_catalog_read_repository.dart',
                       'lib/core/catalog/product_catalog_read_repository.dart',
                     }
-                  : (afterPhase106ab || atPhase106ac)
+                  : (afterPhase106ad || afterPhase106ae)
                       ? {
                           _targetPath,
                           'lib/app/app_repositories.dart',
                           'lib/core/backup/backup_export.dart',
+                          'lib/core/backup/backup_restore_service.dart',
                           'lib/core/catalog/drift_product_catalog_read_repository.dart',
                           'lib/core/catalog/product_catalog_read_repository.dart',
                         }
-                      : (afterPhase106z || afterPhase106aa)
-                          ? {_targetPath}
-                          : isEmpty,
+                      : (afterPhase106ab || atPhase106ac)
+                          ? {
+                              _targetPath,
+                              'lib/app/app_repositories.dart',
+                              'lib/core/backup/backup_export.dart',
+                              'lib/core/catalog/drift_product_catalog_read_repository.dart',
+                              'lib/core/catalog/product_catalog_read_repository.dart',
+                            }
+                          : (afterPhase106z || afterPhase106aa)
+                              ? {_targetPath}
+                              : isEmpty,
       reason: 'Only the frozen Phase 106Z target and Phase 106AB allowlist '
           'may appear in the forward production lineage.',
     );

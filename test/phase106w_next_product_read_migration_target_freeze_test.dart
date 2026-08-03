@@ -50,7 +50,6 @@ const _legacyConsumerFiles = {
   'lib/core/inventory/inventory_repository.dart',
   'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
-  'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/purchases/purchase_repository.dart',
   'lib/core/sales/sale_repository.dart',
 };
@@ -71,6 +70,7 @@ const _migratedConsumerFiles = {
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
   'lib/core/purchases/purchase_controller.dart',
+  'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
   'lib/features/dashboard/dashboard_screen.dart',
@@ -127,7 +127,11 @@ void main() {
         (subject == _phase106ahSubject &&
             _git(['rev-parse', '$head^']).trim() == _phase106agCommit) ||
         (subject == _phase106aiSubject &&
-            _git(['rev-parse', '$head^']).trim() == _phase106ahCommit);
+            _git(['rev-parse', '$head^']).trim() == _phase106ahCommit) ||
+        (subject ==
+                'PHASE 106AJ: migrate drift purchase product validation reads' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '7acac87799fc8345671f356cce273d345c38b565');
     expect(validHead, isTrue,
         reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');
@@ -149,6 +153,7 @@ void main() {
       'lib/core/backup/backup_restore_service.dart',
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/inventory/drift_inventory_repository.dart',
+      'lib/core/purchases/drift_purchase_repository.dart',
     });
   });
 

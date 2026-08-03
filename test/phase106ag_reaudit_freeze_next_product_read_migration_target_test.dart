@@ -43,6 +43,10 @@ const _migrated = <String, _Consumer>{
     'lib/features/financial_reports/profitability_report_screen.dart',
     1,
   ),
+  'PRC-109': _Consumer(
+    'lib/core/purchases/drift_purchase_repository.dart',
+    2,
+  ),
 };
 
 const _remaining = <String, _Consumer>{
@@ -54,11 +58,6 @@ const _remaining = <String, _Consumer>{
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
-    classification: 'F',
-  ),
-  'PRC-109': _Consumer(
-    'lib/core/purchases/drift_purchase_repository.dart',
-    2,
     classification: 'F',
   ),
   'PRC-111': _Consumer(
@@ -116,17 +115,21 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
-      expect(atPhase106ah || atPhase106ai, isTrue);
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
+      expect(atPhase106ah || atPhase106ai || atPhase106aj, isTrue);
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ai ? '2' : '1',
+        atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'),
       );
     }
   });
 
-  test('inventory has 24 unique PRCs: 15 migrated and 9 remaining', () {
-    expect(_migrated, hasLength(15));
-    expect(_remaining, hasLength(9));
+  test('inventory has 24 unique PRCs: 16 migrated and 8 remaining', () {
+    expect(_migrated, hasLength(16));
+    expect(_remaining, hasLength(8));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -136,7 +139,7 @@ void main() {
     );
   });
 
-  test('remaining classification is exactly F4 and I5', () {
+  test('remaining classification is exactly F3 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -149,18 +152,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 4,
+      'F': 3,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production has exactly 11 legacy and 15 catalog calls', () {
+  test('production has exactly 9 legacy and 17 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 11);
-    expect(_occurrences(joined, '.listProductCatalog('), 15);
+    expect(_occurrences(joined, '.listProducts('), 9);
+    expect(_occurrences(joined, '.listProductCatalog('), 17);
 
     expect(
       sources.entries

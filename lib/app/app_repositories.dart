@@ -165,7 +165,7 @@ class AppRepositories {
     _purchaseRepository = DriftPurchaseRepository(
       database,
       supplierRepository: supplierRepository,
-      productRepository: productRepository,
+      productCatalogReadRepository: productCatalogReadRepository,
       inventoryRepository: inventoryRepository,
       supplierAccountRepository: supplierAccountRepository,
       financialAccountRepository: financialAccountRepository,

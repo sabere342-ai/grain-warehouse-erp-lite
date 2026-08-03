@@ -90,6 +90,10 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
       expect(
         atPhase106aa ||
             atPhase106ab ||
@@ -99,7 +103,8 @@ void main() {
             atPhase106af ||
             atPhase106ag ||
             atPhase106ah ||
-            atPhase106ai,
+            atPhase106ai ||
+            atPhase106aj,
         isTrue,
       );
     }
@@ -329,6 +334,7 @@ const _phase106afCumulativeProductionFiles = {
   ..._phase106adCumulativeProductionFiles,
   'lib/core/backup/business_data_wipe_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
+  'lib/core/purchases/drift_purchase_repository.dart',
 };
 
 Set<String> _sourceFilesWithAt(String revision, String pattern) =>

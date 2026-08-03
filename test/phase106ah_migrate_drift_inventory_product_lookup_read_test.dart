@@ -218,13 +218,17 @@ void main() {
       final changed = _git(['diff', '--name-only', _baseline, '--', 'lib'])
           .split(RegExp(r'\r?\n'))
         ..removeWhere((path) => path.isEmpty);
-      expect(changed.toSet(), {_repositoryPath, _compositionPath});
+      expect(changed.toSet(), {
+        _repositoryPath,
+        _compositionPath,
+        'lib/core/purchases/drift_purchase_repository.dart',
+      });
     });
 
-    test('production inventory is 15 migrated, 9 remaining, F4/I5', () {
+    test('production inventory is 16 migrated, 8 remaining, F3/I5', () {
       final sources = _dartSources().values.join('\n');
-      expect(_occurrences(sources, '.listProducts('), 11);
-      expect(_occurrences(sources, '.listProductCatalog('), 15);
+      expect(_occurrences(sources, '.listProducts('), 9);
+      expect(_occurrences(sources, '.listProductCatalog('), 17);
     });
 
     test('lineage is the baseline or its single Phase 106AH child', () {
@@ -235,10 +239,14 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _baseline;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
-      expect(atPhase106ah || atPhase106ai, isTrue);
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
+      expect(atPhase106ah || atPhase106ai || atPhase106aj, isTrue);
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ai ? '2' : '1',
+        atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'),
       );
     });
   });

@@ -137,6 +137,7 @@ void main() {
       _appRepositoriesPath,
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/inventory/drift_inventory_repository.dart',
+      'lib/core/purchases/drift_purchase_repository.dart',
     });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
@@ -169,24 +170,31 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
       expect(
         atPhase106ad ||
             atPhase106ae ||
             atPhase106af ||
             atPhase106ag ||
             atPhase106ah ||
-            atPhase106ai,
+            atPhase106ai ||
+            atPhase106aj,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ai
-            ? '6'
-            : atPhase106ah
-                ? '5'
-                : (atPhase106ag
-                    ? '4'
-                    : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1'))),
+        atPhase106aj
+            ? '7'
+            : atPhase106ai
+                ? '6'
+                : atPhase106ah
+                    ? '5'
+                    : (atPhase106ag
+                        ? '4'
+                        : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1'))),
       );
     }
   });

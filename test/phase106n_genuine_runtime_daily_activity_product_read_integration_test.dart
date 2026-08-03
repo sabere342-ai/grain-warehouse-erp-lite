@@ -442,7 +442,7 @@ final class _Fixture {
     final purchaseRepository = DriftPurchaseRepository(
       database,
       supplierRepository: DriftSupplierRepository(database),
-      productRepository: legacyProducts,
+      productCatalogReadRepository: catalog,
       inventoryRepository: inventory,
     );
     final saleRepository = DriftSaleRepository(

@@ -44,6 +44,10 @@ const _migrated = <String, _Consumer>{
     'lib/features/financial_reports/profitability_report_screen.dart',
     1,
   ),
+  'PRC-109': _Consumer(
+    'lib/core/purchases/drift_purchase_repository.dart',
+    2,
+  ),
 };
 
 const _remaining = <String, _Consumer>{
@@ -55,11 +59,6 @@ const _remaining = <String, _Consumer>{
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
-    classification: 'F',
-  ),
-  'PRC-109': _Consumer(
-    'lib/core/purchases/drift_purchase_repository.dart',
-    2,
     classification: 'F',
   ),
   'PRC-111': _Consumer(
@@ -120,13 +119,25 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
       expect(
-        atPhase106af || atPhase106ag || atPhase106ah || atPhase106ai,
+        atPhase106af ||
+            atPhase106ag ||
+            atPhase106ah ||
+            atPhase106ai ||
+            atPhase106aj,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_phase106aeCommit..HEAD']).trim(),
-        atPhase106ai ? '4' : (atPhase106ah ? '3' : (atPhase106ag ? '2' : '1')),
+        atPhase106aj
+            ? '5'
+            : (atPhase106ai
+                ? '4'
+                : (atPhase106ah ? '3' : (atPhase106ag ? '2' : '1'))),
       );
     }
     expect(
@@ -141,12 +152,13 @@ void main() {
     expect(productionDiff, {
       ..._expectedProductionFiles,
       'lib/core/inventory/drift_inventory_repository.dart',
+      'lib/core/purchases/drift_purchase_repository.dart',
     });
   });
 
-  test('inventory has 24 unique consumers: 15 migrated and 9 remaining', () {
-    expect(_migrated, hasLength(15));
-    expect(_remaining, hasLength(9));
+  test('inventory has 24 unique consumers: 16 migrated and 8 remaining', () {
+    expect(_migrated, hasLength(16));
+    expect(_remaining, hasLength(8));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -158,7 +170,7 @@ void main() {
     expect(_remaining.containsKey('PRC-102'), isFalse);
   });
 
-  test('remaining classifications reconcile exactly as F4 and I5', () {
+  test('remaining classifications reconcile exactly as F3 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -171,18 +183,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 4,
+      'F': 3,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production discovery finds exactly 11 legacy and 15 catalog calls', () {
+  test('production discovery finds exactly 9 legacy and 17 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 11);
-    expect(_occurrences(joined, '.listProductCatalog('), 15);
+    expect(_occurrences(joined, '.listProducts('), 9);
+    expect(_occurrences(joined, '.listProductCatalog('), 17);
 
     final actualLegacyFiles = sources.entries
         .where((entry) => entry.value.contains('.listProducts('))

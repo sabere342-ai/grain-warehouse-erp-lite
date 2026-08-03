@@ -138,6 +138,7 @@ void main() {
       _servicePath,
       _appRepositoriesPath,
       'lib/core/inventory/drift_inventory_repository.dart',
+      'lib/core/purchases/drift_purchase_repository.dart',
     });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
@@ -153,12 +154,12 @@ void main() {
     );
   });
 
-  test('live production inventory reconciles to 15 migrated and 9 remaining',
+  test('live production inventory reconciles to 16 migrated and 8 remaining',
       () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 11);
-    expect(_occurrences(joined, '.listProductCatalog('), 15);
+    expect(_occurrences(joined, '.listProducts('), 9);
+    expect(_occurrences(joined, '.listProductCatalog('), 17);
     expect(
       sources[_servicePath],
       isNot(contains('_productRepository.listProducts(')),
@@ -178,13 +179,25 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
       final atPhase106ai = subject == _phase106aiSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
+      final atPhase106aj = subject ==
+              'PHASE 106AJ: migrate drift purchase product validation reads' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '7acac87799fc8345671f356cce273d345c38b565';
       expect(
-        atPhase106af || atPhase106ag || atPhase106ah || atPhase106ai,
+        atPhase106af ||
+            atPhase106ag ||
+            atPhase106ah ||
+            atPhase106ai ||
+            atPhase106aj,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ai ? '4' : (atPhase106ah ? '3' : (atPhase106ag ? '2' : '1')),
+        atPhase106aj
+            ? '5'
+            : (atPhase106ai
+                ? '4'
+                : (atPhase106ah ? '3' : (atPhase106ag ? '2' : '1'))),
       );
     }
   });

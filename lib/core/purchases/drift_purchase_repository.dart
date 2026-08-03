@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
@@ -25,14 +24,14 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   DriftPurchaseRepository(
     this._database, {
     required SupplierRepository supplierRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     SupplierAccountRepository? supplierAccountRepository,
     FinancialAccountRepository? financialAccountRepository,
     AuditLogRepository? auditLogRepository,
     InventoryValuationRepository? inventoryValuationRepository,
   })  : _supplierRepository = supplierRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _supplierAccountRepository = supplierAccountRepository,
         _financialAccountRepository = financialAccountRepository,
@@ -42,7 +41,7 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   static const _sequenceKey = 'purchases';
   final db.FoundationDatabase _database;
   final SupplierRepository _supplierRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
   final FinancialAccountRepository? _financialAccountRepository;
@@ -329,9 +328,10 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
     return supplier;
   }
 
-  Future<Product> _validateProduct(String id) async {
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+  Future<ProductCatalogReadModel> _validateProduct(String id) async {
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final product = products.where((value) => value.id == id).firstOrNull;
     if (product == null) throw StateError('Product was not found.');
     if (!product.isActive) throw StateError('Inactive product cannot be used.');
@@ -347,7 +347,9 @@ class DriftPurchaseRepository implements DurablePurchaseRepository {
   }
 
   Future<void> _validateProductExists(String id) async {
-    final values = await _productRepository.listProducts(includeInactive: true);
+    final values = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     if (!values.any((value) => value.id == id)) {
       throw StateError('Product was not found.');
     }
