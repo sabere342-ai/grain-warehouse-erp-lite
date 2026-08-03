@@ -51,6 +51,9 @@ const _phase106agSubject =
 const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
 const _phase106ahSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
+const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
+const _phase106aiSubject =
+    'PHASE 106AI: freeze next product read migration target';
 
 const _catalogCallers = {
   'lib/core/backup/backup_restore_service.dart',
@@ -620,6 +623,8 @@ void main() {
           _git(['rev-parse', '$head^']).trim() == _phase106afCommit;
       final afterMigrateAH = headSubject == _phase106ahSubject &&
           _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
+      final afterFreezeAI = headSubject == _phase106aiSubject &&
+          _git(['rev-parse', '$head^']).trim() == _phase106ahCommit;
       expect(
           atBaseline ||
               afterProof ||
@@ -634,7 +639,8 @@ void main() {
               afterFreezeAE ||
               afterMigrateAF ||
               afterFreezeAG ||
-              afterMigrateAH,
+              afterMigrateAH ||
+              afterFreezeAI,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -644,8 +650,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 13, isTrue,
-          reason: 'Zero through thirteen commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 14, isTrue,
+          reason: 'Zero through fourteen commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

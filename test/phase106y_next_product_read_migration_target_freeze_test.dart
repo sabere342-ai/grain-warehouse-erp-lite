@@ -29,6 +29,9 @@ const _phase106agSubject =
 const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
 const _phase106ahSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
+const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
+const _phase106aiSubject =
+    'PHASE 106AI: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106Y-RE-AUDIT-AND-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath =
@@ -166,6 +169,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106afCommit;
     final afterPhase106ah = subject == _phase106ahSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
+    final afterPhase106ai = subject == _phase106aiSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106ahCommit;
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
@@ -176,7 +181,8 @@ void main() {
         afterPhase106ae ||
         afterPhase106af ||
         afterPhase106ag ||
-        afterPhase106ah;
+        afterPhase106ah ||
+        afterPhase106ai;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -187,7 +193,7 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106ah
+      afterPhase106ah || afterPhase106ai
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',

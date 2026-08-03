@@ -10,6 +10,9 @@ import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 
 const _baseline = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
 const _subject = 'PHASE 106AH: migrate drift inventory product lookup read';
+const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
+const _phase106aiSubject =
+    'PHASE 106AI: freeze next product read migration target';
 const _repositoryPath = 'lib/core/inventory/drift_inventory_repository.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -227,9 +230,16 @@ void main() {
     test('lineage is the baseline or its single Phase 106AH child', () {
       final head = _git(['rev-parse', 'HEAD']).trim();
       if (head == _baseline) return;
-      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-      expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+      final atPhase106ah = subject == _subject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
+      final atPhase106ai = subject == _phase106aiSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
+      expect(atPhase106ah || atPhase106ai, isTrue);
+      expect(
+        _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
+        atPhase106ai ? '2' : '1',
+      );
     });
   });
 }

@@ -27,6 +27,9 @@ const _phase106agSubject =
 const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
 const _phase106ahSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
+const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
+const _phase106aiSubject =
+    'PHASE 106AI: freeze next product read migration target';
 const _targetPath =
     'lib/features/financial_reports/profitability_report_screen.dart';
 const _activationServicePath =
@@ -58,6 +61,8 @@ void main() {
           _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
       final atPhase106ah = subject == _phase106ahSubject &&
           _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
+      final atPhase106ai = subject == _phase106aiSubject &&
+          _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
       expect(
         atPhase106z ||
             atPhase106aa ||
@@ -67,7 +72,8 @@ void main() {
             atPhase106ae ||
             atPhase106af ||
             atPhase106ag ||
-            atPhase106ah,
+            atPhase106ah ||
+            atPhase106ai,
         isTrue,
       );
     }

@@ -51,6 +51,9 @@ const _phase106agSubject =
 const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
 const _phase106ahSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
+const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
+const _phase106aiSubject =
+    'PHASE 106AI: freeze next product read migration target';
 const _reportPath =
     'docs/PHASE-106Q-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _targetPath = 'lib/core/inventory/inventory_controller.dart';
@@ -149,6 +152,8 @@ void main() {
         _git(['rev-parse', '$head^']).trim() == _phase106afCommit;
     final afterMigrateAH = headSubject == _phase106ahSubject &&
         _git(['rev-parse', '$head^']).trim() == _phase106agCommit;
+    final afterFreezeAI = headSubject == _phase106aiSubject &&
+        _git(['rev-parse', '$head^']).trim() == _phase106ahCommit;
     expect(
         atBaseline ||
             afterFreeze ||
@@ -168,7 +173,8 @@ void main() {
             afterFreezeAE ||
             afterMigrateAF ||
             afterFreezeAG ||
-            afterMigrateAH,
+            afterMigrateAH ||
+            afterFreezeAI,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -184,8 +190,8 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 18, isTrue,
-        reason: 'Zero through eighteen commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 19, isTrue,
+        reason: 'Zero through nineteen commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 
