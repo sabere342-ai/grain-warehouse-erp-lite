@@ -179,6 +179,10 @@ void main() {
             'PHASE 106AJ: migrate drift purchase product validation reads' &&
         _git(['rev-parse', '$head^']).trim() ==
             '7acac87799fc8345671f356cce273d345c38b565';
+    final afterFreezeAK = headSubject ==
+            'PHASE 106AK: freeze next product read migration target' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
     expect(
         atFreeze ||
             afterMigrateU ||
@@ -196,7 +200,8 @@ void main() {
             afterFreezeAG ||
             afterMigrateAH ||
             afterFreezeAI ||
-            afterMigrateAJ,
+            afterMigrateAJ ||
+            afterFreezeAK,
         isTrue,
         reason:
             'HEAD must be the Phase 106T freeze commit (during development) '
@@ -207,9 +212,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 17, isTrue,
+    expect(commitCount >= 0 && commitCount <= 18, isTrue,
         reason:
-            'Zero through seventeen commits may exist after the 106S baseline; '
+            'Zero through eighteen commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 

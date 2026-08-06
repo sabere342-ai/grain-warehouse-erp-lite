@@ -3,22 +3,22 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _baseline = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
-const _phase106aiCommit = '7acac87799fc8345671f356cce273d345c38b565';
-const _phase106ajCommit = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
-const _phase106ajSubject =
-    'PHASE 106AJ: migrate drift purchase product validation reads';
-const _phase106akSubject =
-    'PHASE 106AK: freeze next product read migration target';
+const _baseline = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
 const _predecessorSubject =
-    'PHASE 106AH: migrate drift inventory product lookup read';
+    'PHASE 106AJ: migrate drift purchase product validation reads';
+const _subject = 'PHASE 106AK: freeze next product read migration target';
+const _branch =
+    'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
 const _reportPath =
-    'docs/PHASE-106AI-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
+    'docs/PHASE-106AK-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
-    'docs/PHASE-106AH-MIGRATE-DRIFT-INVENTORY-PRODUCT-LOOKUP-READ.md';
+    'docs/PHASE-106AJ-MIGRATE-DRIFT-PURCHASE-PRODUCT-VALIDATION-READS.md';
 const _predecessorGuardPath =
-    'test/phase106ah_migrate_drift_inventory_product_lookup_read_test.dart';
-const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
+    'test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart';
+const _targetPath =
+    'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
+const _migratedPurchasePath =
+    'lib/core/purchases/drift_purchase_repository.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
 const _adapterPath =
@@ -38,59 +38,56 @@ const _migrated = <String, _Consumer>{
   'PRC-104': _Consumer('lib/core/catalog/product_controller.dart', 1),
   'PRC-106': _Consumer('lib/core/inventory/drift_inventory_repository.dart', 1),
   'PRC-107': _Consumer('lib/core/inventory/inventory_controller.dart', 1),
+  'PRC-109': _Consumer(_migratedPurchasePath, 2),
   'PRC-110': _Consumer('lib/core/purchases/purchase_controller.dart', 1),
   'PRC-112': _Consumer('lib/core/sales/sale_controller.dart', 1),
   'PRC-113': _Consumer(
     'lib/features/financial_reports/profitability_report_screen.dart',
     1,
   ),
-  'PRC-109': _Consumer(_targetPath, 2),
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-105': _Consumer(
-    'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
-    1,
-    classification: 'F',
-  ),
+  'PRC-105': _Consumer(_targetPath, 1, classification: 'Production'),
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
-    classification: 'F',
+    classification: 'Production',
   ),
   'PRC-111': _Consumer(
     'lib/core/sales/sale_repository.dart',
     1,
-    classification: 'F',
+    classification: 'Production',
   ),
   'PRC-114': _Consumer(
     'lib/core/inventory/inventory_repository.dart',
     2,
-    classification: 'I',
+    classification: 'Infrastructure/Test',
   ),
   'PRC-115': _Consumer(
     'lib/core/purchases/purchase_repository.dart',
     1,
-    classification: 'I',
+    classification: 'Infrastructure/Test',
   ),
   'PRC-116': _Consumer(
     'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
     1,
-    classification: 'I',
+    classification: 'Infrastructure/Test',
   ),
-  'PRC-117': _Consumer('lib/app/app_repositories.dart', 1, classification: 'I'),
+  'PRC-117': _Consumer(
+    _compositionPath,
+    1,
+    classification: 'Infrastructure/Test',
+  ),
   'PRC-118': _Consumer(
     'lib/core/catalog/drift_product_repository.dart',
     1,
-    classification: 'I',
+    classification: 'Infrastructure/Test',
   ),
 };
 
-const _selectedTargets = {'PRC-109'};
-const _expectedNextProductionFiles = {
-  _targetPath,
-  _compositionPath,
-};
+const _selectedTargets = {'PRC-105'};
+const _expectedNextProductionFiles = {_targetPath, _compositionPath};
 
 void main() {
   test('baseline, predecessor, report, and branch metadata are exact', () {
@@ -102,15 +99,17 @@ void main() {
     expect(File(_predecessorReportPath).existsSync(), isTrue);
     expect(File(_predecessorGuardPath).existsSync(), isTrue);
     expect(File(_reportPath).existsSync(), isTrue);
+    expect(_git(['branch', '--show-current']).trim(), _branch);
 
     final report = File(_reportPath).readAsStringSync();
     for (final statement in const [
-      'Required baseline | `bd5d287a56fd96f826c673d775226cb4ad45a247`',
-      'Actual starting HEAD | `bd5d287a56fd96f826c673d775226cb4ad45a247`',
-      'codex/phase-106ai-reaudit-freeze-next-product-read-migration-target',
-      'Phase 106AI is an audit and freeze phase only.',
+      'Phase 106AK is a re-audit, inventory reconciliation, target-selection, contract assessment, and freeze phase.',
+      'Required and actual starting HEAD | `2fd2ef4519b1007f1080fe004cca8572c1fe0d54`',
+      'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target',
+      'It does not migrate a production consumer.',
     ]) {
-      expect(report, contains(statement), reason: statement);
+      expect(_compact(report), contains(_compact(statement)),
+          reason: statement);
     }
   });
 
@@ -123,6 +122,27 @@ void main() {
     expect(
       _migrated.keys.toSet().intersection(_remaining.keys.toSet()),
       isEmpty,
+    );
+    expect(_migrated, contains('PRC-109'));
+    expect(_remaining, isNot(contains('PRC-109')));
+  });
+
+  test('remaining classification is exactly Production 3 and I/Test 5', () {
+    final counts = <String, int>{};
+    for (final consumer in _remaining.values) {
+      counts.update(
+        consumer.classification,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    expect(counts, {'Production': 3, 'Infrastructure/Test': 5});
+    expect(
+      _remaining.entries
+          .where((entry) => entry.value.classification == 'Production')
+          .map((entry) => entry.key)
+          .toSet(),
+      {'PRC-105', 'PRC-108', 'PRC-111'},
     );
   });
 
@@ -162,24 +182,12 @@ void main() {
     }
   });
 
-  test('remaining classification is exactly F3 and I5', () {
-    final counts = <String, int>{};
-    for (final consumer in _remaining.values) {
-      counts.update(
-        consumer.classification,
-        (value) => value + 1,
-        ifAbsent: () => 1,
-      );
-    }
-    expect(counts, {'F': 3, 'I': 5});
-  });
-
   test('governing report contains one complete row for every PRC', () {
     final report = File(_reportPath).readAsStringSync();
     final inventory = _between(
       report,
-      '## 5. Full reconciled inventory',
-      '## 6. Inventory comparison and number reconciliation',
+      '## 5. Complete reconciled 24-consumer inventory',
+      '## 6. Migrated and remaining tables; numerical reconciliation',
     );
     expect(
       RegExp(r'^\| PRC-\d{3} \|', multiLine: true).allMatches(inventory),
@@ -190,24 +198,20 @@ void main() {
     }
     for (final statement in const [
       'Total consumers: 24',
-      'Migrated: 15',
-      'Remaining: 9',
-      'Legacy calls: 11',
-      'Product Catalog calls: 15',
-      'Remaining classification: F4 / I5',
-      'F: 4 - PRC-105, PRC-108, PRC-109, PRC-111',
-      'I: 5 - PRC-114, PRC-115, PRC-116, PRC-117, PRC-118',
+      'Migrated: 16',
+      'Remaining: 8',
+      'Remaining Production: 3',
+      'Remaining Infrastructure/Test: 5',
+      'Legacy calls: 9',
+      'Product Catalog calls: 17',
+      'PRC-109 owns two catalog calls',
     ]) {
       expect(report, contains(statement), reason: statement);
     }
   });
 
-  test('PRC-109 was the only frozen target and is catalog-backed in 106AJ', () {
-    expect(_selectedTargets, hasLength(1));
-    expect(_selectedTargets.single, 'PRC-109');
-    expect(_migrated, contains(_selectedTargets.single));
-
-    final source = File(_targetPath).readAsStringSync();
+  test('PRC-109 is migrated at both documented validation methods', () {
+    final source = File(_migratedPurchasePath).readAsStringSync();
     final createValidation = _methodBody(
       source,
       'Future<ProductCatalogReadModel> _validateProduct(String id) async',
@@ -218,13 +222,8 @@ void main() {
     );
     expect(source, isNot(contains('.listProducts(')));
     expect(_occurrences(source, '.listProductCatalog('), 2);
-    expect(
-      _compact(createValidation),
-      contains(
-        '_productCatalogReadRepository.listProductCatalog('
-        'includeInactive:true',
-      ),
-    );
+    expect(_occurrences(createValidation, 'includeInactive: true'), 1);
+    expect(_occurrences(restoreValidation, 'includeInactive: true'), 1);
     expect(
       createValidation,
       contains('products.where((value) => value.id == id).firstOrNull'),
@@ -235,83 +234,102 @@ void main() {
       contains("StateError('Inactive product cannot be used.')"),
     );
     expect(
-      _compact(restoreValidation),
+      restoreValidation,
+      contains('values.any((value) => value.id == id)'),
+    );
+  });
+
+  test('exactly one next target is frozen and it is Production PRC-105', () {
+    expect(_selectedTargets, hasLength(1));
+    expect(_selectedTargets.single, 'PRC-105');
+    expect(_remaining[_selectedTargets.single]!.classification, 'Production');
+
+    final source = File(_targetPath).readAsStringSync();
+    final findProduct = _methodBody(
+      source,
+      'Future<Product?> _findProduct(String? id) async',
+    );
+    final requireProduct = _methodBody(
+      source,
+      'Future<Product> _requireProduct(String id) async',
+    );
+    expect(_occurrences(source, '.listProducts('), 1);
+    expect(source, isNot(contains('.listProductCatalog(')));
+    expect(
+      _compact(findProduct),
       contains(
-        '_productCatalogReadRepository.listProductCatalog('
-        'includeInactive:true',
+        '_productRepository.listProducts(includeInactive:true)',
       ),
     );
     expect(
-        restoreValidation, contains('values.any((value) => value.id == id)'));
-    expect(restoreValidation, isNot(contains('isActive')));
+        findProduct, contains("if (id?.trim().isEmpty != false) return null"));
+    expect(findProduct, contains('if (value.id == id!.trim()) return value'));
+    expect(
+      requireProduct,
+      contains('if (product == null || !product.isActive)'),
+    );
+    expect(
+        _occurrences(source, 'product.updatedAt.toUtc().toIso8601String()'), 2);
   });
 
-  test('frozen target contract and exact future production scope are complete',
+  test('freeze specifies fields, includeInactive, sufficiency, and next phase',
       () {
     final report = File(_reportPath).readAsStringSync();
     final frozen = _between(
       report,
-      '## 9. Frozen next target',
-      '## 10. Frozen next-phase production diff and contract',
+      '## 9. Frozen next target specification',
+      '## 10. Contract sufficiency assessment',
     );
     for (final statement in const [
-      'Frozen next target:',
-      'PRC: PRC-109',
-      'Consumer: DriftPurchaseRepository._validateProduct / _validateProductExists',
-      'File: lib/core/purchases/drift_purchase_repository.dart',
-      'Member/method: _validateProduct and _validateProductExists',
-      'Current dependency: ProductRepository _productRepository',
-      'Current call: _productRepository.listProducts(includeInactive: true) at two call sites',
-      'Current includeInactive behavior: literal true at both call sites',
-      'Fields consumed: id, isActive; exact id existence on restore',
-      'Required ProductCatalogReadModel fields: id (String, non-null), isActive (bool, non-null)',
-      'Contract expansion required: no',
-      'Expected new dependency: ProductCatalogReadRepository _productCatalogReadRepository',
-      'Expected new call: _productCatalogReadRepository.listProductCatalog(includeInactive: true) at both call sites',
-      'Expected Production files: lib/core/purchases/drift_purchase_repository.dart; lib/app/app_repositories.dart',
-      'Behavior that must remain identical:',
-      'Forbidden scope:',
-      'Required dedicated tests:',
-      'Primary risks:',
-      'Recommended next phase title: Phase 106AJ - Migrate Drift Purchase Product Validation Reads',
-      'Recommended branch: codex/phase-106aj-migrate-drift-purchase-product-validation-reads',
+      'FROZEN_TARGET_COUNT: 1',
+      'FROZEN_TARGET_ID: PRC-105',
+      'FROZEN_TARGET_CLASS: Production',
+      'FROZEN_TARGET_CONSUMER: NegativeBalanceApprovalWorkflowService._findProduct/_requireProduct',
+      'FROZEN_TARGET_FILE: lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
+      'CURRENT_REPOSITORY: ProductRepository _productRepository',
+      'CURRENT_CALL: _productRepository.listProducts(includeInactive: true)',
+      'INCLUDE_INACTIVE: literal true, selected by the consumer, not permission/runtime state',
+      'FIELDS_CONSUMED: id; isActive; updatedAt',
+      'CONTRACT_SUFFICIENT: yes',
+      'REQUIRED_EXPANSION: none',
+      'RECOMMENDED_NEXT_PHASE: PHASE 106AL - Migrate Negative Balance Approval Product Fingerprint Read',
+      'first exact match',
+      'Repository errors propagate.',
     ]) {
       expect(frozen, contains(statement), reason: statement);
     }
 
-    final scope = _between(
-      report,
-      '## 10. Frozen next-phase production diff and contract',
-      '## 11. Risk and next-phase test plan',
-    );
-    final productionPaths = RegExp(r'^lib/[^\r\n]+\.dart$', multiLine: true)
-        .allMatches(scope)
-        .map((match) => match.group(0)!)
-        .toSet();
-    expect(productionPaths, _expectedNextProductionFiles);
-
     final contract = File(_contractPath).readAsStringSync();
     expect(contract, contains('final String id;'));
     expect(contract, contains('final bool isActive;'));
+    expect(contract, contains('final DateTime updatedAt;'));
+    final adapter = File(_adapterPath).readAsStringSync();
+    expect(adapter, contains('products.updatedAt'));
+    expect(adapter, contains('updatedAt: row.read(products.updatedAt)!'));
+
+    final nextScope = _between(
+      report,
+      '## 11. Expected Phase 106AL scope, risks, and test strategy',
+      '## 12. Phase guards, verification, Git lineage, and changed files',
+    );
+    final productionPaths = RegExp(r'^lib/[^\r\n]+\.dart$', multiLine: true)
+        .allMatches(nextScope)
+        .map((match) => match.group(0)!)
+        .toSet();
+    expect(productionPaths, _expectedNextProductionFiles);
   });
 
-  test('Phase 106AI has no production, contract, schema, or generated diff',
+  test('Phase 106AK has no production, contract, schema, or generated diff',
       () {
-    expect(
-      _git(['diff', _baseline, _phase106aiCommit, '--', 'lib']).trim(),
-      isEmpty,
-    );
-    expect(
-      _git(['diff', _baseline, _phase106aiCommit, '--', _contractPath]).trim(),
-      isEmpty,
-    );
-    expect(
-      _git(['diff', _baseline, _phase106aiCommit, '--', _adapterPath]).trim(),
-      isEmpty,
-    );
+    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
+    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
+    expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
 
     final changed = <String>{
-      ..._git(['diff', '--name-only', _baseline, _phase106aiCommit])
+      ..._git(['diff', '--name-only', _baseline])
+          .split(RegExp(r'\r?\n'))
+          .where((path) => path.isNotEmpty),
+      ..._git(['ls-files', '--others', '--exclude-standard'])
           .split(RegExp(r'\r?\n'))
           .where((path) => path.isNotEmpty),
     };
@@ -323,34 +341,27 @@ void main() {
         reason: path,
       );
       expect(path, isNot(contains('.g.dart')));
+      expect(path, isNot(contains('migration.sql')));
     }
 
     final report = File(_reportPath).readAsStringSync();
     for (final statement in const [
-      'Product migration implemented: none',
-      'Contract expansion implemented: none',
-      'Schema/migration/generated changes: none',
-      'Production files changed: none',
-      'Phase 106AI does not implement that migration.',
+      'Production | `0`',
+      'Generated | `0`',
+      'Schema/migrations | `0`',
+      'Phase 106AK does not implement that migration.',
+      'No contract expansion',
     ]) {
       expect(report, contains(statement), reason: statement);
     }
   });
 
-  test('lineage admits only the exact Phase 106AJ and 106AK children', () {
+  test('lineage is the baseline or its single exact Phase 106AK child', () {
     final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head == _phase106aiCommit) return;
-    final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
-    final parent = _git(['rev-parse', 'HEAD^']).trim();
-    final atPhase106aj =
-        subject == _phase106ajSubject && parent == _phase106aiCommit;
-    final atPhase106ak =
-        subject == _phase106akSubject && parent == _phase106ajCommit;
-    expect(atPhase106aj || atPhase106ak, isTrue);
-    expect(
-      _git(['rev-list', '--count', '$_phase106aiCommit..HEAD']).trim(),
-      atPhase106ak ? '2' : '1',
-    );
+    if (head == _baseline) return;
+    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
+    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
   });
 }
 
@@ -358,7 +369,7 @@ final class _Consumer {
   const _Consumer(
     this.path,
     this.callSites, {
-    this.classification = 'Accepted',
+    this.classification = 'Migrated',
   });
 
   final String path;

@@ -174,6 +174,10 @@ void main() {
               'PHASE 106AJ: migrate drift purchase product validation reads' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               '7acac87799fc8345671f356cce273d345c38b565';
+      final atPhase106ak =
+          subject == 'PHASE 106AK: freeze next product read migration target' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
       expect(
         atPhase106ad ||
             atPhase106ae ||
@@ -181,20 +185,25 @@ void main() {
             atPhase106ag ||
             atPhase106ah ||
             atPhase106ai ||
-            atPhase106aj,
+            atPhase106aj ||
+            atPhase106ak,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106aj
-            ? '7'
-            : atPhase106ai
-                ? '6'
-                : atPhase106ah
-                    ? '5'
-                    : (atPhase106ag
-                        ? '4'
-                        : (atPhase106af ? '3' : (atPhase106ae ? '2' : '1'))),
+        atPhase106ak
+            ? '8'
+            : atPhase106aj
+                ? '7'
+                : atPhase106ai
+                    ? '6'
+                    : atPhase106ah
+                        ? '5'
+                        : (atPhase106ag
+                            ? '4'
+                            : (atPhase106af
+                                ? '3'
+                                : (atPhase106ae ? '2' : '1'))),
       );
     }
   });

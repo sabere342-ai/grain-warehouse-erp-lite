@@ -17,6 +17,11 @@ const _baseline = '7acac87799fc8345671f356cce273d345c38b565';
 const _subject = 'PHASE 106AJ: migrate drift purchase product validation reads';
 const _branch =
     'codex/phase-106aj-migrate-drift-purchase-product-validation-reads';
+const _phase106ajCommit = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+const _phase106akSubject =
+    'PHASE 106AK: freeze next product read migration target';
+const _phase106akBranch =
+    'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -270,13 +275,23 @@ void main() {
     expect(File(_reportPath).existsSync(), isTrue);
   });
 
-  test('lineage is the baseline or its single exact Phase 106AJ child', () {
-    expect(_git(['branch', '--show-current']).trim(), _branch);
+  test('lineage admits only the exact Phase 106AJ and 106AK children', () {
+    expect(
+      _git(['branch', '--show-current']).trim(),
+      anyOf(_branch, _phase106akBranch),
+    );
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _baseline) return;
-    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+    final parent = _git(['rev-parse', 'HEAD^']).trim();
+    final atPhase106aj = subject == _subject && parent == _baseline;
+    final atPhase106ak =
+        subject == _phase106akSubject && parent == _phase106ajCommit;
+    expect(atPhase106aj || atPhase106ak, isTrue);
+    expect(
+      _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
+      atPhase106ak ? '2' : '1',
+    );
   });
 }
 

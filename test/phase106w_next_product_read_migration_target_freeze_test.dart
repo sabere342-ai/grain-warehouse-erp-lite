@@ -131,7 +131,10 @@ void main() {
         (subject ==
                 'PHASE 106AJ: migrate drift purchase product validation reads' &&
             _git(['rev-parse', '$head^']).trim() ==
-                '7acac87799fc8345671f356cce273d345c38b565');
+                '7acac87799fc8345671f356cce273d345c38b565') ||
+        (subject == 'PHASE 106AK: freeze next product read migration target' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '2fd2ef4519b1007f1080fe004cca8572c1fe0d54');
     expect(validHead, isTrue,
         reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');

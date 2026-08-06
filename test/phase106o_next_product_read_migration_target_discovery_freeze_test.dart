@@ -149,6 +149,10 @@ void main() {
             'PHASE 106AJ: migrate drift purchase product validation reads' &&
         _git(['rev-parse', '$head^']).trim() ==
             '7acac87799fc8345671f356cce273d345c38b565';
+    final afterFreezeAK = headSubject ==
+            'PHASE 106AK: freeze next product read migration target' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -172,7 +176,8 @@ void main() {
             afterFreezeAG ||
             afterMigrateAH ||
             afterFreezeAI ||
-            afterMigrateAJ,
+            afterMigrateAJ ||
+            afterFreezeAK,
         isTrue,
         reason:
             'HEAD must follow the frozen Phase 106O through 106AA lineage, with '

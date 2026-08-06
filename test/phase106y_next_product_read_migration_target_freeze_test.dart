@@ -175,6 +175,10 @@ void main() {
             'PHASE 106AJ: migrate drift purchase product validation reads' &&
         _git(['rev-parse', '$head^']).trim() ==
             '7acac87799fc8345671f356cce273d345c38b565';
+    final afterPhase106ak =
+        subject == 'PHASE 106AK: freeze next product read migration target' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
@@ -187,7 +191,8 @@ void main() {
         afterPhase106ag ||
         afterPhase106ah ||
         afterPhase106ai ||
-        afterPhase106aj;
+        afterPhase106aj ||
+        afterPhase106ak;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -198,7 +203,7 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106aj
+      afterPhase106aj || afterPhase106ak
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',
