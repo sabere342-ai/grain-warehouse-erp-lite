@@ -22,6 +22,13 @@ const _phase106akSubject =
     'PHASE 106AK: freeze next product read migration target';
 const _phase106akBranch =
     'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
+const _phase106akCommit = '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+const _phase106alSubject =
+    'PHASE 106AL: migrate negative balance approval product fingerprint read';
+const _phase106alBranch =
+    'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
+const _phase106alTargetPath =
+    'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -257,8 +264,8 @@ void main() {
   test('inventory and production scope move only PRC-109', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 9);
-    expect(_occurrences(joined, '.listProductCatalog('), 17);
+    expect(_occurrences(joined, '.listProducts('), 8);
+    expect(_occurrences(joined, '.listProductCatalog('), 18);
 
     final changedProduction = _git([
       'diff',
@@ -267,7 +274,10 @@ void main() {
       '--',
       'lib',
     ]).trim().split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(changedProduction, {_targetPath, _compositionPath});
+    expect(
+      changedProduction,
+      {_targetPath, _compositionPath, _phase106alTargetPath},
+    );
     for (final path in changedProduction) {
       expect(path, isNot(contains('.g.dart')));
       expect(path, isNot(contains('migration')));
@@ -275,10 +285,10 @@ void main() {
     expect(File(_reportPath).existsSync(), isTrue);
   });
 
-  test('lineage admits only the exact Phase 106AJ and 106AK children', () {
+  test('lineage admits only the exact Phase 106AJ through 106AL children', () {
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106akBranch),
+      anyOf(_branch, _phase106akBranch, _phase106alBranch),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _baseline) return;
@@ -287,10 +297,12 @@ void main() {
     final atPhase106aj = subject == _subject && parent == _baseline;
     final atPhase106ak =
         subject == _phase106akSubject && parent == _phase106ajCommit;
-    expect(atPhase106aj || atPhase106ak, isTrue);
+    final atPhase106al =
+        subject == _phase106alSubject && parent == _phase106akCommit;
+    expect(atPhase106aj || atPhase106ak || atPhase106al, isTrue);
     expect(
       _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-      atPhase106ak ? '2' : '1',
+      atPhase106al ? '3' : (atPhase106ak ? '2' : '1'),
     );
   });
 }

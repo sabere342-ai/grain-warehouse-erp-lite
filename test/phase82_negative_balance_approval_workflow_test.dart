@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -22,6 +25,8 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+
+import 'support/product_catalog_read_repository_test_adapter.dart';
 
 void main() {
   group('Phase 82 durable negative-balance workflow', () {
@@ -105,6 +110,163 @@ void main() {
           newAudit.every((entry) => entry.actorId?.isNotEmpty == true), isTrue);
       expect((await fixture.audit.exportStoredAuditLogs()).length,
           baselineAudit + 3);
+    });
+
+    test('paid purchase fingerprint comes from the canonical product catalog',
+        () async {
+      final catalogUpdatedAt = DateTime.utc(2031, 2, 3, 4, 5, 6);
+      late _ProductCatalogSpy catalog;
+      final fixture = await _Fixture.create(
+        productCatalogReadRepositoryBuilder: (product, _) {
+          catalog = _ProductCatalogSpy([
+            _catalogModel(product, updatedAt: catalogUpdatedAt),
+          ]);
+          return catalog;
+        },
+      );
+
+      final result = await fixture.workflow.submitPurchase(
+        requester: fixture.owner,
+        draft: fixture.purchase('purchase-catalog-fingerprint'),
+      );
+      final payload =
+          jsonDecode(result.request!.payloadJson) as Map<String, dynamic>;
+
+      expect(catalog.includeInactiveValues, [true]);
+      expect(payload['productId'], fixture.product.id);
+      expect(payload['productUpdatedAt'], catalogUpdatedAt.toIso8601String());
+      expect(
+        payload['productUpdatedAt'],
+        isNot(fixture.product.updatedAt.toUtc().toIso8601String()),
+      );
+      expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
+      expect(await fixture.inventory.listAllMovements(), isEmpty);
+      expect(
+          await fixture.accounts.currentBalanceForAccount(fixture.account.id),
+          100);
+    });
+
+    test('first inactive canonical match keeps rejection free of side effects',
+        () async {
+      late _ProductCatalogSpy catalog;
+      final fixture = await _Fixture.create(
+        productCatalogReadRepositoryBuilder: (product, _) {
+          catalog = _ProductCatalogSpy([
+            _catalogModel(product, isActive: false),
+            _catalogModel(product),
+          ]);
+          return catalog;
+        },
+      );
+
+      await expectLater(
+        fixture.workflow.submitPurchase(
+          requester: fixture.owner,
+          draft: fixture.purchase('purchase-first-inactive'),
+        ),
+        throwsStateError,
+      );
+
+      expect(catalog.includeInactiveValues, [true]);
+      expect(await fixture.requests.listAll(), isEmpty);
+      expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
+      expect(await fixture.inventory.listAllMovements(), isEmpty);
+      expect(
+          await fixture.accounts.currentBalanceForAccount(fixture.account.id),
+          100);
+    });
+
+    test('blank and missing product ids preserve canonical lookup semantics',
+        () async {
+      late _ProductCatalogSpy catalog;
+      final fixture = await _Fixture.create(
+        productCatalogReadRepositoryBuilder: (product, _) {
+          catalog = _ProductCatalogSpy(const []);
+          return catalog;
+        },
+      );
+
+      await expectLater(
+        fixture.workflow.submitPurchase(
+          requester: fixture.owner,
+          draft: fixture.purchase('purchase-blank-product', productId: '   '),
+        ),
+        throwsStateError,
+      );
+      expect(catalog.includeInactiveValues, isEmpty);
+
+      await expectLater(
+        fixture.workflow.submitPurchase(
+          requester: fixture.owner,
+          draft: fixture.purchase('purchase-missing-product'),
+        ),
+        throwsStateError,
+      );
+      expect(catalog.includeInactiveValues, [true]);
+      expect(await fixture.requests.listAll(), isEmpty);
+      expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
+      expect(await fixture.inventory.listAllMovements(), isEmpty);
+    });
+
+    test('changed canonical fingerprint makes approval stale without writes',
+        () async {
+      late _ProductCatalogSpy catalog;
+      final fixture = await _Fixture.create(
+        productCatalogReadRepositoryBuilder: (product, _) {
+          catalog = _ProductCatalogSpy([_catalogModel(product)]);
+          return catalog;
+        },
+      );
+      final request = (await fixture.workflow.submitPurchase(
+        requester: fixture.owner,
+        draft: fixture.purchase('purchase-catalog-stale'),
+      ))
+          .request!;
+      catalog.products = [
+        _catalogModel(
+          fixture.product,
+          updatedAt: fixture.product.updatedAt.add(const Duration(seconds: 1)),
+        ),
+      ];
+
+      final resolved = await fixture.approve(request.id);
+
+      expect(resolved.status, NegativeBalanceApprovalRequestStatus.stale);
+      expect(catalog.includeInactiveValues, [true, true]);
+      expect(jsonDecode(request.payloadJson)['productId'], fixture.product.id);
+      expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
+      expect(await fixture.inventory.listAllMovements(), isEmpty);
+      expect(
+          await fixture.accounts.currentBalanceForAccount(fixture.account.id),
+          100);
+    });
+
+    test('canonical catalog errors propagate and cause no side effects',
+        () async {
+      final failure = StateError('catalog read sentinel');
+      late _ProductCatalogSpy catalog;
+      final fixture = await _Fixture.create(
+        productCatalogReadRepositoryBuilder: (product, _) {
+          catalog = _ProductCatalogSpy(const [], error: failure);
+          return catalog;
+        },
+      );
+
+      await expectLater(
+        fixture.workflow.submitPurchase(
+          requester: fixture.owner,
+          draft: fixture.purchase('purchase-catalog-error'),
+        ),
+        throwsA(same(failure)),
+      );
+
+      expect(catalog.includeInactiveValues, [true]);
+      expect(await fixture.requests.listAll(), isEmpty);
+      expect(await fixture.purchases.listPurchaseIntakes(), isEmpty);
+      expect(await fixture.inventory.listAllMovements(), isEmpty);
+      expect(
+          await fixture.accounts.currentBalanceForAccount(fixture.account.id),
+          100);
     });
 
     test('sufficient balance executes directly and disallowed deficit rejects',
@@ -576,6 +738,10 @@ class _Fixture {
     bool allowNegative = true,
     _ToggleFailAudit? audit,
     DurableApprovalTransactionRunner? durableTransactionRunner,
+    ProductCatalogReadRepository Function(
+      Product product,
+      LocalProductRepository products,
+    )? productCatalogReadRepositoryBuilder,
   }) async {
     final actualAudit = audit ?? _ToggleFailAudit();
     final auth = LocalAuthRepository.demo();
@@ -613,6 +779,9 @@ class _Fixture {
     final product = await products.createProduct(
       const ProductDraft(name: 'Phase 82 grain', unit: GrainUnit.kilogram),
     );
+    final productCatalogReadRepository =
+        productCatalogReadRepositoryBuilder?.call(product, products) ??
+            ProductCatalogReadRepositoryTestAdapter(products);
     final inventory = LocalInventoryRepository(productRepository: products);
     final supplierAccounts = LocalSupplierAccountRepository(
       supplierRepository: suppliers,
@@ -648,7 +817,7 @@ class _Fixture {
       supplierAccountRepository: supplierAccounts,
       expenseRepository: expenses,
       purchaseRepository: purchases,
-      productRepository: products,
+      productCatalogReadRepository: productCatalogReadRepository,
       inventoryRepository: inventory,
       durableTransactionRunner: durableTransactionRunner,
     );
@@ -715,9 +884,10 @@ class _Fixture {
         operationRequestId: requestId,
       );
 
-  PurchaseIntakeDraft purchase(String requestId) => PurchaseIntakeDraft(
+  PurchaseIntakeDraft purchase(String requestId, {String? productId}) =>
+      PurchaseIntakeDraft(
         supplierId: supplier.id,
-        productId: product.id,
+        productId: productId ?? product.id,
         quantityKg: 5,
         entryUnit: GrainUnit.kilogram,
         unitPricePiastersPerKg: 100,
@@ -737,6 +907,42 @@ class _Fixture {
         ownerPassword: 'owner123',
       );
 }
+
+final class _ProductCatalogSpy implements ProductCatalogReadRepository {
+  _ProductCatalogSpy(this.products, {this.error});
+
+  List<ProductCatalogReadModel> products;
+  final Object? error;
+  final List<bool> includeInactiveValues = [];
+
+  @override
+  Future<List<ProductCatalogReadModel>> listProductCatalog({
+    required bool includeInactive,
+  }) async {
+    includeInactiveValues.add(includeInactive);
+    if (error case final error?) throw error;
+    return products;
+  }
+}
+
+ProductCatalogReadModel _catalogModel(
+  Product product, {
+  bool? isActive,
+  DateTime? updatedAt,
+}) =>
+    ProductCatalogReadModel(
+      id: product.id,
+      name: product.name,
+      code: product.code,
+      unit: product.unit,
+      isActive: isActive ?? product.isActive,
+      referenceCostPricePiastersPerKg: product.referenceCostPricePiastersPerKg,
+      defaultSalePricePiastersPerKg: product.defaultSalePricePiastersPerKg,
+      minimumSalePricePiastersPerKg: product.minimumSalePricePiastersPerKg,
+      notes: product.notes,
+      createdAt: product.createdAt,
+      updatedAt: updatedAt ?? product.updatedAt,
+    );
 
 class _ToggleFailAudit extends LocalAuditLogRepository {
   String? failAction;

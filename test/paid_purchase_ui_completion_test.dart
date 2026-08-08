@@ -544,7 +544,8 @@ Future<_Fixture> _fixture({int cashOpeningQirsh = 2000}) async {
       financialAccountRepository: accounts,
     ),
     purchaseRepository: purchases,
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   return _Fixture(

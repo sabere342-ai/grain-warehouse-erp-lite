@@ -6,9 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 const _baseline = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
 const _predecessorSubject =
     'PHASE 106AJ: migrate drift purchase product validation reads';
-const _subject = 'PHASE 106AK: freeze next product read migration target';
+const _phase106akCommit = '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+const _phase106alSubject =
+    'PHASE 106AL: migrate negative balance approval product fingerprint read';
 const _branch =
     'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
+const _phase106alBranch =
+    'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
 const _reportPath =
     'docs/PHASE-106AK-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
@@ -45,10 +49,10 @@ const _migrated = <String, _Consumer>{
     'lib/features/financial_reports/profitability_report_screen.dart',
     1,
   ),
+  'PRC-105': _Consumer(_targetPath, 1),
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-105': _Consumer(_targetPath, 1, classification: 'Production'),
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
@@ -99,7 +103,10 @@ void main() {
     expect(File(_predecessorReportPath).existsSync(), isTrue);
     expect(File(_predecessorGuardPath).existsSync(), isTrue);
     expect(File(_reportPath).existsSync(), isTrue);
-    expect(_git(['branch', '--show-current']).trim(), _branch);
+    expect(
+      _git(['branch', '--show-current']).trim(),
+      anyOf(_branch, _phase106alBranch),
+    );
 
     final report = File(_reportPath).readAsStringSync();
     for (final statement in const [
@@ -113,9 +120,9 @@ void main() {
     }
   });
 
-  test('inventory has 24 unique PRCs: 16 migrated and 8 remaining', () {
-    expect(_migrated, hasLength(16));
-    expect(_remaining, hasLength(8));
+  test('inventory has 24 unique PRCs: 17 migrated and 7 remaining', () {
+    expect(_migrated, hasLength(17));
+    expect(_remaining, hasLength(7));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -124,10 +131,11 @@ void main() {
       isEmpty,
     );
     expect(_migrated, contains('PRC-109'));
+    expect(_migrated, contains('PRC-105'));
     expect(_remaining, isNot(contains('PRC-109')));
   });
 
-  test('remaining classification is exactly Production 3 and I/Test 5', () {
+  test('remaining classification is exactly Production 2 and I/Test 5', () {
     final counts = <String, int>{};
     for (final consumer in _remaining.values) {
       counts.update(
@@ -136,21 +144,21 @@ void main() {
         ifAbsent: () => 1,
       );
     }
-    expect(counts, {'Production': 3, 'Infrastructure/Test': 5});
+    expect(counts, {'Production': 2, 'Infrastructure/Test': 5});
     expect(
       _remaining.entries
           .where((entry) => entry.value.classification == 'Production')
           .map((entry) => entry.key)
           .toSet(),
-      {'PRC-105', 'PRC-108', 'PRC-111'},
+      {'PRC-108', 'PRC-111'},
     );
   });
 
-  test('live source has exactly 9 legacy and 17 catalog calls', () {
+  test('live source has exactly 8 legacy and 18 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 9);
-    expect(_occurrences(joined, '.listProductCatalog('), 17);
+    expect(_occurrences(joined, '.listProducts('), 8);
+    expect(_occurrences(joined, '.listProductCatalog('), 18);
 
     expect(
       sources.entries
@@ -239,26 +247,27 @@ void main() {
     );
   });
 
-  test('exactly one next target is frozen and it is Production PRC-105', () {
+  test('the sole frozen PRC-105 target is now catalog-backed', () {
     expect(_selectedTargets, hasLength(1));
     expect(_selectedTargets.single, 'PRC-105');
-    expect(_remaining[_selectedTargets.single]!.classification, 'Production');
+    expect(_migrated, contains(_selectedTargets.single));
 
     final source = File(_targetPath).readAsStringSync();
     final findProduct = _methodBody(
       source,
-      'Future<Product?> _findProduct(String? id) async',
+      'Future<ProductCatalogReadModel?> _findProduct(String? id) async',
     );
     final requireProduct = _methodBody(
       source,
-      'Future<Product> _requireProduct(String id) async',
+      'Future<ProductCatalogReadModel> _requireProduct(String id) async',
     );
-    expect(_occurrences(source, '.listProducts('), 1);
-    expect(source, isNot(contains('.listProductCatalog(')));
+    expect(source, isNot(contains('.listProducts(')));
+    expect(_occurrences(source, '.listProductCatalog('), 1);
     expect(
       _compact(findProduct),
       contains(
-        '_productRepository.listProducts(includeInactive:true)',
+        '_productCatalogReadRepository.listProductCatalog('
+        'includeInactive:true',
       ),
     );
     expect(
@@ -319,17 +328,20 @@ void main() {
     expect(productionPaths, _expectedNextProductionFiles);
   });
 
-  test('Phase 106AK has no production, contract, schema, or generated diff',
-      () {
-    expect(_git(['diff', _baseline, '--', 'lib']).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
-    expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
+  test('the immutable Phase 106AK commit has no production or schema diff', () {
+    expect(_git(['diff', _baseline, _phase106akCommit, '--', 'lib']).trim(),
+        isEmpty);
+    expect(
+      _git(['diff', _baseline, _phase106akCommit, '--', _contractPath]).trim(),
+      isEmpty,
+    );
+    expect(
+      _git(['diff', _baseline, _phase106akCommit, '--', _adapterPath]).trim(),
+      isEmpty,
+    );
 
     final changed = <String>{
-      ..._git(['diff', '--name-only', _baseline])
-          .split(RegExp(r'\r?\n'))
-          .where((path) => path.isNotEmpty),
-      ..._git(['ls-files', '--others', '--exclude-standard'])
+      ..._git(['diff', '--name-only', _baseline, _phase106akCommit])
           .split(RegExp(r'\r?\n'))
           .where((path) => path.isNotEmpty),
     };
@@ -356,12 +368,14 @@ void main() {
     }
   });
 
-  test('lineage is the baseline or its single exact Phase 106AK child', () {
+  test('lineage is Phase 106AK or its exact Phase 106AL child', () {
     final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head == _baseline) return;
-    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    if (head == _phase106akCommit) return;
+    expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106akCommit);
+    expect(
+        _git(['log', '-1', '--format=%s', 'HEAD']).trim(), _phase106alSubject);
+    expect(
+        _git(['rev-list', '--count', '$_phase106akCommit..HEAD']).trim(), '1');
   });
 }
 

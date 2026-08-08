@@ -71,6 +71,10 @@ void main() {
           subject == 'PHASE 106AK: freeze next product read migration target' &&
               _git(['rev-parse', 'HEAD^']).trim() ==
                   '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+      final atPhase106al = subject ==
+              'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
       expect(
         atPhase106z ||
             atPhase106aa ||
@@ -83,7 +87,8 @@ void main() {
             atPhase106ah ||
             atPhase106ai ||
             atPhase106aj ||
-            atPhase106ak,
+            atPhase106ak ||
+            atPhase106al,
         isTrue,
       );
     }

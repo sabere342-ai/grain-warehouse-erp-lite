@@ -20,6 +20,8 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_accounts/negative_balance_approval_requests_screen.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   testWidgets(
       'owner sees approval actions, details, and no small-screen overflow',
@@ -156,7 +158,8 @@ class _WidgetFixture {
       supplierAccountRepository: supplierAccounts,
       expenseRepository: expenses,
       purchaseRepository: purchases,
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     );
     final request = await requests.createRequest(

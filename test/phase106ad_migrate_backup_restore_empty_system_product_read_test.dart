@@ -136,6 +136,7 @@ void main() {
       _servicePath,
       _appRepositoriesPath,
       'lib/core/backup/business_data_wipe_service.dart',
+      'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
       'lib/core/inventory/drift_inventory_repository.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
     });
@@ -178,6 +179,10 @@ void main() {
           subject == 'PHASE 106AK: freeze next product read migration target' &&
               _git(['rev-parse', 'HEAD^']).trim() ==
                   '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+      final atPhase106al = subject ==
+              'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
       expect(
         atPhase106ad ||
             atPhase106ae ||
@@ -186,24 +191,27 @@ void main() {
             atPhase106ah ||
             atPhase106ai ||
             atPhase106aj ||
-            atPhase106ak,
+            atPhase106ak ||
+            atPhase106al,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ak
-            ? '8'
-            : atPhase106aj
-                ? '7'
-                : atPhase106ai
-                    ? '6'
-                    : atPhase106ah
-                        ? '5'
-                        : (atPhase106ag
-                            ? '4'
-                            : (atPhase106af
-                                ? '3'
-                                : (atPhase106ae ? '2' : '1'))),
+        atPhase106al
+            ? '9'
+            : atPhase106ak
+                ? '8'
+                : atPhase106aj
+                    ? '7'
+                    : atPhase106ai
+                        ? '6'
+                        : atPhase106ah
+                            ? '5'
+                            : (atPhase106ag
+                                ? '4'
+                                : (atPhase106af
+                                    ? '3'
+                                    : (atPhase106ae ? '2' : '1'))),
       );
     }
   });

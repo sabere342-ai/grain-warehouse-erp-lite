@@ -225,9 +225,9 @@ void main() {
         .where((file) => file.path.endsWith('.dart'))
         .map((file) => file.readAsStringSync())
         .join('\n');
-    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(9));
+    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(8));
     expect(
-        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(17));
+        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(18));
 
     final changed = (Process.runSync(
       'git',
@@ -246,6 +246,7 @@ void main() {
         'lib/core/backup/business_data_wipe_service.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
+        'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
       },

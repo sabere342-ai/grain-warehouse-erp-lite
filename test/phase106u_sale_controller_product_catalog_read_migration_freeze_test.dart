@@ -72,12 +72,12 @@ const _phase106xProductionFiles = {
   'lib/core/backup/backup_export.dart',
   'lib/core/backup/backup_restore_service.dart',
   'lib/core/backup/business_data_wipe_service.dart',
+  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/purchases/drift_purchase_repository.dart',
 };
 
 const _legacyConsumerFiles = {
-  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/inventory_repository.dart',
   'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
@@ -97,6 +97,7 @@ const _migratedConsumerFiles = {
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
+  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
@@ -115,6 +116,7 @@ const _catalogCallers = {
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
+  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
@@ -183,6 +185,10 @@ void main() {
             'PHASE 106AK: freeze next product read migration target' &&
         _git(['rev-parse', '$head^']).trim() ==
             '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+    final afterMigrateAL = headSubject ==
+            'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
     expect(
         atFreeze ||
             afterMigrateU ||
@@ -201,7 +207,8 @@ void main() {
             afterMigrateAH ||
             afterFreezeAI ||
             afterMigrateAJ ||
-            afterFreezeAK,
+            afterFreezeAK ||
+            afterMigrateAL,
         isTrue,
         reason:
             'HEAD must be the Phase 106T freeze commit (during development) '
@@ -212,9 +219,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 18, isTrue,
+    expect(commitCount >= 0 && commitCount <= 19, isTrue,
         reason:
-            'Zero through eighteen commits may exist after the 106S baseline; '
+            'Zero through nineteen commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 

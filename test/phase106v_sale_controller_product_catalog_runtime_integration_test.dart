@@ -61,6 +61,7 @@ const _catalogCallers = {
   'lib/core/catalog/product_controller.dart',
   'lib/core/dashboard/dashboard_service.dart',
   'lib/core/documents/document_history.dart',
+  'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
@@ -563,6 +564,7 @@ void main() {
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/catalog/product_catalog_read_repository.dart',
         'lib/core/catalog/product_controller.dart',
+        'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
@@ -635,6 +637,10 @@ void main() {
               'PHASE 106AK: freeze next product read migration target' &&
           _git(['rev-parse', '$head^']).trim() ==
               '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+      final afterMigrateAL = headSubject ==
+              'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
+          _git(['rev-parse', '$head^']).trim() ==
+              '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
       expect(
           atBaseline ||
               afterProof ||
@@ -652,7 +658,8 @@ void main() {
               afterMigrateAH ||
               afterFreezeAI ||
               afterMigrateAJ ||
-              afterFreezeAK,
+              afterFreezeAK ||
+              afterMigrateAL,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -662,8 +669,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 16, isTrue,
-          reason: 'Zero through sixteen commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 17, isTrue,
+          reason: 'Zero through seventeen commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });

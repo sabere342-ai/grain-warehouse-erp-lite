@@ -6,8 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
@@ -51,7 +50,7 @@ class NegativeBalanceApprovalWorkflowService {
     required SupplierAccountRepository supplierAccountRepository,
     required ExpenseRepository expenseRepository,
     required PurchaseRepository purchaseRepository,
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     DurableApprovalTransactionRunner? durableTransactionRunner,
   })  : _authRepository = authRepository,
@@ -63,7 +62,7 @@ class NegativeBalanceApprovalWorkflowService {
         _supplierAccountRepository = supplierAccountRepository,
         _expenseRepository = expenseRepository,
         _purchaseRepository = purchaseRepository,
-        _productRepository = productRepository,
+        _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _durableTransactionRunner =
             durableTransactionRunner ?? _runWithoutDurableTransaction;
@@ -77,7 +76,7 @@ class NegativeBalanceApprovalWorkflowService {
   final SupplierAccountRepository _supplierAccountRepository;
   final ExpenseRepository _expenseRepository;
   final PurchaseRepository _purchaseRepository;
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final DurableApprovalTransactionRunner _durableTransactionRunner;
 
@@ -742,7 +741,7 @@ class NegativeBalanceApprovalWorkflowService {
     return supplier;
   }
 
-  Future<Product> _requireProduct(String id) async {
+  Future<ProductCatalogReadModel> _requireProduct(String id) async {
     final product = await _findProduct(id);
     if (product == null || !product.isActive) {
       throw StateError('الصنف غير موجود أو غير نشط.');
@@ -759,10 +758,11 @@ class NegativeBalanceApprovalWorkflowService {
     return null;
   }
 
-  Future<Product?> _findProduct(String? id) async {
+  Future<ProductCatalogReadModel?> _findProduct(String? id) async {
     if (id?.trim().isEmpty != false) return null;
-    for (final value
-        in await _productRepository.listProducts(includeInactive: true)) {
+    for (final value in await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    )) {
       if (value.id == id!.trim()) return value;
     }
     return null;

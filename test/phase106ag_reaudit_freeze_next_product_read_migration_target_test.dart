@@ -47,14 +47,13 @@ const _migrated = <String, _Consumer>{
     'lib/core/purchases/drift_purchase_repository.dart',
     2,
   ),
-};
-
-const _remaining = <String, _Consumer>{
   'PRC-105': _Consumer(
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
     1,
-    classification: 'F',
   ),
+};
+
+const _remaining = <String, _Consumer>{
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
@@ -123,20 +122,32 @@ void main() {
           subject == 'PHASE 106AK: freeze next product read migration target' &&
               _git(['rev-parse', 'HEAD^']).trim() ==
                   '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+      final atPhase106al = subject ==
+              'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
       expect(
-        atPhase106ah || atPhase106ai || atPhase106aj || atPhase106ak,
+        atPhase106ah ||
+            atPhase106ai ||
+            atPhase106aj ||
+            atPhase106ak ||
+            atPhase106al,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106ak ? '4' : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1')),
+        atPhase106al
+            ? '5'
+            : (atPhase106ak
+                ? '4'
+                : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'))),
       );
     }
   });
 
-  test('inventory has 24 unique PRCs: 16 migrated and 8 remaining', () {
-    expect(_migrated, hasLength(16));
-    expect(_remaining, hasLength(8));
+  test('inventory has 24 unique PRCs: 17 migrated and 7 remaining', () {
+    expect(_migrated, hasLength(17));
+    expect(_remaining, hasLength(7));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -146,7 +157,7 @@ void main() {
     );
   });
 
-  test('remaining classification is exactly F3 and I5', () {
+  test('remaining classification is exactly F2 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -159,18 +170,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 3,
+      'F': 2,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production has exactly 9 legacy and 17 catalog calls', () {
+  test('production has exactly 8 legacy and 18 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 9);
-    expect(_occurrences(joined, '.listProductCatalog('), 17);
+    expect(_occurrences(joined, '.listProducts('), 8);
+    expect(_occurrences(joined, '.listProductCatalog('), 18);
 
     expect(
       sources.entries

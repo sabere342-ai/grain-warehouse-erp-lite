@@ -6,10 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 const _baseline = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
 const _phase106aiCommit = '7acac87799fc8345671f356cce273d345c38b565';
 const _phase106ajCommit = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
+const _phase106akCommit = '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
 const _phase106ajSubject =
     'PHASE 106AJ: migrate drift purchase product validation reads';
 const _phase106akSubject =
     'PHASE 106AK: freeze next product read migration target';
+const _phase106alSubject =
+    'PHASE 106AL: migrate negative balance approval product fingerprint read';
 const _predecessorSubject =
     'PHASE 106AH: migrate drift inventory product lookup read';
 const _reportPath =
@@ -45,14 +48,13 @@ const _migrated = <String, _Consumer>{
     1,
   ),
   'PRC-109': _Consumer(_targetPath, 2),
-};
-
-const _remaining = <String, _Consumer>{
   'PRC-105': _Consumer(
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
     1,
-    classification: 'F',
   ),
+};
+
+const _remaining = <String, _Consumer>{
   'PRC-108': _Consumer(
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
@@ -114,9 +116,9 @@ void main() {
     }
   });
 
-  test('inventory has 24 unique PRCs: 16 migrated and 8 remaining', () {
-    expect(_migrated, hasLength(16));
-    expect(_remaining, hasLength(8));
+  test('inventory has 24 unique PRCs: 17 migrated and 7 remaining', () {
+    expect(_migrated, hasLength(17));
+    expect(_remaining, hasLength(7));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -126,11 +128,11 @@ void main() {
     );
   });
 
-  test('live source has exactly 9 legacy and 17 catalog calls', () {
+  test('live source has exactly 8 legacy and 18 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 9);
-    expect(_occurrences(joined, '.listProductCatalog('), 17);
+    expect(_occurrences(joined, '.listProducts('), 8);
+    expect(_occurrences(joined, '.listProductCatalog('), 18);
 
     expect(
       sources.entries
@@ -162,7 +164,7 @@ void main() {
     }
   });
 
-  test('remaining classification is exactly F3 and I5', () {
+  test('remaining classification is exactly F2 and I5', () {
     final counts = <String, int>{};
     for (final consumer in _remaining.values) {
       counts.update(
@@ -171,7 +173,7 @@ void main() {
         ifAbsent: () => 1,
       );
     }
-    expect(counts, {'F': 3, 'I': 5});
+    expect(counts, {'F': 2, 'I': 5});
   });
 
   test('governing report contains one complete row for every PRC', () {
@@ -337,7 +339,7 @@ void main() {
     }
   });
 
-  test('lineage admits only the exact Phase 106AJ and 106AK children', () {
+  test('lineage admits only the exact Phase 106AJ through 106AL children', () {
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _phase106aiCommit) return;
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
@@ -346,10 +348,12 @@ void main() {
         subject == _phase106ajSubject && parent == _phase106aiCommit;
     final atPhase106ak =
         subject == _phase106akSubject && parent == _phase106ajCommit;
-    expect(atPhase106aj || atPhase106ak, isTrue);
+    final atPhase106al =
+        subject == _phase106alSubject && parent == _phase106akCommit;
+    expect(atPhase106aj || atPhase106ak || atPhase106al, isTrue);
     expect(
       _git(['rev-list', '--count', '$_phase106aiCommit..HEAD']).trim(),
-      atPhase106ak ? '2' : '1',
+      atPhase106al ? '3' : (atPhase106ak ? '2' : '1'),
     );
   });
 }

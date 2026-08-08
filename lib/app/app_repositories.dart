@@ -296,7 +296,7 @@ class AppRepositories {
             supplierAccountRepository: supplierAccountRepository,
             expenseRepository: expenseRepository,
             purchaseRepository: purchaseRepository,
-            productRepository: productRepository,
+            productCatalogReadRepository: productCatalogReadRepository,
             inventoryRepository: inventoryRepository,
             durableTransactionRunner: (operation) =>
                 database.inTransaction(operation),
