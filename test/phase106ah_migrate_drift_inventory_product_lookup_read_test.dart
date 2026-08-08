@@ -224,13 +224,15 @@ void main() {
         'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
       });
     });
 
-    test('production inventory is 17 migrated, 7 remaining, F2/I5', () {
+    test('production inventory is 19 migrated, 5 remaining, F0/I5', () {
       final sources = _dartSources().values.join('\n');
-      expect(_occurrences(sources, '.listProducts('), 7);
-      expect(_occurrences(sources, '.listProductCatalog('), 19);
+      expect(_occurrences(sources, '.listProducts('), 6);
+      expect(_occurrences(sources, '.listProductCatalog('), 20);
     });
 
     test('lineage is the baseline or its single Phase 106AH child', () {
@@ -257,24 +259,31 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106ah ||
             atPhase106ai ||
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106am
-            ? '6'
-            : atPhase106al
-                ? '5'
-                : (atPhase106ak
-                    ? '4'
-                    : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'))),
+        atPhase106an
+            ? '7'
+            : atPhase106am
+                ? '6'
+                : atPhase106al
+                    ? '5'
+                    : (atPhase106ak
+                        ? '4'
+                        : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'))),
       );
     });
   });

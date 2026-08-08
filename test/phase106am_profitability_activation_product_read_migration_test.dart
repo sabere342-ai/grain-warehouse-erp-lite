@@ -18,6 +18,9 @@ const _baselineSubject =
     'PHASE 106AL: migrate negative balance approval product fingerprint read';
 const _subject = 'PHASE 106AM: migrate profitability activation product read';
 const _branch = 'codex/phase-106am-migrate-prc-108-product-read';
+const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
+const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
+const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _targetPath =
     'lib/core/inventory_valuation/profitability_activation_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -187,8 +190,8 @@ void main() {
   test('inventory moves only PRC-108 from legacy to canonical reads', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 7);
-    expect(_occurrences(joined, '.listProductCatalog('), 19);
+    expect(_occurrences(joined, '.listProducts('), 6);
+    expect(_occurrences(joined, '.listProductCatalog('), 20);
     expect(
       sources.entries
           .where((entry) => entry.value.contains('.listProducts('))
@@ -200,7 +203,6 @@ void main() {
         'lib/core/inventory/inventory_repository.dart',
         'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
         'lib/core/purchases/purchase_repository.dart',
-        'lib/core/sales/sale_repository.dart',
       },
     );
   });
@@ -215,7 +217,12 @@ void main() {
       '--',
       'lib',
     ]).trim().split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(changedProduction, {_targetPath, _compositionPath});
+    expect(changedProduction, {
+      _targetPath,
+      _compositionPath,
+      'lib/core/sales/drift_sale_repository.dart',
+      'lib/core/sales/sale_repository.dart',
+    });
     expect(
       _git(['diff', _baseline, '--', 'lib/core/persistence']).trim(),
       isEmpty,
@@ -227,17 +234,28 @@ void main() {
     expect(File(_reportPath).existsSync(), isTrue);
   });
 
-  test('lineage is the Phase 106AL baseline or its exact 106AM child', () {
-    expect(_git(['branch', '--show-current']).trim(), _branch);
+  test('lineage preserves the exact Phase 106AM and 106AN children', () {
+    expect(
+      _git(['branch', '--show-current']).trim(),
+      anyOf(_branch, _phase106anBranch),
+    );
     expect(
       _git(['log', '-1', '--format=%s', _baseline]).trim(),
       _baselineSubject,
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _baseline) return;
-    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    if (head == _phase106amCommit) {
+      expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
+      expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
+      return;
+    }
+    expect(_git(['rev-parse', 'HEAD^']).trim(), _phase106amCommit);
+    expect(
+      _git(['log', '-1', '--format=%s', 'HEAD']).trim(),
+      _phase106anSubject,
+    );
+    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '2');
   });
 }
 

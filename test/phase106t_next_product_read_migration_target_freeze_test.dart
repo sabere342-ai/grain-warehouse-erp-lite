@@ -60,7 +60,6 @@ const _legacyConsumerFiles = {
   'lib/core/inventory/inventory_repository.dart',
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
   'lib/core/purchases/purchase_repository.dart',
-  'lib/core/sales/sale_repository.dart',
 };
 
 const _legacyInfrastructureFiles = {
@@ -84,6 +83,7 @@ const _migratedConsumerFiles = {
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
+  'lib/core/sales/sale_repository.dart',
   'lib/features/dashboard/dashboard_screen.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
 };
@@ -154,6 +154,10 @@ void main() {
             'PHASE 106AM: migrate profitability activation product read' &&
         _git(['rev-parse', '$head^']).trim() ==
             'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+    final afterMigrateAN =
+        headSubject == 'Phase 106AN: migrate PRC-111 product read' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '8802c2115a45785f8705764514f9c7d0250a050d';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -175,7 +179,8 @@ void main() {
             afterMigrateAJ ||
             afterFreezeAK ||
             afterMigrateAL ||
-            afterMigrateAM,
+            afterMigrateAM ||
+            afterMigrateAN,
         isTrue,
         reason:
             'HEAD must be the 106S baseline (during development), the single '
@@ -188,9 +193,9 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 20, isTrue,
+    expect(commitCount >= 0 && commitCount <= 21, isTrue,
         reason:
-            'Zero through twenty commits may exist after the 106S baseline; '
+            'Zero through twenty-one commits may exist after the 106S baseline; '
             'an open number of commits must fail loudly.');
   });
 
@@ -230,6 +235,8 @@ void main() {
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106U '

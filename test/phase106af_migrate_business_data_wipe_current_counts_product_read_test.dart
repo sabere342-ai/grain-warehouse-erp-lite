@@ -17,6 +17,8 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 const _baseline = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
 const _subject =
     'PHASE 106AF: migrate business data wipe current counts product read';
@@ -141,6 +143,8 @@ void main() {
       'lib/core/inventory/drift_inventory_repository.dart',
       'lib/core/inventory_valuation/profitability_activation_service.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
+      'lib/core/sales/drift_sale_repository.dart',
+      'lib/core/sales/sale_repository.dart',
     });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
@@ -156,12 +160,12 @@ void main() {
     );
   });
 
-  test('live production inventory reconciles to 17 migrated and 7 remaining',
+  test('live production inventory reconciles to 19 migrated and 5 remaining',
       () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 7);
-    expect(_occurrences(joined, '.listProductCatalog('), 19);
+    expect(_occurrences(joined, '.listProducts('), 6);
+    expect(_occurrences(joined, '.listProductCatalog('), 20);
     expect(
       sources[_servicePath],
       isNot(contains('_productRepository.listProducts(')),
@@ -197,6 +201,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106af ||
             atPhase106ag ||
@@ -205,24 +213,27 @@ void main() {
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106am
-            ? '8'
-            : atPhase106al
-                ? '7'
-                : atPhase106ak
-                    ? '6'
-                    : atPhase106aj
-                        ? '5'
-                        : (atPhase106ai
-                            ? '4'
-                            : (atPhase106ah
-                                ? '3'
-                                : (atPhase106ag ? '2' : '1'))),
+        atPhase106an
+            ? '9'
+            : atPhase106am
+                ? '8'
+                : atPhase106al
+                    ? '7'
+                    : atPhase106ak
+                        ? '6'
+                        : atPhase106aj
+                            ? '5'
+                            : (atPhase106ai
+                                ? '4'
+                                : (atPhase106ah
+                                    ? '3'
+                                    : (atPhase106ag ? '2' : '1'))),
       );
     }
   });
@@ -245,7 +256,8 @@ Future<_Fixture> _fixture(ProductCatalogReadRepository countCatalog) async {
     inventoryRepository: inventory,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(

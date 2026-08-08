@@ -343,7 +343,8 @@ class _ReadinessFixture {
       supplierAccountRepository: supplierAccounts,
     );
     final sales = LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     );
     final reports = LocalReportRepository(

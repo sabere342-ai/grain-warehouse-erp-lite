@@ -56,14 +56,10 @@ const _migrated = <String, _Consumer>{
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
   ),
+  'PRC-111': _Consumer('lib/core/sales/sale_repository.dart', 1),
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-111': _Consumer(
-    'lib/core/sales/sale_repository.dart',
-    1,
-    classification: 'F',
-  ),
   'PRC-114': _Consumer(
     'lib/core/inventory/inventory_repository.dart',
     2,
@@ -133,6 +129,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106af ||
             atPhase106ag ||
@@ -141,24 +141,27 @@ void main() {
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_phase106aeCommit..HEAD']).trim(),
-        atPhase106am
-            ? '8'
-            : atPhase106al
-                ? '7'
-                : atPhase106ak
-                    ? '6'
-                    : atPhase106aj
-                        ? '5'
-                        : (atPhase106ai
-                            ? '4'
-                            : (atPhase106ah
-                                ? '3'
-                                : (atPhase106ag ? '2' : '1'))),
+        atPhase106an
+            ? '9'
+            : atPhase106am
+                ? '8'
+                : atPhase106al
+                    ? '7'
+                    : atPhase106ak
+                        ? '6'
+                        : atPhase106aj
+                            ? '5'
+                            : (atPhase106ai
+                                ? '4'
+                                : (atPhase106ah
+                                    ? '3'
+                                    : (atPhase106ag ? '2' : '1'))),
       );
     }
     expect(
@@ -176,12 +179,14 @@ void main() {
       'lib/core/inventory/drift_inventory_repository.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
       'lib/core/inventory_valuation/profitability_activation_service.dart',
+      'lib/core/sales/drift_sale_repository.dart',
+      'lib/core/sales/sale_repository.dart',
     });
   });
 
-  test('inventory has 24 unique consumers: 18 migrated and 6 remaining', () {
-    expect(_migrated, hasLength(18));
-    expect(_remaining, hasLength(6));
+  test('inventory has 24 unique consumers: 19 migrated and 5 remaining', () {
+    expect(_migrated, hasLength(19));
+    expect(_remaining, hasLength(5));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -193,7 +198,7 @@ void main() {
     expect(_remaining.containsKey('PRC-102'), isFalse);
   });
 
-  test('remaining classifications reconcile exactly as F1 and I5', () {
+  test('remaining classifications reconcile exactly as F0 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -206,18 +211,18 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 1,
+      'F': 0,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('production discovery finds exactly 7 legacy and 19 catalog calls', () {
+  test('production discovery finds exactly 6 legacy and 20 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 7);
-    expect(_occurrences(joined, '.listProductCatalog('), 19);
+    expect(_occurrences(joined, '.listProducts('), 6);
+    expect(_occurrences(joined, '.listProductCatalog('), 20);
 
     final actualLegacyFiles = sources.entries
         .where((entry) => entry.value.contains('.listProducts('))

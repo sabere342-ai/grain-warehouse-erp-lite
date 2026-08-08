@@ -192,7 +192,7 @@ class _Fixture {
     }
     final sales = DriftSaleRepository(
       database,
-      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
       inventoryRepository: inventory,
     );
     return _Fixture(database, products, product, inventory, sales);

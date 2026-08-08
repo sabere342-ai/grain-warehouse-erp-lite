@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
@@ -20,12 +20,12 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 class DriftSaleRepository implements DurableSaleRepository {
   DriftSaleRepository(
     this._database, {
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     InventoryValuationRepository? inventoryValuationRepository,
     FinancialAccountRepository? financialAccountRepository,
   })  : _delegate = LocalSaleRepository(
-          productRepository: productRepository,
+          productCatalogReadRepository: productCatalogReadRepository,
           inventoryRepository: inventoryRepository,
           inventoryValuationRepository: inventoryValuationRepository,
           financialAccountRepository: financialAccountRepository,

@@ -383,7 +383,8 @@ Future<_BackupFixture> _emptyFixture({
     inventoryRepository: inventory,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(

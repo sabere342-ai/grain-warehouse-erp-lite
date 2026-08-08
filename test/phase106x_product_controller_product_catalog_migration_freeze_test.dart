@@ -215,6 +215,7 @@ void main() {
         'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/sale_repository.dart',
         _controllerPath,
         'lib/features/financial_reports/profitability_report_screen.dart',
       });

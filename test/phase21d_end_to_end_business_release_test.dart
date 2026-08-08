@@ -239,7 +239,8 @@ Future<_Fixture> _seededFixture() async {
     ),
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(
@@ -334,7 +335,8 @@ Future<_RestoreOutcome> _restoreIntoEmpty(String jsonText) async {
     inventoryRepository: inventory,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(

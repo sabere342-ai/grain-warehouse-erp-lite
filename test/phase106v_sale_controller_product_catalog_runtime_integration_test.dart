@@ -70,6 +70,7 @@ const _catalogCallers = {
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
+  'lib/core/sales/sale_repository.dart',
   'lib/features/dashboard/dashboard_screen.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
   'lib/core/backup/backup_export.dart',
@@ -569,6 +570,8 @@ void main() {
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
         'lib/features/products/products_screen.dart',
       });
@@ -647,6 +650,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', '$head^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final afterMigrateAN =
+          headSubject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', '$head^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
           atBaseline ||
               afterProof ||
@@ -666,7 +673,8 @@ void main() {
               afterMigrateAJ ||
               afterFreezeAK ||
               afterMigrateAL ||
-              afterMigrateAM,
+              afterMigrateAM ||
+              afterMigrateAN,
           isTrue,
           reason:
               'HEAD must be the Phase 106U commit (during development) or the '
@@ -676,8 +684,8 @@ void main() {
 
       final commitCount = int.parse(
           _git(['rev-list', '--count', '$_phase106uCommit..HEAD']).trim());
-      expect(commitCount >= 0 && commitCount <= 18, isTrue,
-          reason: 'Zero through eighteen commits may exist after the 106U '
+      expect(commitCount >= 0 && commitCount <= 19, isTrue,
+          reason: 'Zero through nineteen commits may exist after the 106U '
               'baseline; an '
               'open number of commits must fail loudly.');
     });
@@ -719,7 +727,7 @@ _TripwireFixture _tripwireFixture(
   );
   final sales = DriftSaleRepository(
     database,
-    productRepository: legacy,
+    productCatalogReadRepository: DriftProductCatalogReadRepository(database),
     inventoryRepository: inventory,
     inventoryValuationRepository: DriftInventoryValuationRepository(database),
   );

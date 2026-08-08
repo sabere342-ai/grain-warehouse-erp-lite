@@ -16,6 +16,8 @@ import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 final _now = DateTime(2026, 1, 1);
 
 final _owner = AppUser(
@@ -104,7 +106,8 @@ void main() {
           ),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -187,7 +190,8 @@ void main() {
           ),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 

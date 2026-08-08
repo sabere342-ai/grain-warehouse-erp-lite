@@ -943,7 +943,8 @@ Future<_SalesFixture> _salesFixture() async {
     ],
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     inventoryValuationRepository: valuation,
   );
@@ -1018,7 +1019,9 @@ class _CountingValuation extends LocalInventoryValuationRepository {
 class _CountingSaleRepo extends LocalSaleRepository {
   _CountingSaleRepo()
       : super(
-          productRepository: LocalProductRepository(),
+          productCatalogReadRepository: ProductCatalogReadRepositoryTestAdapter(
+            LocalProductRepository(),
+          ),
           inventoryRepository: LocalInventoryRepository(
             productRepository: LocalProductRepository(),
           ),

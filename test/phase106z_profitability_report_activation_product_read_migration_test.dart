@@ -79,6 +79,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106z ||
             atPhase106aa ||
@@ -93,7 +97,8 @@ void main() {
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
     }

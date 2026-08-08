@@ -31,6 +31,9 @@ const _phase106alCommit = 'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
 const _phase106amSubject =
     'PHASE 106AM: migrate profitability activation product read';
 const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
+const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
+const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
+const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _phase106alTargetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
@@ -268,8 +271,8 @@ void main() {
   test('inventory and production scope move only PRC-109', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 7);
-    expect(_occurrences(joined, '.listProductCatalog('), 19);
+    expect(_occurrences(joined, '.listProducts('), 6);
+    expect(_occurrences(joined, '.listProductCatalog('), 20);
 
     final changedProduction = _git([
       'diff',
@@ -285,6 +288,8 @@ void main() {
         _compositionPath,
         _phase106alTargetPath,
         'lib/core/inventory_valuation/profitability_activation_service.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
       },
     );
     for (final path in changedProduction) {
@@ -302,6 +307,7 @@ void main() {
         _phase106akBranch,
         _phase106alBranch,
         _phase106amBranch,
+        _phase106anBranch,
       ),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
@@ -315,13 +321,23 @@ void main() {
         subject == _phase106alSubject && parent == _phase106akCommit;
     final atPhase106am =
         subject == _phase106amSubject && parent == _phase106alCommit;
+    final atPhase106an =
+        subject == _phase106anSubject && parent == _phase106amCommit;
     expect(
-      atPhase106aj || atPhase106ak || atPhase106al || atPhase106am,
+      atPhase106aj ||
+          atPhase106ak ||
+          atPhase106al ||
+          atPhase106am ||
+          atPhase106an,
       isTrue,
     );
     expect(
       _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-      atPhase106am ? '4' : (atPhase106al ? '3' : (atPhase106ak ? '2' : '1')),
+      atPhase106an
+          ? '5'
+          : (atPhase106am
+              ? '4'
+              : (atPhase106al ? '3' : (atPhase106ak ? '2' : '1'))),
     );
   });
 }

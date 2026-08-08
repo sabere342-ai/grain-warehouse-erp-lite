@@ -1,5 +1,4 @@
-import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/cancellation_metadata.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
@@ -41,18 +40,18 @@ abstract class DurableSaleRepository
 
 class LocalSaleRepository implements DurableSaleRepository {
   LocalSaleRepository({
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     InventoryValuationRepository? inventoryValuationRepository,
     FinancialAccountRepository? financialAccountRepository,
-  })  : _productRepository = productRepository,
+  })  : _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _inventoryValuationRepository = inventoryValuationRepository,
         _financialAccountRepository = financialAccountRepository;
 
   static const int _maxSafeTotalQirsh = 9223372036854775807;
 
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final InventoryValuationRepository? _inventoryValuationRepository;
   final FinancialAccountRepository? _financialAccountRepository;
@@ -510,10 +509,10 @@ class LocalSaleRepository implements DurableSaleRepository {
     return List<SalePaymentAllocation>.unmodifiable(normalized);
   }
 
-  Future<Map<String, Product>> _validateAllProducts(
+  Future<Map<String, ProductCatalogReadModel>> _validateAllProducts(
     List<SaleLineItem> items,
   ) async {
-    final products = <String, Product>{};
+    final products = <String, ProductCatalogReadModel>{};
     for (final item in items) {
       final product = await _validateProduct(item.productId);
       products[item.productId] = product;
@@ -523,7 +522,7 @@ class LocalSaleRepository implements DurableSaleRepository {
 
   void _validateAllMinimumPrices(
     List<SaleLineItem> items,
-    Map<String, Product> products,
+    Map<String, ProductCatalogReadModel> products,
   ) {
     for (final item in items) {
       final product = products[item.productId]!;
@@ -552,7 +551,7 @@ class LocalSaleRepository implements DurableSaleRepository {
     return null;
   }
 
-  Future<Product> _validateProduct(String productId) async {
+  Future<ProductCatalogReadModel> _validateProduct(String productId) async {
     if (productId.trim().isEmpty) {
       throw ArgumentError.value(
         productId,
@@ -561,8 +560,9 @@ class LocalSaleRepository implements DurableSaleRepository {
       );
     }
 
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     for (final product in products) {
       if (product.id == productId) {
         if (!product.isActive) {

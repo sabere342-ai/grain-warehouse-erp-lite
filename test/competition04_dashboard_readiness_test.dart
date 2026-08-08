@@ -190,7 +190,8 @@ DashboardService _service(FinancialAccountRepository financialAccounts) {
   final suppliers = LocalSupplierRepository();
   return DashboardService(
     saleRepository: LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     ),
     inventoryRepository: inventory,

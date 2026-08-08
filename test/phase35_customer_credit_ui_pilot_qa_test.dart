@@ -216,7 +216,8 @@ class _Fixture {
         audit = LocalAuditLogRepository() {
     inventory = LocalInventoryRepository(productRepository: products);
     sales = LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     );
     ledger = LocalCustomerAccountRepository(

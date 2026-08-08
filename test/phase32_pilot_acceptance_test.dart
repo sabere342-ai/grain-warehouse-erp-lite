@@ -305,7 +305,8 @@ _Phase32Fixture _fixture() {
     inventoryRepository: inventory,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(

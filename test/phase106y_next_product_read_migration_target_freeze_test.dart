@@ -187,6 +187,10 @@ void main() {
             'PHASE 106AM: migrate profitability activation product read' &&
         _git(['rev-parse', '$head^']).trim() ==
             'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+    final afterPhase106an =
+        subject == 'Phase 106AN: migrate PRC-111 product read' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '8802c2115a45785f8705764514f9c7d0250a050d';
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
@@ -202,7 +206,8 @@ void main() {
         afterPhase106aj ||
         afterPhase106ak ||
         afterPhase106al ||
-        afterPhase106am;
+        afterPhase106am ||
+        afterPhase106an;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -213,7 +218,11 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106aj || afterPhase106ak || afterPhase106al || afterPhase106am
+      afterPhase106aj ||
+              afterPhase106ak ||
+              afterPhase106al ||
+              afterPhase106am ||
+              afterPhase106an
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',
@@ -224,10 +233,15 @@ void main() {
               'lib/core/backup/business_data_wipe_service.dart',
               'lib/core/inventory/drift_inventory_repository.dart',
               'lib/core/purchases/drift_purchase_repository.dart',
-              if (afterPhase106al || afterPhase106am)
+              if (afterPhase106al || afterPhase106am || afterPhase106an)
                 'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
               if (afterPhase106am)
                 'lib/core/inventory_valuation/profitability_activation_service.dart',
+              if (afterPhase106an) ...{
+                'lib/core/inventory_valuation/profitability_activation_service.dart',
+                'lib/core/sales/drift_sale_repository.dart',
+                'lib/core/sales/sale_repository.dart',
+              },
             }
           : afterPhase106ah || afterPhase106ai
               ? {

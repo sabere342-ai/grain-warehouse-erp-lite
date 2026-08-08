@@ -12,6 +12,8 @@ import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 34 customer credit and collections', () {
     test('credit sale creates customer ledger debit and balance', () async {
@@ -190,7 +192,8 @@ class _Fixture {
     );
     product = created;
     sales = LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     );
     ledger = LocalCustomerAccountRepository(

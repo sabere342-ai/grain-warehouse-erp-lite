@@ -263,7 +263,7 @@ class _TrialRepositories {
     final audit = DriftAuditLogRepository(database);
     final sales = DriftSaleRepository(
       database,
-      productRepository: products,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
       inventoryRepository: inventory,
       inventoryValuationRepository: valuation,
     );

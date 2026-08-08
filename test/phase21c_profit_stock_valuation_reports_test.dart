@@ -184,7 +184,8 @@ Future<_Fixture> _fixture({required int? referenceCost}) async {
     inventoryRepository: inventory,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final history = LocalDocumentHistoryRepository(
@@ -288,7 +289,8 @@ Future<_RestoreOutcome> _restoreIntoEmpty(String jsonText) async {
   final suppliers = LocalSupplierRepository();
   final inventory = LocalInventoryRepository(productRepository: products);
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final purchases = LocalPurchaseRepository(

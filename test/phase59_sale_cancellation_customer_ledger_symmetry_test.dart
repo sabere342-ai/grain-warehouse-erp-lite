@@ -390,7 +390,8 @@ Future<_Fixture> _createFixture() async {
     ),
   );
   f.sales = LocalSaleRepository(
-    productRepository: f.products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(f.products),
     inventoryRepository: f.inventory,
   );
   f.ledger = LocalCustomerAccountRepository(

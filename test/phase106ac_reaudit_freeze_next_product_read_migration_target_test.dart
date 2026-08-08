@@ -68,10 +68,10 @@ const _migrated = <String, _Consumer>{
       'lib/core/inventory_valuation/profitability_activation_service.dart',
       'Accepted',
       1),
+  'PRC-111': _Consumer('lib/core/sales/sale_repository.dart', 'Accepted', 1),
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-111': _Consumer('lib/core/sales/sale_repository.dart', 'F', 1),
   'PRC-114': _Consumer('lib/core/inventory/inventory_repository.dart', 'I', 2),
   'PRC-115': _Consumer('lib/core/purchases/purchase_repository.dart', 'I', 1),
   'PRC-116': _Consumer(
@@ -117,6 +117,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106ad ||
             atPhase106ae ||
@@ -127,28 +131,31 @@ void main() {
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_phase106acCommit..HEAD']).trim(),
-        atPhase106am
-            ? '10'
-            : atPhase106al
-                ? '9'
-                : atPhase106ak
-                    ? '8'
-                    : atPhase106aj
-                        ? '7'
-                        : atPhase106ai
-                            ? '6'
-                            : atPhase106ah
-                                ? '5'
-                                : (atPhase106ag
-                                    ? '4'
-                                    : (atPhase106af
-                                        ? '3'
-                                        : (atPhase106ae ? '2' : '1'))),
+        atPhase106an
+            ? '11'
+            : atPhase106am
+                ? '10'
+                : atPhase106al
+                    ? '9'
+                    : atPhase106ak
+                        ? '8'
+                        : atPhase106aj
+                            ? '7'
+                            : atPhase106ai
+                                ? '6'
+                                : atPhase106ah
+                                    ? '5'
+                                    : (atPhase106ag
+                                        ? '4'
+                                        : (atPhase106af
+                                            ? '3'
+                                            : (atPhase106ae ? '2' : '1'))),
       );
     }
     final productionDiff = _git([
@@ -166,12 +173,14 @@ void main() {
       'lib/core/inventory/drift_inventory_repository.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
       'lib/core/inventory_valuation/profitability_activation_service.dart',
+      'lib/core/sales/drift_sale_repository.dart',
+      'lib/core/sales/sale_repository.dart',
     });
   });
 
   test('inventory has 24 unique consumers classified exactly once', () {
-    expect(_migrated, hasLength(18));
-    expect(_remaining, hasLength(6));
+    expect(_migrated, hasLength(19));
+    expect(_remaining, hasLength(5));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -181,7 +190,7 @@ void main() {
     expect(_remaining.containsKey('PRC-101'), isFalse);
   });
 
-  test('remaining categories reconcile exactly as F1 and I5', () {
+  test('remaining categories reconcile exactly as F0 and I5', () {
     final counts = <String, int>{
       for (final category in 'ABCDEFGHI'.split('')) category: 0,
     };
@@ -194,17 +203,17 @@ void main() {
       'C': 0,
       'D': 0,
       'E': 0,
-      'F': 1,
+      'F': 0,
       'G': 0,
       'H': 0,
       'I': 5,
     });
   });
 
-  test('source call sites reconcile to 7 legacy and 19 catalog calls', () {
+  test('source call sites reconcile to 6 legacy and 20 catalog calls', () {
     final sources = _dartSources();
-    expect(_occurrences(sources.values.join('\n'), '.listProducts('), 7);
-    expect(_occurrences(sources.values.join('\n'), '.listProductCatalog('), 19);
+    expect(_occurrences(sources.values.join('\n'), '.listProducts('), 6);
+    expect(_occurrences(sources.values.join('\n'), '.listProductCatalog('), 20);
 
     final expectedLegacyFiles = {
       for (final consumer in _remaining.values) consumer.path,

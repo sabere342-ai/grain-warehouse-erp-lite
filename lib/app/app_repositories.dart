@@ -174,7 +174,7 @@ class AppRepositories {
     );
     _saleRepository = DriftSaleRepository(
       database,
-      productRepository: productRepository,
+      productCatalogReadRepository: productCatalogReadRepository,
       inventoryRepository: inventoryRepository,
       inventoryValuationRepository: inventoryValuationRepository,
       financialAccountRepository: financialAccountRepository,
@@ -236,7 +236,7 @@ class AppRepositories {
   );
 
   static DurableSaleRepository _saleRepository = LocalSaleRepository(
-    productRepository: productRepository,
+    productCatalogReadRepository: productCatalogReadRepository,
     inventoryRepository: inventoryRepository,
     inventoryValuationRepository: inventoryValuationRepository,
     financialAccountRepository: financialAccountRepository,

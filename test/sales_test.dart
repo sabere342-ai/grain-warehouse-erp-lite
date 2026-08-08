@@ -195,7 +195,8 @@ void main() {
       final products = LocalProductRepository();
       final product = await products.createProduct(_productDraft());
       final sales = LocalSaleRepository(
-        productRepository: products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(products),
         inventoryRepository: _LargeStockInventoryRepository(product.id),
       );
 
@@ -397,7 +398,8 @@ Future<_SalesFixture> _fixture() async {
     const CustomerDraft(name: 'عميل اختبار', isActive: true),
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final controller = SaleController(

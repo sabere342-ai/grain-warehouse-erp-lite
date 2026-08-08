@@ -605,7 +605,8 @@ void main() {
           financialAccountRepository: faRepo,
         );
         saleRepo = LocalSaleRepository(
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
 

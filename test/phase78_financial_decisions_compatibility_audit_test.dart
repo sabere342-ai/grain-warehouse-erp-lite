@@ -29,6 +29,8 @@ import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_payment
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   final owner = AppUser(
     id: 'owner-1',
@@ -81,7 +83,8 @@ void main() {
       financialAccountRepository: faRepo,
     );
     saleRepo = LocalSaleRepository(
-      productRepository: productRepo,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepo),
       inventoryRepository: inventoryRepo,
     );
     expenseRepo = LocalExpenseRepository(

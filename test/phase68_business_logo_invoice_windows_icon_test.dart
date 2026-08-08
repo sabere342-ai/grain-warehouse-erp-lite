@@ -1268,7 +1268,8 @@ class _RepoSet {
       supplierAccountRepository: supplierAccountRepository,
     );
     saleRepository = LocalSaleRepository(
-      productRepository: productRepository,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepository),
       inventoryRepository: inventoryRepository,
     );
     documentHistoryRepository = LocalDocumentHistoryRepository(

@@ -161,6 +161,10 @@ void main() {
             'PHASE 106AM: migrate profitability activation product read' &&
         _git(['rev-parse', '$head^']).trim() ==
             'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+    final afterMigrateAN =
+        headSubject == 'Phase 106AN: migrate PRC-111 product read' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '8802c2115a45785f8705764514f9c7d0250a050d';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -187,7 +191,8 @@ void main() {
             afterMigrateAJ ||
             afterFreezeAK ||
             afterMigrateAL ||
-            afterMigrateAM,
+            afterMigrateAM ||
+            afterMigrateAN,
         isTrue,
         reason:
             'HEAD must follow the frozen Phase 106O through 106AA lineage, with '

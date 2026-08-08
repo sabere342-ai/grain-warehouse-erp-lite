@@ -66,7 +66,8 @@ void main() {
         ),
       );
       final sales = LocalSaleRepository(
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryRepository: fixture.inventory,
         inventoryValuationRepository: fixture.valuation,
       );

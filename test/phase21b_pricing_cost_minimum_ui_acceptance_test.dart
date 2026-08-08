@@ -241,7 +241,8 @@ Future<_Fixture> _fixture({
     const CustomerDraft(name: 'عميل اختبار', isActive: true),
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final purchases = LocalPurchaseRepository(
@@ -295,7 +296,8 @@ Future<_RestoreOutcome> _restoreIntoEmpty(String jsonText) async {
   final suppliers = LocalSupplierRepository();
   final inventory = LocalInventoryRepository(productRepository: products);
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   final purchases = LocalPurchaseRepository(

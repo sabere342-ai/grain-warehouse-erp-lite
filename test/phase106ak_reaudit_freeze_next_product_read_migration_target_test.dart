@@ -12,11 +12,14 @@ const _phase106alSubject =
 const _phase106alCommit = 'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
 const _phase106amSubject =
     'PHASE 106AM: migrate profitability activation product read';
+const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
+const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
 const _branch =
     'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
 const _phase106alBranch =
     'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
 const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
+const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _reportPath =
     'docs/PHASE-106AK-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
@@ -58,14 +61,10 @@ const _migrated = <String, _Consumer>{
     'lib/core/inventory_valuation/profitability_activation_service.dart',
     1,
   ),
+  'PRC-111': _Consumer('lib/core/sales/sale_repository.dart', 1),
 };
 
 const _remaining = <String, _Consumer>{
-  'PRC-111': _Consumer(
-    'lib/core/sales/sale_repository.dart',
-    1,
-    classification: 'Production',
-  ),
   'PRC-114': _Consumer(
     'lib/core/inventory/inventory_repository.dart',
     2,
@@ -108,7 +107,7 @@ void main() {
     expect(File(_reportPath).existsSync(), isTrue);
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106alBranch, _phase106amBranch),
+      anyOf(_branch, _phase106alBranch, _phase106amBranch, _phase106anBranch),
     );
 
     final report = File(_reportPath).readAsStringSync();
@@ -123,9 +122,9 @@ void main() {
     }
   });
 
-  test('inventory has 24 unique PRCs: 18 migrated and 6 remaining', () {
-    expect(_migrated, hasLength(18));
-    expect(_remaining, hasLength(6));
+  test('inventory has 24 unique PRCs: 19 migrated and 5 remaining', () {
+    expect(_migrated, hasLength(19));
+    expect(_remaining, hasLength(5));
     final ids = [..._migrated.keys, ..._remaining.keys];
     expect(ids, hasLength(24));
     expect(ids.toSet(), hasLength(24));
@@ -138,7 +137,7 @@ void main() {
     expect(_remaining, isNot(contains('PRC-109')));
   });
 
-  test('remaining classification is exactly Production 1 and I/Test 5', () {
+  test('remaining classification is exactly I/Test 5', () {
     final counts = <String, int>{};
     for (final consumer in _remaining.values) {
       counts.update(
@@ -147,21 +146,21 @@ void main() {
         ifAbsent: () => 1,
       );
     }
-    expect(counts, {'Production': 1, 'Infrastructure/Test': 5});
+    expect(counts, {'Infrastructure/Test': 5});
     expect(
       _remaining.entries
           .where((entry) => entry.value.classification == 'Production')
           .map((entry) => entry.key)
           .toSet(),
-      {'PRC-111'},
+      isEmpty,
     );
   });
 
-  test('live source has exactly 7 legacy and 19 catalog calls', () {
+  test('live source has exactly 6 legacy and 20 catalog calls', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 7);
-    expect(_occurrences(joined, '.listProductCatalog('), 19);
+    expect(_occurrences(joined, '.listProducts('), 6);
+    expect(_occurrences(joined, '.listProductCatalog('), 20);
 
     expect(
       sources.entries
@@ -371,7 +370,7 @@ void main() {
     }
   });
 
-  test('lineage preserves the exact Phase 106AL and 106AM children', () {
+  test('lineage preserves the exact Phase 106AL through 106AN children', () {
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _phase106akCommit) return;
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
@@ -380,10 +379,12 @@ void main() {
         subject == _phase106alSubject && parent == _phase106akCommit;
     final atPhase106am =
         subject == _phase106amSubject && parent == _phase106alCommit;
-    expect(atPhase106al || atPhase106am, isTrue);
+    final atPhase106an =
+        subject == _phase106anSubject && parent == _phase106amCommit;
+    expect(atPhase106al || atPhase106am || atPhase106an, isTrue);
     expect(
       _git(['rev-list', '--count', '$_phase106akCommit..HEAD']).trim(),
-      atPhase106am ? '2' : '1',
+      atPhase106an ? '3' : (atPhase106am ? '2' : '1'),
     );
   });
 }

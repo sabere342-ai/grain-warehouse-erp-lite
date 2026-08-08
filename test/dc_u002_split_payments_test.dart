@@ -304,7 +304,8 @@ class _Fixture {
       financialAccountRepository: fixture.accounts,
     );
     fixture.sales = LocalSaleRepository(
-      productRepository: fixture.products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(fixture.products),
       inventoryRepository: fixture.inventory,
     );
     fixture.controller = SaleController(

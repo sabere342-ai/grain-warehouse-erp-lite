@@ -170,6 +170,10 @@ void main() {
             'PHASE 106AM: migrate profitability activation product read' &&
         _git(['rev-parse', '$head^']).trim() ==
             'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+    final afterMigrateAN =
+        headSubject == 'Phase 106AN: migrate PRC-111 product read' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                '8802c2115a45785f8705764514f9c7d0250a050d';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -194,7 +198,8 @@ void main() {
             afterMigrateAJ ||
             afterFreezeAK ||
             afterMigrateAL ||
-            afterMigrateAM,
+            afterMigrateAM ||
+            afterMigrateAN,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -210,8 +215,8 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 23, isTrue,
-        reason: 'Zero through twenty-three commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 24, isTrue,
+        reason: 'Zero through twenty-four commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 
@@ -254,6 +259,8 @@ void main() {
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
       }),
       isEmpty,
       reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '

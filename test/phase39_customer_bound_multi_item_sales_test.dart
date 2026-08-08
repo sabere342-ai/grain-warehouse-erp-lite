@@ -51,7 +51,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -124,7 +125,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -178,7 +180,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -233,7 +236,8 @@ void main() {
           ),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -270,7 +274,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final accountRepo = LocalCustomerAccountRepository(
@@ -325,7 +330,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -363,7 +369,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -407,7 +414,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -462,7 +470,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -521,7 +530,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -592,7 +602,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
 
@@ -658,7 +669,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final purchases = LocalPurchaseRepository(
@@ -735,7 +747,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final accountRepo = LocalCustomerAccountRepository(
@@ -788,7 +801,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final accountRepo = LocalCustomerAccountRepository(
@@ -844,7 +858,8 @@ void main() {
           const CustomerDraft(name: 'عميل اختبار', isActive: true),
         );
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final purchases = LocalPurchaseRepository(
@@ -938,7 +953,8 @@ void main() {
           inventoryRepository: sourceInventory,
         );
         final sourceSales = LocalSaleRepository(
-          productRepository: sourceProducts,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(sourceProducts),
           inventoryRepository: sourceInventory,
         );
 
@@ -995,7 +1011,8 @@ void main() {
         );
         final targetCustomers = LocalCustomerRepository();
         final targetSales = LocalSaleRepository(
-          productRepository: targetProducts,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(targetProducts),
           inventoryRepository: targetInventory,
         );
         final targetHistory = LocalDocumentHistoryRepository(
@@ -1154,7 +1171,8 @@ void main() {
         );
         final customers = LocalCustomerRepository();
         final sales = LocalSaleRepository(
-          productRepository: products,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(products),
           inventoryRepository: inventory,
         );
         final history = LocalDocumentHistoryRepository(

@@ -346,7 +346,8 @@ class _FreezeFixture {
       supplierAccountRepository: supplierAccounts,
     );
     final sales = LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     );
     final reports = LocalReportRepository(

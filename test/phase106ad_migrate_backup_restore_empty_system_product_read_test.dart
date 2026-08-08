@@ -16,6 +16,8 @@ import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 const _baseline = '1cd4033720fd765a31b5b5357760c8f55e454f92';
 const _subject =
     'PHASE 106AD: migrate backup restore empty-system product read';
@@ -140,6 +142,8 @@ void main() {
       'lib/core/inventory/drift_inventory_repository.dart',
       'lib/core/inventory_valuation/profitability_activation_service.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
+      'lib/core/sales/drift_sale_repository.dart',
+      'lib/core/sales/sale_repository.dart',
     });
     expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
     expect(
@@ -188,6 +192,10 @@ void main() {
               'PHASE 106AM: migrate profitability activation product read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+      final atPhase106an =
+          subject == 'Phase 106AN: migrate PRC-111 product read' &&
+              _git(['rev-parse', 'HEAD^']).trim() ==
+                  '8802c2115a45785f8705764514f9c7d0250a050d';
       expect(
         atPhase106ad ||
             atPhase106ae ||
@@ -198,28 +206,31 @@ void main() {
             atPhase106aj ||
             atPhase106ak ||
             atPhase106al ||
-            atPhase106am,
+            atPhase106am ||
+            atPhase106an,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106am
-            ? '10'
-            : atPhase106al
-                ? '9'
-                : atPhase106ak
-                    ? '8'
-                    : atPhase106aj
-                        ? '7'
-                        : atPhase106ai
-                            ? '6'
-                            : atPhase106ah
-                                ? '5'
-                                : (atPhase106ag
-                                    ? '4'
-                                    : (atPhase106af
-                                        ? '3'
-                                        : (atPhase106ae ? '2' : '1'))),
+        atPhase106an
+            ? '11'
+            : atPhase106am
+                ? '10'
+                : atPhase106al
+                    ? '9'
+                    : atPhase106ak
+                        ? '8'
+                        : atPhase106aj
+                            ? '7'
+                            : atPhase106ai
+                                ? '6'
+                                : atPhase106ah
+                                    ? '5'
+                                    : (atPhase106ag
+                                        ? '4'
+                                        : (atPhase106af
+                                            ? '3'
+                                            : (atPhase106ae ? '2' : '1'))),
       );
     }
   });
@@ -237,7 +248,8 @@ Future<_Fixture> _fixture(ProductCatalogReadRepository catalog) async {
     inventoryValuationRepository: valuation,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     inventoryValuationRepository: valuation,
   );

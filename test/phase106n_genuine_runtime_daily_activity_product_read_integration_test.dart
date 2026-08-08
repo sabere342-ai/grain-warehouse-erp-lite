@@ -447,7 +447,7 @@ final class _Fixture {
     );
     final saleRepository = DriftSaleRepository(
       database,
-      productRepository: legacyProducts,
+      productCatalogReadRepository: DriftProductCatalogReadRepository(database),
       inventoryRepository: inventory,
     );
     final report = LocalReportRepository(

@@ -346,7 +346,9 @@ class _Fixture {
         supplierAccountRepository: supplierAccounts,
         financialAccountRepository: financialAccounts);
     final sales = LocalSaleRepository(
-        productRepository: products, inventoryRepository: inventory);
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(products),
+        inventoryRepository: inventory);
     final history = LocalDocumentHistoryRepository(
         purchaseRepository: purchases,
         saleRepository: sales,

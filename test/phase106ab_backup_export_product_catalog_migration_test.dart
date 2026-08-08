@@ -225,9 +225,9 @@ void main() {
         .where((file) => file.path.endsWith('.dart'))
         .map((file) => file.readAsStringSync())
         .join('\n');
-    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(7));
+    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(6));
     expect(
-        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(19));
+        RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(20));
 
     final changed = (Process.runSync(
       'git',
@@ -250,6 +250,8 @@ void main() {
         'lib/core/inventory/drift_inventory_repository.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
+        'lib/core/sales/drift_sale_repository.dart',
+        'lib/core/sales/sale_repository.dart',
       },
     );
     expect(
@@ -312,7 +314,8 @@ final class _Fixture {
       inventoryValuationRepository: valuation,
     );
     final sales = LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
       inventoryValuationRepository: valuation,
     );

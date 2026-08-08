@@ -15,6 +15,8 @@ import 'package:grain_warehouse_erp_lite/core/profitability/profitability_report
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 102B profitability reporting', () {
     test('permission is checked before any financial repository read',
@@ -161,7 +163,8 @@ Future<_Fixture> _fixture() async {
     ],
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     inventoryValuationRepository: valuation,
   );
@@ -206,7 +209,9 @@ class _CountingValuationRepository extends LocalInventoryValuationRepository {
 class _CountingSaleRepository extends LocalSaleRepository {
   _CountingSaleRepository()
       : super(
-          productRepository: LocalProductRepository(),
+          productCatalogReadRepository: ProductCatalogReadRepositoryTestAdapter(
+            LocalProductRepository(),
+          ),
           inventoryRepository: LocalInventoryRepository(
             productRepository: LocalProductRepository(),
           ),

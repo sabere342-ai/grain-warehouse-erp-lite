@@ -43,6 +43,7 @@ const _catalogCallers = {
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
   'lib/core/sales/sale_controller.dart',
+  'lib/core/sales/sale_repository.dart',
   'lib/features/dashboard/dashboard_screen.dart',
   'lib/features/financial_reports/profitability_report_screen.dart',
 };

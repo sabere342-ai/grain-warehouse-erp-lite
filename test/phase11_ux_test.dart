@@ -179,7 +179,8 @@ Future<_SalesFixture> _salesFixture({required bool createSale}) async {
     const CustomerDraft(name: 'عميل', isActive: true),
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
   );
   SaleRecord? sale;
@@ -221,7 +222,8 @@ LocalReportRepository _emptyReportRepository() {
       inventoryRepository: inventory,
     ),
     saleRepository: LocalSaleRepository(
-      productRepository: products,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(products),
       inventoryRepository: inventory,
     ),
     inventoryRepository: inventory,

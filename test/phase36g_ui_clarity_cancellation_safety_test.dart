@@ -353,7 +353,8 @@ Future<void> _pumpExpectedState(WidgetTester tester) async {
 DashboardService _dashboardService() {
   return DashboardService(
     saleRepository: LocalSaleRepository(
-      productRepository: LocalProductRepository(),
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(LocalProductRepository()),
       inventoryRepository: LocalInventoryRepository(
         productRepository: LocalProductRepository(),
       ),

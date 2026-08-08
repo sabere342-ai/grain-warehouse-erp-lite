@@ -243,7 +243,8 @@ void main() {
         inventoryRepo =
             LocalInventoryRepository(productRepository: productRepo);
         saleRepo = LocalSaleRepository(
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expenseRepo = LocalExpenseRepository();

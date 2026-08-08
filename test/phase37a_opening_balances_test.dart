@@ -201,7 +201,8 @@ void main() {
             inventoryRepository: inventoryRepo,
           ),
           saleRepository: LocalSaleRepository(
-            productRepository: productRepo,
+            productCatalogReadRepository:
+                ProductCatalogReadRepositoryTestAdapter(productRepo),
             inventoryRepository: inventoryRepo,
           ),
           documentHistoryRepository: LocalDocumentHistoryRepository(
@@ -211,7 +212,8 @@ void main() {
               inventoryRepository: inventoryRepo,
             ),
             saleRepository: LocalSaleRepository(
-              productRepository: productRepo,
+              productCatalogReadRepository:
+                  ProductCatalogReadRepositoryTestAdapter(productRepo),
               inventoryRepository: inventoryRepo,
             ),
             productCatalogReadRepository:
@@ -398,7 +400,8 @@ void main() {
             inventoryRepository: inventoryRepo,
           ),
           saleRepository: LocalSaleRepository(
-            productRepository: productRepo,
+            productCatalogReadRepository:
+                ProductCatalogReadRepositoryTestAdapter(productRepo),
             inventoryRepository: inventoryRepo,
           ),
           documentHistoryRepository: LocalDocumentHistoryRepository(
@@ -408,7 +411,8 @@ void main() {
               inventoryRepository: inventoryRepo,
             ),
             saleRepository: LocalSaleRepository(
-              productRepository: productRepo,
+              productCatalogReadRepository:
+                  ProductCatalogReadRepositoryTestAdapter(productRepo),
               inventoryRepository: inventoryRepo,
             ),
             productCatalogReadRepository:

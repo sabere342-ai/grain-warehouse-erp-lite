@@ -96,7 +96,8 @@ void main() {
         inventoryRepo =
             LocalInventoryRepository(productRepository: productRepo);
         saleRepo = LocalSaleRepository(
-          productRepository: productRepo,
+          productCatalogReadRepository:
+              ProductCatalogReadRepositoryTestAdapter(productRepo),
           inventoryRepository: inventoryRepo,
         );
         expenseRepo = LocalExpenseRepository();
@@ -481,7 +482,8 @@ Future<AuthController> _signedInOwner() async {
 DashboardService _dashboardService() {
   return DashboardService(
     saleRepository: LocalSaleRepository(
-      productRepository: LocalProductRepository(),
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(LocalProductRepository()),
       inventoryRepository: LocalInventoryRepository(
         productRepository: LocalProductRepository(),
       ),

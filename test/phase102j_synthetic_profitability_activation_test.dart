@@ -11,6 +11,8 @@ import 'package:grain_warehouse_erp_lite/core/profitability/profitability_report
 import 'package:grain_warehouse_erp_lite/core/sales/sale_record.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 102J isolated synthetic profitability activation', () {
     test('imports atomically under a visibly non-production activation state',
@@ -120,7 +122,8 @@ void main() {
       );
       final product = (await fixture.products.listProducts()).first;
       final sales = LocalSaleRepository(
-        productRepository: fixture.products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(fixture.products),
         inventoryRepository: fixture.inventory,
         inventoryValuationRepository: fixture.valuation,
       );

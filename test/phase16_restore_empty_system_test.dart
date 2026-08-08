@@ -523,7 +523,8 @@ Future<_BackupFixture> _emptyFixture() async {
     inventoryValuationRepository: valuation,
   );
   final sales = LocalSaleRepository(
-    productRepository: products,
+    productCatalogReadRepository:
+        ProductCatalogReadRepositoryTestAdapter(products),
     inventoryRepository: inventory,
     inventoryValuationRepository: valuation,
   );
