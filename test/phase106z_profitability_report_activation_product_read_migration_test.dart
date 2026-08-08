@@ -75,6 +75,10 @@ void main() {
               'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+      final atPhase106am = subject ==
+              'PHASE 106AM: migrate profitability activation product read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
       expect(
         atPhase106z ||
             atPhase106aa ||
@@ -88,7 +92,8 @@ void main() {
             atPhase106ai ||
             atPhase106aj ||
             atPhase106ak ||
-            atPhase106al,
+            atPhase106al ||
+            atPhase106am,
         isTrue,
       );
     }
@@ -229,9 +234,9 @@ void main() {
         .replaceFirst('.listProductCatalog(', '.list(');
     expect(normalizedAfter, normalizedBefore);
     expect(
-      File(_activationServicePath).readAsStringSync(),
+      _sourceAt(_phase106zCommit, _activationServicePath),
       contains('productRepository.listProducts(includeInactive: true)'),
-      reason: 'PRC-108 remains on its legacy validation read.',
+      reason: 'PRC-108 remained legacy in the immutable Phase 106Z commit.',
     );
   });
 

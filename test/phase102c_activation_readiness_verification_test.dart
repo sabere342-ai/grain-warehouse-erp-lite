@@ -753,7 +753,8 @@ void main() {
         () async {
       final products = _CountingProductRepo();
       final service = ProfitabilityActivationService(
-        productRepository: products,
+        productCatalogReadRepository:
+            ProductCatalogReadRepositoryTestAdapter(products),
         inventoryRepository: LocalInventoryRepository(
           productRepository: products,
         ),

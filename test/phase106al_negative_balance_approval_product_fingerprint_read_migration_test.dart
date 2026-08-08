@@ -8,8 +8,12 @@ const _baselineSubject =
     'PHASE 106AK: freeze next product read migration target';
 const _subject =
     'PHASE 106AL: migrate negative balance approval product fingerprint read';
+const _phase106alCommit = 'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+const _phase106amSubject =
+    'PHASE 106AM: migrate profitability activation product read';
 const _branch =
     'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
+const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _targetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -75,8 +79,8 @@ void main() {
   test('inventory moves only PRC-105 from legacy to migrated', () {
     final sources = _dartSources();
     final joined = sources.values.join('\n');
-    expect(_occurrences(joined, '.listProducts('), 8);
-    expect(_occurrences(joined, '.listProductCatalog('), 18);
+    expect(_occurrences(joined, '.listProducts('), 7);
+    expect(_occurrences(joined, '.listProductCatalog('), 19);
     expect(
       sources.entries
           .where((entry) => entry.value.contains('.listProducts('))
@@ -86,7 +90,6 @@ void main() {
         'lib/app/app_repositories.dart',
         'lib/core/catalog/drift_product_repository.dart',
         'lib/core/inventory/inventory_repository.dart',
-        'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
         'lib/core/purchases/purchase_repository.dart',
         'lib/core/sales/sale_repository.dart',
@@ -103,7 +106,11 @@ void main() {
       '--',
       'lib',
     ]).trim().split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
-    expect(changedProduction, {_targetPath, _compositionPath});
+    expect(changedProduction, {
+      _targetPath,
+      _compositionPath,
+      'lib/core/inventory_valuation/profitability_activation_service.dart',
+    });
     for (final path in changedProduction) {
       expect(path, isNot(contains('.g.dart')));
       expect(path, isNot(contains('migration')));
@@ -129,15 +136,25 @@ void main() {
     }
   });
 
-  test('lineage is the Phase 106AK baseline or its exact 106AL child', () {
-    expect(_git(['branch', '--show-current']).trim(), _branch);
+  test('lineage preserves the exact Phase 106AL and 106AM children', () {
+    expect(
+      _git(['branch', '--show-current']).trim(),
+      anyOf(_branch, _phase106amBranch),
+    );
     expect(
         _git(['log', '-1', '--format=%s', _baseline]).trim(), _baselineSubject);
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (head == _baseline) return;
-    expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);
-    expect(_git(['log', '-1', '--format=%s', 'HEAD']).trim(), _subject);
-    expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '1');
+    final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
+    final parent = _git(['rev-parse', 'HEAD^']).trim();
+    final atPhase106al = subject == _subject && parent == _baseline;
+    final atPhase106am =
+        subject == _phase106amSubject && parent == _phase106alCommit;
+    expect(atPhase106al || atPhase106am, isTrue);
+    expect(
+      _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
+      atPhase106am ? '2' : '1',
+    );
   });
 }
 

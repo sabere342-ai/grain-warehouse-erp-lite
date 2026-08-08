@@ -222,14 +222,15 @@ void main() {
         _repositoryPath,
         _compositionPath,
         'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
+        'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
       });
     });
 
     test('production inventory is 17 migrated, 7 remaining, F2/I5', () {
       final sources = _dartSources().values.join('\n');
-      expect(_occurrences(sources, '.listProducts('), 8);
-      expect(_occurrences(sources, '.listProductCatalog('), 18);
+      expect(_occurrences(sources, '.listProducts('), 7);
+      expect(_occurrences(sources, '.listProductCatalog('), 19);
     });
 
     test('lineage is the baseline or its single Phase 106AH child', () {
@@ -252,21 +253,28 @@ void main() {
               'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+      final atPhase106am = subject ==
+              'PHASE 106AM: migrate profitability activation product read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
       expect(
         atPhase106ah ||
             atPhase106ai ||
             atPhase106aj ||
             atPhase106ak ||
-            atPhase106al,
+            atPhase106al ||
+            atPhase106am,
         isTrue,
       );
       expect(
         _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106al
-            ? '5'
-            : (atPhase106ak
-                ? '4'
-                : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'))),
+        atPhase106am
+            ? '6'
+            : atPhase106al
+                ? '5'
+                : (atPhase106ak
+                    ? '4'
+                    : (atPhase106aj ? '3' : (atPhase106ai ? '2' : '1'))),
       );
     });
   });

@@ -47,7 +47,6 @@ const _phase106zTargetPath =
 
 const _legacyConsumerFiles = {
   'lib/core/inventory/inventory_repository.dart',
-  'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/inventory_valuation/synthetic_profitability_activation_service.dart',
   'lib/core/purchases/purchase_repository.dart',
   'lib/core/sales/sale_repository.dart',
@@ -69,6 +68,7 @@ const _migratedConsumerFiles = {
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
+  'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',
@@ -138,7 +138,11 @@ void main() {
         (subject ==
                 'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
             _git(['rev-parse', '$head^']).trim() ==
-                '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c');
+                '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c') ||
+        (subject ==
+                'PHASE 106AM: migrate profitability activation product read' &&
+            _git(['rev-parse', '$head^']).trim() ==
+                'bc17876148074efab3f2a5ec1a71186eaad4e4c5');
     expect(validHead, isTrue,
         reason: 'HEAD must follow the single Phase 106W through Phase 106AB '
             'lineage.');
@@ -161,6 +165,7 @@ void main() {
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
       'lib/core/inventory/drift_inventory_repository.dart',
+      'lib/core/inventory_valuation/profitability_activation_service.dart',
       'lib/core/purchases/drift_purchase_repository.dart',
     });
   });

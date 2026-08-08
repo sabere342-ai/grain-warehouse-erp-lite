@@ -183,6 +183,10 @@ void main() {
             'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
         _git(['rev-parse', '$head^']).trim() ==
             '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+    final afterPhase106am = subject ==
+            'PHASE 106AM: migrate profitability activation product read' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
     final validHead = head == _baseline ||
         atPhase106y ||
         afterPhase106z ||
@@ -197,7 +201,8 @@ void main() {
         afterPhase106ai ||
         afterPhase106aj ||
         afterPhase106ak ||
-        afterPhase106al;
+        afterPhase106al ||
+        afterPhase106am;
     expect(validHead, isTrue,
         reason: 'Only the exact 106X baseline, Phase 106Y, or its single Phase '
             '106Z, Phase 106AA, or Phase 106AB child is valid.');
@@ -208,7 +213,7 @@ void main() {
             .toSet();
     expect(
       productionDiff,
-      afterPhase106aj || afterPhase106ak || afterPhase106al
+      afterPhase106aj || afterPhase106ak || afterPhase106al || afterPhase106am
           ? {
               _targetPath,
               'lib/app/app_repositories.dart',
@@ -219,8 +224,10 @@ void main() {
               'lib/core/backup/business_data_wipe_service.dart',
               'lib/core/inventory/drift_inventory_repository.dart',
               'lib/core/purchases/drift_purchase_repository.dart',
-              if (afterPhase106al)
+              if (afterPhase106al || afterPhase106am)
                 'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
+              if (afterPhase106am)
+                'lib/core/inventory_valuation/profitability_activation_service.dart',
             }
           : afterPhase106ah || afterPhase106ai
               ? {

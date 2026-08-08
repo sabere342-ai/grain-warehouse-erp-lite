@@ -46,6 +46,7 @@ const _catalogCallers = {
   'lib/core/inventory/drift_inventory_repository.dart',
   'lib/core/inventory/inventory_attention_service.dart',
   'lib/core/inventory/inventory_controller.dart',
+  'lib/core/inventory_valuation/profitability_activation_service.dart',
   'lib/core/purchases/purchase_controller.dart',
   'lib/core/purchases/drift_purchase_repository.dart',
   'lib/core/reports/report_repository.dart',

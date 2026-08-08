@@ -203,7 +203,7 @@ class AppRepositories {
 
   static ProfitabilityActivationService get profitabilityActivationService =>
       ProfitabilityActivationService(
-        productRepository: productRepository,
+        productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,
         valuationRepository: inventoryValuationRepository,
         auditLogRepository: auditLogRepository,

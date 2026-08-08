@@ -157,6 +157,10 @@ void main() {
             'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
         _git(['rev-parse', '$head^']).trim() ==
             '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+    final afterMigrateAM = headSubject ==
+            'PHASE 106AM: migrate profitability activation product read' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -182,7 +186,8 @@ void main() {
             afterFreezeAI ||
             afterMigrateAJ ||
             afterFreezeAK ||
-            afterMigrateAL,
+            afterMigrateAL ||
+            afterMigrateAM,
         isTrue,
         reason:
             'HEAD must follow the frozen Phase 106O through 106AA lineage, with '

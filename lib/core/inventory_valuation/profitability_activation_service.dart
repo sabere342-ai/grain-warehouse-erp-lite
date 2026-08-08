@@ -1,7 +1,7 @@
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
-import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation.dart';
@@ -9,20 +9,20 @@ import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valu
 
 class ProfitabilityActivationService {
   ProfitabilityActivationService({
-    required ProductRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
     required InventoryRepository inventoryRepository,
     required DurableInventoryValuationRepository valuationRepository,
     required AuditLogRepository auditLogRepository,
     Future<void> Function(DateTime value)? ensureDateOpen,
     DateTime Function()? clock,
-  })  : _productRepository = productRepository,
+  })  : _productCatalogReadRepository = productCatalogReadRepository,
         _inventoryRepository = inventoryRepository,
         _valuationRepository = valuationRepository,
         _auditLogRepository = auditLogRepository,
         _ensureDateOpen = ensureDateOpen,
         _clock = clock ?? DateTime.now;
 
-  final ProductRepository _productRepository;
+  final ProductCatalogReadRepository _productCatalogReadRepository;
   final InventoryRepository _inventoryRepository;
   final DurableInventoryValuationRepository _valuationRepository;
   final AuditLogRepository _auditLogRepository;
@@ -45,8 +45,9 @@ class ProfitabilityActivationService {
       throw ArgumentError('Activation evidence note is required.');
     }
     await _ensureDateOpen?.call(activationDate);
-    final products =
-        await _productRepository.listProducts(includeInactive: true);
+    final products = await _productCatalogReadRepository.listProductCatalog(
+      includeInactive: true,
+    );
     final inputByProduct = <String, OpeningValuationInput>{};
     for (final input in openings) {
       final id = input.productId.trim();

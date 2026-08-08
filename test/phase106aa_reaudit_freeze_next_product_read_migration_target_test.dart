@@ -102,6 +102,10 @@ void main() {
               'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
           _git(['rev-parse', 'HEAD^']).trim() ==
               '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+      final atPhase106am = subject ==
+              'PHASE 106AM: migrate profitability activation product read' &&
+          _git(['rev-parse', 'HEAD^']).trim() ==
+              'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
       expect(
         atPhase106aa ||
             atPhase106ab ||
@@ -114,7 +118,8 @@ void main() {
             atPhase106ai ||
             atPhase106aj ||
             atPhase106ak ||
-            atPhase106al,
+            atPhase106al ||
+            atPhase106am,
         isTrue,
       );
     }
@@ -351,6 +356,7 @@ const _phase106afCumulativeProductionFiles = {
 const _phase106alCumulativeProductionFiles = {
   ..._phase106afCumulativeProductionFiles,
   'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
+  'lib/core/inventory_valuation/profitability_activation_service.dart',
 };
 
 Set<String> _sourceFilesWithAt(String revision, String pattern) =>

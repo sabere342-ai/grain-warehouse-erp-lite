@@ -11,6 +11,8 @@ import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valu
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/profitability_activation_service.dart';
 
+import 'support/product_catalog_read_repository_test_adapter.dart';
+
 void main() {
   group('Phase 102B profitability activation', () {
     test('is owner-only and rejects unauthorized users before repository reads',
@@ -160,7 +162,8 @@ _Fixture _service({
   final audit = LocalAuditLogRepository();
   return _Fixture(
     service: ProfitabilityActivationService(
-      productRepository: productRepository,
+      productCatalogReadRepository:
+          ProductCatalogReadRepositoryTestAdapter(productRepository),
       inventoryRepository: inventory,
       valuationRepository: valuation,
       auditLogRepository: audit,

@@ -166,6 +166,10 @@ void main() {
             'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
         _git(['rev-parse', '$head^']).trim() ==
             '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
+    final afterMigrateAM = headSubject ==
+            'PHASE 106AM: migrate profitability activation product read' &&
+        _git(['rev-parse', '$head^']).trim() ==
+            'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
     expect(
         atBaseline ||
             afterFreeze ||
@@ -189,7 +193,8 @@ void main() {
             afterFreezeAI ||
             afterMigrateAJ ||
             afterFreezeAK ||
-            afterMigrateAL,
+            afterMigrateAL ||
+            afterMigrateAM,
         isTrue,
         reason:
             'HEAD must be the 106P baseline (during development), the single '
@@ -205,8 +210,8 @@ void main() {
 
     final commitCount =
         int.parse(_git(['rev-list', '--count', '$_baseline..HEAD']).trim());
-    expect(commitCount >= 0 && commitCount <= 22, isTrue,
-        reason: 'Zero through twenty-two commits may exist after the 106P '
+    expect(commitCount >= 0 && commitCount <= 23, isTrue,
+        reason: 'Zero through twenty-three commits may exist after the 106P '
             'baseline; an open number of commits must fail loudly.');
   });
 
@@ -247,6 +252,7 @@ void main() {
         'lib/core/backup/business_data_wipe_service.dart',
         'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory/drift_inventory_repository.dart',
+        'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
       }),
       isEmpty,
