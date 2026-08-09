@@ -170,6 +170,9 @@ void main() {
     ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
     expect(productionDiff, {
       'lib/app/app_repositories.dart',
+      'lib/core/backup/backup_checksum.dart',
+      'lib/core/backup/backup_export.dart',
+      'lib/core/backup/backup_restore_preview.dart',
       'lib/core/backup/backup_restore_service.dart',
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',

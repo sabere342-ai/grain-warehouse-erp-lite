@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
@@ -228,7 +229,7 @@ void main() {
       });
 
       test('v1 backup is accepted by preview service', () async {
-        final v1Json = const JsonEncoder.withIndent('  ').convert({
+        final v1Backup = <String, Object?>{
           'metadata': {
             'app': 'grain-warehouse-erp-lite',
             'backupVersion': 1,
@@ -367,7 +368,9 @@ void main() {
               },
             ],
           },
-        });
+        };
+        v1Backup['checksum'] = BackupChecksum.computeEnvelope(v1Backup);
+        final v1Json = const JsonEncoder.withIndent('  ').convert(v1Backup);
 
         final result = const BackupRestorePreviewService().preview(v1Json);
 

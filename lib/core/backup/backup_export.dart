@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
@@ -268,9 +269,7 @@ class BackupExportService {
       },
     };
 
-    final bodyForChecksum =
-        const JsonEncoder.withIndent('  ').convert(snapshotWithoutChecksum);
-    final checksum = _adler32(bodyForChecksum);
+    final checksum = BackupChecksum.computePayload(snapshotWithoutChecksum);
     final snapshot = <String, Object?>{
       ...snapshotWithoutChecksum,
       'checksum': checksum,
@@ -914,20 +913,6 @@ class BackupExportService {
         'reopenedByUserId': value.reopenedByUserId,
         'reopenReason': value.reopenReason,
       };
-
-  String _adler32(String input) {
-    const modulus = 65521;
-    var a = 1;
-    var b = 0;
-
-    for (final byte in utf8.encode(input)) {
-      a = (a + byte) % modulus;
-      b = (b + a) % modulus;
-    }
-
-    final value = (b << 16) | a;
-    return value.toRadixString(16).padLeft(8, '0');
-  }
 }
 
 class BackupExportResult {

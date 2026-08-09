@@ -241,7 +241,9 @@ void main() {
       changed,
       {
         'lib/app/app_repositories.dart',
+        'lib/core/backup/backup_checksum.dart',
         'lib/core/backup/backup_export.dart',
+        'lib/core/backup/backup_restore_preview.dart',
         'lib/core/backup/backup_restore_service.dart',
         'lib/core/backup/business_data_wipe_service.dart',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',

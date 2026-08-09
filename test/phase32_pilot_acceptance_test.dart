@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
@@ -267,6 +268,7 @@ void main() {
       data.remove('customers');
       data.remove('expenses');
       data.remove('auditLogs');
+      backup['checksum'] = BackupChecksum.computeEnvelope(backup);
       final oldBackupText = const JsonEncoder.withIndent('  ').convert(backup);
 
       final preview =

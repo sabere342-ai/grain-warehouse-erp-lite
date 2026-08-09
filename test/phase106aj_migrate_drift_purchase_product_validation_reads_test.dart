@@ -34,6 +34,8 @@ const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
 const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
 const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
+const _phase107cBranch =
+    'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _phase106alTargetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
@@ -286,6 +288,9 @@ void main() {
       {
         _targetPath,
         _compositionPath,
+        'lib/core/backup/backup_checksum.dart',
+        'lib/core/backup/backup_export.dart',
+        'lib/core/backup/backup_restore_preview.dart',
         'lib/core/backup/business_data_wipe_service.dart',
         _phase106alTargetPath,
         'lib/core/inventory_valuation/profitability_activation_service.dart',
@@ -309,6 +314,7 @@ void main() {
         _phase106alBranch,
         _phase106amBranch,
         _phase106anBranch,
+        _phase107cBranch,
       ),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();

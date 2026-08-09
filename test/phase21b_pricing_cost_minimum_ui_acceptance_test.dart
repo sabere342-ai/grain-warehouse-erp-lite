@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
@@ -112,6 +113,7 @@ void main() {
 
       final oldBackup = jsonDecode(backup.jsonText) as Map<String, Object?>;
       _firstProductJson(oldBackup).remove('referenceCostPricePiastersPerKg');
+      oldBackup['checksum'] = BackupChecksum.computeEnvelope(oldBackup);
       final oldRestored = await _restoreIntoEmpty(
         const JsonEncoder.withIndent('  ').convert(oldBackup),
       );

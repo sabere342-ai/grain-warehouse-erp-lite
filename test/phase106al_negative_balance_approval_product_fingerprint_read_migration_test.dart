@@ -17,6 +17,8 @@ const _branch =
     'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
 const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
+const _phase107cBranch =
+    'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _targetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -111,6 +113,9 @@ void main() {
     expect(changedProduction, {
       _targetPath,
       _compositionPath,
+      'lib/core/backup/backup_checksum.dart',
+      'lib/core/backup/backup_export.dart',
+      'lib/core/backup/backup_restore_preview.dart',
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/inventory_valuation/profitability_activation_service.dart',
       'lib/core/sales/drift_sale_repository.dart',
@@ -144,7 +149,7 @@ void main() {
   test('lineage preserves the exact Phase 106AL and 106AM children', () {
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106amBranch, _phase106anBranch),
+      anyOf(_branch, _phase106amBranch, _phase106anBranch, _phase107cBranch),
     );
     expect(
         _git(['log', '-1', '--format=%s', _baseline]).trim(), _baselineSubject);

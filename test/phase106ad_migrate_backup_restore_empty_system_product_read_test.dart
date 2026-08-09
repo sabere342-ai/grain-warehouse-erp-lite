@@ -137,6 +137,9 @@ void main() {
     expect(productionDiff, {
       _servicePath,
       _appRepositoriesPath,
+      'lib/core/backup/backup_checksum.dart',
+      'lib/core/backup/backup_export.dart',
+      'lib/core/backup/backup_restore_preview.dart',
       'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
       'lib/core/inventory/drift_inventory_repository.dart',

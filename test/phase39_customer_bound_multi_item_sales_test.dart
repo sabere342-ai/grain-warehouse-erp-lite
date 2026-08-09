@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
@@ -1058,7 +1059,7 @@ void main() {
       });
 
       test('old single-item backup restores compatibly', () async {
-        final backupJson = {
+        final backupJson = <String, Object?>{
           'metadata': {
             'app': 'grain-warehouse-erp-lite',
             'backupVersion': 2,
@@ -1160,6 +1161,8 @@ void main() {
             ],
           },
         };
+        backupJson['checksum'] = BackupChecksum.computeEnvelope(backupJson);
+        backupJson['checksumNote'] = 'test';
 
         final products = LocalProductRepository();
         final inventory = LocalInventoryRepository(productRepository: products);

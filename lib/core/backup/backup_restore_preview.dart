@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
+
 class BackupRestorePreviewService {
   const BackupRestorePreviewService();
 
@@ -58,13 +60,6 @@ class BackupRestorePreviewService {
       if (data is! Map<String, Object?>) {
         return _failure('النسخة لا تحتوي على بيانات data.', 'missing-data');
       }
-      if (_containsSensitiveKey(decoded)) {
-        return _failure(
-          'النسخة تحتوي على مفاتيح حساسة ولا يمكن قبولها.',
-          'sensitive-key',
-        );
-      }
-
       final app = metadata['app'];
       if (app != _appName) {
         return _failure(
@@ -81,6 +76,34 @@ class BackupRestorePreviewService {
           'unsupported-version',
         );
       }
+
+      final checksum = decoded['checksum'];
+      if (checksum == null) {
+        return _failure(
+          'النسخة لا تحتوي على رمز فحص السلامة المطلوب.',
+          'backup-checksum-missing',
+        );
+      }
+      if (!BackupChecksum.isWellFormed(checksum)) {
+        return _failure(
+          'رمز فحص سلامة النسخة غير صالح.',
+          'backup-checksum-malformed',
+        );
+      }
+      if (checksum != BackupChecksum.computeEnvelope(decoded)) {
+        return _failure(
+          'فشل فحص سلامة النسخة. قد يكون الملف تالفا أو معدلا.',
+          'backup-checksum-mismatch',
+        );
+      }
+
+      if (_containsSensitiveKey(decoded)) {
+        return _failure(
+          'النسخة تحتوي على مفاتيح حساسة ولا يمكن قبولها.',
+          'sensitive-key',
+        );
+      }
+
       if (metadata['restoreSupported'] != false) {
         return _failure(
           'هذه النسخة لا تطابق قواعد الفحص الآمن.',

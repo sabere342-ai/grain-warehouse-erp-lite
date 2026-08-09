@@ -8,6 +8,7 @@ import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_service.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
@@ -608,7 +609,7 @@ void main() {
         updatedAt: now,
       );
 
-      final backupJson = {
+      final backupJson = <String, Object?>{
         'metadata': {
           'app': 'grain-warehouse-erp-lite',
           'backupVersion': 3,
@@ -660,9 +661,9 @@ void main() {
             },
           },
         },
-        'checksum': '00000000',
-        'checksumNote': 'test',
       };
+      backupJson['checksum'] = BackupChecksum.computeEnvelope(backupJson);
+      backupJson['checksumNote'] = 'test';
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
         filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',
@@ -703,7 +704,7 @@ void main() {
         updatedAt: now,
       );
 
-      final backupJson = {
+      final backupJson = <String, Object?>{
         'metadata': {
           'app': 'grain-warehouse-erp-lite',
           'backupVersion': 3,
@@ -755,9 +756,9 @@ void main() {
             },
           },
         },
-        'checksum': '00000000',
-        'checksumNote': 'test',
       };
+      backupJson['checksum'] = BackupChecksum.computeEnvelope(backupJson);
+      backupJson['checksumNote'] = 'test';
 
       final targetIdentityRepo = LocalBusinessIdentityRepository(
         filePath: '${targetDir.path}${Platform.pathSeparator}identity.json',

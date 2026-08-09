@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
+import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_export.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_restore_preview.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
@@ -84,6 +85,7 @@ void main() {
       final fixture = await _fixture();
       final backup = await _decodedBackup(fixture);
       (backup['metadata'] as Map<String, Object?>)['restoreSupported'] = true;
+      _refreshChecksum(backup);
 
       final result =
           const BackupRestorePreviewService().preview(jsonEncode(backup));
@@ -96,6 +98,7 @@ void main() {
       final fixture = await _fixture();
       final backup = await _decodedBackup(fixture);
       (backup['counts'] as Map<String, Object?>)['products'] = 2;
+      _refreshChecksum(backup);
 
       final result =
           const BackupRestorePreviewService().preview(jsonEncode(backup));
@@ -118,6 +121,7 @@ void main() {
         final data = backup['data'] as Map<String, Object?>;
         final products = data['products'] as List<Object?>;
         (products.first as Map<String, Object?>)[key] = 'hidden';
+        _refreshChecksum(backup);
 
         final result =
             const BackupRestorePreviewService().preview(jsonEncode(backup));
@@ -132,6 +136,7 @@ void main() {
       final backup = await _decodedBackup(fixture);
       backup['extraSafeNote'] = 'ok';
       (backup['metadata'] as Map<String, Object?>)['operatorNote'] = 'safe';
+      _refreshChecksum(backup);
 
       final result =
           const BackupRestorePreviewService().preview(jsonEncode(backup));
@@ -272,6 +277,10 @@ Future<void> _setTallViewport(WidgetTester tester) async {
 Future<Map<String, Object?>> _decodedBackup(_BackupFixture fixture) async {
   final result = await fixture.service.createBackup();
   return jsonDecode(result.jsonText) as Map<String, Object?>;
+}
+
+void _refreshChecksum(Map<String, Object?> backup) {
+  backup['checksum'] = BackupChecksum.computeEnvelope(backup);
 }
 
 Future<_BackupFixture> _fixture() async {
