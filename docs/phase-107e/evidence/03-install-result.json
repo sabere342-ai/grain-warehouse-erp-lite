@@ -1,0 +1,57 @@
+{
+    "runId":  "20260809-204702",
+    "timestampUtc":  "2026-08-09T17:47:19.9821076Z",
+    "mode":  "Install",
+    "user":  "Islam\\CodexGhalal107E",
+    "sid":  "S-1-5-21-2052787611-3211508837-1074070108-1032",
+    "profilePath":  "C:\\Users\\CodexGhalal107E",
+    "appData":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming",
+    "localAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Local",
+    "installer":  {
+                      "path":  "C:\\Users\\Public\\Documents\\GralaPhase107E\\GrainWarehouseERP-1.0.0-windows-x64.exe",
+                      "exists":  true,
+                      "size":  14998748,
+                      "sha256":  "ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659",
+                      "lastWriteUtc":  "2026-08-09T15:10:43.4053988Z"
+                  },
+    "startedUtc":  "2026-08-09T17:47:20.0887102Z",
+    "completedUtc":  "2026-08-09T17:47:23.8184301Z",
+    "exitCode":  0,
+    "installDirectory":  {
+                             "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite",
+                             "exists":  true,
+                             "fileCount":  24
+                         },
+    "installedExecutable":  {
+                                "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\grain_warehouse_erp_lite.exe",
+                                "exists":  true,
+                                "size":  784384,
+                                "sha256":  "54d80420979ca717c7969f46a43bbe8f14e7d41dfb89506ea6660c24a17f5826",
+                                "lastWriteUtc":  "2026-08-09T15:09:56.0000000Z"
+                            },
+    "installedManifest":  {
+                              "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\release-manifest.json",
+                              "exists":  true,
+                              "size":  5576,
+                              "sha256":  "0377d97fd963edb09ea6257569725a04764fe52ba1ef82a6fcf4b52fe8a35dab",
+                              "lastWriteUtc":  "2026-08-09T15:10:24.0000000Z"
+                          },
+    "startMenuShortcut":  {
+                              "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Grain Warehouse ERP Lite\\Grain Warehouse ERP Lite.lnk",
+                              "exists":  true,
+                              "size":  1479,
+                              "sha256":  "e1d153a4e0602b72caa30adf0d5fd0e08f509e5a404e0a6007ab6a14868acfc1",
+                              "lastWriteUtc":  "2026-08-09T17:47:23.3322988Z"
+                          },
+    "desktopShortcut":  {
+                            "path":  "C:\\Users\\CodexGhalal107E\\Desktop\\Grain Warehouse ERP Lite.lnk",
+                            "exists":  false
+                        },
+    "uninstallRegistration":  {
+                                  "exists":  true,
+                                  "key":  "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_is1",
+                                  "displayName":  "Grain Warehouse ERP Lite",
+                                  "installLocation":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\",
+                                  "uninstallString":  "\"C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\unins000.exe\""
+                              }
+}

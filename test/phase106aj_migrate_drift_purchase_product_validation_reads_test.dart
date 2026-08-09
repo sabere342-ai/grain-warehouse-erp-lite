@@ -37,6 +37,7 @@ const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
+const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
 const _phase106alTargetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
@@ -309,7 +310,7 @@ void main() {
   test('lineage admits only the exact Phase 106AJ through 106AM children', () {
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(
+      anyOf(<String>[
         _branch,
         _phase106akBranch,
         _phase106alBranch,
@@ -317,7 +318,8 @@ void main() {
         _phase106anBranch,
         _phase107cBranch,
         _phase107dBranch,
-      ),
+        _phase107eBranch,
+      ]),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])

@@ -1,0 +1,25 @@
+{
+  "runId": "20260809-204702",
+  "windowTitle": "غلال",
+  "visibleWindow": true,
+  "expectedRoute": "first-owner-setup",
+  "actualRoute": "first-owner-setup",
+  "sourceContract": "AuthGate routes needsFirstOwner to FirstOwnerSetupScreen; createFirstOwner signs the new owner in",
+  "setupFieldsReachable": true,
+  "setupSucceeded": true,
+  "postSetupRoute": "dashboard",
+  "secondLaunchRoute": "login",
+  "secondLoginSucceeded": true,
+  "secondPostLoginRoute": "dashboard",
+  "ownerDisplayName": "Phase 107E Owner",
+  "ownerPhone": "01070000107",
+  "passwordRecorded": false,
+  "secretExposed": false,
+  "screenshots": [
+    "05-first-route.png",
+    "05-setup-ready.png",
+    "05-post-setup-dashboard.png",
+    "09-second-launch-login.png",
+    "09-second-login-dashboard.png"
+  ]
+}

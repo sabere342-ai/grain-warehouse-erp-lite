@@ -1,0 +1,18 @@
+{
+    "runId":  "20260809-204702",
+    "timestampUtc":  "2026-08-09T17:47:05.9165540Z",
+    "baselineCommit":  "d2103102f68ff7dbc1dec3ca5fc4b02d054be912",
+    "branch":  "codex/phase-107e-fresh-profile-runtime-acceptance",
+    "startingTreeClean":  true,
+    "phaseEntryCleanWasObservedBeforeBranchCreation":  true,
+    "controllerWorktreeContainedOnlyPhase107EChanges":  true,
+    "testUser":  "CodexGhalal107E",
+    "sid":  "S-1-5-21-2052787611-3211508837-1074070108-1032",
+    "profilePath":  "C:\\Users\\CodexGhalal107E",
+    "profileExistedBeforeUserCreation":  false,
+    "profileExistedBeforeInitialization":  false,
+    "artifactFileName":  "GrainWarehouseERP-1.0.0-windows-x64.exe",
+    "artifactSize":  14998748,
+    "artifactSha256":  "ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659",
+    "publicCopySha256":  "ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659"
+}

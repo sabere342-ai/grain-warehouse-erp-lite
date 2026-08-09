@@ -1,0 +1,19 @@
+{
+    "runId":  "20260809-204702",
+    "timestampUtc":  "2026-08-09T17:47:37.8370587Z",
+    "mode":  "Launch",
+    "user":  "Islam\\CodexGhalal107E",
+    "sid":  "S-1-5-21-2052787611-3211508837-1074070108-1032",
+    "profilePath":  "C:\\Users\\CodexGhalal107E",
+    "appData":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming",
+    "localAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Local",
+    "processId":  10056,
+    "executablePath":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\grain_warehouse_erp_lite.exe",
+    "workingDirectory":  "C:\\Users\\Public\\Documents\\GralaPhase107E\\runtime-cwd",
+    "mainWindowHandle":  53020714,
+    "mainWindowTitle":  "غلال",
+    "immediateExit":  false,
+    "sourceCheckoutUsed":  false,
+    "effectiveAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming",
+    "effectiveLocalAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Local"
+}

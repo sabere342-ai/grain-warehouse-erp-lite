@@ -1,0 +1,12 @@
+{
+  "runId": "20260809-204702",
+  "installedRuntime": true,
+  "dashboard": true,
+  "products": true,
+  "inventory": true,
+  "sales": true,
+  "settings": true,
+  "noCrash": true,
+  "scope": "navigation-only runtime smoke; no R1-005 or R1-006 workflow acceptance",
+  "screenshot": "06-runtime-smoke-settings.png"
+}

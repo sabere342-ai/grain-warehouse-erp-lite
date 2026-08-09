@@ -1,0 +1,12 @@
+{
+  "runId": "20260809-200046",
+  "status": "INVALIDATED",
+  "materialToFinalResult": true,
+  "processStarted": true,
+  "freshUserToken": true,
+  "freshUserApplicationDataCreated": false,
+  "reason": "The first launcher implementation inherited the interactive developer environment. The visible dashboard therefore did not represent the fresh profile.",
+  "remediation": "Close the invalid process, remove the test account and profile, and relaunch from a worker whose APPDATA and LOCALAPPDATA are proven to belong to the fresh user.",
+  "eligibleAsAcceptanceEvidence": false,
+  "secretExposed": false
+}

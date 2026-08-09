@@ -1,0 +1,30 @@
+PHASE 107E FINAL REGRESSION EVIDENCE
+Date: 2026-08-09
+
+PASS  dart format --output=none --set-exit-if-changed .
+      422 files checked; 0 changed.
+PASS  flutter analyze
+      No issues found.
+PASS  flutter test
+      2381 passed; 1 skipped; 0 failed.
+PASS  flutter build windows --release
+      Release executable built successfully in 57.3 seconds.
+      The first sandbox-constrained invocation timed out without a compiler result;
+      no build process remained, and the approved unrestricted rerun exited 0.
+PASS  Phase 107C focused checksum/restore regression
+      6 passed; 0 failed.
+PASS  Phase 107D governed package verification
+      D1-D10 passed; 21 payload files; 45,895,436 payload bytes.
+PASS  Phase 107D negative controls
+      Payload mutation, manifest mutation, and missing payload were all rejected.
+PASS  Phase 106AJ/AK/AL/AM lineage regressions
+      35 passed; 0 failed. Assertions were not weakened.
+PASS  Phase 107E evidence verifier
+      E1-E19 passed.
+
+Frozen Phase 107D artifact after all build/regression work:
+  Installer bytes: 14,998,748
+  Installer SHA-256: ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659
+  Manifest SHA-256: 0377d97fd963edb09ea6257569725a04764fe52ba1ef82a6fcf4b52fe8a35dab
+
+Final Git gates are recorded in the report and were required before commit.

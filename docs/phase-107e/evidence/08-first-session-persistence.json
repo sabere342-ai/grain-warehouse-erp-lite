@@ -1,0 +1,89 @@
+{
+    "runId":  "20260809-204702",
+    "timestampUtc":  "2026-08-09T18:00:14.2283370Z",
+    "mode":  "Snapshot",
+    "user":  "Islam\\CodexGhalal107E",
+    "sid":  "S-1-5-21-2052787611-3211508837-1074070108-1032",
+    "profilePath":  "C:\\Users\\CodexGhalal107E",
+    "appData":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming",
+    "localAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Local",
+    "applicationSupport":  {
+                               "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala",
+                               "exists":  true,
+                               "fileCount":  3
+                           },
+    "preferences":  {
+                        "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\GrainWarehouseErpLite",
+                        "exists":  false,
+                        "fileCount":  0
+                    },
+    "backupDirectory":  {
+                            "path":  "C:\\Users\\CodexGhalal107E\\Documents\\grain-warehouse-erp-lite-backups",
+                            "exists":  false,
+                            "fileCount":  0
+                        },
+    "installDirectory":  {
+                             "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite",
+                             "exists":  true,
+                             "fileCount":  24
+                         },
+    "database":  {
+                     "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3",
+                     "exists":  true,
+                     "size":  4096,
+                     "lastWriteUtc":  "2026-08-09T17:47:38.1836102Z",
+                     "sha256":  "6725e9c2f4d09abc3d8bd9d916bfc8012b91ef682f8ad5ecf54591ac7c4572df"
+                 },
+    "databaseWal":  {
+                        "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3-wal",
+                        "exists":  true,
+                        "size":  1075352,
+                        "lastWriteUtc":  "2026-08-09T17:50:40.1922053Z",
+                        "sha256":  "b26f7497b884c0592e4ba4fabb6fe03c824fbd84db824c3923dc21b58b0a1ef3"
+                    },
+    "databaseShm":  {
+                        "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3-shm",
+                        "exists":  true,
+                        "size":  32768,
+                        "lastWriteUtc":  "2026-08-09T17:47:38.1889999Z",
+                        "sha256":  "95100b2233e88d305f1652a28986bf7158e72f65cfaa6f15eb1f539a8c0585a0"
+                    },
+    "profileDatabaseFiles":  [
+                                 {
+                                     "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3",
+                                     "exists":  true,
+                                     "size":  4096,
+                                     "lastWriteUtc":  "2026-08-09T17:47:38.1836102Z",
+                                     "sha256":  "6725e9c2f4d09abc3d8bd9d916bfc8012b91ef682f8ad5ecf54591ac7c4572df"
+                                 },
+                                 {
+                                     "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3-shm",
+                                     "exists":  true,
+                                     "size":  32768,
+                                     "lastWriteUtc":  "2026-08-09T17:47:38.1889999Z",
+                                     "sha256":  "95100b2233e88d305f1652a28986bf7158e72f65cfaa6f15eb1f539a8c0585a0"
+                                 },
+                                 {
+                                     "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Grala\\Grala\\grain_warehouse_erp.sqlite3-wal",
+                                     "exists":  true,
+                                     "size":  1075352,
+                                     "lastWriteUtc":  "2026-08-09T17:50:40.1922053Z",
+                                     "sha256":  "b26f7497b884c0592e4ba4fabb6fe03c824fbd84db824c3923dc21b58b0a1ef3"
+                                 }
+                             ],
+    "installedExecutable":  {
+                                "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\grain_warehouse_erp_lite.exe",
+                                "exists":  true,
+                                "size":  784384,
+                                "lastWriteUtc":  "2026-08-09T15:09:56.0000000Z",
+                                "sha256":  "54d80420979ca717c7969f46a43bbe8f14e7d41dfb89506ea6660c24a17f5826"
+                            },
+    "uninstallRegistration":  {
+                                  "exists":  true,
+                                  "key":  "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_is1",
+                                  "displayName":  "Grain Warehouse ERP Lite",
+                                  "installLocation":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\",
+                                  "uninstallString":  "\"C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite\\unins000.exe\""
+                              },
+    "runningProcessCount":  0
+}

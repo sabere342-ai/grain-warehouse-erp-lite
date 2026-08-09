@@ -1,0 +1,47 @@
+{
+    "runId":  "20260809-204702",
+    "timestampUtc":  "2026-08-09T17:47:06.9670741Z",
+    "mode":  "Prestate",
+    "user":  "Islam\\CodexGhalal107E",
+    "sid":  "S-1-5-21-2052787611-3211508837-1074070108-1032",
+    "profilePath":  "C:\\Users\\CodexGhalal107E",
+    "appData":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming",
+    "localAppData":  "C:\\Users\\CodexGhalal107E\\AppData\\Local",
+    "applicationSupport":  {
+                               "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\com.example\\grain_warehouse_erp_lite",
+                               "exists":  false,
+                               "fileCount":  0
+                           },
+    "preferences":  {
+                        "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\GrainWarehouseErpLite",
+                        "exists":  false,
+                        "fileCount":  0
+                    },
+    "backupDirectory":  {
+                            "path":  "C:\\Users\\CodexGhalal107E\\Documents\\grain-warehouse-erp-lite-backups",
+                            "exists":  false,
+                            "fileCount":  0
+                        },
+    "installDirectory":  {
+                             "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Local\\Programs\\GrainWarehouseERPLite",
+                             "exists":  false,
+                             "fileCount":  0
+                         },
+    "database":  {
+                     "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\com.example\\grain_warehouse_erp_lite\\grain_warehouse_erp.sqlite3",
+                     "exists":  false
+                 },
+    "startMenuShortcut":  {
+                              "path":  "C:\\Users\\CodexGhalal107E\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Grain Warehouse ERP Lite\\Grain Warehouse ERP Lite.lnk",
+                              "exists":  false
+                          },
+    "desktopShortcut":  {
+                            "path":  "C:\\Users\\CodexGhalal107E\\Desktop\\Grain Warehouse ERP Lite.lnk",
+                            "exists":  false
+                        },
+    "uninstallRegistration":  {
+                                  "exists":  false,
+                                  "key":  null
+                              },
+    "runningProcessCount":  0
+}
