@@ -1,0 +1,37 @@
+PHASE 107F — BLOCKER AND SCOPE DECISION
+
+Outcome: B — PARTIAL / BLOCKED
+
+R1-005 closure inputs available in this execution:
+- Named genuine client / actual-use representative: NO
+- Verifiable participant role: NO
+- Genuine client session date/time: NO
+- Participant-executed scenarios A–H: NO
+- Participant observations: NO
+- Explicit client acceptance decision: NO
+
+Authoritative prior evidence:
+- Phase 101G status: BLOCKED — GENUINE CLIENT SESSION REQUIRED
+- Phase 107A: R1-005 is external genuine-client acceptance evidence
+- Phase 107E: R1-005 and R1-006 remain open and unchanged
+- Phase 107E recommended next phase: genuine client A–H acceptance only; do
+  not combine it with R1-006 documentation corrections
+
+Scope enforcement:
+R1-006 touched = NO
+R1-006 closed = NO
+R1-006 status changed = NO
+
+Production diff = 0
+Schema diff = 0
+Dependencies diff = 0
+UI diff = 0
+
+No client-facing backup/data-path document was changed. No documentation guard
+or negative control targeting R1-006 literals was added.
+
+Required unblock:
+Coordinate a session with a genuine client or actual-use representative. Bind a
+fresh Windows release artifact to that session, record the participant and role,
+have the participant execute scenarios A–H, capture evidence and findings, and
+record an explicit acceptance/rejection decision. Do not infer acceptance.

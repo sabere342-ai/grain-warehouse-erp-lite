@@ -1,0 +1,30 @@
+PHASE 107F — BASELINE PREFLIGHT
+
+Required baseline:
+ca358644e646cdf3551e4acdde5af2a41f9713b9
+
+Commands and observed output before branch creation or file edits:
+
+git status --short
+<no output: clean working tree>
+
+git branch --show-current
+codex/phase-107e-fresh-profile-runtime-acceptance
+
+git rev-parse HEAD
+ca358644e646cdf3551e4acdde5af2a41f9713b9
+
+git rev-parse HEAD^
+d2103102f68ff7dbc1dec3ca5fc4b02d054be912
+
+git log -5 --oneline
+ca35864 PHASE 107E: accept fresh-profile installed runtime
+d210310 PHASE 107D: govern Windows release package
+f521a97 PHASE 107C: verify backup checksum before restore
+e74b3b4 PHASE 107B: make business data wipe atomic
+c85f191 PHASE 107A: prove post-review system status and remaining work
+
+Pre-flight decision: PASS
+Working tree at pre-flight: CLEAN
+Branch created at the verified baseline:
+codex/phase-107f-govern-client-backup-data-path-documentation

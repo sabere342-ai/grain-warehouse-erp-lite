@@ -1,0 +1,38 @@
+PHASE 107F — GOVERNING RISK RECONSTRUCTION
+
+Source of truth:
+docs/phase-107a/PHASE-107A-POST-COMPREHENSIVE-REVIEW-VERIFIED-STATUS.md
+Section 27, Remaining backlog
+
+R1-005
+Area: Client acceptance
+Problem/type: UNVERIFIED genuine client scenarios
+Evidence: Phase 101G blocked
+Impact: Commercial acceptance cannot be claimed
+Required fix: Run A–H with genuine user and explicit decision
+Scope: External evidence
+Risk: High
+
+Original reconciliation evidence from Phase 107A:
+Genuine client acceptance absent; still reproducible; Phase 101G remains
+blocked; no later genuine session evidence; remaining as R1-005.
+
+Closure requirement:
+A named genuine client or actual-use representative executes scenarios A–H,
+the evidence is captured, and the participant supplies an explicit acceptance
+decision. Automated tests, owner-only checks, and silent visual evidence do not
+substitute for that requirement.
+
+R1-006 boundary
+Area: Client docs
+Problem/type: DEFECT: v3 backup claims and wrong %APPDATA%\Grala... path
+Evidence: known limitations :21; backup note :9; install guide :58; actual DB
+under com.example
+Required fix: reconcile docs to backup v8, actual path, package type, and
+wipe/checksum limits
+Scope: Docs only
+
+Conclusion:
+The attached request's backup/data-path objective is R1-006 under the governing
+register. It cannot be used to close R1-005, and R1-006 is firewalled from this
+phase.
