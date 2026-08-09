@@ -22,6 +22,7 @@ const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
+const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
 const _reportPath =
     'docs/PHASE-106AK-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
@@ -110,7 +111,7 @@ void main() {
     expect(
       _git(['branch', '--show-current']).trim(),
       anyOf(_branch, _phase106alBranch, _phase106amBranch, _phase106anBranch,
-          _phase107cBranch),
+          _phase107cBranch, _phase107dBranch),
     );
 
     final report = File(_reportPath).readAsStringSync();

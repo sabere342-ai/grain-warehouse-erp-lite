@@ -1,0 +1,27 @@
+PHASE 107D GOVERNED WINDOWS PACKAGE / INSTALLER EVIDENCE
+
+Outcome: Outcome A - FULL SUCCESS
+Application source baseline: f521a97946d73829fef19f4f0d30a6d07b9f8051
+Packaging tool commit: bea4cb98db4a873b36f498a280e3ade50f2a0975
+Package format: inno-setup-exe
+Artifact: delivery/phase-107d/GrainWarehouseERP-1.0.0-windows-x64.exe
+Artifact size: 14998748 bytes
+Artifact SHA-256: ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659
+Manifest: delivery/phase-107d/release-manifest.json
+Manifest size: 5576 bytes
+Manifest SHA-256: 0377d97fd963edb09ea6257569725a04764fe52ba1ef82a6fcf4b52fe8a35dab
+Payload: 21 files, 45895436 bytes
+D1-D10: PASS
+Tamper A/B/C: expected rejection PASS
+Installed payload size/hash verification: PASS (21 files)
+First installed launch: PASS (window title: غلال)
+Second installed launch: PASS (window title: غلال)
+Uninstall: PASS
+User data preservation: PASS (4 files, byte-for-byte)
+Leak scan: PASS
+Dart format: PASS (422 files, 0 changed)
+Flutter analyze: PASS (no issues)
+Full tests: PASS (2381 passed, 1 skipped, 0 failed)
+Windows release build: PASS
+Production/schema/dependency/UI diff: none
+Risk decision: R1-003 CLOSED; no other risk status changed

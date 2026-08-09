@@ -23,6 +23,7 @@ const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
 const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
 const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
+const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
 const _targetPath =
     'lib/core/inventory_valuation/profitability_activation_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -243,7 +244,7 @@ void main() {
   test('lineage preserves the exact Phase 106AM and 106AN children', () {
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106anBranch, _phase107cBranch),
+      anyOf(_branch, _phase106anBranch, _phase107cBranch, _phase107dBranch),
     );
     expect(
       _git(['log', '-1', '--format=%s', _baseline]).trim(),
