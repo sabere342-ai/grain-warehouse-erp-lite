@@ -1,0 +1,7 @@
+Rollback writes tamperDetected=true with a new integrity marker.
+Restart at T0 + 4 days after rollback: still blocked.
+Correcting the clock does not clear the flag.
+Edited marker: invalidState.
+Missing state or sentinel after initialization: invalidState.
+Corrupt state never initializes a fresh trial.
+Result: PASS

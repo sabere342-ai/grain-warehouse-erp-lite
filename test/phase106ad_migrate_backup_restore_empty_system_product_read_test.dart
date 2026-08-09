@@ -133,7 +133,10 @@ void main() {
       _baseline,
       '--',
       'lib',
-    ]).split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    ])
+        .split(RegExp(r'\r?\n'))
+        .where((path) => path.isNotEmpty && !_isPhase107GProductionPath(path))
+        .toSet();
     expect(productionDiff, {
       _servicePath,
       _appRepositoriesPath,
@@ -241,6 +244,11 @@ void main() {
     }
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 Future<_Fixture> _fixture(ProductCatalogReadRepository catalog) async {
   final products = LocalProductRepository();

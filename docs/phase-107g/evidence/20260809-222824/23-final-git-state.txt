@@ -1,0 +1,12 @@
+Baseline/required parent: 7b4da07e1e58d6cafa47e51c05cf15e4bfaac6d8
+Branch: codex/phase-107g-14-day-local-trial-enforcement
+Required subject: PHASE 107G: enforce 14-day local trial
+Required commits after baseline: 1
+Required merge commits: 0
+Required final tree: clean
+Push: none
+Tag: none
+Merge: none
+Rebase: none
+
+The final commit hash and post-commit command output are recorded in the task handoff because a commit cannot contain its own hash without changing that hash.

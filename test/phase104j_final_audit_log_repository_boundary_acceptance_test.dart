@@ -255,7 +255,13 @@ void main() {
 
     expect(
       mainSource.indexOf('await AppRepositories.initializeProduction();'),
-      lessThan(mainSource.indexOf('runApp(const GrainWarehouseApp());')),
+      lessThan(mainSource
+          .indexOf('final trialService = await TrialService.production();')),
+    );
+    expect(
+      mainSource
+          .indexOf('final trialEvaluation = await trialService.evaluate();'),
+      lessThan(mainSource.indexOf('runApp(')),
     );
     expect(
       composition,

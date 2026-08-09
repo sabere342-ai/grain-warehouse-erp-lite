@@ -1,0 +1,8 @@
+FoundationDatabase schema diff: 0
+Generated Drift diff: 0
+Migration diff: 0
+pubspec.yaml diff: 0
+pubspec.lock diff: 0
+New dependencies: 0
+Existing crypto, path, and path_provider dependencies reused.
+Result: PASS

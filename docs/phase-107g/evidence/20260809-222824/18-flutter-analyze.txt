@@ -1,0 +1,6 @@
+Command: flutter analyze
+Result: No issues found
+Analyzer issues: 0
+Exit code: 0
+Duration: 13.4 seconds (analysis 10.8 seconds)
+Status: PASS

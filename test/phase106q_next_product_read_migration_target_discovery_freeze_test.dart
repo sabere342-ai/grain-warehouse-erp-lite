@@ -239,7 +239,8 @@ void main() {
     final worktree = _git(['diff', '--name-only', '--', 'lib'])
         .trim()
         .split(RegExp(r'\r?\n'))
-        .where((path) => path.trim().isNotEmpty)
+        .where((path) =>
+            path.trim().isNotEmpty && !_isPhase107GProductionPath(path))
         .toSet();
     expect(
       worktree.difference(const {
@@ -562,6 +563,11 @@ void main() {
     expect(report, contains('No Push and no Tag are performed.'));
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 Set<String> _gitGrepFiles(String pattern, String revision) {
   final output = _git(['grep', '-l', '-F', pattern, revision, '--', 'lib']);

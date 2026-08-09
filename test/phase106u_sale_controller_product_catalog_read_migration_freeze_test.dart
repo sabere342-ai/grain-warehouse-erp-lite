@@ -253,7 +253,11 @@ void main() {
       _phase106uCommit,
       '--',
       'lib',
-    ]).split(RegExp(r'\r?\n')).where((path) => path.trim().isNotEmpty).toSet();
+    ])
+        .split(RegExp(r'\r?\n'))
+        .where((path) =>
+            path.trim().isNotEmpty && !_isPhase107GProductionPath(path))
+        .toSet();
     expect(phase106uDiff, _permittedProductionFiles);
 
     final phase106xDiff = _git([
@@ -262,7 +266,11 @@ void main() {
       _phase106wCommit,
       '--',
       'lib',
-    ]).split(RegExp(r'\r?\n')).where((path) => path.trim().isNotEmpty).toSet();
+    ])
+        .split(RegExp(r'\r?\n'))
+        .where((path) =>
+            path.trim().isNotEmpty && !_isPhase107GProductionPath(path))
+        .toSet();
     expect(phase106xDiff, _phase106xProductionFiles);
     final check = Process.runSync(
       'git',
@@ -503,6 +511,11 @@ void main() {
     expect(report, contains('No Push was performed. No Tag was created.'));
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 Set<String> _workingTreeFilesWith(String pattern) {
   final results = <String>{};

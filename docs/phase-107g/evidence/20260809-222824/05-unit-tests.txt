@@ -1,0 +1,6 @@
+Command: flutter test test\phase107g_trial_enforcement_test.dart
+Passed: 36
+Skipped: 0
+Failed: 0
+Coverage: T1-T24, storage integrity, runtime checkpoint, B1-B6, N1-N4.
+Result: PASS

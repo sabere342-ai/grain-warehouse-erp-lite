@@ -1,0 +1,9 @@
+T0: 2026-08-10T10:00:00Z
+Day 1: ACTIVE
+Day 13: ACTIVE
+T0 + 13d 23h 59m 59s: ACTIVE
+T0 + 14d exactly: EXPIRED
+Beyond 14 days: EXPIRED
+Expired restart after clock moves back: EXPIRED (sticky)
+Open-app runtime transition at expiry: BLOCKED
+Result: PASS

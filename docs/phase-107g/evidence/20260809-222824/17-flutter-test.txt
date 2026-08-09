@@ -1,0 +1,8 @@
+Command: flutter test --reporter compact
+Passed: 2417
+Skipped: 1
+Failed: 0
+Duration: 224.6 seconds
+Result: PASS
+
+The first run exposed 16 historical guards that treated every future lib/ diff or branch after 107E as a failure. Their executable assertions were updated to exclude only the explicit 107G paths and admit the governed 107G branch; immutable historical evidence and original phase assertions were preserved. The acceptance rerun above passed.

@@ -1,0 +1,10 @@
+Command: git diff --check
+Exit code: 0
+Schema diff: 0
+Dependency diff: 0
+Backup diff: 0
+Restore diff: 0
+Accounting diff: 0
+Frozen installer diff: 0
+107F documentation diff: 0
+Result: PASS

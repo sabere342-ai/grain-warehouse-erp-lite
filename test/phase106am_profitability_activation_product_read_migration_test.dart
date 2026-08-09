@@ -25,6 +25,7 @@ const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
 const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
+const _phase107gBranch = 'codex/phase-107g-14-day-local-trial-enforcement';
 const _targetPath =
     'lib/core/inventory_valuation/profitability_activation_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -220,7 +221,11 @@ void main() {
       _baseline,
       '--',
       'lib',
-    ]).trim().split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    ])
+        .trim()
+        .split(RegExp(r'\r?\n'))
+        .where((path) => path.isNotEmpty && !_isPhase107GProductionPath(path))
+        .toSet();
     expect(changedProduction, {
       _targetPath,
       _compositionPath,
@@ -246,7 +251,7 @@ void main() {
     expect(
       _git(['branch', '--show-current']).trim(),
       anyOf(_branch, _phase106anBranch, _phase107cBranch, _phase107dBranch,
-          _phase107eBranch),
+          _phase107eBranch, _phase107gBranch),
     );
     expect(
       _git(['log', '-1', '--format=%s', _baseline]).trim(),
@@ -270,6 +275,11 @@ void main() {
     expect(_git(['rev-list', '--count', '$_baseline..HEAD']).trim(), '2');
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 ProfitabilityActivationService _service({
   required ProductCatalogReadRepository catalog,

@@ -1,0 +1,7 @@
+Financial-account production diff: 0
+Inventory-valuation production diff: 0
+Purchase production diff: 0
+Sale production diff: 0
+Ledger/COGS/weighted-average/opening-balance/customer/supplier/expense/closing behavior changed: no
+Full suite: PASS
+Result: PASS

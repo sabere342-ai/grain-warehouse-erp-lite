@@ -1,0 +1,9 @@
+Rollback tolerance: zero
+Accepted run: T0 + 3 days
+Next evaluation: T0 + 1 day
+Result: clockRollbackDetected
+One microsecond before last accepted run: detected
+Equality with last accepted run: accepted
+trialStartedAtUtc unchanged: yes
+Business access blocked: yes
+Result: PASS

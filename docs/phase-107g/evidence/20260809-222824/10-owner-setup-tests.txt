@@ -1,0 +1,5 @@
+First launch initializes trial before owner setup UI exists.
+Close before setup and reopen at T0 + 2 days: same trialStartedAtUtc.
+Expired owner-setup-success child: not built.
+Owner creation does not read, write, or reset trial metadata.
+Result: PASS

@@ -1,0 +1,10 @@
+PHASE 107G BASELINE
+Run ID: 20260809-222824
+Required HEAD: 7b4da07e1e58d6cafa47e51c05cf15e4bfaac6d8
+Actual HEAD: 7b4da07e1e58d6cafa47e51c05cf15e4bfaac6d8
+Subject: PHASE 107F: govern client backup and data-path documentation
+Parent: ca358644e646cdf3551e4acdde5af2a41f9713b9
+Starting tree: clean
+107E ancestor check: exit 0
+Branch created: codex/phase-107g-14-day-local-trial-enforcement
+Result: PASS

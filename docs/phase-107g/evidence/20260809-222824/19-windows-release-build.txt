@@ -1,0 +1,7 @@
+Command: flutter build windows --release
+Exit code: 0
+Artifact: build/windows/x64/runner/Release/grain_warehouse_erp_lite.exe
+Build time: 81.5 seconds
+Status: PASS
+
+Non-fatal upstream/native warnings: Firebase CMake minimum-version deprecation and MSVCRT LNK4078 duplicate .voltbl attributes. No final customer installer or ZIP was created.

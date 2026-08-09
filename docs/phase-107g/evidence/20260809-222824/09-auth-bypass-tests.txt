@@ -1,0 +1,6 @@
+Expired login-success dashboard child: not built.
+Expired saved-session business child: not built.
+Direct named business route child: not built.
+Rollback/invalid state child: not built.
+Gate position: outside the complete MaterialApp and all named routes.
+Result: PASS

@@ -556,7 +556,8 @@ void main() {
         'lib',
       ])
           .split(RegExp(r'\r?\n'))
-          .where((line) => line.trim().isNotEmpty)
+          .where((line) =>
+              line.trim().isNotEmpty && !_isPhase107GProductionPath(line))
           .toSet();
       expect(phase106xProductionDiff, {
         'lib/app/app_repositories.dart',
@@ -696,6 +697,11 @@ void main() {
     });
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 const _controllerPath = 'lib/core/sales/sale_controller.dart';
 const _salesScreenPath = 'lib/features/sales/sales_screen.dart';

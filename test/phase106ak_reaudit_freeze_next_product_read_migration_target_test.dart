@@ -24,6 +24,7 @@ const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
 const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
+const _phase107gBranch = 'codex/phase-107g-14-day-local-trial-enforcement';
 const _reportPath =
     'docs/PHASE-106AK-REAUDIT-FREEZE-NEXT-PRODUCT-READ-MIGRATION-TARGET.md';
 const _predecessorReportPath =
@@ -111,8 +112,18 @@ void main() {
     expect(File(_reportPath).existsSync(), isTrue);
     expect(
       _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106alBranch, _phase106amBranch, _phase106anBranch,
-          _phase107cBranch, _phase107dBranch, _phase107eBranch),
+      anyOf(
+        <String>[
+          _branch,
+          _phase106alBranch,
+          _phase106amBranch,
+          _phase106anBranch,
+          _phase107cBranch,
+          _phase107dBranch,
+          _phase107eBranch,
+          _phase107gBranch,
+        ],
+      ),
     );
 
     final report = File(_reportPath).readAsStringSync();

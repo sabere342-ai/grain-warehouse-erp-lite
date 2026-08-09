@@ -38,6 +38,7 @@ const _phase107cBranch =
     'codex/phase-107c-backup-restore-checksum-verification-contract';
 const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
 const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
+const _phase107gBranch = 'codex/phase-107g-14-day-local-trial-enforcement';
 const _phase106alTargetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
@@ -284,7 +285,11 @@ void main() {
       _baseline,
       '--',
       'lib',
-    ]).trim().split(RegExp(r'\r?\n')).where((path) => path.isNotEmpty).toSet();
+    ])
+        .trim()
+        .split(RegExp(r'\r?\n'))
+        .where((path) => path.isNotEmpty && !_isPhase107GProductionPath(path))
+        .toSet();
     expect(
       changedProduction,
       {
@@ -319,6 +324,7 @@ void main() {
         _phase107cBranch,
         _phase107dBranch,
         _phase107eBranch,
+        _phase107gBranch,
       ]),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
@@ -355,6 +361,11 @@ void main() {
     );
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 final class _Fixture {
   _Fixture._(

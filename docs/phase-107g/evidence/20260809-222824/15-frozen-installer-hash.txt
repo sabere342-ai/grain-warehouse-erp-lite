@@ -1,0 +1,6 @@
+Path: delivery/phase-107d/GrainWarehouseERP-1.0.0-windows-x64.exe
+Expected SHA-256: ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659
+Before SHA-256: ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659
+After SHA-256: ab67d04e205a78aa2d6e087ffd6f63655a80e5e2de10d7a603f959b073098659
+Match: true
+107D D1-D10 verifier: PASS; 21 payload files; 45,895,436 bytes.

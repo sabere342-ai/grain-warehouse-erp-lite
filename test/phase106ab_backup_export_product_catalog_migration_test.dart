@@ -235,7 +235,7 @@ void main() {
       runInShell: true,
     ).stdout as String)
         .split(RegExp(r'\r?\n'))
-        .where((path) => path.isNotEmpty)
+        .where((path) => path.isNotEmpty && !_isPhase107GProductionPath(path))
         .toSet();
     expect(
       changed,
@@ -261,6 +261,11 @@ void main() {
     expect(changed.any((path) => path.endsWith('.g.dart')), isFalse);
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 final class _Fixture {
   _Fixture._(this.database, this.driftCatalog);

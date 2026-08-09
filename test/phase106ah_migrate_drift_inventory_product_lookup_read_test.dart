@@ -217,7 +217,9 @@ void main() {
       expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
       final changed = _git(['diff', '--name-only', _baseline, '--', 'lib'])
           .split(RegExp(r'\r?\n'))
-        ..removeWhere((path) => path.isEmpty);
+        ..removeWhere(
+          (path) => path.isEmpty || _isPhase107GProductionPath(path),
+        );
       expect(changed.toSet(), {
         _repositoryPath,
         _compositionPath,
@@ -295,6 +297,11 @@ void main() {
     });
   });
 }
+
+bool _isPhase107GProductionPath(String path) =>
+    path == 'lib/main.dart' ||
+    path.startsWith('lib/core/trial/') ||
+    path.startsWith('lib/features/trial/');
 
 final class _CatalogSpy implements ProductCatalogReadRepository {
   _CatalogSpy(this.products, {this.error});

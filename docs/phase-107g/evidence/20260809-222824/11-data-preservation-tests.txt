@@ -1,0 +1,7 @@
+Fixture layer: real in-memory Drift FoundationDatabase and production repository adapters.
+Representative rows: owner, product, inventory movement/quantity, customer, supplier, purchase.
+Expiry snapshot before == snapshot after: true.
+Rollback snapshot before == snapshot after: true.
+Sticky restart snapshot unchanged: true.
+Trial store is outside the business database.
+Result: PASS
