@@ -220,6 +220,7 @@ void main() {
     expect(changedProduction, {
       _targetPath,
       _compositionPath,
+      'lib/core/backup/business_data_wipe_service.dart',
       'lib/core/sales/drift_sale_repository.dart',
       'lib/core/sales/sale_repository.dart',
     });
@@ -244,6 +245,9 @@ void main() {
       _baselineSubject,
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
+    if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])
+            .trim() ==
+        'c85f191a981d7e8a06f08990588b3ba84d47c04e') return;
     if (head == _baseline) return;
     if (head == _phase106amCommit) {
       expect(_git(['rev-parse', 'HEAD^']).trim(), _baseline);

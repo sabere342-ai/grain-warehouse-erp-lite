@@ -326,6 +326,7 @@ class AppRepositories {
       BusinessDataWipeService(
         backupExportService: backupExportService,
         backupFileWriter: const LocalBackupFileWriter(),
+        transactionRunner: (operation) => database.inTransaction(operation),
         productRepository: productRepository,
         productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,

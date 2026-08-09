@@ -513,6 +513,7 @@ Future<_BackupFixture> _emptyFixture({
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
+    transactionRunner: (operation) => operation(),
   );
   final restoreService = BackupRestoreService(
     productRepository: products,

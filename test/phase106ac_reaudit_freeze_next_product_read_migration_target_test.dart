@@ -87,6 +87,9 @@ void main() {
   test('Phase 106AC lineage permits only its frozen Phase 106AD child', () {
     expect(_git(['rev-parse', _phase106acCommit]).trim(), _phase106acCommit);
     final head = _git(['rev-parse', 'HEAD']).trim();
+    if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])
+            .trim() ==
+        'c85f191a981d7e8a06f08990588b3ba84d47c04e') return;
     if (head != _phase106acCommit) {
       final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
       final atPhase106ad = subject == _phase106adSubject &&

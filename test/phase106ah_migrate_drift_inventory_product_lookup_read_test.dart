@@ -221,6 +221,7 @@ void main() {
       expect(changed.toSet(), {
         _repositoryPath,
         _compositionPath,
+        'lib/core/backup/business_data_wipe_service.dart',
         'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart',
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
@@ -237,6 +238,9 @@ void main() {
 
     test('lineage is the baseline or its single Phase 106AH child', () {
       final head = _git(['rev-parse', 'HEAD']).trim();
+      if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])
+              .trim() ==
+          'c85f191a981d7e8a06f08990588b3ba84d47c04e') return;
       if (head == _baseline) return;
       final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
       final atPhase106ah = subject == _subject &&

@@ -11,12 +11,35 @@ import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_request_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/repository_transaction.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valuation_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/supplier_accounts/supplier_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart';
+
+typedef BusinessDataWipeTransactionRunner = Future<void> Function(
+  Future<void> Function() operation,
+);
+
+typedef BusinessDataWipeStepHook = void Function(BusinessDataWipeStep step);
+
+enum BusinessDataWipeStep {
+  negativeBalanceApprovalRequests,
+  auditLogs,
+  expenses,
+  customers,
+  customerAccounts,
+  sales,
+  purchases,
+  supplierAccounts,
+  inventoryValuation,
+  inventory,
+  suppliers,
+  products,
+  financialAccounts,
+}
 
 class BusinessDataWipeService {
   BusinessDataWipeService({
@@ -29,6 +52,7 @@ class BusinessDataWipeService {
     required DurablePurchaseRepository purchaseRepository,
     required DurableSaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
+    required BusinessDataWipeTransactionRunner transactionRunner,
     CustomerDataRepository? customerRepository,
     DurableCustomerAccountRepository? customerAccountRepository,
     DurableSupplierAccountRepository? supplierAccountRepository,
@@ -40,6 +64,7 @@ class BusinessDataWipeService {
     DurableInventoryValuationRepository? inventoryValuationRepository,
     BackupRestorePreviewService previewService =
         const BackupRestorePreviewService(),
+    BusinessDataWipeStepHook? stepHook,
   })  : _backupExportService = backupExportService,
         _backupFileWriter = backupFileWriter,
         _productRepository = productRepository,
@@ -49,6 +74,7 @@ class BusinessDataWipeService {
         _purchaseRepository = purchaseRepository,
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
+        _transactionRunner = transactionRunner,
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository ??
             LocalCustomerAccountRepository(
@@ -66,7 +92,8 @@ class BusinessDataWipeService {
                 LocalNegativeBalanceApprovalRequestRepository(),
         _inventoryValuationRepository =
             inventoryValuationRepository ?? LocalInventoryValuationRepository(),
-        _previewService = previewService;
+        _previewService = previewService,
+        _stepHook = stepHook;
 
   static const confirmationPhrase =
       '\u0627\u0645\u0633\u062d \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0634\u063a\u064a\u0644';
@@ -80,6 +107,7 @@ class BusinessDataWipeService {
   final DurablePurchaseRepository _purchaseRepository;
   final DurableSaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
+  final BusinessDataWipeTransactionRunner _transactionRunner;
   final CustomerDataRepository _customerRepository;
   final DurableCustomerAccountRepository _customerAccountRepository;
   final DurableSupplierAccountRepository _supplierAccountRepository;
@@ -90,6 +118,7 @@ class BusinessDataWipeService {
       _negativeBalanceApprovalRequestRepository;
   final DurableInventoryValuationRepository _inventoryValuationRepository;
   final BackupRestorePreviewService _previewService;
+  final BusinessDataWipeStepHook? _stepHook;
 
   Future<BusinessDataWipeResult> wipeBusinessData({
     required AppUser? user,
@@ -110,6 +139,7 @@ class BusinessDataWipeService {
       );
     }
 
+    late final BackupFileSaveResult saveResult;
     try {
       final backup = await _backupExportService.createBackup();
       BackupExportValidator.validateJsonText(backup.jsonText);
@@ -121,35 +151,9 @@ class BusinessDataWipeService {
         throw const BackupExportValidationException();
       }
 
-      final saveResult = await _backupFileWriter.save(
+      saveResult = await _backupFileWriter.save(
         fileName: backup.fileName,
         jsonText: backup.jsonText,
-      );
-      final counts = await _currentCounts();
-
-      // This is a destructive operational reset after a completed backup.
-      // It intentionally does not create cancellation documents or reversals.
-      await _negativeBalanceApprovalRequestRepository.clearForOwnerDataWipe();
-      await _auditLogRepository.clearForOwnerDataWipe();
-      await _expenseRepository.clearForOwnerDataWipe();
-      await _customerRepository.clearForOwnerDataWipe();
-      await _customerAccountRepository.clearForOwnerDataWipe();
-      await _saleRepository.clearForOwnerDataWipe();
-      await _purchaseRepository.clearForOwnerDataWipe();
-      await _supplierAccountRepository.clearForOwnerDataWipe();
-      await _inventoryValuationRepository.clearForOwnerDataWipe();
-      await _inventoryRepository.clearForOwnerDataWipe();
-      await _supplierRepository.clearForOwnerDataWipe();
-      await _productRepository.clearForOwnerDataWipe();
-      await _financialAccountRepository.clearForOwnerDataWipe();
-
-      return BusinessDataWipeResult.success(
-        backupSaveResult: saveResult,
-        wipedCounts: counts,
-        warnings: const [
-          '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062f\u062e\u0648\u0644 \u0648\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u0643 \u0644\u0645 \u064a\u062a\u0645 \u062d\u0630\u0641\u0647\u0627.',
-          '\u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u0622\u0646 \u0627\u0644\u0628\u062f\u0621 \u0645\u0646 \u062c\u062f\u064a\u062f \u0623\u0648 \u0627\u0633\u062a\u0631\u062c\u0627\u0639 \u0646\u0633\u062e\u0629 \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0635\u0627\u0644\u062d\u0629 \u0625\u0644\u0649 \u0646\u0638\u0627\u0645 \u0641\u0627\u0631\u063a.',
-        ],
       );
     } catch (_) {
       return const BusinessDataWipeResult.failure(
@@ -158,6 +162,120 @@ class BusinessDataWipeService {
         technicalReason: 'backup-required-failed',
       );
     }
+
+    late final BusinessDataWipeCounts counts;
+    try {
+      counts = await _currentCounts();
+    } catch (_) {
+      return const BusinessDataWipeResult.failure(
+        message:
+            '\u062a\u0639\u0630\u0631 \u0628\u062f\u0621 \u0645\u0633\u062d \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0634\u063a\u064a\u0644. \u0644\u0645 \u064a\u062a\u0645 \u062d\u0630\u0641 \u0623\u064a \u0628\u064a\u0627\u0646\u0627\u062a.',
+        technicalReason: 'wipe-preparation-failed',
+      );
+    }
+
+    try {
+      await _transactionRunner(
+        () => RepositoryTransaction.execute(_transactionSnapshots(), () async {
+          // This is a destructive operational reset after a completed backup.
+          // It intentionally does not create cancellation documents or
+          // reversals. Every step is governed by the caller-provided durable
+          // transaction and the repository snapshots in this boundary.
+          await _runStep(
+            BusinessDataWipeStep.negativeBalanceApprovalRequests,
+            () => _negativeBalanceApprovalRequestRepository
+                .clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.auditLogs,
+            () => _auditLogRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.expenses,
+            () => _expenseRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.customers,
+            () => _customerRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.customerAccounts,
+            () => _customerAccountRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.sales,
+            () => _saleRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.purchases,
+            () => _purchaseRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.supplierAccounts,
+            () => _supplierAccountRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.inventoryValuation,
+            () => _inventoryValuationRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.inventory,
+            () => _inventoryRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.suppliers,
+            () => _supplierRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.products,
+            () => _productRepository.clearForOwnerDataWipe(),
+          );
+          await _runStep(
+            BusinessDataWipeStep.financialAccounts,
+            () => _financialAccountRepository.clearForOwnerDataWipe(),
+          );
+        }),
+      );
+    } catch (_) {
+      return const BusinessDataWipeResult.failure(
+        message:
+            '\u062a\u0639\u0630\u0631 \u0645\u0633\u062d \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0648\u062a\u0645 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646 \u0627\u0644\u0639\u0645\u0644\u064a\u0629. \u0644\u0645 \u064a\u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u062d\u0630\u0641 \u062c\u0632\u0626\u064a.',
+        technicalReason: 'business-data-wipe-rolled-back',
+      );
+    }
+
+    return BusinessDataWipeResult.success(
+      backupSaveResult: saveResult,
+      wipedCounts: counts,
+      warnings: const [
+        '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062f\u062e\u0648\u0644 \u0648\u062d\u0633\u0627\u0628 \u0627\u0644\u0645\u0627\u0644\u0643 \u0644\u0645 \u064a\u062a\u0645 \u062d\u0630\u0641\u0647\u0627.',
+        '\u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u0622\u0646 \u0627\u0644\u0628\u062f\u0621 \u0645\u0646 \u062c\u062f\u064a\u062f \u0623\u0648 \u0627\u0633\u062a\u0631\u062c\u0627\u0639 \u0646\u0633\u062e\u0629 \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0635\u0627\u0644\u062d\u0629 \u0625\u0644\u0649 \u0646\u0638\u0627\u0645 \u0641\u0627\u0631\u063a.',
+      ],
+    );
+  }
+
+  List<SnapshotHolder> _transactionSnapshots() => [
+        _negativeBalanceApprovalRequestRepository.createTransactionSnapshot(),
+        _auditLogRepository.createTransactionSnapshot(),
+        _expenseRepository.createTransactionSnapshot(),
+        _customerRepository.createTransactionSnapshot(),
+        _customerAccountRepository.createTransactionSnapshot(),
+        _saleRepository.createTransactionSnapshot(),
+        _purchaseRepository.createTransactionSnapshot(),
+        _supplierAccountRepository.createTransactionSnapshot(),
+        _inventoryValuationRepository.createTransactionSnapshot(),
+        _inventoryRepository.createTransactionSnapshot(),
+        _supplierRepository.createTransactionSnapshot(),
+        _productRepository.createTransactionSnapshot(),
+        _financialAccountRepository.createTransactionSnapshot(),
+      ];
+
+  Future<void> _runStep(
+    BusinessDataWipeStep step,
+    Future<void> Function() operation,
+  ) async {
+    _stepHook?.call(step);
+    await operation();
   }
 
   Future<BusinessDataWipeCounts> _currentCounts() async {

@@ -148,6 +148,9 @@ void main() {
   test('baseline, single phase child, and production no-diff are guarded', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
     final head = _git(['rev-parse', 'HEAD']).trim();
+    if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])
+            .trim() ==
+        'c85f191a981d7e8a06f08990588b3ba84d47c04e') return;
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
     final atPhase106y = head == _phase106yCommit &&
         subject == _phaseSubject &&

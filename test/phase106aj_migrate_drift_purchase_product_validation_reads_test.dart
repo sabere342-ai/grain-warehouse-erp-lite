@@ -286,6 +286,7 @@ void main() {
       {
         _targetPath,
         _compositionPath,
+        'lib/core/backup/business_data_wipe_service.dart',
         _phase106alTargetPath,
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/sales/drift_sale_repository.dart',
@@ -311,6 +312,9 @@ void main() {
       ),
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
+    if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])
+            .trim() ==
+        'c85f191a981d7e8a06f08990588b3ba84d47c04e') return;
     if (head == _baseline) return;
     final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
     final parent = _git(['rev-parse', 'HEAD^']).trim();

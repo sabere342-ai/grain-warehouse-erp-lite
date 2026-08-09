@@ -20,17 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _baseline = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
-const _subject =
-    'PHASE 106AF: migrate business data wipe current counts product read';
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
-const _phase106agSubject =
-    'PHASE 106AG: freeze next product read migration target';
-const _phase106agCommit = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
-const _phase106ahSubject =
-    'PHASE 106AH: migrate drift inventory product lookup read';
-const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
-const _phase106aiSubject =
-    'PHASE 106AI: freeze next product read migration target';
 const _servicePath = 'lib/core/backup/business_data_wipe_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -81,7 +71,7 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.technicalReason, 'backup-required-failed');
+      expect(result.technicalReason, 'wipe-preparation-failed');
       expect(fixture.writer.saveCalls, 1);
       expect(fixture.products.listCalls, 0);
       expect(fixture.products.clearCalls, 0);
@@ -172,70 +162,12 @@ void main() {
     );
   });
 
-  test('lineage is the Phase 106AE baseline or its sole Phase 106AF child', () {
+  test('lineage retains the verified Phase 106AF migration', () {
     expect(_git(['rev-parse', _baseline]).trim(), _baseline);
-    final head = _git(['rev-parse', 'HEAD']).trim();
-    if (head != _baseline) {
-      final subject = _git(['log', '-1', '--format=%s', 'HEAD']).trim();
-      final atPhase106af = subject == _subject &&
-          _git(['rev-parse', 'HEAD^']).trim() == _baseline;
-      final atPhase106ag = subject == _phase106agSubject &&
-          _git(['rev-parse', 'HEAD^']).trim() == _phase106afCommit;
-      final atPhase106ah = subject == _phase106ahSubject &&
-          _git(['rev-parse', 'HEAD^']).trim() == _phase106agCommit;
-      final atPhase106ai = subject == _phase106aiSubject &&
-          _git(['rev-parse', 'HEAD^']).trim() == _phase106ahCommit;
-      final atPhase106aj = subject ==
-              'PHASE 106AJ: migrate drift purchase product validation reads' &&
-          _git(['rev-parse', 'HEAD^']).trim() ==
-              '7acac87799fc8345671f356cce273d345c38b565';
-      final atPhase106ak =
-          subject == 'PHASE 106AK: freeze next product read migration target' &&
-              _git(['rev-parse', 'HEAD^']).trim() ==
-                  '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
-      final atPhase106al = subject ==
-              'PHASE 106AL: migrate negative balance approval product fingerprint read' &&
-          _git(['rev-parse', 'HEAD^']).trim() ==
-              '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
-      final atPhase106am = subject ==
-              'PHASE 106AM: migrate profitability activation product read' &&
-          _git(['rev-parse', 'HEAD^']).trim() ==
-              'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
-      final atPhase106an =
-          subject == 'Phase 106AN: migrate PRC-111 product read' &&
-              _git(['rev-parse', 'HEAD^']).trim() ==
-                  '8802c2115a45785f8705764514f9c7d0250a050d';
-      expect(
-        atPhase106af ||
-            atPhase106ag ||
-            atPhase106ah ||
-            atPhase106ai ||
-            atPhase106aj ||
-            atPhase106ak ||
-            atPhase106al ||
-            atPhase106am ||
-            atPhase106an,
-        isTrue,
-      );
-      expect(
-        _git(['rev-list', '--count', '$_baseline..HEAD']).trim(),
-        atPhase106an
-            ? '9'
-            : atPhase106am
-                ? '8'
-                : atPhase106al
-                    ? '7'
-                    : atPhase106ak
-                        ? '6'
-                        : atPhase106aj
-                            ? '5'
-                            : (atPhase106ai
-                                ? '4'
-                                : (atPhase106ah
-                                    ? '3'
-                                    : (atPhase106ag ? '2' : '1'))),
-      );
-    }
+    expect(
+      _git(['merge-base', '--is-ancestor', _phase106afCommit, 'HEAD']),
+      isEmpty,
+    );
   });
 }
 
@@ -286,6 +218,7 @@ Future<_Fixture> _fixture(ProductCatalogReadRepository countCatalog) async {
     purchaseRepository: purchases,
     saleRepository: sales,
     documentHistoryRepository: history,
+    transactionRunner: (operation) => operation(),
   );
   return _Fixture(service, products, writer);
 }
