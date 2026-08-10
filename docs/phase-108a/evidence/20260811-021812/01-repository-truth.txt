@@ -1,0 +1,43 @@
+PHASE 108A REPOSITORY TRUTH
+Run ID: 20260811-021812
+
+Starting branch:
+codex/phase-107h-governed-14-day-trial-windows-package-acceptance
+
+Starting HEAD:
+e2b425ac272665eb9c0f59894799984e206146f3
+e2b425a PHASE 107G: enforce 14-day local trial
+
+Known baseline comparison:
+MATCH. The requested known baseline is the actual HEAD. There is no later
+commit and no Phase 107H commit.
+
+Starting tracked changes (preserved Phase 107H work):
+ M test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart
+ M test/phase106ak_reaudit_freeze_next_product_read_migration_target_test.dart
+ M test/phase106al_negative_balance_approval_product_fingerprint_read_migration_test.dart
+ M test/phase106am_profitability_activation_product_read_migration_test.dart
+
+Starting untracked paths (preserved Phase 107H work):
+?? docs/phase-107h/
+?? tools/phase107h/
+
+The four test diffs add only the exact Phase 107H branch to historical lineage
+allow-lists (21 insertions, 3 deletions). The Phase 107H directories contain an
+acceptance harness and runtime/package evidence. They are not an accepted
+phase, are not attributed to Phase 108A, and were not modified by Phase 108A.
+
+Initial git diff --check:
+PASS. Only CRLF conversion warnings were emitted for the four preserved test
+files; there were no whitespace errors.
+
+Recent committed lineage:
+e2b425a PHASE 107G: enforce 14-day local trial
+7b4da07 PHASE 107F: govern client backup and data-path documentation
+ca35864 PHASE 107E: accept fresh-profile installed runtime
+d210310 PHASE 107D: govern Windows release package
+f521a97 PHASE 107C: verify backup checksum before restore
+e74b3b4 PHASE 107B: make business data wipe atomic
+c85f191 PHASE 107A: prove post-review system status and remaining work
+
+No push, tag, merge, rebase, fetch, or remote mutation was performed.

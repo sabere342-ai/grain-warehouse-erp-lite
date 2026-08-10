@@ -1,0 +1,43 @@
+PHASE 108A VALIDATION SUMMARY
+Run ID: 20260811-021812
+
+FORMAT
+Command contract: dart format --output=none --set-exit-if-changed .
+Result: PASS
+Files: 428
+Changed: 0
+Formatter duration: 16.82 seconds
+Note: two invocations through C:\src\flutter\bin\dart.bat produced no output
+and were stopped after 120 seconds and approximately five minutes. Direct use
+of the same SDK executable completed successfully. This was a wrapper/cache
+access anomaly, not a source-format failure.
+
+ANALYZER
+Equivalent Flutter tool invocation: flutter analyze
+Result: PASS
+Diagnostics: No issues found
+Analyzer duration: 39.7 seconds
+
+FULL TEST SUITE
+Equivalent Flutter tool invocation: flutter test
+Result: PASS
+Passed: 2417
+Skipped: 1
+Failed: 0
+Wall time: 231.2 seconds
+Runner final line: All tests passed!
+
+WINDOWS RELEASE BUILD
+Equivalent Flutter tool invocation: flutter build windows --release
+Result: PASS
+Build duration reported by Flutter: 25.9 seconds
+Wall time: 27.7 seconds
+Executable: build/windows/x64/runner/Release/grain_warehouse_erp_lite.exe
+Non-blocking existing warnings:
+- Firebase C++ SDK CMake minimum-version deprecation warning.
+- MSVCRT LNK4078 multiple .voltbl section attributes warning.
+
+Flutter's SDK cache lockfile is outside the workspace sandbox. The analyzer,
+test, and build commands therefore ran through the Flutter tool snapshot with
+approved SDK-cache access. This changes invocation mechanics only, not the
+Flutter operation performed.

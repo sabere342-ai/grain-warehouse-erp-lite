@@ -1,0 +1,60 @@
+PHASE 108A CURRENT INVENTORY
+Run ID: 20260811-021812
+
+SOURCE INVENTORY
+Production Dart files under lib/: 232
+Test Dart files under test/: 194
+Tool Dart files under tool/: 2
+Total formatted Dart files: 428
+Drift schema version: 15
+Backup export version: 8
+Restore accepted versions: 1 through 8
+
+PRODUCT CATALOG READ INVENTORY
+Catalog-backed call sites in lib/: 20
+Legacy listProducts call sites in lib/: 6
+Legacy consumers: 5 (all infrastructure/test/composition; zero production)
+Current governed inventory: 24 consumers; 19 migrated; 5 remaining
+
+COUPLING INVENTORY
+Files naming FoundationDatabase in lib/: 20 including generated code
+Files importing package:drift in lib/: 16 including schema/migration code
+Files importing dart:io in lib/: 19
+Files using Platform in lib/: 6
+AppRepositories references in lib/features + lib/shared: 152
+Files containing those references: 43
+
+PLATFORM INVENTORY
+Windows runner and governed installer tooling: present
+Android Flutter scaffolding: present
+Android production applicationId: placeholder com.example.*
+Android release signing: debug signing configuration
+iOS scaffolding: absent
+Supabase dependency/configuration: absent
+Firebase core/bootstrap: present but options intentionally throw; no active
+cloud database, auth, or synchronization implementation
+
+PRINT/EXPORT INVENTORY
+Sales and purchase PDF invoice builders: present
+Customer and supplier statement PDF builders: present
+Daily and financial report PDF/CSV builders: present
+Windows/open-file and printing package integration: present
+WhatsApp assisted URL-launch flow: present
+Explicit Windows backslash path joins in PDF/CSV export paths: present
+Stable human invoice-number contract: absent; local record ID is displayed
+Android share-sheet/capability adapter: absent
+
+SETTINGS INVENTORY
+Theme mode/accent: local file
+Business identity/profile/logo: local JSON/files
+Backup administration entry: present
+Cloud/sync/device/account/invoice/print/currency/licensing settings: absent
+Theme/identity path: APPDATA/GrainWarehouseErpLite
+Database/trial path observed by 107E/107H: APPDATA/Grala/Grala
+
+TIME/IDENTITY INVENTORY
+Durable IDs commonly use local DateTime microseconds plus a local sequence.
+Business timestamps commonly originate from DateTime.now().
+Trial timestamps alone have an explicit UTC clock contract.
+No organization, tenant, warehouse, branch, device, remote cursor, outbox,
+row-version, tombstone, or server-commit-time model exists.
