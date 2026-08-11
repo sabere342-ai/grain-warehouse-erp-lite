@@ -1,0 +1,101 @@
+PHASE 108C — validation record
+Run ID: 20260811-141358
+Baseline: 5aeb41b7cd5e8c1919d6e0a7cb6544c85d799054
+
+1. FORMAT
+
+Required wrapper attempt:
+  dart format --output=none --set-exit-if-changed .
+Result:
+  The Flutter SDK dart.bat wrapper produced no output and timed out first at
+  120 seconds and again at 600 seconds. A subsequent `dart --version` through
+  the same wrapper also timed out, proving a wrapper/SDK-lock execution issue,
+  not a formatting failure.
+
+File-set proof:
+  rg --files -g '*.dart'
+  428 files total: lib=232, test=194, tool=2.
+
+Equivalent direct SDK command:
+  C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe format
+    --output=none --set-exit-if-changed lib test tool
+Result:
+  Exit code 0.
+  Formatted 428 files (0 changed) in 5.92 seconds.
+  Dart SDK 3.5.4 stable windows_x64 (same SDK reported by Flutter 3.24.5).
+Status: PASS.
+
+2. ANALYZE
+
+Command:
+  flutter analyze
+Result:
+  Exit code 0.
+  No issues found! (ran in 12.4s)
+Status: PASS.
+
+3. FULL TEST SUITE
+
+Command:
+  flutter test
+Result:
+  Exit code 0.
+  Wall time 211.5s.
+  2,418 passed.
+  0 skipped.
+  0 failed.
+  Final line: 03:20 +2418: All tests passed!
+Status: PASS.
+
+4. WINDOWS RELEASE BUILD
+
+Initial wrapper command:
+  flutter build windows --release
+Observation:
+  It produced no output and was terminated after approximately ten minutes as
+  a non-productive wrapper/SDK-lock attempt.
+
+Direct Flutter-tool sandbox attempt:
+  C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe
+    C:\src\flutter\packages\flutter_tools\bin\flutter_tools.dart
+    build windows --release
+Result:
+  Correctly identified inability to write C:\src\flutter\bin\cache\lockfile
+  under the sandbox.
+
+Approved direct Flutter-tool command with SDK lock access:
+  same command as above
+Result:
+  Exit code 0.
+  Build step 22.1s; wall time 44.6s.
+  Built build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe
+  Non-fatal existing warnings: Firebase CMake minimum-version deprecation and
+  MSVCRT LNK4078 `.voltbl` attributes.
+Status: PASS.
+
+5. PRODUCTION / DEPENDENCY / SCHEMA / PLATFORM GUARD
+
+  git diff -- lib           EMPTY
+  git diff -- windows       EMPTY
+  git diff -- android       EMPTY
+  git diff -- pubspec.yaml  EMPTY
+  git diff -- pubspec.lock  EMPTY
+
+  git diff -- test contains only the four pre-existing 107H branch-admission
+  edits captured in 00-git-baseline.txt. Phase 108C changed no tests.
+
+  git diff --check exited 0. The only messages were pre-existing LF-to-CRLF
+  notices for those four 107H-associated test files; there were no whitespace
+  errors.
+
+Status: PASS — no Phase 108C Production, dependency, schema, platform or test change.
+
+6. SUMMARY
+
+Formatted files: 428
+Changed by formatter: 0
+Analyzer: clean
+Tests passed: 2,418
+Tests skipped: 0
+Tests failed: 0
+Windows release build: PASS

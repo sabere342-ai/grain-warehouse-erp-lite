@@ -1,0 +1,32 @@
+PHASE 108C — final Git state contract
+Run ID: 20260811-141358
+
+Authorized Phase 108C path:
+  docs/phase-108c/**
+
+Explicitly excluded pre-existing Phase 107H state:
+  test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart
+  test/phase106ak_reaudit_freeze_next_product_read_migration_target_test.dart
+  test/phase106al_negative_balance_approval_product_fingerprint_read_migration_test.dart
+  test/phase106am_profitability_activation_product_read_migration_test.dart
+  docs/phase-107h/**
+  tools/phase107h/**
+
+Pre-commit baseline:
+  HEAD   = 5aeb41b7cd5e8c1919d6e0a7cb6544c85d799054
+  Parent = e0e4ddf4249282afc347a96370a38fa2617280e9
+
+Required final invariant after the one Phase 108C commit:
+  HEAD^ = 5aeb41b7cd5e8c1919d6e0a7cb6544c85d799054
+  rev-list --count 5aeb41b7cd5e8c1919d6e0a7cb6544c85d799054..HEAD = 1
+  subject = PHASE 108C: freeze cloud operating model and data authority
+  git diff --check HEAD^..HEAD = PASS
+  committed paths = docs/phase-108c/** only
+
+The commit cannot contain its own final object hash. The exact HEAD, parent,
+count and post-commit status are therefore emitted by the required post-commit
+commands and recorded in the final owner handoff.
+
+Expected post-commit worktree separation:
+  No uncommitted Phase 108C artifact.
+  Only the preserved Phase 107H state listed above remains.

@@ -1,0 +1,32 @@
+PHASE 108C — repository baseline
+Run ID: 20260811-141358
+Captured: 2026-08-11 Africa/Cairo
+
+Branch:
+codex/phase-107h-governed-14-day-trial-windows-package-acceptance
+
+HEAD:
+5aeb41b7cd5e8c1919d6e0a7cb6544c85d799054
+
+HEAD subject:
+5aeb41b PHASE 108B: close transfer double-count accounting scenario
+
+Parent reference:
+e0e4ddf4249282afc347a96370a38fa2617280e9
+
+Pre-existing, intentionally preserved Phase 107H worktree state:
+ M test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart
+ M test/phase106ak_reaudit_freeze_next_product_read_migration_target_test.dart
+ M test/phase106al_negative_balance_approval_product_fingerprint_read_migration_test.dart
+ M test/phase106am_profitability_activation_product_read_migration_test.dart
+?? docs/phase-107h/
+?? tools/phase107h/
+
+Classification:
+- The four modified tests and both untracked Phase 107H trees pre-date 108C.
+- They are excluded from every Phase 108C stage/commit operation.
+- No reset, clean, stash, delete, or modification of these artifacts is allowed.
+
+Initial git diff --check:
+PASS (exit 0). Git emitted only the pre-existing LF-to-CRLF notices for the
+four Phase 107H-associated test files; no whitespace error was reported.
