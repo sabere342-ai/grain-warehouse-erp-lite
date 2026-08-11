@@ -1,0 +1,11 @@
+Phase 108D post-artifact/pre-commit comparison of intentional Phase 107H leftovers
+Baseline: 259a784c0b3a5e213ccf2c3b67a61901c5a33c65
+Files compared against preserved-107h-fingerprint-before.txt: 33
+Per-file SHA256 mismatches: 0
+Tracked binary-diff git hash before: 9256c16945f49b36957a204b6dc108c412ade96b
+Tracked binary-diff git hash after:  9256c16945f49b36957a204b6dc108c412ade96b
+Result: IDENTICAL
+
+The comparison is repeated after the Phase 108D commit and reported in the
+main report/final handoff. This file is committed with the phase artifacts so
+the pre-commit preservation proof is reviewable without machine-specific paths.
