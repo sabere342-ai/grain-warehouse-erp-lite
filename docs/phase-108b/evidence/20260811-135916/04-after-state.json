@@ -1,0 +1,22 @@
+{
+  "currency": "EGP",
+  "storageUnit": "qirsh",
+  "sourceBalanceQirsh": 700000,
+  "destinationBalanceQirsh": 500000,
+  "combinedBalanceQirsh": 1200000,
+  "transferDocuments": 1,
+  "transferLedgerRows": 2,
+  "sourceTransferOutQirsh": 300000,
+  "destinationTransferInQirsh": 300000,
+  "signedTransferNetQirsh": 0,
+  "allAccountInflowsQirsh": 0,
+  "allAccountOutflowsQirsh": 0,
+  "singleSourceAccountOutflowsQirsh": 300000,
+  "singleDestinationAccountInflowsQirsh": 300000,
+  "transferReportTotalQirsh": 300000,
+  "revenueDeltaQirsh": 0,
+  "expenseDeltaQirsh": 0,
+  "profitDeltaQirsh": 0,
+  "identicalRetryCreatedAdditionalDocument": false,
+  "identicalRetryCreatedAdditionalLedgerRows": false
+}

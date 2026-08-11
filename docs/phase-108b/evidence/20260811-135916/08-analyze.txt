@@ -1,0 +1,7 @@
+Command:
+flutter analyze
+
+Result:
+Analyzing grain-warehouse-erp-lite...
+No issues found! (ran in 92.0s)
+Exit code 0

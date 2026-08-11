@@ -1,0 +1,23 @@
+Phase 108B starting repository state
+Captured: 2026-08-11 (Africa/Cairo)
+
+Branch:
+codex/phase-107h-governed-14-day-trial-windows-package-acceptance
+
+HEAD:
+e0e4ddf4249282afc347a96370a38fa2617280e9
+e0e4ddf PHASE 108A: re-audit and reorder implementation priorities
+
+Expected and actual baseline matched exactly.
+
+Pre-existing preserved Phase 107H state:
+ M test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart
+ M test/phase106ak_reaudit_freeze_next_product_read_migration_target_test.dart
+ M test/phase106al_negative_balance_approval_product_fingerprint_read_migration_test.dart
+ M test/phase106am_profitability_activation_product_read_migration_test.dart
+?? docs/phase-107h/
+?? tools/phase107h/
+
+Unexpected paths: none
+Pre-existing production diff: none
+git diff --check: exit 0 (only LF-to-CRLF notices on the four preserved tests)

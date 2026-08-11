@@ -1,0 +1,14 @@
+{
+  "currency": "EGP",
+  "storageUnit": "qirsh",
+  "sourceBalanceQirsh": 1000000,
+  "destinationBalanceQirsh": 200000,
+  "combinedBalanceQirsh": 1200000,
+  "transferDocuments": 0,
+  "transferLedgerRows": 0,
+  "allAccountInflowsQirsh": 0,
+  "allAccountOutflowsQirsh": 0,
+  "revenueDeltaQirsh": 0,
+  "expenseDeltaQirsh": 0,
+  "profitDeltaQirsh": 0
+}

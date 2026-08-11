@@ -1,0 +1,9 @@
+Command:
+flutter test --reporter compact
+
+Result:
+2,418 passed
+0 skipped
+0 failed
+Exit code 0
+Elapsed 210.3 seconds (test reporter completed at 03:26)

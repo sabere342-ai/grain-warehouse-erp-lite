@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
-import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/permissions.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
@@ -9,9 +7,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_accou
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_service.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_repository.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_service.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_transfer.dart';
 import 'package:grain_warehouse_erp_lite/features/exports/pdf_file_naming.dart';
 
 void main() {
@@ -27,20 +23,9 @@ void main() {
 
   late LocalFinancialAccountRepository repo;
   late FinancialReportService service;
-  late NegativeBalanceApprovalService approvals;
 
   setUp(() {
-    final auth = LocalAuthRepository(
-      seedAccounts: [LocalAuthAccount(user: owner, password: 'owner-password')],
-    );
-    approvals = NegativeBalanceApprovalService(
-      authRepository: auth,
-      approvalRepository: LocalNegativeBalanceApprovalRepository(),
-      auditLogRepository: LocalAuditLogRepository(),
-    );
-    repo = LocalFinancialAccountRepository(
-      negativeBalanceApprovalService: approvals,
-    );
+    repo = LocalFinancialAccountRepository();
     service = FinancialReportService(repository: repo);
   });
 
@@ -491,43 +476,90 @@ void main() {
       });
 
       test('no double counting across accounts', () async {
-        final src = await createAccount('خزينة', FinancialAccountType.treasury);
-        final dest = await createAccount('بنك', FinancialAccountType.bank);
-        await repo.updateAccountPolicy(
-          accountId: src.id,
-          allowNegativeBalance: true,
-          updatedByUserId: owner.id,
+        final src = await createAccount(
+          'خزينة',
+          FinancialAccountType.treasury,
+          openingBalanceQirsh: 1000000,
         );
-        await approvals.requestApproval(
-          draft: NegativeBalanceApprovalDraft(
-            requestedByUserId: owner.id,
-            approvedByOwnerUserId: owner.id,
-            accountId: src.id,
-            amountQirsh: 5000,
-            operationType: NegativeBalanceOperationType.transfer,
-            sourceDocumentId: 'doc-transfer',
-            sourceDocumentType: FinancialAccountEntrySource.transferOut.name,
-            balanceBeforeQirsh: 0,
-            expectedBalanceAfterQirsh: -5000,
-            reason: 'test',
-          ),
-          ownerPhone: owner.phone,
-          ownerPassword: 'owner-password',
+        final dest = await createAccount(
+          'بنك',
+          FinancialAccountType.bank,
+          openingBalanceQirsh: 200000,
         );
-        await addEntry(
-          accountId: src.id,
-          direction: FinancialAccountEntryDirection.outflow,
-          amount: 5000,
-          source: FinancialAccountEntrySource.transferOut,
-          date: DateTime(2026, 1, 5),
+        final balanceBefore = await repo.currentBalanceForAccount(src.id) +
+            await repo.currentBalanceForAccount(dest.id);
+        final draft = FinancialTransferDraft(
+          clientRequestId: 'phase-108b-transfer-request',
+          transferReference: 'PHASE-108B-TRANSFER',
+          sourceAccountId: src.id,
+          destinationAccountId: dest.id,
+          amountQirsh: 300000,
+          effectiveDate: DateTime(2026, 1, 5),
+          createdByUserId: owner.id,
         );
-        await addEntry(
-          accountId: dest.id,
-          direction: FinancialAccountEntryDirection.inflow,
-          amount: 5000,
-          source: FinancialAccountEntrySource.transferIn,
-          date: DateTime(2026, 1, 5),
+
+        final transfer = await repo.createTransfer(user: owner, draft: draft);
+        final retry = await repo.createTransfer(user: owner, draft: draft);
+
+        expect(retry.id, transfer.id);
+        expect(await repo.listTransfers(), hasLength(1));
+        expect(await repo.currentBalanceForAccount(src.id), 700000);
+        expect(await repo.currentBalanceForAccount(dest.id), 500000);
+        expect(
+          await repo.currentBalanceForAccount(src.id) +
+              await repo.currentBalanceForAccount(dest.id),
+          balanceBefore,
         );
+
+        final sourceTransferEntries = (await repo.statementForAccount(src.id))
+            .lines
+            .map((line) => line.entry)
+            .where((entry) => entry.sourceDocumentId == transfer.id)
+            .toList();
+        final destinationTransferEntries =
+            (await repo.statementForAccount(dest.id))
+                .lines
+                .map((line) => line.entry)
+                .where((entry) => entry.sourceDocumentId == transfer.id)
+                .toList();
+        expect(sourceTransferEntries, hasLength(1));
+        expect(destinationTransferEntries, hasLength(1));
+        expect(
+          sourceTransferEntries.single.direction,
+          FinancialAccountEntryDirection.outflow,
+        );
+        expect(
+          destinationTransferEntries.single.direction,
+          FinancialAccountEntryDirection.inflow,
+        );
+        expect(sourceTransferEntries.single.amountQirsh, 300000);
+        expect(destinationTransferEntries.single.amountQirsh, 300000);
+        expect(
+          sourceTransferEntries.single.signedAmountQirsh +
+              destinationTransferEntries.single.signedAmountQirsh,
+          0,
+        );
+
+        final sourceOutflows = await service.outflowsReport(
+          fromDate: DateTime(2026, 1, 2),
+          toDate: DateTime(2026, 1, 31),
+          accountIdFilter: src.id,
+        );
+        final destinationInflows = await service.inflowsReport(
+          fromDate: DateTime(2026, 1, 2),
+          toDate: DateTime(2026, 1, 31),
+          accountIdFilter: dest.id,
+        );
+        expect(sourceOutflows.totalQirsh, 300000);
+        expect(destinationInflows.totalQirsh, 300000);
+
+        final transferReport = await service.transferReport(
+          fromDate: DateTime(2026, 1, 2),
+          toDate: DateTime(2026, 1, 31),
+        );
+        expect(transferReport.rows, hasLength(1));
+        expect(transferReport.totalAmountQirsh, 300000);
+
         await addEntry(
           accountId: src.id,
           direction: FinancialAccountEntryDirection.inflow,
@@ -537,19 +569,19 @@ void main() {
         );
 
         final inflows = await service.inflowsReport(
-          fromDate: DateTime(2026, 1, 1),
+          fromDate: DateTime(2026, 1, 2),
           toDate: DateTime(2026, 1, 31),
         );
         expect(inflows.totalQirsh, 10000);
         expect(inflows.entries.length, 1);
 
         final outflows = await service.outflowsReport(
-          fromDate: DateTime(2026, 1, 1),
+          fromDate: DateTime(2026, 1, 2),
           toDate: DateTime(2026, 1, 31),
         );
         expect(outflows.totalQirsh, 0);
         expect(outflows.entries, isEmpty);
-      }, skip: 'Requires negative balance approval with actual credentials');
+      });
     });
 
     group('FinancialReportService — outflowsReport', () {

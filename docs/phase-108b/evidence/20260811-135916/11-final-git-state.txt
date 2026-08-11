@@ -1,0 +1,23 @@
+Phase 108B pre-commit isolation record
+
+Phase 108B paths intended for the single commit:
+- test/phase9a_inflows_outflows_reports_test.dart
+- docs/phase-108b/PHASE-108B-TRANSFER-DOUBLE-COUNT-ACCOUNTING-SCENARIO.md
+- docs/phase-108b/evidence/20260811-135916/*
+
+Production paths changed: none
+Schema/platform/dependency paths changed: none
+
+Paths that must remain unstaged and uncommitted because they pre-date 108B:
+- test/phase106aj_migrate_drift_purchase_product_validation_reads_test.dart
+- test/phase106ak_reaudit_freeze_next_product_read_migration_target_test.dart
+- test/phase106al_negative_balance_approval_product_fingerprint_read_migration_test.dart
+- test/phase106am_profitability_activation_product_read_migration_test.dart
+- docs/phase-107h/
+- tools/phase107h/
+
+Required commit subject:
+PHASE 108B: close transfer double-count accounting scenario
+
+Required parent:
+e0e4ddf4249282afc347a96370a38fa2617280e9

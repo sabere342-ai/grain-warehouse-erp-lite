@@ -1,0 +1,16 @@
+Focused pre-change baseline:
+flutter test test\phase9a_inflows_outflows_reports_test.dart --reporter expanded
+Result: 42 passed, 1 skipped, 0 failed.
+Skipped scenario: no double counting across accounts.
+
+Focused post-change:
+flutter test test\phase9a_inflows_outflows_reports_test.dart --reporter expanded
+Result: 43 passed, 0 skipped, 0 failed.
+
+Targeted financial matrix:
+flutter test test\phase9a_inflows_outflows_reports_test.dart test\phase76_internal_financial_transfers_test.dart test\phase79_account_based_financial_reports_test.dart test\phase81_transaction_financial_backup_contract_test.dart test\phase102b_profitability_report_test.dart test\phase102b_transaction_integration_test.dart --reporter compact
+Result: 126 passed, 0 skipped, 0 failed.
+
+Coverage: real transfer command, paired ledger, idempotency, balances,
+all-account and account-specific reports, transfer report, backup/restore,
+revenue/COGS/expense/profitability, and transaction regressions.

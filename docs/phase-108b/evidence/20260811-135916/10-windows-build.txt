@@ -1,0 +1,13 @@
+Command:
+flutter build windows --release
+
+Result:
+Built build\windows\x64\runner\Release\grain_warehouse_erp_lite.exe
+Exit code 0
+Build step: 24.4 seconds
+
+Non-blocking toolchain warnings:
+- Firebase CMake minimum-version deprecation warning.
+- MSVCRT LNK4078 warning about `.voltbl` section attributes.
+
+No binary is included in the Phase 108B commit.
