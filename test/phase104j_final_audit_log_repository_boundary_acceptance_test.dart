@@ -254,13 +254,13 @@ void main() {
     final drift = _read('lib/core/audit/drift_audit_log_repository.dart');
 
     expect(
-      mainSource.indexOf('await AppRepositories.initializeProduction();'),
-      lessThan(mainSource
-          .indexOf('final trialService = await TrialService.production();')),
+      mainSource.indexOf(
+        'final application = await AppCompositionRoot.initializeProduction();',
+      ),
+      lessThan(mainSource.indexOf('final trialEvaluation = await')),
     );
     expect(
-      mainSource
-          .indexOf('final trialEvaluation = await trialService.evaluate();'),
+      mainSource.indexOf('final trialEvaluation = await'),
       lessThan(mainSource.indexOf('runApp(')),
     );
     expect(

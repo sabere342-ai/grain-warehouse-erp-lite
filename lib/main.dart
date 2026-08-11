@@ -1,20 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:grain_warehouse_erp_lite/app/grain_warehouse_app.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_command.dart';
+import 'package:grain_warehouse_erp_lite/composition/app_composition_root.dart';
 import 'package:grain_warehouse_erp_lite/core/firebase/firebase_bootstrap.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
-import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/features/trial/trial_app_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseBootstrap.initialize();
-  await AppRepositories.initializeProduction();
-  final trialService = await TrialService.production();
-  final trialEvaluation = await trialService.evaluate();
+  final application = await AppCompositionRoot.initializeProduction();
+  final trialEvaluation = await application.commands.trialEvaluation.execute(
+    const ApplicationCommandRequest(command: EvaluateTrialCommand()),
+  );
   runApp(
     TrialAppGate(
       evaluation: trialEvaluation,
-      evaluator: trialService,
+      evaluator: application.commands.trialEvaluation,
       child: const GrainWarehouseApp(),
     ),
   );
