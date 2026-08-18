@@ -7,7 +7,9 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 void main() {
   testWidgets('starts at first owner setup when no owner exists',
       (tester) async {
-    await tester.pumpWidget(const GrainWarehouseApp());
+    final controller = AuthController(repository: LocalAuthRepository.empty());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(GrainWarehouseApp(authController: controller));
     await tester.pumpAndSettle();
 
     expect(find.text('إعداد المالك الأول'), findsOneWidget);
@@ -15,7 +17,9 @@ void main() {
   });
 
   testWidgets('first owner setup creates an owner session', (tester) async {
-    await tester.pumpWidget(const GrainWarehouseApp());
+    final controller = AuthController(repository: LocalAuthRepository.empty());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(GrainWarehouseApp(authController: controller));
     await tester.pumpAndSettle();
 
     final fields = find.byType(TextField);

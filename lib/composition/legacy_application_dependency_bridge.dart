@@ -1,6 +1,8 @@
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/application_dependencies.dart';
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 
 final class LegacyApplicationDependencyBridge {
@@ -8,6 +10,9 @@ final class LegacyApplicationDependencyBridge {
 
   static ApplicationDependencies captureSharedInstances({
     required TrialEvaluator trialEvaluator,
+    required AuthController authController,
+    required SessionContextProvider sessionContextProvider,
+    required BusinessContextProvider businessContextProvider,
   }) {
     return ApplicationDependencies(
       repositories: ApplicationRepositoryDependencies(
@@ -20,8 +25,10 @@ final class LegacyApplicationDependencyBridge {
       services: ApplicationServiceDependencies(
         trialEvaluator: trialEvaluator,
       ),
-      runtime: const ApplicationRuntimeDependencies(
-        businessContextProvider: NoBusinessContextProvider(),
+      runtime: ApplicationRuntimeDependencies(
+        authController: authController,
+        sessionContextProvider: sessionContextProvider,
+        businessContextProvider: businessContextProvider,
       ),
     );
   }

@@ -1,12 +1,17 @@
 import 'package:flutter/widgets.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_state.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 
 class AuthController extends ChangeNotifier {
-  AuthController({required AuthRepository repository})
-      : _repository = repository;
+  AuthController({
+    required AuthRepository repository,
+    void Function(AppUser? user)? onAuthenticatedUserChanged,
+  })  : _repository = repository,
+        _onAuthenticatedUserChanged = onAuthenticatedUserChanged;
 
   final AuthRepository _repository;
+  final void Function(AppUser? user)? _onAuthenticatedUserChanged;
   AuthState _state = const AuthState.checking();
 
   AuthState get state => _state;
@@ -135,6 +140,9 @@ class AuthController extends ChangeNotifier {
 
   void _setState(AuthState nextState) {
     _state = nextState;
+    _onAuthenticatedUserChanged?.call(
+      nextState.canProceed ? nextState.user : null,
+    );
     notifyListeners();
   }
 }

@@ -1,5 +1,7 @@
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -41,8 +43,12 @@ final class ApplicationRepositoryDependencies {
 
 final class ApplicationRuntimeDependencies {
   const ApplicationRuntimeDependencies({
+    required this.authController,
+    required this.sessionContextProvider,
     required this.businessContextProvider,
   });
 
+  final AuthController authController;
+  final SessionContextProvider sessionContextProvider;
   final BusinessContextProvider businessContextProvider;
 }

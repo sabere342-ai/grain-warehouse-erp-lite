@@ -13,13 +13,13 @@ import 'package:grain_warehouse_erp_lite/features/auth/auth_gate.dart';
 class GrainWarehouseApp extends StatefulWidget {
   const GrainWarehouseApp({
     super.key,
-    this.authController,
+    required this.authController,
     this.themeController,
     this.businessIdentityController,
     this.initializeAuth = true,
   });
 
-  final AuthController? authController;
+  final AuthController authController;
   final ThemeController? themeController;
   final BusinessIdentityController? businessIdentityController;
   final bool initializeAuth;
@@ -32,18 +32,15 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
   late final AuthController _authController;
   late final ThemeController _themeController;
   late final BusinessIdentityController _businessIdentityController;
-  late final bool _ownsAuthController;
   late final bool _ownsThemeController;
   late final bool _ownsBusinessIdentityController;
 
   @override
   void initState() {
     super.initState();
-    _ownsAuthController = widget.authController == null;
     _ownsThemeController = widget.themeController == null;
     _ownsBusinessIdentityController = widget.businessIdentityController == null;
-    _authController = widget.authController ??
-        AuthController(repository: AppRepositories.authRepository);
+    _authController = widget.authController;
     _themeController = widget.themeController ??
         ThemeController(
           repository: LocalThemeSettingsRepository(
@@ -66,9 +63,6 @@ class _GrainWarehouseAppState extends State<GrainWarehouseApp> {
 
   @override
   void dispose() {
-    if (_ownsAuthController) {
-      _authController.dispose();
-    }
     if (_ownsThemeController) {
       _themeController.dispose();
     }

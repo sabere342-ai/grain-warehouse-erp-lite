@@ -20,7 +20,9 @@ Future<void> main() async {
       child: TrialAppGate(
         evaluation: trialEvaluation,
         evaluator: application.commands.trialEvaluation,
-        child: const GrainWarehouseApp(),
+        child: GrainWarehouseApp(
+          authController: application.dependencies.runtime.authController,
+        ),
       ),
     ),
   );
