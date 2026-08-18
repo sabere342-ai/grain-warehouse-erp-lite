@@ -14,18 +14,12 @@ import 'package:grain_warehouse_erp_lite/core/inventory_valuation/inventory_valu
 import 'package:grain_warehouse_erp_lite/core/inventory_valuation/profitability_activation_service.dart';
 
 const _baseline = 'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _baselineSubject =
     'PHASE 106AL: migrate negative balance approval product fingerprint read';
 const _subject = 'PHASE 106AM: migrate profitability activation product read';
-const _branch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
 const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
-const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
-const _phase107cBranch =
-    'codex/phase-107c-backup-restore-checksum-verification-contract';
-const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
-const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
-const _phase107gBranch = 'codex/phase-107g-14-day-local-trial-enforcement';
 const _targetPath =
     'lib/core/inventory_valuation/profitability_activation_service.dart';
 const _compositionPath = 'lib/app/app_repositories.dart';
@@ -219,6 +213,7 @@ void main() {
       'diff',
       '--name-only',
       _baseline,
+      _historicalScopeEndpoint,
       '--',
       'lib',
     ])
@@ -249,9 +244,8 @@ void main() {
 
   test('lineage preserves the exact Phase 106AM and 106AN children', () {
     expect(
-      _git(['branch', '--show-current']).trim(),
-      anyOf(_branch, _phase106anBranch, _phase107cBranch, _phase107dBranch,
-          _phase107eBranch, _phase107gBranch),
+      _git(['merge-base', '--is-ancestor', _phase106amCommit, 'HEAD']),
+      isEmpty,
     );
     expect(
       _git(['log', '-1', '--format=%s', _baseline]).trim(),

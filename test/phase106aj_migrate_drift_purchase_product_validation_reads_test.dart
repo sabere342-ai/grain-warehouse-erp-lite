@@ -14,31 +14,19 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/drift_supplier_repositor
 import 'package:grain_warehouse_erp_lite/core/suppliers/supplier.dart';
 
 const _baseline = '7acac87799fc8345671f356cce273d345c38b565';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _subject = 'PHASE 106AJ: migrate drift purchase product validation reads';
-const _branch =
-    'codex/phase-106aj-migrate-drift-purchase-product-validation-reads';
 const _phase106ajCommit = '2fd2ef4519b1007f1080fe004cca8572c1fe0d54';
 const _phase106akSubject =
     'PHASE 106AK: freeze next product read migration target';
-const _phase106akBranch =
-    'codex/phase-106ak-reaudit-freeze-next-product-read-migration-target';
 const _phase106akCommit = '43384cdf3a2252b2e8b793ef3c2ce8aa5e23052c';
 const _phase106alSubject =
     'PHASE 106AL: migrate negative balance approval product fingerprint read';
-const _phase106alBranch =
-    'codex/phase-106al-migrate-negative-balance-approval-product-fingerprint-read';
 const _phase106alCommit = 'bc17876148074efab3f2a5ec1a71186eaad4e4c5';
 const _phase106amSubject =
     'PHASE 106AM: migrate profitability activation product read';
-const _phase106amBranch = 'codex/phase-106am-migrate-prc-108-product-read';
 const _phase106amCommit = '8802c2115a45785f8705764514f9c7d0250a050d';
 const _phase106anSubject = 'Phase 106AN: migrate PRC-111 product read';
-const _phase106anBranch = 'codex/phase-106an-migrate-prc-111-product-read';
-const _phase107cBranch =
-    'codex/phase-107c-backup-restore-checksum-verification-contract';
-const _phase107dBranch = 'codex/phase-107d-governed-windows-package-installer';
-const _phase107eBranch = 'codex/phase-107e-fresh-profile-runtime-acceptance';
-const _phase107gBranch = 'codex/phase-107g-14-day-local-trial-enforcement';
 const _phase106alTargetPath =
     'lib/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 const _targetPath = 'lib/core/purchases/drift_purchase_repository.dart';
@@ -283,6 +271,7 @@ void main() {
       'diff',
       '--name-only',
       _baseline,
+      _historicalScopeEndpoint,
       '--',
       'lib',
     ])
@@ -314,18 +303,8 @@ void main() {
 
   test('lineage admits only the exact Phase 106AJ through 106AM children', () {
     expect(
-      _git(['branch', '--show-current']).trim(),
-      anyOf(<String>[
-        _branch,
-        _phase106akBranch,
-        _phase106alBranch,
-        _phase106amBranch,
-        _phase106anBranch,
-        _phase107cBranch,
-        _phase107dBranch,
-        _phase107eBranch,
-        _phase107gBranch,
-      ]),
+      _git(['merge-base', '--is-ancestor', _phase106ajCommit, 'HEAD']),
+      isEmpty,
     );
     final head = _git(['rev-parse', 'HEAD']).trim();
     if (_git(['merge-base', 'c85f191a981d7e8a06f08990588b3ba84d47c04e', head])

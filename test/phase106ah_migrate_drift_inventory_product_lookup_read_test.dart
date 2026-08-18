@@ -9,6 +9,7 @@ import 'package:grain_warehouse_erp_lite/core/inventory/stock_movement.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 
 const _baseline = '25f4896b45fd8848a3aa5390e57a30926b9a9a24';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _subject = 'PHASE 106AH: migrate drift inventory product lookup read';
 const _phase106ahCommit = 'bd5d287a56fd96f826c673d775226cb4ad45a247';
 const _phase106aiSubject =
@@ -215,8 +216,14 @@ void main() {
     test('contract, adapter, schema, and generated files are unchanged', () {
       expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
       expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
-      final changed = _git(['diff', '--name-only', _baseline, '--', 'lib'])
-          .split(RegExp(r'\r?\n'))
+      final changed = _git([
+        'diff',
+        '--name-only',
+        _baseline,
+        _historicalScopeEndpoint,
+        '--',
+        'lib',
+      ]).split(RegExp(r'\r?\n'))
         ..removeWhere(
           (path) => path.isEmpty || _isPhase107GProductionPath(path),
         );

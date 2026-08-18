@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -22,13 +22,27 @@ class AuditLogsScreen extends StatefulWidget {
 class _AuditLogsScreenState extends State<AuditLogsScreen> {
   late final AuditLogController _controller;
   late final bool _ownsController;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _ownsController = widget.controller == null;
-    _controller = widget.controller ??
-        AuditLogController(repository: AppRepositories.auditLogRepository);
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    if (_ownsController) {
+      _controller = AuditLogController(
+        queryHandler: ApplicationScope.of(context).queries.auditLogs,
+      );
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _loadLogs();
     });

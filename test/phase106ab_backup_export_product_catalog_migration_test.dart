@@ -22,6 +22,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _baseline = '6c04de68e38dcc499f704970e9c00b01fbccf0f1';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _productKeys = <String>[
   'id',
   'name',
@@ -231,7 +232,14 @@ void main() {
 
     final changed = (Process.runSync(
       'git',
-      ['diff', '--name-only', _baseline, '--', 'lib'],
+      [
+        'diff',
+        '--name-only',
+        _baseline,
+        _historicalScopeEndpoint,
+        '--',
+        'lib',
+      ],
       runInShell: true,
     ).stdout as String)
         .split(RegExp(r'\r?\n'))

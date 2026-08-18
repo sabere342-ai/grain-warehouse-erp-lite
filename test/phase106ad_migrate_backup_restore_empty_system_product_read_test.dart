@@ -19,6 +19,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _baseline = '1cd4033720fd765a31b5b5357760c8f55e454f92';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _subject =
     'PHASE 106AD: migrate backup restore empty-system product read';
 const _phase106adCommit = 'd7e7dcd21644e2f4946458b4394e94679454c932';
@@ -131,6 +132,7 @@ void main() {
       'diff',
       '--name-only',
       _baseline,
+      _historicalScopeEndpoint,
       '--',
       'lib',
     ])

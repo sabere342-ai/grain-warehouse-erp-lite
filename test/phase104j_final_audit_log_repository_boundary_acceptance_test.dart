@@ -270,16 +270,16 @@ void main() {
     expect(contracts, contains('AuditLogReadRepository'));
     expect(drift, contains('implements DurableAuditLogRepository'));
     expect(dashboard, contains('AuditLogsScreen()'));
-    expect(
-      screen,
-      contains(
-        'AuditLogController(repository: AppRepositories.auditLogRepository)',
-      ),
-    );
+    expect(screen, contains('ApplicationScope.of(context).queries.auditLogs'));
+    expect(screen, isNot(contains('AppRepositories')));
 
-    expect(controller, contains('required AuditLogReadRepository repository'));
-    expect(controller, contains('final AuditLogReadRepository _repository;'));
-    expect(controller, contains('_repository.listAuditLogs()'));
+    expect(controller, contains('LoadAuditLogsQueryHandler? queryHandler'));
+    expect(
+        controller, contains('final LoadAuditLogsQueryHandler _queryHandler;'));
+    expect(
+      controller,
+      contains('_queryHandler.execute(const LoadAuditLogsQuery())'),
+    );
     for (final forbidden in const [
       'AuditLogEntry',
       'DriftAuditLogRepository',

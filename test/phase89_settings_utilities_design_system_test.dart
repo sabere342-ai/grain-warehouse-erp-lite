@@ -183,11 +183,17 @@ void main() {
     group('AuditLogsScreen', () {
       testWidgets('shows GhalalPageHeader with no back button', (tester) async {
         final auth = await _signedInOwner();
+        final controller = AuditLogController(
+          repository: LocalAuditLogRepository(),
+        );
+        addTearDown(controller.dispose);
         await tester.pumpWidget(
           _harness(
             AuthScope(
               controller: auth,
-              child: const Scaffold(body: AuditLogsScreen()),
+              child: Scaffold(
+                body: AuditLogsScreen(controller: controller),
+              ),
             ),
           ),
         );
@@ -223,12 +229,18 @@ void main() {
       testWidgets('denied state for employee without audit permission',
           (tester) async {
         final employeeAuth = await _signedInEmployee();
+        final controller = AuditLogController(
+          repository: LocalAuditLogRepository(),
+        );
+        addTearDown(controller.dispose);
 
         await tester.pumpWidget(
           _harness(
             AuthScope(
               controller: employeeAuth,
-              child: const Scaffold(body: AuditLogsScreen()),
+              child: Scaffold(
+                body: AuditLogsScreen(controller: controller),
+              ),
             ),
           ),
         );

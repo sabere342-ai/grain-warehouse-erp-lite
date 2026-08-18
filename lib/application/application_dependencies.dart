@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
@@ -26,11 +27,13 @@ final class ApplicationServiceDependencies {
 
 final class ApplicationRepositoryDependencies {
   const ApplicationRepositoryDependencies({
+    required this.auditLogReadRepository,
     required this.productCatalogReadRepository,
     required this.inventoryRepository,
     required this.saleRepository,
   });
 
+  final AuditLogReadRepository auditLogReadRepository;
   final ProductCatalogReadRepository productCatalogReadRepository;
   final InventoryRepository inventoryRepository;
   final SaleRepository saleRepository;

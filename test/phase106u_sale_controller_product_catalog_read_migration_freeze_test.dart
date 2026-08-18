@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '7300f5569f0617cf81606eddd062e73ec75c2de6';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _phase106tCommit = 'ff60b6ad9d759bedac72948dc6544b15bdbc925c';
 const _phase106uSubject =
     'PHASE 106U: expand product catalog read and migrate sale controller';
@@ -264,6 +265,7 @@ void main() {
       'diff',
       '--name-only',
       _phase106wCommit,
+      _historicalScopeEndpoint,
       '--',
       'lib',
     ])

@@ -226,9 +226,9 @@ void main() {
     expect(screen, isNot(matches(RegExp(r'AuditLog\w*Adapter'))));
     expect(
       screen,
-      contains(
-          'AuditLogController(repository: AppRepositories.auditLogRepository)'),
+      contains('ApplicationScope.of(context).queries.auditLogs'),
     );
+    expect(screen, isNot(contains('AppRepositories')));
   });
 
   test('every remaining AuditLogEntry usage is in an allowed scope', () {

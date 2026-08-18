@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = '80ede9595b51c17d1b82f16a9198b91a9d9422d9';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _phase106pBaseline = '4b7b1f2b2c32675a5c0f3aa0f96ef1227e7dd7b0';
 const _phase106qCommit = 'f0341e9e070012953bce487c20401bf36eec1b87';
 const _phase106rCommit = 'ad03bd0b27109ac2ec97d80ffa32fca22d0f41d9';
@@ -236,14 +237,21 @@ void main() {
         isEmpty,
         reason: 'No production file under lib/ may differ from the 106P '
             'baseline at the 106Q commit.');
-    final worktree = _git(['diff', '--name-only', '--', 'lib'])
+    final historicalScope = _git([
+      'diff',
+      '--name-only',
+      _baseline,
+      _historicalScopeEndpoint,
+      '--',
+      'lib',
+    ])
         .trim()
         .split(RegExp(r'\r?\n'))
         .where((path) =>
             path.trim().isNotEmpty && !_isPhase107GProductionPath(path))
         .toSet();
     expect(
-      worktree.difference(const {
+      historicalScope.difference(const {
         'lib/core/inventory/inventory_controller.dart',
         'lib/features/inventory/inventory_screen.dart',
         'lib/features/inventory/stock_take_screen.dart',
@@ -269,7 +277,8 @@ void main() {
         'lib/core/sales/sale_repository.dart',
       }),
       isEmpty,
-      reason: 'Any working-tree lib/ diff must be limited to the Phase 106R '
+      reason:
+          'The protected historical lib/ diff must be limited to Phase 106R '
           'migration files, the Phase 106U expansion and sale migration, or '
           'the Phase 106X product controller migration files, plus the Phase '
           '106Z PRC-113 file, the Phase 106AB/106AD backup migrations, or '

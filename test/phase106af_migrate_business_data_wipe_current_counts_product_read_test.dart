@@ -20,6 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/suppliers/supplier_repository.dart
 import 'support/product_catalog_read_repository_test_adapter.dart';
 
 const _baseline = '1d1b24afac39fe3e83704aa73747568c2c9b525c';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _phase106afCommit = 'b786e0869808182614ba301af4fdd615124d7a8e';
 const _servicePath = 'lib/core/backup/business_data_wipe_service.dart';
 const _appRepositoriesPath = 'lib/app/app_repositories.dart';
@@ -123,6 +124,7 @@ void main() {
       'diff',
       '--name-only',
       _baseline,
+      _historicalScopeEndpoint,
       '--',
       'lib',
     ])

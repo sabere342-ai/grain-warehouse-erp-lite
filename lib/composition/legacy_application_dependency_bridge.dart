@@ -11,6 +11,7 @@ final class LegacyApplicationDependencyBridge {
   }) {
     return ApplicationDependencies(
       repositories: ApplicationRepositoryDependencies(
+        auditLogReadRepository: AppRepositories.auditLogRepository,
         productCatalogReadRepository:
             AppRepositories.productCatalogReadRepository,
         inventoryRepository: AppRepositories.inventoryRepository,

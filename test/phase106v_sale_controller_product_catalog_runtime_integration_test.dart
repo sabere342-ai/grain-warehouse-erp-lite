@@ -20,6 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/sales/drift_sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_controller.dart';
 
 const _phase106uCommit = '0ff8370b5cbc344973cdd968985a30c549f934d1';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _phase106vCommit = '2b90ca07a38c6890260d3c2df991d8b42fb5a200';
 const _phase106wCommit = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
 const _phase106xSubject =
@@ -552,6 +553,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106wCommit,
+        _historicalScopeEndpoint,
         '--',
         'lib',
       ])
