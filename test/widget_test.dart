@@ -3,13 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/app/grain_warehouse_app.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 
 void main() {
   testWidgets('starts at first owner setup when no owner exists',
       (tester) async {
     final controller = AuthController(repository: LocalAuthRepository.empty());
     addTearDown(controller.dispose);
-    await tester.pumpWidget(GrainWarehouseApp(authController: controller));
+    await tester.pumpWidget(_testApp(controller));
     await tester.pumpAndSettle();
 
     expect(find.text('إعداد المالك الأول'), findsOneWidget);
@@ -19,7 +23,7 @@ void main() {
   testWidgets('first owner setup creates an owner session', (tester) async {
     final controller = AuthController(repository: LocalAuthRepository.empty());
     addTearDown(controller.dispose);
-    await tester.pumpWidget(GrainWarehouseApp(authController: controller));
+    await tester.pumpWidget(_testApp(controller));
     await tester.pumpAndSettle();
 
     final fields = find.byType(TextField);
@@ -42,10 +46,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      GrainWarehouseApp(
-        authController: controller,
-        initializeAuth: false,
-      ),
+      _testApp(controller, initializeAuth: false),
     );
     await tester.pumpAndSettle();
 
@@ -74,10 +75,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      GrainWarehouseApp(
-        authController: controller,
-        initializeAuth: false,
-      ),
+      _testApp(controller, initializeAuth: false),
     );
     await tester.pumpAndSettle();
 
@@ -88,6 +86,26 @@ void main() {
     expect(find.text('المصروفات'), findsWidgets);
     expect(find.text('الموظف'), findsOneWidget);
   });
+}
+
+GrainWarehouseApp _testApp(
+  AuthController authController, {
+  bool initializeAuth = true,
+}) {
+  final themeController = ThemeController(
+    repository: LocalThemeSettingsRepository(),
+  );
+  final businessIdentityController = BusinessIdentityController(
+    repository: LocalBusinessIdentityRepository(),
+  );
+  addTearDown(themeController.dispose);
+  addTearDown(businessIdentityController.dispose);
+  return GrainWarehouseApp(
+    authController: authController,
+    themeController: themeController,
+    businessIdentityController: businessIdentityController,
+    initializeAuth: initializeAuth,
+  );
 }
 
 Future<AuthController> _signedInDemoController({

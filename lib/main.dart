@@ -22,6 +22,9 @@ Future<void> main() async {
         evaluator: application.commands.trialEvaluation,
         child: GrainWarehouseApp(
           authController: application.dependencies.runtime.authController,
+          themeController: application.dependencies.runtime.themeController,
+          businessIdentityController:
+              application.dependencies.runtime.businessIdentityController,
         ),
       ),
     ),

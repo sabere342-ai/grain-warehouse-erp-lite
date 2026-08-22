@@ -6,7 +6,10 @@ import 'package:grain_warehouse_erp_lite/application/context/session_context.dar
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/composition/legacy_application_dependency_bridge.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 
 final class AppCompositionRoot {
@@ -30,10 +33,23 @@ final class AppCompositionRoot {
       repository: AppRepositories.authRepository,
       onAuthenticatedUserChanged: sessionSynchronizer.synchronize,
     );
+    final themeController = ThemeController(
+      repository: LocalThemeSettingsRepository(
+        auditLogRepository: AppRepositories.auditLogRepository,
+      ),
+    );
+    final sharedBusinessIdentityRepository =
+        AppRepositories.businessIdentityRepository;
+    final businessIdentityController = BusinessIdentityController(
+      repository: sharedBusinessIdentityRepository,
+    );
     final dependencies =
         LegacyApplicationDependencyBridge.captureSharedInstances(
       trialEvaluator: sharedTrialEvaluator,
       authController: authController,
+      themeController: themeController,
+      businessIdentityController: businessIdentityController,
+      businessIdentityRepository: sharedBusinessIdentityRepository,
       sessionContextProvider: sessionContextProvider,
       businessContextProvider: const NoBusinessContextProvider(),
     );
