@@ -22,7 +22,7 @@ void main() {
     });
     var database = openDatabaseFile(file);
     var repository = DriftAuditLogRepository(database);
-    expect(database.schemaVersion, 15);
+    expect(database.schemaVersion, 16);
     expect(await repository.exportStoredAuditLogs(), isEmpty);
     final older = await repository.record(AuditLogDraft(
       actionType: ' sale.created ',

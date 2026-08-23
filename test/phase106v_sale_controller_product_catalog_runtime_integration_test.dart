@@ -589,7 +589,7 @@ void main() {
       final schema = _compact(
           File('lib/core/persistence/foundation_database.dart')
               .readAsStringSync());
-      expect(schema, contains('schemaVersion=>15'));
+      expect(schema, contains('schemaVersion=>16'));
       final persistenceDiff = _git([
         'diff',
         '--name-only',

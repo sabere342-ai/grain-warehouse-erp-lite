@@ -150,6 +150,7 @@ void main() {
         'diff',
         '--name-only',
         _baseline,
+        _historicalScopeEndpoint,
         '--',
         'lib/core/catalog/drift_product_catalog_read_repository.dart',
         'lib/core/persistence',

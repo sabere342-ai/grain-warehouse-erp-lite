@@ -10,6 +10,7 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 
 const _baseline = 'b7d5086b4194b0dc2682b54ea5aa8fc79b314e1a';
+const _historicalScopeEndpoint = 'f521a97946d73829fef19f4f0d30a6d07b9f8051';
 const _phase106xCommit = '30021696ab2667340e032832892d3c2ecc5dadd7';
 const _controllerPath = 'lib/core/catalog/product_controller.dart';
 const _contractPath = 'lib/core/catalog/product_catalog_read_repository.dart';
@@ -230,6 +231,7 @@ void main() {
           'diff',
           '--quiet',
           _baseline,
+          _historicalScopeEndpoint,
           '--',
           'lib/core/persistence',
         ],

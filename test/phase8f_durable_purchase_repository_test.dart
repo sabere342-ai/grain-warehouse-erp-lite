@@ -33,7 +33,7 @@ void main() {
 
     final database = openDatabaseFile(file);
     expect(await database.readProbe('legacy'), 'kept');
-    expect(database.schemaVersion, 15);
+    expect(database.schemaVersion, 16);
     expect(await database.purchases.count().getSingle(), 0);
     await database.close();
   });

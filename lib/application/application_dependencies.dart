@@ -6,6 +6,9 @@ import 'package:grain_warehouse_erp_lite/core/business_identity/business_identit
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
+import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
@@ -39,6 +42,9 @@ final class ApplicationRepositoryDependencies {
     required this.productCatalogReadRepository,
     required this.inventoryRepository,
     required this.saleRepository,
+    required this.expenseRepository,
+    required this.financialAccountRepository,
+    required this.financialAccountCloudLinkResolver,
   });
 
   final AuditLogReadRepository auditLogReadRepository;
@@ -47,6 +53,9 @@ final class ApplicationRepositoryDependencies {
   final ProductCatalogReadRepository productCatalogReadRepository;
   final InventoryRepository inventoryRepository;
   final SaleRepository saleRepository;
+  final ExpenseRepository expenseRepository;
+  final FinancialAccountRepository financialAccountRepository;
+  final FinancialAccountCloudLinkResolver financialAccountCloudLinkResolver;
 }
 
 final class ApplicationRuntimeDependencies {

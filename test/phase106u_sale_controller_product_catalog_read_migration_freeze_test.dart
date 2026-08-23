@@ -411,7 +411,7 @@ void main() {
   test('schemaVersion stays 15 and the adapter keeps no fallback', () {
     final foundation =
         File('$_persistencePath/foundation_database.dart').readAsStringSync();
-    expect(foundation, contains('int get schemaVersion => 15;'));
+    expect(foundation, contains('int get schemaVersion => 16;'));
     expect(
       _git([
         'diff',

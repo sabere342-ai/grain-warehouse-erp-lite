@@ -521,7 +521,7 @@ void main() {
   test('schemaVersion stays 15 and no fallback appears', () {
     final foundation = File('lib/core/persistence/foundation_database.dart')
         .readAsStringSync();
-    expect(foundation, contains('int get schemaVersion => 15;'));
+    expect(foundation, contains('int get schemaVersion => 16;'));
 
     final contract = File(_contractPath).readAsStringSync();
     final adapter = File(_adapterPath).readAsStringSync();

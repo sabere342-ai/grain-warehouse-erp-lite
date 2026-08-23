@@ -1,5 +1,6 @@
 import 'package:grain_warehouse_erp_lite/application/application_dependencies.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_command.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
 
@@ -18,9 +19,11 @@ final class ApplicationBoundary {
 final class ApplicationCommands {
   const ApplicationCommands({
     required this.trialEvaluation,
+    required this.postExpense,
   });
 
   final EvaluateTrialCommandHandler trialEvaluation;
+  final PostExpenseCommandHandler postExpense;
 }
 
 final class ApplicationQueries {

@@ -422,10 +422,10 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 150);
-      expect(featureSharedWithLocator, hasLength(41));
-      expect(scopeConsumers, hasLength(2));
-      expect(allLibReferences, 161);
+      expect(featureSharedReferences, 147);
+      expect(featureSharedWithLocator, hasLength(40));
+      expect(scopeConsumers, hasLength(3));
+      expect(allLibReferences, 163);
       expect(
         'AppRepositories.documentHistoryRepository'
             .allMatches(bridgeSource)

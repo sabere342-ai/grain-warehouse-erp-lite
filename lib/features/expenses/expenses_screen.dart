@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
@@ -8,43 +10,51 @@ import 'package:grain_warehouse_erp_lite/core/expenses/expense_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/payment_routing_policy.dart';
-import 'package:grain_warehouse_erp_lite/core/financial_accounts/negative_balance_approval_workflow_service.dart';
 import 'package:grain_warehouse_erp_lite/core/money/money_utils.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/app_tokens.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_page_header.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_responsive_dialog.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/ghalal_state_view.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:uuid/uuid.dart';
 
 class ExpensesScreen extends StatefulWidget {
-  const ExpensesScreen(
-      {super.key, this.controller, this.approvalWorkflowService});
+  const ExpensesScreen({super.key, this.controller});
 
   final ExpenseController? controller;
-  final NegativeBalanceApprovalWorkflowService? approvalWorkflowService;
 
   @override
   State<ExpensesScreen> createState() => _ExpensesScreenState();
 }
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
-  late final ExpenseController _controller;
-  late final bool _ownsController;
-  late final NegativeBalanceApprovalWorkflowService _approvalWorkflow;
+  ExpenseController? _controller;
+  bool _ownsController = false;
   bool _isSubmittingExpense = false;
+  String? _postingLifecycle;
+  String? _postingStatusMessage;
+  ApplicationCommandRequest<PostExpenseCommand>? _retryRequest;
 
   @override
   void initState() {
     super.initState();
+    _controller = widget.controller;
     _ownsController = widget.controller == null;
-    _controller = widget.controller ??
-        ExpenseController(repository: AppRepositories.expenseRepository);
-    _approvalWorkflow = widget.approvalWorkflowService ??
-        AppRepositories.negativeBalanceApprovalWorkflowService;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller ??= ExpenseController(
+      repository: ApplicationScope.of(context)
+          .dependencies
+          .repositories
+          .expenseRepository,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;
       if (user != null) {
-        _controller.loadExpenses(user);
+        _controller!.loadExpenses(user);
       }
     });
   }
@@ -52,7 +62,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   void dispose() {
     if (_ownsController) {
-      _controller.dispose();
+      _controller?.dispose();
     }
     super.dispose();
   }
@@ -71,7 +81,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     }
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _controller!,
       builder: (context, _) {
         return ListView(
           children: [
@@ -96,11 +106,24 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 ),
               ],
             ),
-            if (_controller.errorMessage != null &&
-                _controller.expenses.isNotEmpty) ...[
+            if (_postingStatusMessage != null) ...[
               const SizedBox(height: 12),
               Text(
-                _controller.errorMessage!,
+                _postingStatusMessage!,
+                key: Key('expense-posting-${_postingLifecycle ?? 'draft'}'),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: _postingLifecycle == 'confirmed'
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            if (_controller!.errorMessage != null &&
+                _controller!.expenses.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                _controller!.errorMessage!,
                 style: textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.error,
                   fontWeight: FontWeight.w700,
@@ -108,22 +131,22 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            if (_controller.isLoading)
+            if (_controller!.isLoading)
               const GhalalLoadingState(label: 'جاري تحميل المصروفات...')
-            else if (_controller.errorMessage != null &&
-                _controller.expenses.isEmpty)
+            else if (_controller!.errorMessage != null &&
+                _controller!.expenses.isEmpty)
               GhalalErrorState(
-                message: _controller.errorMessage!,
-                onRetry: () => _controller.loadExpenses(user),
+                message: _controller!.errorMessage!,
+                onRetry: () => _controller!.loadExpenses(user),
               )
-            else if (_controller.expenses.isEmpty)
+            else if (_controller!.expenses.isEmpty)
               const GhalalEmptyState(
                 title: 'لا توجد مصروفات',
                 message: 'ستظهر هنا المصروفات بعد تنفيذها.',
                 icon: Icons.receipt_long_outlined,
               )
             else
-              ..._controller.expenses.map(
+              ..._controller!.expenses.map(
                 (expense) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ExpenseCard(
@@ -145,58 +168,210 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     required AppUser user,
   }) async {
     if (_isSubmittingExpense) return;
-    final financialAccountRepository =
-        AppRepositories.financialAccountRepository;
-    final financialAccounts = await financialAccountRepository.listAccounts();
+    final application = ApplicationScope.of(context);
+    final businessContext =
+        application.dependencies.runtime.businessContextProvider.current;
+    final sessionContext =
+        application.dependencies.runtime.sessionContextProvider.current;
+    if (businessContext == null ||
+        !businessContext.isVerifiedMembership ||
+        sessionContext == null ||
+        !sessionContext.isVerifiedRemote) {
+      _showMessage(
+        lifecycle: 'rejected',
+        message: 'يلزم تسجيل دخول سحابي وعضوية منشأة موثقة لتسجيل المصروف.',
+      );
+      return;
+    }
+    final repositories = application.dependencies.repositories;
+    final financialAccountRepository = repositories.financialAccountRepository;
+    final allAccounts = await financialAccountRepository.listAccounts();
+    final financialAccounts = <FinancialAccount>[];
+    for (final account in allAccounts) {
+      final link = await repositories.financialAccountCloudLinkResolver
+          .readyLinkForLocalAccount(
+        localAccountId: account.id,
+        businessId: businessContext.businessId,
+      );
+      if (link != null) financialAccounts.add(account);
+    }
+    if (financialAccounts.isEmpty) {
+      _showMessage(
+        lifecycle: 'rejected',
+        message: 'لا يوجد حساب مالي سحابي تمت تسويته وأصبح جاهزاً.',
+      );
+      return;
+    }
     final accountBalancesQirsh = <String, int>{};
     for (final account in financialAccounts) {
       accountBalancesQirsh[account.id] =
           await financialAccountRepository.currentBalanceForAccount(account.id);
     }
     if (!context.mounted) return;
-    final draft = await showDialog<ExpenseDraft>(
+    final draft = await showDialog<_ExpensePostingIntent>(
       context: context,
       builder: (context) => _ExpenseFormDialog(
         financialAccounts: financialAccounts,
         accountBalancesQirsh: accountBalancesQirsh,
-        userId: user.id,
-        operationRequestId:
-            'expense-ui-${DateTime.now().microsecondsSinceEpoch}-${user.id}',
       ),
     );
     if (draft == null) {
       return;
     }
-    setState(() => _isSubmittingExpense = true);
+    final link = await repositories.financialAccountCloudLinkResolver
+        .readyLinkForLocalAccount(
+      localAccountId: draft.localFinancialAccountId,
+      businessId: businessContext.businessId,
+    );
+    if (link == null) {
+      _showMessage(
+        lifecycle: 'rejected',
+        message:
+            'فقد الحساب المالي جاهزيته السحابية. حدّث الحساب وحاول مجدداً.',
+      );
+      return;
+    }
+    final command = PostExpenseCommand(
+      commandId: const Uuid().v7(),
+      businessId: businessContext.businessId,
+      businessDate: _formatDateOnly(draft.date),
+      category: draft.category,
+      amountQirsh: draft.amountQirsh,
+      notes: draft.notes,
+      financialAccountId: link.serverAccountUuid,
+      paymentMethod: draft.paymentMethod,
+      accountingClassification: draft.accountingClassification,
+    );
+    final request = ApplicationCommandRequest<PostExpenseCommand>(
+      command: command,
+      businessContext: businessContext,
+      idempotencyKey: command.commandId,
+    );
+    _retryRequest = request;
+    setState(() {
+      _isSubmittingExpense = true;
+      _postingLifecycle = 'queued';
+      _postingStatusMessage = 'تم حفظ محاولة المصروف محلياً دون أثر مالي.';
+    });
     try {
-      final result = await _approvalWorkflow.submitExpense(
-        requester: user,
-        draft: draft,
-      );
-      if (!context.mounted) return;
-      if (result.isPending) {
-        final request = result.request!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'تم إنشاء طلب الموافقة ${request.id}. لم يُسجل المصروف بعد. '
-              'الرصيد ${MoneyUtils.formatPiastersAsEgp(request.balanceAtRequestQirsh)}، '
-              'والعجز ${MoneyUtils.formatPiastersAsEgp(request.deficitAtRequestQirsh)}.',
-            ),
-          ),
-        );
-      } else {
-        await _controller.loadExpenses(user);
-      }
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر تسجيل المصروف: $error')),
-      );
+      await _submitPostExpense(user, request);
     } finally {
       if (mounted) setState(() => _isSubmittingExpense = false);
     }
   }
+
+  Future<void> _submitPostExpense(
+    AppUser user,
+    ApplicationCommandRequest<PostExpenseCommand> request,
+  ) async {
+    setState(() {
+      _postingLifecycle = 'sending';
+      _postingStatusMessage = 'جارٍ إرسال المصروف إلى الخادم المالي...';
+    });
+    final result = await ApplicationScope.of(context)
+        .commands
+        .postExpense
+        .execute(request);
+    if (!mounted) return;
+    if (result is PostExpenseSuccess) {
+      if (result.projectionPending) {
+        _showMessage(
+          lifecycle: 'confirmedProjectionPending',
+          message:
+              'تم اعتماد المصروف مالياً، وتعذر تحديث النسخة المحلية. أعد المحاولة لإصلاح العرض فقط.',
+          retry: true,
+        );
+      } else {
+        _retryRequest = null;
+        _showMessage(
+          lifecycle: 'confirmed',
+          message: result.replayed
+              ? 'تم تأكيد المصروف السابق دون تكرار الأثر المالي.'
+              : 'تم اعتماد المصروف وتحديث السجلات المحلية.',
+        );
+        await _controller!.refreshAfterConfirmedProjection(user);
+      }
+      return;
+    }
+    final failure = result as PostExpenseFailure;
+    final lifecycle = failure.code == 'serverUnavailable'
+        ? 'unknownOutcome'
+        : failure.code == 'approvalRequired'
+            ? 'approvalRequired'
+            : 'rejected';
+    final retry = failure.code == 'serverUnavailable';
+    _showMessage(
+      lifecycle: lifecycle,
+      message: _messageForFailure(failure.code),
+      retry: retry,
+    );
+    if (!retry) _retryRequest = null;
+  }
+
+  Future<void> _retryLastCommand(AppUser user) async {
+    final request = _retryRequest;
+    if (request == null || _isSubmittingExpense) return;
+    setState(() => _isSubmittingExpense = true);
+    try {
+      await _submitPostExpense(user, request);
+    } finally {
+      if (mounted) setState(() => _isSubmittingExpense = false);
+    }
+  }
+
+  void _showMessage({
+    required String lifecycle,
+    required String message,
+    bool retry = false,
+  }) {
+    if (!mounted) return;
+    setState(() {
+      _postingLifecycle = lifecycle;
+      _postingStatusMessage = message;
+    });
+    final user = AuthScope.of(context).state.user;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: retry && user != null
+            ? SnackBarAction(
+                label: 'إعادة المحاولة',
+                onPressed: () => _retryLastCommand(user),
+              )
+            : null,
+      ),
+    );
+  }
+
+  String _messageForFailure(String code) => switch (code) {
+        'validation.invalidField' => 'تحقق من بيانات المصروف المدخلة.',
+        'unauthenticated.sessionRequired' =>
+          'انتهت جلسة الدخول السحابية. سجل الدخول ثم أعد المحاولة.',
+        'unauthorized.expensePostingDenied' =>
+          'لا تسمح العضوية الحالية بتسجيل المصروف.',
+        'wrongBusinessContext' =>
+          'سياق المنشأة غير متطابق. حدّث الجلسة قبل المحاولة.',
+        'account.notFoundOrInactive' =>
+          'الحساب السحابي غير موجود أو غير نشط أو غير جاهز.',
+        'paymentRoute.invalid' => 'طريقة الدفع لا تطابق نوع الحساب.',
+        'period.closed' => 'لا يمكن التسجيل في فترة مالية مغلقة.',
+        'balance.insufficient' => 'الرصيد الموثق على الخادم غير كافٍ.',
+        'approvalRequired' =>
+          'هذه العملية تحتاج موافقة تجاوز رصيد، وهي خارج هذا المسار.',
+        'idempotencyConflict' =>
+          'تعارضت المحاولة المحفوظة مع بيانات مختلفة. أنشئ عملية جديدة.',
+        'serverUnavailable' =>
+          'تعذر معرفة نتيجة الخادم. أعد المحاولة بنفس رقم العملية.',
+        'transactionFailure' => 'ألغى الخادم العملية كاملة دون أي أثر مالي.',
+        'projectionFailure' =>
+          'تم الاعتماد المالي لكن تحديث العرض المحلي ما زال معلقاً.',
+        _ => 'تعذر تسجيل المصروف بأمان. لم يحدث تسجيل محلي بديل.',
+      };
+
+  String _formatDateOnly(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
 
   Future<void> _reclassifyExpense(
     AppUser user,
@@ -207,7 +382,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       builder: (context) => _ExpenseReclassificationDialog(expense: expense),
     );
     if (result == null) return;
-    await _controller.reclassifyExpense(
+    await _controller!.reclassifyExpense(
       user: user,
       expenseId: expense.id,
       classification: result.$1,
@@ -355,14 +530,10 @@ class _ExpenseFormDialog extends StatefulWidget {
   const _ExpenseFormDialog({
     required this.financialAccounts,
     required this.accountBalancesQirsh,
-    required this.userId,
-    required this.operationRequestId,
   });
 
   final List<FinancialAccount> financialAccounts;
   final Map<String, int> accountBalancesQirsh;
-  final String userId;
-  final String operationRequestId;
 
   @override
   State<_ExpenseFormDialog> createState() => _ExpenseFormDialogState();
@@ -558,15 +729,13 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
       }
       setState(() => _isSubmitting = true);
       Navigator.of(context).pop(
-        ExpenseDraft(
+        _ExpensePostingIntent(
           date: _date,
           category: _categoryController.text,
           amountQirsh: amountQirsh,
-          createdByUserId: widget.userId,
           notes: _notesController.text,
-          financialAccountId: _selectedAccountId,
-          paymentMethod: _selectedPaymentMethod,
-          operationRequestId: widget.operationRequestId,
+          localFinancialAccountId: _selectedAccountId!,
+          paymentMethod: _selectedPaymentMethod!,
           accountingClassification: _selectedAccountingClassification!,
         ),
       );
@@ -638,7 +807,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
           if (hasDeficit)
             Text(
               account.allowNegativeBalance
-                  ? 'سيُنشأ طلب موافقة دائم، ولن يُنفذ المصروف قبل الاعتماد.'
+                  ? 'قد يطلب الخادم موافقة تجاوز؛ لن يُسجل المصروف محلياً قبل الاعتماد.'
                   : 'الرصيد غير كافٍ وهذا الحساب لا يسمح بطلب تجاوز الرصيد.',
               style: TextStyle(
                 color: colors.error,
@@ -677,4 +846,24 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   String _formatDate(DateTime value) {
     return '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }
+}
+
+final class _ExpensePostingIntent {
+  const _ExpensePostingIntent({
+    required this.date,
+    required this.category,
+    required this.amountQirsh,
+    required this.localFinancialAccountId,
+    required this.paymentMethod,
+    required this.accountingClassification,
+    this.notes,
+  });
+
+  final DateTime date;
+  final String category;
+  final int amountQirsh;
+  final String? notes;
+  final String localFinancialAccountId;
+  final PaymentMethod paymentMethod;
+  final ExpenseAccountingClassification accountingClassification;
 }

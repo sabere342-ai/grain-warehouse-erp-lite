@@ -10614,6 +10614,1029 @@ class ExpensesCompanion extends UpdateCompanion<ExpenseRow> {
   }
 }
 
+class $FinancialAccountCloudLinksTable extends FinancialAccountCloudLinks
+    with
+        TableInfo<$FinancialAccountCloudLinksTable,
+            FinancialAccountCloudLinkRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FinancialAccountCloudLinksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localAccountIdMeta =
+      const VerificationMeta('localAccountId');
+  @override
+  late final GeneratedColumn<String> localAccountId = GeneratedColumn<String>(
+      'local_account_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _serverAccountUuidMeta =
+      const VerificationMeta('serverAccountUuid');
+  @override
+  late final GeneratedColumn<String> serverAccountUuid =
+      GeneratedColumn<String>('server_account_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _reconciledServerBalanceQirshMeta =
+      const VerificationMeta('reconciledServerBalanceQirsh');
+  @override
+  late final GeneratedColumn<int> reconciledServerBalanceQirsh =
+      GeneratedColumn<int>(
+          'reconciled_server_balance_qirsh', aliasedName, false,
+          type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _reconciledAtUtcMeta =
+      const VerificationMeta('reconciledAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> reconciledAtUtc =
+      GeneratedColumn<DateTime>('reconciled_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _reconciliationVersionMeta =
+      const VerificationMeta('reconciliationVersion');
+  @override
+  late final GeneratedColumn<int> reconciliationVersion = GeneratedColumn<int>(
+      'reconciliation_version', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _readyAtUtcMeta =
+      const VerificationMeta('readyAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> readyAtUtc = GeneratedColumn<DateTime>(
+      'ready_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        localAccountId,
+        businessId,
+        serverAccountUuid,
+        reconciledServerBalanceQirsh,
+        reconciledAtUtc,
+        reconciliationVersion,
+        readyAtUtc
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'financial_account_cloud_links';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<FinancialAccountCloudLinkRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_account_id')) {
+      context.handle(
+          _localAccountIdMeta,
+          localAccountId.isAcceptableOrUnknown(
+              data['local_account_id']!, _localAccountIdMeta));
+    } else if (isInserting) {
+      context.missing(_localAccountIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('server_account_uuid')) {
+      context.handle(
+          _serverAccountUuidMeta,
+          serverAccountUuid.isAcceptableOrUnknown(
+              data['server_account_uuid']!, _serverAccountUuidMeta));
+    } else if (isInserting) {
+      context.missing(_serverAccountUuidMeta);
+    }
+    if (data.containsKey('reconciled_server_balance_qirsh')) {
+      context.handle(
+          _reconciledServerBalanceQirshMeta,
+          reconciledServerBalanceQirsh.isAcceptableOrUnknown(
+              data['reconciled_server_balance_qirsh']!,
+              _reconciledServerBalanceQirshMeta));
+    } else if (isInserting) {
+      context.missing(_reconciledServerBalanceQirshMeta);
+    }
+    if (data.containsKey('reconciled_at_utc')) {
+      context.handle(
+          _reconciledAtUtcMeta,
+          reconciledAtUtc.isAcceptableOrUnknown(
+              data['reconciled_at_utc']!, _reconciledAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_reconciledAtUtcMeta);
+    }
+    if (data.containsKey('reconciliation_version')) {
+      context.handle(
+          _reconciliationVersionMeta,
+          reconciliationVersion.isAcceptableOrUnknown(
+              data['reconciliation_version']!, _reconciliationVersionMeta));
+    } else if (isInserting) {
+      context.missing(_reconciliationVersionMeta);
+    }
+    if (data.containsKey('ready_at_utc')) {
+      context.handle(
+          _readyAtUtcMeta,
+          readyAtUtc.isAcceptableOrUnknown(
+              data['ready_at_utc']!, _readyAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_readyAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localAccountId};
+  @override
+  FinancialAccountCloudLinkRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FinancialAccountCloudLinkRow(
+      localAccountId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_account_id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      serverAccountUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}server_account_uuid'])!,
+      reconciledServerBalanceQirsh: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}reconciled_server_balance_qirsh'])!,
+      reconciledAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}reconciled_at_utc'])!,
+      reconciliationVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}reconciliation_version'])!,
+      readyAtUtc: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}ready_at_utc'])!,
+    );
+  }
+
+  @override
+  $FinancialAccountCloudLinksTable createAlias(String alias) {
+    return $FinancialAccountCloudLinksTable(attachedDatabase, alias);
+  }
+}
+
+class FinancialAccountCloudLinkRow extends DataClass
+    implements Insertable<FinancialAccountCloudLinkRow> {
+  final String localAccountId;
+  final String businessId;
+  final String serverAccountUuid;
+  final int reconciledServerBalanceQirsh;
+  final DateTime reconciledAtUtc;
+  final int reconciliationVersion;
+  final DateTime readyAtUtc;
+  const FinancialAccountCloudLinkRow(
+      {required this.localAccountId,
+      required this.businessId,
+      required this.serverAccountUuid,
+      required this.reconciledServerBalanceQirsh,
+      required this.reconciledAtUtc,
+      required this.reconciliationVersion,
+      required this.readyAtUtc});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_account_id'] = Variable<String>(localAccountId);
+    map['business_id'] = Variable<String>(businessId);
+    map['server_account_uuid'] = Variable<String>(serverAccountUuid);
+    map['reconciled_server_balance_qirsh'] =
+        Variable<int>(reconciledServerBalanceQirsh);
+    map['reconciled_at_utc'] = Variable<DateTime>(reconciledAtUtc);
+    map['reconciliation_version'] = Variable<int>(reconciliationVersion);
+    map['ready_at_utc'] = Variable<DateTime>(readyAtUtc);
+    return map;
+  }
+
+  FinancialAccountCloudLinksCompanion toCompanion(bool nullToAbsent) {
+    return FinancialAccountCloudLinksCompanion(
+      localAccountId: Value(localAccountId),
+      businessId: Value(businessId),
+      serverAccountUuid: Value(serverAccountUuid),
+      reconciledServerBalanceQirsh: Value(reconciledServerBalanceQirsh),
+      reconciledAtUtc: Value(reconciledAtUtc),
+      reconciliationVersion: Value(reconciliationVersion),
+      readyAtUtc: Value(readyAtUtc),
+    );
+  }
+
+  factory FinancialAccountCloudLinkRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FinancialAccountCloudLinkRow(
+      localAccountId: serializer.fromJson<String>(json['localAccountId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      serverAccountUuid: serializer.fromJson<String>(json['serverAccountUuid']),
+      reconciledServerBalanceQirsh:
+          serializer.fromJson<int>(json['reconciledServerBalanceQirsh']),
+      reconciledAtUtc: serializer.fromJson<DateTime>(json['reconciledAtUtc']),
+      reconciliationVersion:
+          serializer.fromJson<int>(json['reconciliationVersion']),
+      readyAtUtc: serializer.fromJson<DateTime>(json['readyAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localAccountId': serializer.toJson<String>(localAccountId),
+      'businessId': serializer.toJson<String>(businessId),
+      'serverAccountUuid': serializer.toJson<String>(serverAccountUuid),
+      'reconciledServerBalanceQirsh':
+          serializer.toJson<int>(reconciledServerBalanceQirsh),
+      'reconciledAtUtc': serializer.toJson<DateTime>(reconciledAtUtc),
+      'reconciliationVersion': serializer.toJson<int>(reconciliationVersion),
+      'readyAtUtc': serializer.toJson<DateTime>(readyAtUtc),
+    };
+  }
+
+  FinancialAccountCloudLinkRow copyWith(
+          {String? localAccountId,
+          String? businessId,
+          String? serverAccountUuid,
+          int? reconciledServerBalanceQirsh,
+          DateTime? reconciledAtUtc,
+          int? reconciliationVersion,
+          DateTime? readyAtUtc}) =>
+      FinancialAccountCloudLinkRow(
+        localAccountId: localAccountId ?? this.localAccountId,
+        businessId: businessId ?? this.businessId,
+        serverAccountUuid: serverAccountUuid ?? this.serverAccountUuid,
+        reconciledServerBalanceQirsh:
+            reconciledServerBalanceQirsh ?? this.reconciledServerBalanceQirsh,
+        reconciledAtUtc: reconciledAtUtc ?? this.reconciledAtUtc,
+        reconciliationVersion:
+            reconciliationVersion ?? this.reconciliationVersion,
+        readyAtUtc: readyAtUtc ?? this.readyAtUtc,
+      );
+  FinancialAccountCloudLinkRow copyWithCompanion(
+      FinancialAccountCloudLinksCompanion data) {
+    return FinancialAccountCloudLinkRow(
+      localAccountId: data.localAccountId.present
+          ? data.localAccountId.value
+          : this.localAccountId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      serverAccountUuid: data.serverAccountUuid.present
+          ? data.serverAccountUuid.value
+          : this.serverAccountUuid,
+      reconciledServerBalanceQirsh: data.reconciledServerBalanceQirsh.present
+          ? data.reconciledServerBalanceQirsh.value
+          : this.reconciledServerBalanceQirsh,
+      reconciledAtUtc: data.reconciledAtUtc.present
+          ? data.reconciledAtUtc.value
+          : this.reconciledAtUtc,
+      reconciliationVersion: data.reconciliationVersion.present
+          ? data.reconciliationVersion.value
+          : this.reconciliationVersion,
+      readyAtUtc:
+          data.readyAtUtc.present ? data.readyAtUtc.value : this.readyAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FinancialAccountCloudLinkRow(')
+          ..write('localAccountId: $localAccountId, ')
+          ..write('businessId: $businessId, ')
+          ..write('serverAccountUuid: $serverAccountUuid, ')
+          ..write(
+              'reconciledServerBalanceQirsh: $reconciledServerBalanceQirsh, ')
+          ..write('reconciledAtUtc: $reconciledAtUtc, ')
+          ..write('reconciliationVersion: $reconciliationVersion, ')
+          ..write('readyAtUtc: $readyAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      localAccountId,
+      businessId,
+      serverAccountUuid,
+      reconciledServerBalanceQirsh,
+      reconciledAtUtc,
+      reconciliationVersion,
+      readyAtUtc);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FinancialAccountCloudLinkRow &&
+          other.localAccountId == this.localAccountId &&
+          other.businessId == this.businessId &&
+          other.serverAccountUuid == this.serverAccountUuid &&
+          other.reconciledServerBalanceQirsh ==
+              this.reconciledServerBalanceQirsh &&
+          other.reconciledAtUtc == this.reconciledAtUtc &&
+          other.reconciliationVersion == this.reconciliationVersion &&
+          other.readyAtUtc == this.readyAtUtc);
+}
+
+class FinancialAccountCloudLinksCompanion
+    extends UpdateCompanion<FinancialAccountCloudLinkRow> {
+  final Value<String> localAccountId;
+  final Value<String> businessId;
+  final Value<String> serverAccountUuid;
+  final Value<int> reconciledServerBalanceQirsh;
+  final Value<DateTime> reconciledAtUtc;
+  final Value<int> reconciliationVersion;
+  final Value<DateTime> readyAtUtc;
+  final Value<int> rowid;
+  const FinancialAccountCloudLinksCompanion({
+    this.localAccountId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.serverAccountUuid = const Value.absent(),
+    this.reconciledServerBalanceQirsh = const Value.absent(),
+    this.reconciledAtUtc = const Value.absent(),
+    this.reconciliationVersion = const Value.absent(),
+    this.readyAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FinancialAccountCloudLinksCompanion.insert({
+    required String localAccountId,
+    required String businessId,
+    required String serverAccountUuid,
+    required int reconciledServerBalanceQirsh,
+    required DateTime reconciledAtUtc,
+    required int reconciliationVersion,
+    required DateTime readyAtUtc,
+    this.rowid = const Value.absent(),
+  })  : localAccountId = Value(localAccountId),
+        businessId = Value(businessId),
+        serverAccountUuid = Value(serverAccountUuid),
+        reconciledServerBalanceQirsh = Value(reconciledServerBalanceQirsh),
+        reconciledAtUtc = Value(reconciledAtUtc),
+        reconciliationVersion = Value(reconciliationVersion),
+        readyAtUtc = Value(readyAtUtc);
+  static Insertable<FinancialAccountCloudLinkRow> custom({
+    Expression<String>? localAccountId,
+    Expression<String>? businessId,
+    Expression<String>? serverAccountUuid,
+    Expression<int>? reconciledServerBalanceQirsh,
+    Expression<DateTime>? reconciledAtUtc,
+    Expression<int>? reconciliationVersion,
+    Expression<DateTime>? readyAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localAccountId != null) 'local_account_id': localAccountId,
+      if (businessId != null) 'business_id': businessId,
+      if (serverAccountUuid != null) 'server_account_uuid': serverAccountUuid,
+      if (reconciledServerBalanceQirsh != null)
+        'reconciled_server_balance_qirsh': reconciledServerBalanceQirsh,
+      if (reconciledAtUtc != null) 'reconciled_at_utc': reconciledAtUtc,
+      if (reconciliationVersion != null)
+        'reconciliation_version': reconciliationVersion,
+      if (readyAtUtc != null) 'ready_at_utc': readyAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FinancialAccountCloudLinksCompanion copyWith(
+      {Value<String>? localAccountId,
+      Value<String>? businessId,
+      Value<String>? serverAccountUuid,
+      Value<int>? reconciledServerBalanceQirsh,
+      Value<DateTime>? reconciledAtUtc,
+      Value<int>? reconciliationVersion,
+      Value<DateTime>? readyAtUtc,
+      Value<int>? rowid}) {
+    return FinancialAccountCloudLinksCompanion(
+      localAccountId: localAccountId ?? this.localAccountId,
+      businessId: businessId ?? this.businessId,
+      serverAccountUuid: serverAccountUuid ?? this.serverAccountUuid,
+      reconciledServerBalanceQirsh:
+          reconciledServerBalanceQirsh ?? this.reconciledServerBalanceQirsh,
+      reconciledAtUtc: reconciledAtUtc ?? this.reconciledAtUtc,
+      reconciliationVersion:
+          reconciliationVersion ?? this.reconciliationVersion,
+      readyAtUtc: readyAtUtc ?? this.readyAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localAccountId.present) {
+      map['local_account_id'] = Variable<String>(localAccountId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (serverAccountUuid.present) {
+      map['server_account_uuid'] = Variable<String>(serverAccountUuid.value);
+    }
+    if (reconciledServerBalanceQirsh.present) {
+      map['reconciled_server_balance_qirsh'] =
+          Variable<int>(reconciledServerBalanceQirsh.value);
+    }
+    if (reconciledAtUtc.present) {
+      map['reconciled_at_utc'] = Variable<DateTime>(reconciledAtUtc.value);
+    }
+    if (reconciliationVersion.present) {
+      map['reconciliation_version'] =
+          Variable<int>(reconciliationVersion.value);
+    }
+    if (readyAtUtc.present) {
+      map['ready_at_utc'] = Variable<DateTime>(readyAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FinancialAccountCloudLinksCompanion(')
+          ..write('localAccountId: $localAccountId, ')
+          ..write('businessId: $businessId, ')
+          ..write('serverAccountUuid: $serverAccountUuid, ')
+          ..write(
+              'reconciledServerBalanceQirsh: $reconciledServerBalanceQirsh, ')
+          ..write('reconciledAtUtc: $reconciledAtUtc, ')
+          ..write('reconciliationVersion: $reconciliationVersion, ')
+          ..write('readyAtUtc: $readyAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExpensePostingAttemptsTable extends ExpensePostingAttempts
+    with TableInfo<$ExpensePostingAttemptsTable, ExpensePostingAttemptRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpensePostingAttemptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _commandIdMeta =
+      const VerificationMeta('commandId');
+  @override
+  late final GeneratedColumn<String> commandId = GeneratedColumn<String>(
+      'command_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _canonicalPayloadJsonMeta =
+      const VerificationMeta('canonicalPayloadJson');
+  @override
+  late final GeneratedColumn<String> canonicalPayloadJson =
+      GeneratedColumn<String>('canonical_payload_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localFingerprintMeta =
+      const VerificationMeta('localFingerprint');
+  @override
+  late final GeneratedColumn<String> localFingerprint = GeneratedColumn<String>(
+      'local_fingerprint', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lifecycleStateMeta =
+      const VerificationMeta('lifecycleState');
+  @override
+  late final GeneratedColumn<String> lifecycleState = GeneratedColumn<String>(
+      'lifecycle_state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _canonicalServerResultJsonMeta =
+      const VerificationMeta('canonicalServerResultJson');
+  @override
+  late final GeneratedColumn<String> canonicalServerResultJson =
+      GeneratedColumn<String>('canonical_server_result_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtUtcMeta =
+      const VerificationMeta('createdAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+      'created_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _attemptCountMeta =
+      const VerificationMeta('attemptCount');
+  @override
+  late final GeneratedColumn<int> attemptCount = GeneratedColumn<int>(
+      'attempt_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _lastErrorCodeMeta =
+      const VerificationMeta('lastErrorCode');
+  @override
+  late final GeneratedColumn<String> lastErrorCode = GeneratedColumn<String>(
+      'last_error_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        commandId,
+        businessId,
+        canonicalPayloadJson,
+        localFingerprint,
+        lifecycleState,
+        canonicalServerResultJson,
+        createdAtUtc,
+        updatedAtUtc,
+        attemptCount,
+        lastErrorCode
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_posting_attempts';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<ExpensePostingAttemptRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('command_id')) {
+      context.handle(_commandIdMeta,
+          commandId.isAcceptableOrUnknown(data['command_id']!, _commandIdMeta));
+    } else if (isInserting) {
+      context.missing(_commandIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('canonical_payload_json')) {
+      context.handle(
+          _canonicalPayloadJsonMeta,
+          canonicalPayloadJson.isAcceptableOrUnknown(
+              data['canonical_payload_json']!, _canonicalPayloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_canonicalPayloadJsonMeta);
+    }
+    if (data.containsKey('local_fingerprint')) {
+      context.handle(
+          _localFingerprintMeta,
+          localFingerprint.isAcceptableOrUnknown(
+              data['local_fingerprint']!, _localFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_localFingerprintMeta);
+    }
+    if (data.containsKey('lifecycle_state')) {
+      context.handle(
+          _lifecycleStateMeta,
+          lifecycleState.isAcceptableOrUnknown(
+              data['lifecycle_state']!, _lifecycleStateMeta));
+    } else if (isInserting) {
+      context.missing(_lifecycleStateMeta);
+    }
+    if (data.containsKey('canonical_server_result_json')) {
+      context.handle(
+          _canonicalServerResultJsonMeta,
+          canonicalServerResultJson.isAcceptableOrUnknown(
+              data['canonical_server_result_json']!,
+              _canonicalServerResultJsonMeta));
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+          _createdAtUtcMeta,
+          createdAtUtc.isAcceptableOrUnknown(
+              data['created_at_utc']!, _createdAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('attempt_count')) {
+      context.handle(
+          _attemptCountMeta,
+          attemptCount.isAcceptableOrUnknown(
+              data['attempt_count']!, _attemptCountMeta));
+    }
+    if (data.containsKey('last_error_code')) {
+      context.handle(
+          _lastErrorCodeMeta,
+          lastErrorCode.isAcceptableOrUnknown(
+              data['last_error_code']!, _lastErrorCodeMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {commandId};
+  @override
+  ExpensePostingAttemptRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpensePostingAttemptRow(
+      commandId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}command_id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      canonicalPayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}canonical_payload_json'])!,
+      localFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_fingerprint'])!,
+      lifecycleState: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}lifecycle_state'])!,
+      canonicalServerResultJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}canonical_server_result_json']),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}created_at_utc'])!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      attemptCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempt_count'])!,
+      lastErrorCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error_code']),
+    );
+  }
+
+  @override
+  $ExpensePostingAttemptsTable createAlias(String alias) {
+    return $ExpensePostingAttemptsTable(attachedDatabase, alias);
+  }
+}
+
+class ExpensePostingAttemptRow extends DataClass
+    implements Insertable<ExpensePostingAttemptRow> {
+  final String commandId;
+  final String businessId;
+  final String canonicalPayloadJson;
+  final String localFingerprint;
+  final String lifecycleState;
+  final String? canonicalServerResultJson;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  final int attemptCount;
+  final String? lastErrorCode;
+  const ExpensePostingAttemptRow(
+      {required this.commandId,
+      required this.businessId,
+      required this.canonicalPayloadJson,
+      required this.localFingerprint,
+      required this.lifecycleState,
+      this.canonicalServerResultJson,
+      required this.createdAtUtc,
+      required this.updatedAtUtc,
+      required this.attemptCount,
+      this.lastErrorCode});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['command_id'] = Variable<String>(commandId);
+    map['business_id'] = Variable<String>(businessId);
+    map['canonical_payload_json'] = Variable<String>(canonicalPayloadJson);
+    map['local_fingerprint'] = Variable<String>(localFingerprint);
+    map['lifecycle_state'] = Variable<String>(lifecycleState);
+    if (!nullToAbsent || canonicalServerResultJson != null) {
+      map['canonical_server_result_json'] =
+          Variable<String>(canonicalServerResultJson);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['attempt_count'] = Variable<int>(attemptCount);
+    if (!nullToAbsent || lastErrorCode != null) {
+      map['last_error_code'] = Variable<String>(lastErrorCode);
+    }
+    return map;
+  }
+
+  ExpensePostingAttemptsCompanion toCompanion(bool nullToAbsent) {
+    return ExpensePostingAttemptsCompanion(
+      commandId: Value(commandId),
+      businessId: Value(businessId),
+      canonicalPayloadJson: Value(canonicalPayloadJson),
+      localFingerprint: Value(localFingerprint),
+      lifecycleState: Value(lifecycleState),
+      canonicalServerResultJson:
+          canonicalServerResultJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(canonicalServerResultJson),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+      attemptCount: Value(attemptCount),
+      lastErrorCode: lastErrorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorCode),
+    );
+  }
+
+  factory ExpensePostingAttemptRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpensePostingAttemptRow(
+      commandId: serializer.fromJson<String>(json['commandId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      canonicalPayloadJson:
+          serializer.fromJson<String>(json['canonicalPayloadJson']),
+      localFingerprint: serializer.fromJson<String>(json['localFingerprint']),
+      lifecycleState: serializer.fromJson<String>(json['lifecycleState']),
+      canonicalServerResultJson:
+          serializer.fromJson<String?>(json['canonicalServerResultJson']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      attemptCount: serializer.fromJson<int>(json['attemptCount']),
+      lastErrorCode: serializer.fromJson<String?>(json['lastErrorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'commandId': serializer.toJson<String>(commandId),
+      'businessId': serializer.toJson<String>(businessId),
+      'canonicalPayloadJson': serializer.toJson<String>(canonicalPayloadJson),
+      'localFingerprint': serializer.toJson<String>(localFingerprint),
+      'lifecycleState': serializer.toJson<String>(lifecycleState),
+      'canonicalServerResultJson':
+          serializer.toJson<String?>(canonicalServerResultJson),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'attemptCount': serializer.toJson<int>(attemptCount),
+      'lastErrorCode': serializer.toJson<String?>(lastErrorCode),
+    };
+  }
+
+  ExpensePostingAttemptRow copyWith(
+          {String? commandId,
+          String? businessId,
+          String? canonicalPayloadJson,
+          String? localFingerprint,
+          String? lifecycleState,
+          Value<String?> canonicalServerResultJson = const Value.absent(),
+          DateTime? createdAtUtc,
+          DateTime? updatedAtUtc,
+          int? attemptCount,
+          Value<String?> lastErrorCode = const Value.absent()}) =>
+      ExpensePostingAttemptRow(
+        commandId: commandId ?? this.commandId,
+        businessId: businessId ?? this.businessId,
+        canonicalPayloadJson: canonicalPayloadJson ?? this.canonicalPayloadJson,
+        localFingerprint: localFingerprint ?? this.localFingerprint,
+        lifecycleState: lifecycleState ?? this.lifecycleState,
+        canonicalServerResultJson: canonicalServerResultJson.present
+            ? canonicalServerResultJson.value
+            : this.canonicalServerResultJson,
+        createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        attemptCount: attemptCount ?? this.attemptCount,
+        lastErrorCode:
+            lastErrorCode.present ? lastErrorCode.value : this.lastErrorCode,
+      );
+  ExpensePostingAttemptRow copyWithCompanion(
+      ExpensePostingAttemptsCompanion data) {
+    return ExpensePostingAttemptRow(
+      commandId: data.commandId.present ? data.commandId.value : this.commandId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      canonicalPayloadJson: data.canonicalPayloadJson.present
+          ? data.canonicalPayloadJson.value
+          : this.canonicalPayloadJson,
+      localFingerprint: data.localFingerprint.present
+          ? data.localFingerprint.value
+          : this.localFingerprint,
+      lifecycleState: data.lifecycleState.present
+          ? data.lifecycleState.value
+          : this.lifecycleState,
+      canonicalServerResultJson: data.canonicalServerResultJson.present
+          ? data.canonicalServerResultJson.value
+          : this.canonicalServerResultJson,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      attemptCount: data.attemptCount.present
+          ? data.attemptCount.value
+          : this.attemptCount,
+      lastErrorCode: data.lastErrorCode.present
+          ? data.lastErrorCode.value
+          : this.lastErrorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpensePostingAttemptRow(')
+          ..write('commandId: $commandId, ')
+          ..write('businessId: $businessId, ')
+          ..write('canonicalPayloadJson: $canonicalPayloadJson, ')
+          ..write('localFingerprint: $localFingerprint, ')
+          ..write('lifecycleState: $lifecycleState, ')
+          ..write('canonicalServerResultJson: $canonicalServerResultJson, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastErrorCode: $lastErrorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      commandId,
+      businessId,
+      canonicalPayloadJson,
+      localFingerprint,
+      lifecycleState,
+      canonicalServerResultJson,
+      createdAtUtc,
+      updatedAtUtc,
+      attemptCount,
+      lastErrorCode);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpensePostingAttemptRow &&
+          other.commandId == this.commandId &&
+          other.businessId == this.businessId &&
+          other.canonicalPayloadJson == this.canonicalPayloadJson &&
+          other.localFingerprint == this.localFingerprint &&
+          other.lifecycleState == this.lifecycleState &&
+          other.canonicalServerResultJson == this.canonicalServerResultJson &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.attemptCount == this.attemptCount &&
+          other.lastErrorCode == this.lastErrorCode);
+}
+
+class ExpensePostingAttemptsCompanion
+    extends UpdateCompanion<ExpensePostingAttemptRow> {
+  final Value<String> commandId;
+  final Value<String> businessId;
+  final Value<String> canonicalPayloadJson;
+  final Value<String> localFingerprint;
+  final Value<String> lifecycleState;
+  final Value<String?> canonicalServerResultJson;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> attemptCount;
+  final Value<String?> lastErrorCode;
+  final Value<int> rowid;
+  const ExpensePostingAttemptsCompanion({
+    this.commandId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.canonicalPayloadJson = const Value.absent(),
+    this.localFingerprint = const Value.absent(),
+    this.lifecycleState = const Value.absent(),
+    this.canonicalServerResultJson = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.attemptCount = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExpensePostingAttemptsCompanion.insert({
+    required String commandId,
+    required String businessId,
+    required String canonicalPayloadJson,
+    required String localFingerprint,
+    required String lifecycleState,
+    this.canonicalServerResultJson = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.attemptCount = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : commandId = Value(commandId),
+        businessId = Value(businessId),
+        canonicalPayloadJson = Value(canonicalPayloadJson),
+        localFingerprint = Value(localFingerprint),
+        lifecycleState = Value(lifecycleState),
+        createdAtUtc = Value(createdAtUtc),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<ExpensePostingAttemptRow> custom({
+    Expression<String>? commandId,
+    Expression<String>? businessId,
+    Expression<String>? canonicalPayloadJson,
+    Expression<String>? localFingerprint,
+    Expression<String>? lifecycleState,
+    Expression<String>? canonicalServerResultJson,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? attemptCount,
+    Expression<String>? lastErrorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (commandId != null) 'command_id': commandId,
+      if (businessId != null) 'business_id': businessId,
+      if (canonicalPayloadJson != null)
+        'canonical_payload_json': canonicalPayloadJson,
+      if (localFingerprint != null) 'local_fingerprint': localFingerprint,
+      if (lifecycleState != null) 'lifecycle_state': lifecycleState,
+      if (canonicalServerResultJson != null)
+        'canonical_server_result_json': canonicalServerResultJson,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (attemptCount != null) 'attempt_count': attemptCount,
+      if (lastErrorCode != null) 'last_error_code': lastErrorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExpensePostingAttemptsCompanion copyWith(
+      {Value<String>? commandId,
+      Value<String>? businessId,
+      Value<String>? canonicalPayloadJson,
+      Value<String>? localFingerprint,
+      Value<String>? lifecycleState,
+      Value<String?>? canonicalServerResultJson,
+      Value<DateTime>? createdAtUtc,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? attemptCount,
+      Value<String?>? lastErrorCode,
+      Value<int>? rowid}) {
+    return ExpensePostingAttemptsCompanion(
+      commandId: commandId ?? this.commandId,
+      businessId: businessId ?? this.businessId,
+      canonicalPayloadJson: canonicalPayloadJson ?? this.canonicalPayloadJson,
+      localFingerprint: localFingerprint ?? this.localFingerprint,
+      lifecycleState: lifecycleState ?? this.lifecycleState,
+      canonicalServerResultJson:
+          canonicalServerResultJson ?? this.canonicalServerResultJson,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      attemptCount: attemptCount ?? this.attemptCount,
+      lastErrorCode: lastErrorCode ?? this.lastErrorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (commandId.present) {
+      map['command_id'] = Variable<String>(commandId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (canonicalPayloadJson.present) {
+      map['canonical_payload_json'] =
+          Variable<String>(canonicalPayloadJson.value);
+    }
+    if (localFingerprint.present) {
+      map['local_fingerprint'] = Variable<String>(localFingerprint.value);
+    }
+    if (lifecycleState.present) {
+      map['lifecycle_state'] = Variable<String>(lifecycleState.value);
+    }
+    if (canonicalServerResultJson.present) {
+      map['canonical_server_result_json'] =
+          Variable<String>(canonicalServerResultJson.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (attemptCount.present) {
+      map['attempt_count'] = Variable<int>(attemptCount.value);
+    }
+    if (lastErrorCode.present) {
+      map['last_error_code'] = Variable<String>(lastErrorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpensePostingAttemptsCompanion(')
+          ..write('commandId: $commandId, ')
+          ..write('businessId: $businessId, ')
+          ..write('canonicalPayloadJson: $canonicalPayloadJson, ')
+          ..write('localFingerprint: $localFingerprint, ')
+          ..write('lifecycleState: $lifecycleState, ')
+          ..write('canonicalServerResultJson: $canonicalServerResultJson, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CustomerAccountEntriesTable extends CustomerAccountEntries
     with TableInfo<$CustomerAccountEntriesTable, CustomerAccountEntryRow> {
   @override
@@ -15842,6 +16865,10 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $FinancialClosingsTable(this);
   late final $AuditLogsTable auditLogs = $AuditLogsTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
+  late final $FinancialAccountCloudLinksTable financialAccountCloudLinks =
+      $FinancialAccountCloudLinksTable(this);
+  late final $ExpensePostingAttemptsTable expensePostingAttempts =
+      $ExpensePostingAttemptsTable(this);
   late final $CustomerAccountEntriesTable customerAccountEntries =
       $CustomerAccountEntriesTable(this);
   late final $CustomerCollectionsTable customerCollections =
@@ -15918,6 +16945,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index expensesOperationRequestUq = Index(
       'expenses_operation_request_uq',
       'CREATE UNIQUE INDEX expenses_operation_request_uq ON expenses (operation_request_id)');
+  late final Index financialAccountCloudLinksBusinessServerUq = Index(
+      'financial_account_cloud_links_business_server_uq',
+      'CREATE UNIQUE INDEX financial_account_cloud_links_business_server_uq ON financial_account_cloud_links (business_id, server_account_uuid)');
+  late final Index expensePostingAttemptsBusinessStateIdx = Index(
+      'expense_posting_attempts_business_state_idx',
+      'CREATE INDEX expense_posting_attempts_business_state_idx ON expense_posting_attempts (business_id, lifecycle_state, updated_at_utc)');
   late final Index customerAccountEntriesCustomerTimestampIdx = Index(
       'customer_account_entries_customer_timestamp_idx',
       'CREATE INDEX customer_account_entries_customer_timestamp_idx ON customer_account_entries (customer_id, occurred_at, id)');
@@ -15984,6 +17017,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         financialClosings,
         auditLogs,
         expenses,
+        financialAccountCloudLinks,
+        expensePostingAttempts,
         customerAccountEntries,
         customerCollections,
         customerAdvances,
@@ -16017,6 +17052,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         auditLogsReferenceIdx,
         expensesDateCreatedAtIdx,
         expensesOperationRequestUq,
+        financialAccountCloudLinksBusinessServerUq,
+        expensePostingAttemptsBusinessStateIdx,
         customerAccountEntriesCustomerTimestampIdx,
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
@@ -21247,6 +22284,493 @@ typedef $$ExpensesTableProcessedTableManager = ProcessedTableManager<
     ),
     ExpenseRow,
     PrefetchHooks Function()>;
+typedef $$FinancialAccountCloudLinksTableCreateCompanionBuilder
+    = FinancialAccountCloudLinksCompanion Function({
+  required String localAccountId,
+  required String businessId,
+  required String serverAccountUuid,
+  required int reconciledServerBalanceQirsh,
+  required DateTime reconciledAtUtc,
+  required int reconciliationVersion,
+  required DateTime readyAtUtc,
+  Value<int> rowid,
+});
+typedef $$FinancialAccountCloudLinksTableUpdateCompanionBuilder
+    = FinancialAccountCloudLinksCompanion Function({
+  Value<String> localAccountId,
+  Value<String> businessId,
+  Value<String> serverAccountUuid,
+  Value<int> reconciledServerBalanceQirsh,
+  Value<DateTime> reconciledAtUtc,
+  Value<int> reconciliationVersion,
+  Value<DateTime> readyAtUtc,
+  Value<int> rowid,
+});
+
+class $$FinancialAccountCloudLinksTableFilterComposer
+    extends Composer<_$FoundationDatabase, $FinancialAccountCloudLinksTable> {
+  $$FinancialAccountCloudLinksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get localAccountId => $composableBuilder(
+      column: $table.localAccountId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get serverAccountUuid => $composableBuilder(
+      column: $table.serverAccountUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get reconciledServerBalanceQirsh => $composableBuilder(
+      column: $table.reconciledServerBalanceQirsh,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get reconciledAtUtc => $composableBuilder(
+      column: $table.reconciledAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get reconciliationVersion => $composableBuilder(
+      column: $table.reconciliationVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get readyAtUtc => $composableBuilder(
+      column: $table.readyAtUtc, builder: (column) => ColumnFilters(column));
+}
+
+class $$FinancialAccountCloudLinksTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $FinancialAccountCloudLinksTable> {
+  $$FinancialAccountCloudLinksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get localAccountId => $composableBuilder(
+      column: $table.localAccountId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get serverAccountUuid => $composableBuilder(
+      column: $table.serverAccountUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get reconciledServerBalanceQirsh => $composableBuilder(
+      column: $table.reconciledServerBalanceQirsh,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get reconciledAtUtc => $composableBuilder(
+      column: $table.reconciledAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get reconciliationVersion => $composableBuilder(
+      column: $table.reconciliationVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get readyAtUtc => $composableBuilder(
+      column: $table.readyAtUtc, builder: (column) => ColumnOrderings(column));
+}
+
+class $$FinancialAccountCloudLinksTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $FinancialAccountCloudLinksTable> {
+  $$FinancialAccountCloudLinksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get localAccountId => $composableBuilder(
+      column: $table.localAccountId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverAccountUuid => $composableBuilder(
+      column: $table.serverAccountUuid, builder: (column) => column);
+
+  GeneratedColumn<int> get reconciledServerBalanceQirsh => $composableBuilder(
+      column: $table.reconciledServerBalanceQirsh, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get reconciledAtUtc => $composableBuilder(
+      column: $table.reconciledAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get reconciliationVersion => $composableBuilder(
+      column: $table.reconciliationVersion, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get readyAtUtc => $composableBuilder(
+      column: $table.readyAtUtc, builder: (column) => column);
+}
+
+class $$FinancialAccountCloudLinksTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $FinancialAccountCloudLinksTable,
+    FinancialAccountCloudLinkRow,
+    $$FinancialAccountCloudLinksTableFilterComposer,
+    $$FinancialAccountCloudLinksTableOrderingComposer,
+    $$FinancialAccountCloudLinksTableAnnotationComposer,
+    $$FinancialAccountCloudLinksTableCreateCompanionBuilder,
+    $$FinancialAccountCloudLinksTableUpdateCompanionBuilder,
+    (
+      FinancialAccountCloudLinkRow,
+      BaseReferences<_$FoundationDatabase, $FinancialAccountCloudLinksTable,
+          FinancialAccountCloudLinkRow>
+    ),
+    FinancialAccountCloudLinkRow,
+    PrefetchHooks Function()> {
+  $$FinancialAccountCloudLinksTableTableManager(
+      _$FoundationDatabase db, $FinancialAccountCloudLinksTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FinancialAccountCloudLinksTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FinancialAccountCloudLinksTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FinancialAccountCloudLinksTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> localAccountId = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> serverAccountUuid = const Value.absent(),
+            Value<int> reconciledServerBalanceQirsh = const Value.absent(),
+            Value<DateTime> reconciledAtUtc = const Value.absent(),
+            Value<int> reconciliationVersion = const Value.absent(),
+            Value<DateTime> readyAtUtc = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FinancialAccountCloudLinksCompanion(
+            localAccountId: localAccountId,
+            businessId: businessId,
+            serverAccountUuid: serverAccountUuid,
+            reconciledServerBalanceQirsh: reconciledServerBalanceQirsh,
+            reconciledAtUtc: reconciledAtUtc,
+            reconciliationVersion: reconciliationVersion,
+            readyAtUtc: readyAtUtc,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String localAccountId,
+            required String businessId,
+            required String serverAccountUuid,
+            required int reconciledServerBalanceQirsh,
+            required DateTime reconciledAtUtc,
+            required int reconciliationVersion,
+            required DateTime readyAtUtc,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FinancialAccountCloudLinksCompanion.insert(
+            localAccountId: localAccountId,
+            businessId: businessId,
+            serverAccountUuid: serverAccountUuid,
+            reconciledServerBalanceQirsh: reconciledServerBalanceQirsh,
+            reconciledAtUtc: reconciledAtUtc,
+            reconciliationVersion: reconciliationVersion,
+            readyAtUtc: readyAtUtc,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FinancialAccountCloudLinksTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $FinancialAccountCloudLinksTable,
+        FinancialAccountCloudLinkRow,
+        $$FinancialAccountCloudLinksTableFilterComposer,
+        $$FinancialAccountCloudLinksTableOrderingComposer,
+        $$FinancialAccountCloudLinksTableAnnotationComposer,
+        $$FinancialAccountCloudLinksTableCreateCompanionBuilder,
+        $$FinancialAccountCloudLinksTableUpdateCompanionBuilder,
+        (
+          FinancialAccountCloudLinkRow,
+          BaseReferences<_$FoundationDatabase, $FinancialAccountCloudLinksTable,
+              FinancialAccountCloudLinkRow>
+        ),
+        FinancialAccountCloudLinkRow,
+        PrefetchHooks Function()>;
+typedef $$ExpensePostingAttemptsTableCreateCompanionBuilder
+    = ExpensePostingAttemptsCompanion Function({
+  required String commandId,
+  required String businessId,
+  required String canonicalPayloadJson,
+  required String localFingerprint,
+  required String lifecycleState,
+  Value<String?> canonicalServerResultJson,
+  required DateTime createdAtUtc,
+  required DateTime updatedAtUtc,
+  Value<int> attemptCount,
+  Value<String?> lastErrorCode,
+  Value<int> rowid,
+});
+typedef $$ExpensePostingAttemptsTableUpdateCompanionBuilder
+    = ExpensePostingAttemptsCompanion Function({
+  Value<String> commandId,
+  Value<String> businessId,
+  Value<String> canonicalPayloadJson,
+  Value<String> localFingerprint,
+  Value<String> lifecycleState,
+  Value<String?> canonicalServerResultJson,
+  Value<DateTime> createdAtUtc,
+  Value<DateTime> updatedAtUtc,
+  Value<int> attemptCount,
+  Value<String?> lastErrorCode,
+  Value<int> rowid,
+});
+
+class $$ExpensePostingAttemptsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $ExpensePostingAttemptsTable> {
+  $$ExpensePostingAttemptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get commandId => $composableBuilder(
+      column: $table.commandId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => ColumnFilters(column));
+}
+
+class $$ExpensePostingAttemptsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $ExpensePostingAttemptsTable> {
+  $$ExpensePostingAttemptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get commandId => $composableBuilder(
+      column: $table.commandId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$ExpensePostingAttemptsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $ExpensePostingAttemptsTable> {
+  $$ExpensePostingAttemptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get commandId =>
+      $composableBuilder(column: $table.commandId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState, builder: (column) => column);
+
+  GeneratedColumn<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => column);
+}
+
+class $$ExpensePostingAttemptsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $ExpensePostingAttemptsTable,
+    ExpensePostingAttemptRow,
+    $$ExpensePostingAttemptsTableFilterComposer,
+    $$ExpensePostingAttemptsTableOrderingComposer,
+    $$ExpensePostingAttemptsTableAnnotationComposer,
+    $$ExpensePostingAttemptsTableCreateCompanionBuilder,
+    $$ExpensePostingAttemptsTableUpdateCompanionBuilder,
+    (
+      ExpensePostingAttemptRow,
+      BaseReferences<_$FoundationDatabase, $ExpensePostingAttemptsTable,
+          ExpensePostingAttemptRow>
+    ),
+    ExpensePostingAttemptRow,
+    PrefetchHooks Function()> {
+  $$ExpensePostingAttemptsTableTableManager(
+      _$FoundationDatabase db, $ExpensePostingAttemptsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpensePostingAttemptsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpensePostingAttemptsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpensePostingAttemptsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> commandId = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> canonicalPayloadJson = const Value.absent(),
+            Value<String> localFingerprint = const Value.absent(),
+            Value<String> lifecycleState = const Value.absent(),
+            Value<String?> canonicalServerResultJson = const Value.absent(),
+            Value<DateTime> createdAtUtc = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> attemptCount = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ExpensePostingAttemptsCompanion(
+            commandId: commandId,
+            businessId: businessId,
+            canonicalPayloadJson: canonicalPayloadJson,
+            localFingerprint: localFingerprint,
+            lifecycleState: lifecycleState,
+            canonicalServerResultJson: canonicalServerResultJson,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            attemptCount: attemptCount,
+            lastErrorCode: lastErrorCode,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String commandId,
+            required String businessId,
+            required String canonicalPayloadJson,
+            required String localFingerprint,
+            required String lifecycleState,
+            Value<String?> canonicalServerResultJson = const Value.absent(),
+            required DateTime createdAtUtc,
+            required DateTime updatedAtUtc,
+            Value<int> attemptCount = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ExpensePostingAttemptsCompanion.insert(
+            commandId: commandId,
+            businessId: businessId,
+            canonicalPayloadJson: canonicalPayloadJson,
+            localFingerprint: localFingerprint,
+            lifecycleState: lifecycleState,
+            canonicalServerResultJson: canonicalServerResultJson,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            attemptCount: attemptCount,
+            lastErrorCode: lastErrorCode,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ExpensePostingAttemptsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $ExpensePostingAttemptsTable,
+        ExpensePostingAttemptRow,
+        $$ExpensePostingAttemptsTableFilterComposer,
+        $$ExpensePostingAttemptsTableOrderingComposer,
+        $$ExpensePostingAttemptsTableAnnotationComposer,
+        $$ExpensePostingAttemptsTableCreateCompanionBuilder,
+        $$ExpensePostingAttemptsTableUpdateCompanionBuilder,
+        (
+          ExpensePostingAttemptRow,
+          BaseReferences<_$FoundationDatabase, $ExpensePostingAttemptsTable,
+              ExpensePostingAttemptRow>
+        ),
+        ExpensePostingAttemptRow,
+        PrefetchHooks Function()>;
 typedef $$CustomerAccountEntriesTableCreateCompanionBuilder
     = CustomerAccountEntriesCompanion Function({
   required String id,
@@ -24202,6 +25726,13 @@ class $FoundationDatabaseManager {
       $$AuditLogsTableTableManager(_db, _db.auditLogs);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db, _db.expenses);
+  $$FinancialAccountCloudLinksTableTableManager
+      get financialAccountCloudLinks =>
+          $$FinancialAccountCloudLinksTableTableManager(
+              _db, _db.financialAccountCloudLinks);
+  $$ExpensePostingAttemptsTableTableManager get expensePostingAttempts =>
+      $$ExpensePostingAttemptsTableTableManager(
+          _db, _db.expensePostingAttempts);
   $$CustomerAccountEntriesTableTableManager get customerAccountEntries =>
       $$CustomerAccountEntriesTableTableManager(
           _db, _db.customerAccountEntries);

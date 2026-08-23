@@ -1,9 +1,18 @@
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 
 final class SessionContext {
-  const SessionContext({required this.userId});
+  const SessionContext({required this.userId})
+      : authUserId = null,
+        isVerifiedRemote = false;
+
+  const SessionContext.verifiedRemote({required String remoteAuthUserId})
+      : userId = remoteAuthUserId,
+        authUserId = remoteAuthUserId,
+        isVerifiedRemote = true;
 
   final String userId;
+  final String? authUserId;
+  final bool isVerifiedRemote;
 }
 
 abstract interface class SessionContextProvider {
@@ -31,6 +40,21 @@ final class LocalSessionContextProvider implements SessionContextProvider {
   void clear() {
     _current = null;
   }
+}
+
+/// Replaceable Cloud session state. Values enter this provider only after the
+/// Supabase adapter has observed an authenticated remote session.
+final class MutableSessionContextProvider implements SessionContextProvider {
+  SessionContext? _current;
+
+  @override
+  SessionContext? get current => _current;
+
+  @override
+  void replace(SessionContext context) => _current = context;
+
+  @override
+  void clear() => _current = null;
 }
 
 /// Translates the existing local authentication authority into the narrower

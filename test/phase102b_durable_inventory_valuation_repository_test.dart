@@ -17,7 +17,7 @@ void main() {
     expect((await repository.getActivation()).isActivated, isFalse);
     expect(await repository.listStates(), isEmpty);
     expect(await repository.listEvents(), isEmpty);
-    expect(database.schemaVersion, 15);
+    expect(database.schemaVersion, 16);
   });
 
   test('populated schema 14 migrates additively to 15 and stays inactive',
@@ -53,7 +53,7 @@ void main() {
     addTearDown(database.close);
     final repository = DriftInventoryValuationRepository(database);
 
-    expect(database.schemaVersion, 15);
+    expect(database.schemaVersion, 16);
     final legacyExpense = await database
         .customSelect(
           "SELECT accounting_classification FROM expenses WHERE id = 'legacy-expense'",

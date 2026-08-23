@@ -232,7 +232,13 @@ void main() {
       'lib/core/sales/sale_repository.dart',
     });
     expect(
-      _git(['diff', _baseline, '--', 'lib/core/persistence']).trim(),
+      _git([
+        'diff',
+        _baseline,
+        _historicalScopeEndpoint,
+        '--',
+        'lib/core/persistence',
+      ]).trim(),
       isEmpty,
     );
     for (final path in changedProduction) {

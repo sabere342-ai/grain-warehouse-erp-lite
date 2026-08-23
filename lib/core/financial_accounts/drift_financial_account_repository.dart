@@ -52,6 +52,27 @@ class DriftFinancialAccountRepository extends LocalFinancialAccountRepository {
     }
   }
 
+  /// Serializes an acknowledged server projection with all hydrated writes,
+  /// then replaces memory from the committed SQLite state without rewriting
+  /// the tables. This prevents a stale hydrated snapshot from erasing the
+  /// authoritative projected entry.
+  Future<T> applySerializedExternalProjection<T>(
+    Future<T> Function() operation,
+  ) async {
+    final completion = Completer<void>();
+    final previous = _writeTail;
+    _writeTail = completion.future;
+    await previous.catchError((_) {});
+    try {
+      final result = await operation();
+      await super.clearForOwnerDataWipe();
+      await _hydrate();
+      return result;
+    } finally {
+      completion.complete();
+    }
+  }
+
   @override
   SnapshotHolder createTransactionSnapshot() =>
       _DurableSnapshot(super.createTransactionSnapshot(), _persist);

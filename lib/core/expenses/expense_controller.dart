@@ -26,6 +26,9 @@ class ExpenseController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refreshAfterConfirmedProjection(AppUser user) =>
+      loadExpenses(user);
+
   Future<bool> createExpense({
     required AppUser user,
     required ExpenseDraft draft,

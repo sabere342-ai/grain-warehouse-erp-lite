@@ -353,6 +353,46 @@ class Expenses extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('FinancialAccountCloudLinkRow')
+@TableIndex(
+  name: 'financial_account_cloud_links_business_server_uq',
+  columns: {#businessId, #serverAccountUuid},
+  unique: true,
+)
+class FinancialAccountCloudLinks extends Table {
+  TextColumn get localAccountId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get serverAccountUuid => text()();
+  IntColumn get reconciledServerBalanceQirsh => integer()();
+  DateTimeColumn get reconciledAtUtc => dateTime()();
+  IntColumn get reconciliationVersion => integer()();
+  DateTimeColumn get readyAtUtc => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {localAccountId};
+}
+
+@DataClassName('ExpensePostingAttemptRow')
+@TableIndex(
+  name: 'expense_posting_attempts_business_state_idx',
+  columns: {#businessId, #lifecycleState, #updatedAtUtc},
+)
+class ExpensePostingAttempts extends Table {
+  TextColumn get commandId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get canonicalPayloadJson => text()();
+  TextColumn get localFingerprint => text()();
+  TextColumn get lifecycleState => text()();
+  TextColumn get canonicalServerResultJson => text().nullable()();
+  DateTimeColumn get createdAtUtc => dateTime()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get attemptCount => integer().withDefault(const Constant(0))();
+  TextColumn get lastErrorCode => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {commandId};
+}
+
 abstract class CustomerAccountPayloadTable extends Table {
   TextColumn get id => text()();
   TextColumn get customerId => text()();
@@ -550,6 +590,8 @@ class NegativeBalanceApprovalRequestTransitions extends Table {
   FinancialClosings,
   AuditLogs,
   Expenses,
+  FinancialAccountCloudLinks,
+  ExpensePostingAttempts,
   CustomerAccountEntries,
   CustomerCollections,
   CustomerAdvances,
@@ -568,7 +610,7 @@ class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);
