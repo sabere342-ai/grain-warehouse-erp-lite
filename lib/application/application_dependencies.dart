@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/inventory/inventory_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/sales/sale_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
@@ -34,6 +35,7 @@ final class ApplicationRepositoryDependencies {
   const ApplicationRepositoryDependencies({
     required this.auditLogReadRepository,
     required this.businessIdentityRepository,
+    required this.documentHistoryRepository,
     required this.productCatalogReadRepository,
     required this.inventoryRepository,
     required this.saleRepository,
@@ -41,6 +43,7 @@ final class ApplicationRepositoryDependencies {
 
   final AuditLogReadRepository auditLogReadRepository;
   final BusinessIdentityRepository businessIdentityRepository;
+  final DocumentHistoryRepository documentHistoryRepository;
   final ProductCatalogReadRepository productCatalogReadRepository;
   final InventoryRepository inventoryRepository;
   final SaleRepository saleRepository;

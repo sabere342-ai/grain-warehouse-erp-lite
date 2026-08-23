@@ -24,6 +24,7 @@ final class LegacyApplicationDependencyBridge {
       repositories: ApplicationRepositoryDependencies(
         auditLogReadRepository: AppRepositories.auditLogRepository,
         businessIdentityRepository: businessIdentityRepository,
+        documentHistoryRepository: AppRepositories.documentHistoryRepository,
         productCatalogReadRepository:
             AppRepositories.productCatalogReadRepository,
         inventoryRepository: AppRepositories.inventoryRepository,

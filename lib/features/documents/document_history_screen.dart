@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history_controller.dart';
@@ -23,6 +23,7 @@ class DocumentHistoryScreen extends StatefulWidget {
 class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
   late final DocumentHistoryController _controller;
   late final bool _ownsController;
+  bool _initialized = false;
   final _searchController = TextEditingController();
   final _productController = TextEditingController();
   DateTime? _from;
@@ -34,11 +35,23 @@ class _DocumentHistoryScreenState extends State<DocumentHistoryScreen> {
   void initState() {
     super.initState();
     _ownsController = widget.controller == null;
-    _controller = widget.controller ??
-        DocumentHistoryController(
-          repository: AppRepositories.documentHistoryRepository,
-        );
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    if (_ownsController) {
+      _controller = DocumentHistoryController(
+        queryHandler: ApplicationScope.of(context).queries.documentHistory,
+      );
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final user = AuthScope.of(context).state.user;
       if (user != null) {
         _controller.load(user);

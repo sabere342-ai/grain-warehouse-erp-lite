@@ -1,13 +1,20 @@
 import 'package:flutter/foundation.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 
 class DocumentHistoryController extends ChangeNotifier {
   DocumentHistoryController({
-    required DocumentHistoryRepository repository,
-  }) : _repository = repository;
+    DocumentHistoryRepository? repository,
+    LoadDocumentHistoryQueryHandler? queryHandler,
+  })  : assert(
+          (repository == null) != (queryHandler == null),
+          'Exactly one repository or query handler is required.',
+        ),
+        _queryHandler = queryHandler ??
+            LoadDocumentHistoryQueryHandler(repository: repository!);
 
-  final DocumentHistoryRepository _repository;
+  final LoadDocumentHistoryQueryHandler _queryHandler;
 
   List<DocumentHistoryEntry> _entries = const [];
   DocumentHistoryFilter _filter = const DocumentHistoryFilter();
@@ -26,7 +33,10 @@ class DocumentHistoryController extends ChangeNotifier {
         user.permissions.canViewAuditLogs || user.permissions.canCancelInvoice;
     notifyListeners();
 
-    _entries = await _repository.listHistory(filter: _filter);
+    final result = await _queryHandler.execute(
+      LoadDocumentHistoryQuery(filter: _filter),
+    );
+    _entries = result.value;
     _isLoading = false;
     notifyListeners();
   }
