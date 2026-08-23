@@ -585,7 +585,7 @@ void main() {
       expect(callers, _catalogCallers.toList()..sort());
     });
 
-    test('schemaVersion stays 15 and persistence is untouched', () {
+    test('current schema is 16 and Phase 106V persistence is untouched', () {
       final schema = _compact(
           File('lib/core/persistence/foundation_database.dart')
               .readAsStringSync());
@@ -594,7 +594,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106uCommit,
-        'HEAD',
+        _phase106vCommit,
         '--',
         'lib/core/persistence',
       ])

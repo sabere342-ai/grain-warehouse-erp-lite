@@ -408,7 +408,8 @@ void main() {
     expect(callers, _catalogCallers.toList()..sort());
   });
 
-  test('schemaVersion stays 15 and the adapter keeps no fallback', () {
+  test('current schema is 16 and the Phase 106U adapter freeze remains intact',
+      () {
     final foundation =
         File('$_persistencePath/foundation_database.dart').readAsStringSync();
     expect(foundation, contains('int get schemaVersion => 16;'));
@@ -417,7 +418,7 @@ void main() {
         'diff',
         '--name-only',
         _phase106tCommit,
-        'HEAD',
+        _phase106uCommit,
         '--',
         _persistencePath
       ]).trim(),

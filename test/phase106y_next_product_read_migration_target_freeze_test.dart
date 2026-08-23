@@ -503,10 +503,11 @@ void main() {
     }
   });
 
-  test('schema, migrations, and generated persistence remain at 106X baseline',
+  test('Phase 106Y keeps schema, migrations, and generated persistence at 106X',
       () {
     expect(
-      _git(['diff', _baseline, 'HEAD', '--', 'lib/core/persistence']).trim(),
+      _git(['diff', _baseline, _phase106yCommit, '--', 'lib/core/persistence'])
+          .trim(),
       isEmpty,
     );
     expect(

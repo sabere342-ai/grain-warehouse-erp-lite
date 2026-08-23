@@ -254,6 +254,7 @@ declare
   v_business_id uuid;
   v_account_id uuid;
   v_business_date date;
+  v_business_date_is_valid boolean := false;
   v_category text := btrim(coalesce(p_category, ''));
   v_notes text := nullif(btrim(coalesce(p_notes, '')), '');
   v_fingerprint text;
@@ -279,6 +280,18 @@ begin
     );
   end if;
 
+  if p_business_date is not null
+     and p_business_date ~ '^\d{4}-\d{2}-\d{2}$' then
+    begin
+      v_business_date := p_business_date::date;
+      v_business_date_is_valid :=
+        to_char(v_business_date, 'YYYY-MM-DD') = p_business_date;
+    exception
+      when invalid_datetime_format or datetime_field_overflow then
+        v_business_date_is_valid := false;
+    end;
+  end if;
+
   if p_schema_version is distinct from 1
      or p_command_id is null
      or p_business_id is null
@@ -286,9 +299,7 @@ begin
      or p_command_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
      or p_business_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
      or p_financial_account_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-     or p_business_date is null
-     or p_business_date !~ '^\d{4}-\d{2}-\d{2}$'
-     or to_char(to_date(p_business_date, 'YYYY-MM-DD'), 'YYYY-MM-DD') <> p_business_date
+     or not v_business_date_is_valid
      or v_category = ''
      or p_amount_qirsh is null
      or p_amount_qirsh <= 0
@@ -307,7 +318,6 @@ begin
   v_command_id := p_command_id::uuid;
   v_business_id := p_business_id::uuid;
   v_account_id := p_financial_account_id::uuid;
-  v_business_date := p_business_date::date;
 
   if v_business_date > current_date then
     return jsonb_build_object(
