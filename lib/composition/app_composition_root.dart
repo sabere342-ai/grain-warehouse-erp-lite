@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_ga
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
 import 'package:grain_warehouse_erp_lite/composition/legacy_application_dependency_bridge.dart';
@@ -125,6 +126,9 @@ final class AppCompositionRoot {
       queries: ApplicationQueries(
         auditLogs: LoadAuditLogsQueryHandler(
           repository: dependencies.repositories.auditLogReadRepository,
+        ),
+        businessLogo: LoadBusinessLogoQueryHandler(
+          repository: dependencies.repositories.businessIdentityRepository,
         ),
         documentHistory: LoadDocumentHistoryQueryHandler(
           repository: dependencies.repositories.documentHistoryRepository,

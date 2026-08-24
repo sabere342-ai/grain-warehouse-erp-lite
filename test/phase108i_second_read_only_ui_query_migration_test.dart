@@ -369,7 +369,7 @@ void main() {
       }
     });
 
-    test('audit, document history, and product catalog are query handlers', () {
+    test('all four production query slices are query handlers', () {
       final queryFiles = Directory('lib/application/queries')
           .listSync()
           .whereType<File>()
@@ -388,6 +388,7 @@ void main() {
             .toSet(),
         {
           'lib/application/queries/load_audit_logs_query.dart',
+          'lib/application/queries/load_business_logo_query.dart',
           'lib/application/queries/load_document_history_query.dart',
           'lib/application/queries/load_product_catalog_query.dart',
         },
@@ -428,10 +429,10 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 146);
-      expect(featureSharedWithLocator, hasLength(40));
-      expect(scopeConsumers, hasLength(4));
-      expect(allLibReferences, 162);
+      expect(featureSharedReferences, 145);
+      expect(featureSharedWithLocator, hasLength(39));
+      expect(scopeConsumers, hasLength(5));
+      expect(allLibReferences, 161);
       expect(
         'AppRepositories.documentHistoryRepository'
             .allMatches(bridgeSource)

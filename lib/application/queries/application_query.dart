@@ -4,12 +4,12 @@ abstract interface class QueryResultMetadata {
 
 enum QueryResultSource { local }
 
-enum LocalReadAuthority { sqlite }
+enum LocalReadAuthority { sqlite, managedFile }
 
 enum LocalQueryConsistency { currentKnownState }
 
-/// Describes the current SQLite-backed result without freezing future cloud
-/// consistency semantics. Future adapters can add another metadata subtype.
+/// Describes a local result without freezing future cloud consistency
+/// semantics. Future adapters can add another metadata subtype.
 final class LocalQueryResultMetadata implements QueryResultMetadata {
   const LocalQueryResultMetadata({
     this.source = QueryResultSource.local,
