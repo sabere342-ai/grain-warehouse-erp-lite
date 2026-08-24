@@ -368,7 +368,6 @@ void main() {
         'lib/features/financial_reports/transfer_report_screen.dart',
         'lib/features/prints/printable_document_scaffold.dart',
         'lib/features/settings/settings_screen.dart',
-        'lib/shared/widgets/business_identity_header.dart',
       });
     });
 
