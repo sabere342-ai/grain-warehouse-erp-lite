@@ -3,6 +3,7 @@ import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_com
 import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
 
 final class ApplicationBoundary {
   const ApplicationBoundary({
@@ -30,8 +31,10 @@ final class ApplicationQueries {
   const ApplicationQueries({
     required this.auditLogs,
     required this.documentHistory,
+    required this.productCatalog,
   });
 
   final LoadAuditLogsQueryHandler auditLogs;
   final LoadDocumentHistoryQueryHandler documentHistory;
+  final LoadProductCatalogQueryHandler productCatalog;
 }

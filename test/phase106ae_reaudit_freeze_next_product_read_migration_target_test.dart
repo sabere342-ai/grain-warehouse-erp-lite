@@ -35,7 +35,8 @@ const _migrated = <String, _Consumer>{
   'PRC-101': _Consumer('lib/core/backup/backup_export.dart', 1),
   'PRC-102': _Consumer(_restorePath, 1),
   'PRC-103': _Consumer(_targetPath, 1),
-  'PRC-104': _Consumer('lib/core/catalog/product_controller.dart', 1),
+  'PRC-104':
+      _Consumer('lib/application/queries/load_product_catalog_query.dart', 1),
   'PRC-106': _Consumer('lib/core/inventory/drift_inventory_repository.dart', 1),
   'PRC-107': _Consumer('lib/core/inventory/inventory_controller.dart', 1),
   'PRC-110': _Consumer('lib/core/purchases/purchase_controller.dart', 1),

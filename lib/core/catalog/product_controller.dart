@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
@@ -6,12 +7,20 @@ import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
 
 class ProductController extends ChangeNotifier {
   ProductController({
-    required ProductCatalogReadRepository productCatalogReadRepository,
+    ProductCatalogReadRepository? productCatalogReadRepository,
+    LoadProductCatalogQueryHandler? queryHandler,
     required ProductRepository repository,
-  })  : _productCatalogReadRepository = productCatalogReadRepository,
+  })  : assert(
+          (productCatalogReadRepository == null) != (queryHandler == null),
+          'Exactly one product catalog repository or query handler is required.',
+        ),
+        _queryHandler = queryHandler ??
+            LoadProductCatalogQueryHandler(
+              repository: productCatalogReadRepository!,
+            ),
         _repository = repository;
 
-  final ProductCatalogReadRepository _productCatalogReadRepository;
+  final LoadProductCatalogQueryHandler _queryHandler;
   final ProductRepository _repository;
   List<ProductCatalogReadModel> _products = const [];
   String? _errorMessage;
@@ -27,9 +36,12 @@ class ProductController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    _products = await _productCatalogReadRepository.listProductCatalog(
-      includeInactive: user.permissions.canManageProducts,
+    final result = await _queryHandler.execute(
+      LoadProductCatalogQuery(
+        includeInactive: user.permissions.canManageProducts,
+      ),
     );
+    _products = result.value;
     _isLoading = false;
     notifyListeners();
   }

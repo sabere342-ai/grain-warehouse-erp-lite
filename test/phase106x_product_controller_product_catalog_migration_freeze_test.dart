@@ -156,7 +156,7 @@ void main() {
       expect(source, isNot(contains('listProducts(')));
     });
 
-    test('only loadProducts uses catalog read with the frozen permission', () {
+    test('only loadProducts uses the typed query with frozen permission', () {
       final source = File(_controllerPath).readAsStringSync();
       final loadBody = _between(
         source,
@@ -166,8 +166,9 @@ void main() {
 
       expect(
         loadBody,
-        contains('_productCatalogReadRepository.listProductCatalog('),
+        contains('_queryHandler.execute('),
       );
+      expect(loadBody, contains('LoadProductCatalogQuery('));
       expect(
         loadBody,
         contains('includeInactive: user.permissions.canManageProducts'),
@@ -176,24 +177,27 @@ void main() {
       expect(loadBody, isNot(contains('getProductById')));
       expect(source, isNot(contains('int.parse(')));
       expect(
-        RegExp(r'_productCatalogReadRepository\.listProductCatalog\(')
-            .allMatches(source),
+        RegExp(r'_queryHandler\.execute\(').allMatches(source),
         hasLength(1),
       );
+      expect(source, isNot(contains('_productCatalogReadRepository')));
       expect(source, contains('final ProductRepository _repository;'));
       expect(source, contains('List<ProductCatalogReadModel> _products'));
       expect(source, isNot(contains('List<Product> _products')));
     });
 
-    test('production composition injects read and write dependencies', () {
+    test('production composition scopes reads and retains write dependency',
+        () {
       final screen =
           File('lib/features/products/products_screen.dart').readAsStringSync();
 
       expect(
         screen,
-        contains(
-          'AppRepositories.productCatalogReadRepository',
-        ),
+        contains('ApplicationScope.of(context).queries.productCatalog'),
+      );
+      expect(
+        screen,
+        isNot(contains('AppRepositories.productCatalogReadRepository')),
       );
       expect(screen, contains('repository: AppRepositories.productRepository'));
       expect(screen, contains('ProductCatalogReadModel? product'));
@@ -217,7 +221,7 @@ void main() {
         'lib/core/inventory_valuation/profitability_activation_service.dart',
         'lib/core/purchases/drift_purchase_repository.dart',
         'lib/core/sales/sale_repository.dart',
-        _controllerPath,
+        'lib/application/queries/load_product_catalog_query.dart',
         'lib/features/financial_reports/profitability_report_screen.dart',
       });
       expect(removedConsumers, isEmpty);

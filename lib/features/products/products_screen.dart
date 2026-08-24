@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product.dart';
@@ -25,18 +26,30 @@ class ProductsScreen extends StatefulWidget {
 class _ProductsScreenState extends State<ProductsScreen> {
   late final ProductController _controller;
   late final bool _ownsController;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _ownsController = widget.controller == null;
-    _controller = widget.controller ??
-        ProductController(
-          productCatalogReadRepository:
-              AppRepositories.productCatalogReadRepository,
-          repository: AppRepositories.productRepository,
-        );
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    if (_ownsController) {
+      _controller = ProductController(
+        queryHandler: ApplicationScope.of(context).queries.productCatalog,
+        repository: AppRepositories.productRepository,
+      );
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final user = AuthScope.of(context).state.user;
       if (user != null) {
         _controller.loadProducts(user);

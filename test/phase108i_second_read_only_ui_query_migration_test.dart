@@ -7,6 +7,7 @@ import 'package:grain_warehouse_erp_lite/application/application_boundary.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/application_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
 import 'package:grain_warehouse_erp_lite/composition/app_composition_root.dart';
 import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
@@ -218,7 +219,7 @@ void main() {
       await AppCompositionRoot.close();
     });
 
-    test('reuses the shared repository and exposes both query slices', () {
+    test('reuses the shared repository and exposes all query slices', () {
       expect(
         application.dependencies.repositories.documentHistoryRepository,
         same(AppRepositories.documentHistoryRepository),
@@ -228,6 +229,10 @@ void main() {
       expect(
         application.queries.documentHistory,
         isA<LoadDocumentHistoryQueryHandler>(),
+      );
+      expect(
+        application.queries.productCatalog,
+        isA<LoadProductCatalogQueryHandler>(),
       );
 
       final rootSource = File(
@@ -364,7 +369,7 @@ void main() {
       }
     });
 
-    test('only audit and document history are concrete query handlers', () {
+    test('audit, document history, and product catalog are query handlers', () {
       final queryFiles = Directory('lib/application/queries')
           .listSync()
           .whereType<File>()
@@ -384,6 +389,7 @@ void main() {
         {
           'lib/application/queries/load_audit_logs_query.dart',
           'lib/application/queries/load_document_history_query.dart',
+          'lib/application/queries/load_product_catalog_query.dart',
         },
       );
     });
@@ -422,10 +428,10 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 147);
+      expect(featureSharedReferences, 146);
       expect(featureSharedWithLocator, hasLength(40));
-      expect(scopeConsumers, hasLength(3));
-      expect(allLibReferences, 163);
+      expect(scopeConsumers, hasLength(4));
+      expect(allLibReferences, 162);
       expect(
         'AppRepositories.documentHistoryRepository'
             .allMatches(bridgeSource)
