@@ -2,7 +2,8 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
@@ -458,7 +459,7 @@ class _LogoPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Uint8List?>(
-      future: _loadLogoBytes(),
+      future: _loadLogoBytes(context),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data == null) {
           return const SizedBox.shrink();
@@ -475,11 +476,14 @@ class _LogoPreview extends StatelessWidget {
     );
   }
 
-  Future<Uint8List?> _loadLogoBytes() async {
+  Future<Uint8List?> _loadLogoBytes(BuildContext context) async {
     if (managedFileName.isEmpty) return null;
     try {
-      return await AppRepositories.businessIdentityRepository
-          .loadLogoBytes(managedFileName);
+      final result = await ApplicationScope.of(context)
+          .queries
+          .businessLogo
+          .execute(LoadBusinessLogoQuery(managedFileName: managedFileName));
+      return result.value;
     } catch (_) {
       return null;
     }

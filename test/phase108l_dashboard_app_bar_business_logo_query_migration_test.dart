@@ -367,7 +367,6 @@ void main() {
         'lib/features/financial_reports/payment_method_report_screen.dart',
         'lib/features/financial_reports/transfer_report_screen.dart',
         'lib/features/prints/printable_document_scaffold.dart',
-        'lib/features/settings/settings_screen.dart',
       });
     });
 
@@ -466,7 +465,9 @@ Set<String> _logoReadFiles() {
       .listSync(recursive: true)
       .whereType<File>()
       .where((file) => file.path.endsWith('.dart'))
-      .where((file) => file.readAsStringSync().contains('loadLogoBytes('))
+      .where((file) => RegExp(
+            r'(^|[^_])loadLogoBytes\(',
+          ).hasMatch(file.readAsStringSync()))
       .map((file) => _normalizedLibPath(file.path))
       .toSet();
 }
