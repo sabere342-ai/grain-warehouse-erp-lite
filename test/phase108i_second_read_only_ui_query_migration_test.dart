@@ -421,6 +421,11 @@ void main() {
       final scopeConsumers = featureSharedFiles.where((file) {
         return file.readAsStringSync().contains('ApplicationScope.of');
       }).toList();
+      final normalizedLocatorFiles = featureSharedWithLocator
+          .map((file) => _normalizedPath(file.path))
+          .toSet();
+      final normalizedScopeFiles =
+          scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
       final featureSharedSource =
           featureSharedFiles.map((file) => file.readAsStringSync()).join('\n');
       final allLibSource =
@@ -429,10 +434,22 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 142);
+      expect(featureSharedReferences, 141);
       expect(featureSharedWithLocator, hasLength(36));
-      expect(scopeConsumers, hasLength(8));
-      expect(allLibReferences, 158);
+      expect(scopeConsumers, hasLength(9));
+      expect(allLibReferences, 157);
+      expect(
+        normalizedLocatorFiles,
+        contains(
+          'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedScopeFiles,
+        contains(
+          'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
       expect(
         'AppRepositories.documentHistoryRepository'
             .allMatches(bridgeSource)

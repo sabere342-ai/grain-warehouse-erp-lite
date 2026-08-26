@@ -358,7 +358,6 @@ void main() {
         'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
         'lib/features/exports/pdf_export_service.dart',
-        'lib/features/financial_reports/account_balance_report_screen.dart',
         'lib/features/financial_reports/account_statement_report_screen.dart',
         'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
         'lib/features/financial_reports/expense_analysis_report_screen.dart',

@@ -303,10 +303,22 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 142);
+      expect(featureSharedReferences, 141);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 158);
-      expect(scopeConsumers, hasLength(8));
+      expect(allLibReferences, 157);
+      expect(scopeConsumers, hasLength(9));
+      expect(
+        normalizedLocatorFiles,
+        contains(
+          'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedScopeFiles,
+        contains(
+          'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
       expect(
         normalizedLocatorFiles,
         isNot(contains('lib/features/settings/settings_screen.dart')),
