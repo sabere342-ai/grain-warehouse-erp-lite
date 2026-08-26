@@ -310,10 +310,10 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 143);
-      expect(featureSharedLocatorFiles, hasLength(37));
-      expect(allLibReferences, 159);
-      expect(scopeConsumers, hasLength(7));
+      expect(featureSharedReferences, 142);
+      expect(featureSharedLocatorFiles, hasLength(36));
+      expect(allLibReferences, 158);
+      expect(scopeConsumers, hasLength(8));
       expect(
         normalizedLocatorFiles,
         isNot(contains('lib/shared/widgets/business_identity_header.dart')),
@@ -329,6 +329,16 @@ void main() {
       expect(
         normalizedScopeFiles,
         contains('lib/features/settings/settings_screen.dart'),
+      );
+      expect(
+        normalizedLocatorFiles,
+        isNot(contains(
+          'lib/features/prints/printable_document_scaffold.dart',
+        )),
+      );
+      expect(
+        normalizedScopeFiles,
+        contains('lib/features/prints/printable_document_scaffold.dart'),
       );
     });
   });

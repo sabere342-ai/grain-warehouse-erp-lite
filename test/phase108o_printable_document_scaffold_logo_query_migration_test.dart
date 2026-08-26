@@ -14,14 +14,9 @@ import 'package:grain_warehouse_erp_lite/core/business_identity/business_identit
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_theme_mode.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/app_theme_preset.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
-import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
-import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
-import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
+import 'package:grain_warehouse_erp_lite/features/prints/printable_document_scaffold.dart';
 
 void main() {
   late FoundationDatabase database;
@@ -43,61 +38,54 @@ void main() {
     await AppCompositionRoot.close();
   });
 
-  group('Phase 108N Settings logo preview query migration', () {
+  group('Phase 108O printable scaffold logo query migration', () {
     testWidgets(
-        'target preview and shared header each query the exact filename once',
+        'valid logo queries the exact filename once and preserves bytes and layout',
         (tester) async {
       final repository = _BusinessIdentityRepositorySpy(
         identity: _identityWithLogo,
         logoBytes: _pngBytes,
       );
 
-      await _pumpSettings(
+      await _pumpScaffold(
         tester,
         repository: repository,
         application: _withBusinessLogoHandler(baseApplication, repository),
       );
       await tester.pumpAndSettle();
 
-      final logoCard = find.ancestor(
-        of: find.text('شعار المنشأة'),
-        matching: find.byType(PremiumCard),
+      final imageFinder = find.byWidgetPredicate(
+        (widget) => widget is Image && widget.image is MemoryImage,
       );
-      final targetImage = find.descendant(
-        of: logoCard,
-        matching: find.byWidgetPredicate(
-          (widget) => widget is Image && widget.image is MemoryImage,
-        ),
-      );
-      expect(targetImage, findsOneWidget);
-      final image = tester.widget<Image>(targetImage);
+      expect(imageFinder, findsOneWidget);
+      final image = tester.widget<Image>(imageFinder);
       expect((image.image as MemoryImage).bytes, same(_pngBytes));
       expect(image.fit, BoxFit.contain);
-      final constrainedContainer = find.descendant(
-        of: logoCard,
-        matching: find.byWidgetPredicate(
-          (widget) =>
-              widget is Container &&
-              widget.constraints?.maxHeight == 80 &&
-              widget.constraints?.maxWidth == 200,
-        ),
-      );
-      expect(constrainedContainer, findsOneWidget);
-      final constraints =
-          tester.widget<Container>(constrainedContainer).constraints!;
-      expect(constraints.maxHeight, 80);
-      expect(constraints.maxWidth, 200);
+      expect(image.errorBuilder, isNotNull);
 
-      expect(find.byType(Image), findsNWidgets(2));
-      expect(repository.managedFileNames, [
-        'phase-108n-logo.png',
-        'phase-108n-logo.png',
-      ]);
-      expect(repository.logoReads, 2);
+      final logoConstraints = tester
+          .widgetList<ConstrainedBox>(
+            find.ancestor(
+              of: imageFinder,
+              matching: find.byType(ConstrainedBox),
+            ),
+          )
+          .singleWhere(
+            (box) =>
+                box.constraints.maxHeight == 60 &&
+                box.constraints.maxWidth == 200,
+          );
+      expect(logoConstraints.constraints.maxHeight, 60);
+      expect(logoConstraints.constraints.maxWidth, 200);
+      expect(repository.managedFileNames, ['phase-108o-logo.png']);
+      expect(repository.logoReads, 1);
+      expect(find.text('Phase 108O warehouse'), findsOneWidget);
+      expect(find.text('Phase 108O document'), findsOneWidget);
+      expect(find.text('Phase 108O body'), findsOneWidget);
       _expectNoWrites(repository);
     });
 
-    testWidgets('loading remains silent for both independent renderers',
+    testWidgets('pending query is silent and completion renders without writes',
         (tester) async {
       final completion = Completer<Uint8List?>();
       final repository = _BusinessIdentityRepositorySpy(
@@ -105,7 +93,7 @@ void main() {
         logoFuture: completion.future,
       );
 
-      await _pumpSettings(
+      await _pumpScaffold(
         tester,
         repository: repository,
         application: _withBusinessLogoHandler(baseApplication, repository),
@@ -114,12 +102,16 @@ void main() {
 
       expect(find.byType(Image), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(repository.logoReads, 2);
+      expect(repository.logoReads, 1);
       _expectNoWrites(repository);
 
-      completion.complete(null);
+      completion.complete(_pngBytes);
       await tester.pumpAndSettle();
-      expect(find.byType(Image), findsNothing);
+
+      final image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as MemoryImage).bytes, same(_pngBytes));
+      expect(repository.logoReads, 1);
+      _expectNoWrites(repository);
     });
 
     testWidgets('missing managed logo remains silent', (tester) async {
@@ -127,7 +119,7 @@ void main() {
         identity: _identityWithLogo,
       );
 
-      await _pumpSettings(
+      await _pumpScaffold(
         tester,
         repository: repository,
         application: _withBusinessLogoHandler(baseApplication, repository),
@@ -135,18 +127,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(Image), findsNothing);
-      expect(repository.logoReads, 2);
+      expect(find.text('Phase 108O document'), findsOneWidget);
+      expect(repository.managedFileNames, ['phase-108o-logo.png']);
+      expect(repository.logoReads, 1);
       expect(tester.takeException(), isNull);
       _expectNoWrites(repository);
     });
 
-    testWidgets('thrown query failure remains silent', (tester) async {
+    testWidgets('thrown query failure remains visually silent', (tester) async {
       final repository = _BusinessIdentityRepositorySpy(
         identity: _identityWithLogo,
-        failure: StateError('hidden phase 108N logo failure'),
+        failure: StateError('hidden phase 108O logo failure'),
       );
 
-      await _pumpSettings(
+      await _pumpScaffold(
         tester,
         repository: repository,
         application: _withBusinessLogoHandler(baseApplication, repository),
@@ -154,50 +148,82 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(Image), findsNothing);
-      expect(find.textContaining('hidden phase 108N'), findsNothing);
-      expect(repository.logoReads, 2);
+      expect(find.textContaining('hidden phase 108O'), findsNothing);
+      expect(repository.logoReads, 1);
       expect(tester.takeException(), isNull);
       _expectNoWrites(repository);
     });
 
-    testWidgets('invalid image bytes retain the silent Image.memory fallback',
+    testWidgets(
+        'empty and invalid bytes retain the silent Image.memory fallback',
         (tester) async {
-      final bytes = Uint8List.fromList([1, 2, 3]);
-      final repository = _BusinessIdentityRepositorySpy(
-        identity: _identityWithLogo,
-        logoBytes: bytes,
-      );
+      for (final bytes in <Uint8List>[
+        Uint8List(0),
+        Uint8List.fromList([1, 2, 3]),
+      ]) {
+        final repository = _BusinessIdentityRepositorySpy(
+          identity: _identityWithLogo,
+          logoBytes: bytes,
+        );
 
-      await _pumpSettings(
-        tester,
-        repository: repository,
-        application: _withBusinessLogoHandler(baseApplication, repository),
-      );
-      await tester.pumpAndSettle();
+        await _pumpScaffold(
+          tester,
+          repository: repository,
+          application: _withBusinessLogoHandler(baseApplication, repository),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(Image), findsNWidgets(2));
-      for (final image in tester.widgetList<Image>(find.byType(Image))) {
+        final imageFinder = find.byType(Image);
+        expect(imageFinder, findsOneWidget);
+        final image = tester.widget<Image>(imageFinder);
         expect(image.image, isA<MemoryImage>());
         expect((image.image as MemoryImage).bytes, same(bytes));
+        expect(image.fit, BoxFit.contain);
         expect(image.errorBuilder, isNotNull);
+        expect(repository.logoReads, 1);
+        expect(tester.takeException(), isNull);
+        _expectNoWrites(repository);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
       }
-      expect(repository.logoReads, 2);
-      expect(tester.takeException(), isNull);
-      _expectNoWrites(repository);
     });
 
-    testWidgets('absent metadata needs no ApplicationScope and makes no read',
+    testWidgets(
+        'absent metadata needs no ApplicationScope and preserves callbacks',
         (tester) async {
       final repository = _BusinessIdentityRepositorySpy(
-        identity: BusinessIdentity.empty,
+        identity: const BusinessIdentity(
+          establishmentName: 'Phase 108O no logo',
+        ),
       );
+      var exportCalls = 0;
+      var shareCalls = 0;
 
-      await _pumpSettings(tester, repository: repository);
+      await _pumpScaffold(
+        tester,
+        repository: repository,
+        onExportPdf: () async => exportCalls++,
+        onOpenWhatsApp: () async => shareCalls++,
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(Image), findsNothing);
+      expect(find.text('Phase 108O no logo'), findsOneWidget);
+      expect(find.text('Phase 108O document'), findsOneWidget);
+      expect(find.text('Phase 108O body'), findsOneWidget);
       expect(repository.logoReads, 0);
       expect(repository.managedFileNames, isEmpty);
+
+      await tester.ensureVisible(find.text('تصدير PDF'));
+      await tester.tap(find.text('تصدير PDF'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('فتح واتساب'));
+      await tester.tap(find.text('فتح واتساب'));
+      await tester.pumpAndSettle();
+
+      expect(exportCalls, 1);
+      expect(shareCalls, 1);
       expect(tester.takeException(), isNull);
       _expectNoWrites(repository);
     });
@@ -208,10 +234,12 @@ void main() {
         identity: _identityWithInvalidLogo,
       );
 
-      await _pumpSettings(tester, repository: repository);
+      await _pumpScaffold(tester, repository: repository);
       await tester.pumpAndSettle();
 
       expect(find.byType(Image), findsNothing);
+      expect(find.text('Phase 108O invalid logo'), findsOneWidget);
+      expect(find.text('Phase 108O document'), findsOneWidget);
       expect(repository.logoReads, 0);
       expect(repository.managedFileNames, isEmpty);
       expect(tester.takeException(), isNull);
@@ -219,22 +247,17 @@ void main() {
     });
   });
 
-  group('Phase 108N source and live inventory guards', () {
-    test('target preview uses only the existing application query boundary',
-        () {
-      final settingsSource = File(
-        'lib/features/settings/settings_screen.dart',
+  group('Phase 108O source, shared-consumer, and inventory guards', () {
+    test('private logo renderer uses only the existing application query', () {
+      final source = File(
+        'lib/features/prints/printable_document_scaffold.dart',
       ).readAsStringSync();
-      final targetStart = settingsSource.indexOf('class _LogoPreview');
-      final targetEnd = settingsSource.indexOf(
-        'class _ProfileDetailsSection',
-        targetStart,
-      );
-      final target = settingsSource.substring(targetStart, targetEnd);
+      final targetStart = source.indexOf('class _PrintableLogo');
+      final target = source.substring(targetStart);
 
-      expect(settingsSource, contains('load_business_logo_query.dart'));
-      expect(settingsSource, contains('application_scope.dart'));
-      expect(target, contains('future: _loadLogoBytes(context)'));
+      expect(source, contains('load_business_logo_query.dart'));
+      expect(source, contains('application_scope.dart'));
+      expect(target, contains('future: _loadBytes(context)'));
       expect(
         target,
         matches(
@@ -250,8 +273,12 @@ void main() {
       expect(target, isNot(contains('LoadBusinessLogoQueryHandler(')));
       expect(target, isNot(contains('LocalBusinessIdentityRepository')));
       expect(target, isNot(contains('dart:io')));
+      expect(target, isNot(matches(RegExp(r'\bFile\s*\('))));
+      expect(target, isNot(contains('BusinessContext')));
+      expect(target, isNot(contains('SessionContext')));
       expect(target.toLowerCase(), isNot(contains('database')));
       expect(target.toLowerCase(), isNot(contains('drift')));
+      expect(target.toLowerCase(), isNot(contains('sqlite')));
       expect(target.toLowerCase(), isNot(contains('supabase')));
       expect(target.toLowerCase(), isNot(contains('cloud')));
       for (final writeToken in [
@@ -268,14 +295,36 @@ void main() {
       final queryLookup = target.indexOf('ApplicationScope.of(context)');
       expect(shortCircuit, greaterThanOrEqualTo(0));
       expect(shortCircuit, lessThan(queryLookup));
-
-      expect(settingsSource, contains('controller.saveLogo'));
-      expect(settingsSource, contains('identityController.removeLogo'));
-      expect(settingsSource, contains('identityController.saveProfileDetails'));
     });
 
-    test('live locator and scope inventories reflect exactly one migration',
-        () {
+    test('all five printable views remain on the one shared scaffold', () {
+      expect(_printableScaffoldConsumerFiles(), {
+        'lib/features/prints/printable_customer_statement_view.dart',
+        'lib/features/prints/printable_daily_report_view.dart',
+        'lib/features/prints/printable_purchase_invoice_view.dart',
+        'lib/features/prints/printable_sales_invoice_view.dart',
+        'lib/features/prints/printable_supplier_statement_view.dart',
+      });
+    });
+
+    test('only the printable scaffold leaves the direct logo-read set', () {
+      expect(_logoReadFiles(), {
+        'lib/application/queries/load_business_logo_query.dart',
+        'lib/core/backup/backup_export.dart',
+        'lib/core/business_identity/business_identity_repository.dart',
+        'lib/features/exports/pdf_export_service.dart',
+        'lib/features/financial_reports/account_balance_report_screen.dart',
+        'lib/features/financial_reports/account_statement_report_screen.dart',
+        'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
+        'lib/features/financial_reports/expense_analysis_report_screen.dart',
+        'lib/features/financial_reports/inflows_report_screen.dart',
+        'lib/features/financial_reports/outflows_report_screen.dart',
+        'lib/features/financial_reports/payment_method_report_screen.dart',
+        'lib/features/financial_reports/transfer_report_screen.dart',
+      });
+    });
+
+    test('live locator and scope inventory has the exact Phase 108O delta', () {
       final featureSharedFiles = _dartFilesUnder([
         Directory('lib/features'),
         Directory('lib/shared'),
@@ -309,14 +358,6 @@ void main() {
       expect(scopeConsumers, hasLength(8));
       expect(
         normalizedLocatorFiles,
-        isNot(contains('lib/features/settings/settings_screen.dart')),
-      );
-      expect(
-        normalizedScopeFiles,
-        contains('lib/features/settings/settings_screen.dart'),
-      );
-      expect(
-        normalizedLocatorFiles,
         isNot(contains(
           'lib/features/prints/printable_document_scaffold.dart',
         )),
@@ -329,29 +370,32 @@ void main() {
   });
 }
 
-Future<void> _pumpSettings(
+Future<void> _pumpScaffold(
   WidgetTester tester, {
   required _BusinessIdentityRepositorySpy repository,
   ApplicationBoundary? application,
+  Future<void> Function()? onExportPdf,
+  Future<void> Function()? onOpenWhatsApp,
 }) async {
-  await tester.binding.setSurfaceSize(const Size(1400, 2600));
+  await tester.binding.setSurfaceSize(const Size(1000, 1200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final identityController = BusinessIdentityController(repository: repository);
-  final themeController = ThemeController(repository: _ThemeRepositoryStub());
   await identityController.initialize();
-  await themeController.initialize();
   addTearDown(identityController.dispose);
-  addTearDown(themeController.dispose);
 
-  Widget child = MaterialApp(
-    home: Scaffold(
-      body: BusinessIdentityScope(
-        controller: identityController,
-        child: const SettingsScreen(),
+  Widget child = BusinessIdentityScope(
+    controller: identityController,
+    child: MaterialApp(
+      home: Scaffold(
+        body: PrintableDocumentScaffold(
+          title: 'Phase 108O document',
+          onExportPdf: onExportPdf,
+          onOpenWhatsApp: onOpenWhatsApp,
+          child: const Text('Phase 108O body'),
+        ),
       ),
     ),
   );
-  child = ThemeScope(controller: themeController, child: child);
   if (application != null) {
     child = ApplicationScope(application: application, child: child);
   }
@@ -385,6 +429,30 @@ List<File> _dartFilesUnder(List<Directory> roots) {
       .expand((root) => root.listSync(recursive: true).whereType<File>())
       .where((file) => file.path.endsWith('.dart'))
       .toList();
+}
+
+Set<String> _printableScaffoldConsumerFiles() {
+  return Directory('lib/features/prints')
+      .listSync()
+      .whereType<File>()
+      .where((file) => file.path.endsWith('.dart'))
+      .where((file) =>
+          !file.path.endsWith('printable_document_scaffold.dart') &&
+          file.readAsStringSync().contains('PrintableDocumentScaffold('))
+      .map((file) => _normalizedPath(file.path))
+      .toSet();
+}
+
+Set<String> _logoReadFiles() {
+  return Directory('lib')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((file) => file.path.endsWith('.dart'))
+      .where((file) => RegExp(
+            r'(^|[^_])loadLogoBytes\(',
+          ).hasMatch(file.readAsStringSync()))
+      .map((file) => _normalizedPath(file.path))
+      .toSet();
 }
 
 String _normalizedPath(String path) {
@@ -445,23 +513,12 @@ final class _BusinessIdentityRepositorySpy
   String get managedLogosDirectory => '';
 }
 
-final class _ThemeRepositoryStub implements ThemeSettingsRepository {
-  @override
-  Future<AppThemeSettings> loadSettings() async => const AppThemeSettings(
-        mode: AppThemeMode.system,
-        preset: AppThemePreset.olive,
-      );
-
-  @override
-  Future<void> saveSettings(AppThemeSettings settings) async {}
-}
-
 const _identityWithLogo = BusinessIdentity(
-  establishmentName: 'Phase 108N',
+  establishmentName: 'Phase 108O warehouse',
   logo: LogoMetadata(
-    managedFileName: 'phase-108n-logo.png',
+    managedFileName: 'phase-108o-logo.png',
     mimeType: 'image/png',
-    sha256: 'phase-108n-logo',
+    sha256: 'phase-108o-logo',
     byteLength: 68,
     width: 1,
     height: 1,
@@ -469,11 +526,11 @@ const _identityWithLogo = BusinessIdentity(
 );
 
 const _identityWithInvalidLogo = BusinessIdentity(
-  establishmentName: 'Phase 108N invalid',
+  establishmentName: 'Phase 108O invalid logo',
   logo: LogoMetadata(
     managedFileName: '',
     mimeType: 'image/png',
-    sha256: 'phase-108n-invalid-logo',
+    sha256: 'phase-108o-invalid-logo',
     byteLength: 1,
     width: 1,
     height: 1,
