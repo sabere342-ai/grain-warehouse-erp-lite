@@ -434,10 +434,10 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 141);
+      expect(featureSharedReferences, 140);
       expect(featureSharedWithLocator, hasLength(36));
-      expect(scopeConsumers, hasLength(9));
-      expect(allLibReferences, 157);
+      expect(scopeConsumers, hasLength(10));
+      expect(allLibReferences, 156);
       expect(
         normalizedLocatorFiles,
         contains(
@@ -448,6 +448,18 @@ void main() {
         normalizedScopeFiles,
         contains(
           'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedLocatorFiles,
+        contains(
+          'lib/features/financial_reports/account_statement_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedScopeFiles,
+        contains(
+          'lib/features/financial_reports/account_statement_report_screen.dart',
         ),
       );
       expect(

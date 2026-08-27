@@ -313,7 +313,6 @@ void main() {
         'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
         'lib/features/exports/pdf_export_service.dart',
-        'lib/features/financial_reports/account_statement_report_screen.dart',
         'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
         'lib/features/financial_reports/inflows_report_screen.dart',
@@ -351,10 +350,10 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 141);
+      expect(featureSharedReferences, 140);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 157);
-      expect(scopeConsumers, hasLength(9));
+      expect(allLibReferences, 156);
+      expect(scopeConsumers, hasLength(10));
       expect(
         normalizedLocatorFiles,
         contains(
@@ -365,6 +364,18 @@ void main() {
         normalizedScopeFiles,
         contains(
           'lib/features/financial_reports/account_balance_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedLocatorFiles,
+        contains(
+          'lib/features/financial_reports/account_statement_report_screen.dart',
+        ),
+      );
+      expect(
+        normalizedScopeFiles,
+        contains(
+          'lib/features/financial_reports/account_statement_report_screen.dart',
         ),
       );
       expect(
