@@ -362,7 +362,6 @@ void main() {
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
         'lib/features/financial_reports/inflows_report_screen.dart',
         'lib/features/financial_reports/outflows_report_screen.dart',
-        'lib/features/financial_reports/payment_method_report_screen.dart',
         'lib/features/financial_reports/transfer_report_screen.dart',
       });
     });

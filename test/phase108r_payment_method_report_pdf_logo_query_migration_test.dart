@@ -17,7 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
-import 'package:grain_warehouse_erp_lite/features/financial_reports/account_balance_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,30 +41,83 @@ void main() {
     await AppCompositionRoot.close();
   });
 
-  group('Phase 108P account-balance PDF logo query migration', () {
+  group('Phase 108R payment-method PDF logo query migration', () {
+    testWidgets('without a loaded report the PDF action remains disabled',
+        (tester) async {
+      final locatorRepository = _LocatorBusinessIdentityRepositorySpy(
+        identity: _identityWithLogo,
+      );
+      final queryRepository = _QueryBusinessIdentityRepositorySpy();
+
+      await _pumpReport(
+        tester,
+        locatorRepository: locatorRepository,
+        application: _withBusinessLogoHandler(
+          baseApplication,
+          queryRepository,
+        ),
+        loadReport: false,
+      );
+
+      final button = tester.widget<OutlinedButton>(_pdfButtonFinder());
+      expect(button.onPressed, isNull);
+      expect(locatorRepository.identityReads, 0);
+      expect(locatorRepository.directLogoReads, 0);
+      expect(queryRepository.logoReads, 0);
+      _expectNoWrites(locatorRepository, queryRepository);
+
+      await tester.pumpAndSettle();
+    });
+
     test('existing query preserves present byte identity', () async {
       final bytes = Uint8List.fromList([1, 2, 3]);
       final repository = _QueryBusinessIdentityRepositorySpy(logoBytes: bytes);
       final result =
           await LoadBusinessLogoQueryHandler(repository: repository).execute(
-        const LoadBusinessLogoQuery(
-          managedFileName: 'phase-108p-logo.png',
-        ),
+        const LoadBusinessLogoQuery(managedFileName: _managedFileName),
       );
 
       expect(result.value, same(bytes));
       expect(repository.logoReads, 1);
-      expect(repository.managedFileNames, ['phase-108p-logo.png']);
+      expect(repository.managedFileNames, [_managedFileName]);
     });
 
-    testWidgets(
-        'valid metadata loads identity through locator and exact logo through query once',
+    test('existing query preserves empty byte identity', () async {
+      final bytes = Uint8List(0);
+      final repository = _QueryBusinessIdentityRepositorySpy(logoBytes: bytes);
+      final result =
+          await LoadBusinessLogoQueryHandler(repository: repository).execute(
+        const LoadBusinessLogoQuery(managedFileName: _managedFileName),
+      );
+
+      expect(result.value, same(bytes));
+      expect(result.value, isEmpty);
+      expect(repository.logoReads, 1);
+      expect(repository.managedFileNames, [_managedFileName]);
+    });
+
+    test('existing query preserves repository null', () async {
+      final repository = _QueryBusinessIdentityRepositorySpy();
+      final result =
+          await LoadBusinessLogoQueryHandler(repository: repository).execute(
+        const LoadBusinessLogoQuery(managedFileName: _managedFileName),
+      );
+
+      expect(result.value, isNull);
+      expect(repository.logoReads, 1);
+      expect(repository.managedFileNames, [_managedFileName]);
+    });
+
+    testWidgets('valid metadata loads locator identity before exact query once',
         (tester) async {
+      final events = <String>[];
       final locatorRepository = _LocatorBusinessIdentityRepositorySpy(
         identity: _identityWithLogo,
+        events: events,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('intentional Phase 108P seam stop'),
+        failure: StateError('intentional Phase 108R seam stop'),
+        events: events,
       );
 
       await _pumpReport(
@@ -75,14 +128,14 @@ void main() {
           queryRepository,
         ),
       );
-      await tester.pumpAndSettle();
       await tester.tap(find.text('PDF'));
       await tester.pump();
 
       expect(locatorRepository.identityReads, 1);
       expect(locatorRepository.directLogoReads, 0);
       expect(queryRepository.logoReads, 1);
-      expect(queryRepository.managedFileNames, ['phase-108p-logo.png']);
+      expect(queryRepository.managedFileNames, [_managedFileName]);
+      expect(events, ['identity', 'query:$_managedFileName']);
       _expectNoWrites(locatorRepository, queryRepository);
     });
 
@@ -93,7 +146,6 @@ void main() {
       );
 
       await _pumpReport(tester, locatorRepository: locatorRepository);
-      await tester.pumpAndSettle();
       _failPdfAssetLoads();
       await tester.tap(find.text('PDF'));
       await tester.pump();
@@ -113,7 +165,6 @@ void main() {
       );
 
       await _pumpReport(tester, locatorRepository: locatorRepository);
-      await tester.pumpAndSettle();
       _failPdfAssetLoads();
       await tester.tap(find.text('PDF'));
       await tester.pump();
@@ -132,7 +183,7 @@ void main() {
         identity: _identityWithLogo,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('phase 108P query failure'),
+        failure: StateError('phase 108R query failure'),
       );
 
       await _pumpReport(
@@ -143,24 +194,23 @@ void main() {
           queryRepository,
         ),
       );
-      await tester.pumpAndSettle();
       await tester.tap(find.text('PDF'));
       await tester.pump();
 
       expect(find.text('تعذر إنشاء ملف PDF.'), findsOneWidget);
-      expect(find.textContaining('phase 108P query failure'), findsNothing);
+      expect(find.textContaining('phase 108R query failure'), findsNothing);
       expect(locatorRepository.identityReads, 1);
       expect(locatorRepository.directLogoReads, 0);
       expect(queryRepository.logoReads, 1);
-      expect(queryRepository.managedFileNames, ['phase-108p-logo.png']);
+      expect(queryRepository.managedFileNames, [_managedFileName]);
       _expectNoWrites(locatorRepository, queryRepository);
     });
   });
 
-  group('Phase 108P source and architecture guards', () {
+  group('Phase 108R source and architecture guards', () {
     test('only the selected export block moves to the existing query', () {
       final source = File(
-        'lib/features/financial_reports/account_balance_report_screen.dart',
+        'lib/features/financial_reports/payment_method_report_screen.dart',
       ).readAsStringSync();
       final targetStart = source.indexOf('Future<void> _exportPdf()');
       final targetEnd =
@@ -206,13 +256,15 @@ void main() {
       );
       final queryLookup = target.indexOf('ApplicationScope.of(context)');
       final builderCall = target.indexOf(
-        'FinancialReportPdfBuilder.buildAccountBalanceReport',
+        'FinancialReportPdfBuilder.buildPaymentMethodReport',
       );
+      final resultHandler = target.indexOf('await _showExportResult(file);');
       expect(earlyReturn, greaterThanOrEqualTo(0));
       expect(earlyReturn, lessThan(identityRead));
       expect(identityRead, lessThan(validLogoGate));
       expect(validLogoGate, lessThan(queryLookup));
       expect(queryLookup, lessThan(builderCall));
+      expect(builderCall, lessThan(resultHandler));
 
       for (final writeToken in [
         'saveIdentity',
@@ -221,9 +273,26 @@ void main() {
       ]) {
         expect(target, isNot(contains(writeToken)));
       }
+
+      expect(source, contains('canExportFinancialReports'));
+      expect(
+        source,
+        contains('onPressed: _report != null ? _exportPdf : null'),
+      );
+      expect(source, contains('_service.paymentMethodReport'));
+      expect(
+        source,
+        contains('FinancialReportCsvExporter.exportPaymentMethodReport'),
+      );
+      expect(source, contains('_paymentMethodFilter'));
+      expect(source, contains('_sourceTypeFilter'));
+      expect(source, contains('_accountIdFilter'));
+      expect(source, contains('_directionFilter'));
+      expect(source, contains('_expandedRows'));
     });
 
-    test('live inventory contains exactly the Phase 108P delta', () {
+    test('live inventories and direct-read sets have only the Phase 108R delta',
+        () {
       final featureSharedFiles = _dartFilesUnder([
         Directory('lib/features'),
         Directory('lib/shared'),
@@ -251,7 +320,7 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
       const target =
-          'lib/features/financial_reports/account_balance_report_screen.dart';
+          'lib/features/financial_reports/payment_method_report_screen.dart';
 
       expect(featureSharedReferences, 139);
       expect(locatorFiles, hasLength(36));
@@ -260,11 +329,27 @@ void main() {
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));
       expect(_logoReadFiles(), isNot(contains(target)));
-      const phase108qTarget =
-          'lib/features/financial_reports/account_statement_report_screen.dart';
-      expect(normalizedLocatorFiles, contains(phase108qTarget));
-      expect(normalizedScopeFiles, contains(phase108qTarget));
-      expect(_logoReadFiles(), isNot(contains(phase108qTarget)));
+      expect(_logoReadFiles(), {
+        'lib/application/queries/load_business_logo_query.dart',
+        'lib/core/backup/backup_export.dart',
+        'lib/core/business_identity/business_identity_repository.dart',
+        'lib/features/exports/pdf_export_service.dart',
+        'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
+        'lib/features/financial_reports/expense_analysis_report_screen.dart',
+        'lib/features/financial_reports/inflows_report_screen.dart',
+        'lib/features/financial_reports/outflows_report_screen.dart',
+        'lib/features/financial_reports/transfer_report_screen.dart',
+      });
+      expect(_logoInvocationFiles(), {
+        'lib/application/queries/load_business_logo_query.dart',
+        'lib/core/backup/backup_export.dart',
+        'lib/features/exports/pdf_export_service.dart',
+        'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
+        'lib/features/financial_reports/expense_analysis_report_screen.dart',
+        'lib/features/financial_reports/inflows_report_screen.dart',
+        'lib/features/financial_reports/outflows_report_screen.dart',
+        'lib/features/financial_reports/transfer_report_screen.dart',
+      });
     });
   });
 }
@@ -273,6 +358,7 @@ Future<void> _pumpReport(
   WidgetTester tester, {
   required _LocatorBusinessIdentityRepositorySpy locatorRepository,
   ApplicationBoundary? application,
+  bool loadReport = true,
 }) async {
   await tester.binding.setSurfaceSize(const Size(1400, 1800));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -297,21 +383,31 @@ Future<void> _pumpReport(
         textDirection: TextDirection.rtl,
         child: routeChild ?? const SizedBox.shrink(),
       ),
-      home: const AccountBalanceReportScreen(),
+      home: const PaymentMethodReportScreen(),
     ),
   );
   if (application != null) {
     child = ApplicationScope(application: application, child: child);
   }
   await tester.pumpWidget(child);
+
+  if (loadReport) {
+    await tester.pumpAndSettle();
+    final button = tester.widget<OutlinedButton>(_pdfButtonFinder());
+    expect(button.onPressed, isNotNull);
+  }
+}
+
+Finder _pdfButtonFinder() {
+  return find.ancestor(
+    of: find.text('PDF'),
+    matching: find.byWidgetPredicate((widget) => widget is OutlinedButton),
+  );
 }
 
 void _failPdfAssetLoads() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler(
-    'flutter/assets',
-    (_) async => null,
-  );
+      .setMockMessageHandler('flutter/assets', (_) async => null);
   addTearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', null);
@@ -365,6 +461,16 @@ Set<String> _logoReadFiles() {
       .toSet();
 }
 
+Set<String> _logoInvocationFiles() {
+  return Directory('lib')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((file) => file.path.endsWith('.dart'))
+      .where((file) => file.readAsStringSync().contains('.loadLogoBytes('))
+      .map((file) => _normalizedPath(file.path))
+      .toSet();
+}
+
 String _normalizedPath(String path) {
   final normalized = path.replaceAll('\\', '/');
   return normalized.substring(normalized.indexOf('lib/'));
@@ -372,9 +478,13 @@ String _normalizedPath(String path) {
 
 final class _LocatorBusinessIdentityRepositorySpy
     extends LocalBusinessIdentityRepository {
-  _LocatorBusinessIdentityRepositorySpy({required this.identity});
+  _LocatorBusinessIdentityRepositorySpy({
+    required this.identity,
+    this.events,
+  });
 
   final BusinessIdentity identity;
+  final List<String>? events;
   int identityReads = 0;
   int directLogoReads = 0;
   int identityWrites = 0;
@@ -384,6 +494,7 @@ final class _LocatorBusinessIdentityRepositorySpy
   @override
   Future<BusinessIdentity> loadIdentity() async {
     identityReads++;
+    events?.add('identity');
     return identity;
   }
 
@@ -412,10 +523,15 @@ final class _LocatorBusinessIdentityRepositorySpy
 
 final class _QueryBusinessIdentityRepositorySpy
     implements BusinessIdentityRepository {
-  _QueryBusinessIdentityRepositorySpy({this.logoBytes, this.failure});
+  _QueryBusinessIdentityRepositorySpy({
+    this.logoBytes,
+    this.failure,
+    this.events,
+  });
 
   final Uint8List? logoBytes;
   final Object? failure;
+  final List<String>? events;
   int logoReads = 0;
   int identityWrites = 0;
   int logoWrites = 0;
@@ -429,6 +545,7 @@ final class _QueryBusinessIdentityRepositorySpy
   Future<Uint8List?> loadLogoBytes(String managedFileName) async {
     logoReads++;
     managedFileNames.add(managedFileName);
+    events?.add('query:$managedFileName');
     final error = failure;
     if (error != null) throw error;
     return logoBytes;
@@ -454,12 +571,14 @@ final class _QueryBusinessIdentityRepositorySpy
   String get managedLogosDirectory => '';
 }
 
+const _managedFileName = 'phase-108r-logo.png';
+
 const _identityWithLogo = BusinessIdentity(
-  establishmentName: 'Phase 108P warehouse',
+  establishmentName: 'Phase 108R warehouse',
   logo: LogoMetadata(
-    managedFileName: 'phase-108p-logo.png',
+    managedFileName: _managedFileName,
     mimeType: 'image/png',
-    sha256: 'phase-108p-logo',
+    sha256: 'phase-108r-logo',
     byteLength: 3,
     width: 1,
     height: 1,
@@ -467,11 +586,11 @@ const _identityWithLogo = BusinessIdentity(
 );
 
 const _identityWithInvalidLogo = BusinessIdentity(
-  establishmentName: 'Phase 108P invalid logo',
+  establishmentName: 'Phase 108R invalid logo',
   logo: LogoMetadata(
     managedFileName: '',
     mimeType: 'image/png',
-    sha256: 'phase-108p-invalid-logo',
+    sha256: 'phase-108r-invalid-logo',
     byteLength: 1,
     width: 1,
     height: 1,
