@@ -434,10 +434,10 @@ void main() {
         'lib/composition/legacy_application_dependency_bridge.dart',
       ).readAsStringSync();
 
-      expect(featureSharedReferences, 139);
+      expect(featureSharedReferences, 138);
       expect(featureSharedWithLocator, hasLength(36));
-      expect(scopeConsumers, hasLength(11));
-      expect(allLibReferences, 155);
+      expect(scopeConsumers, hasLength(12));
+      expect(allLibReferences, 154);
       expect(
         normalizedLocatorFiles,
         contains(

@@ -322,10 +322,10 @@ void main() {
       const target =
           'lib/features/financial_reports/payment_method_report_screen.dart';
 
-      expect(featureSharedReferences, 139);
+      expect(featureSharedReferences, 138);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 155);
-      expect(scopeConsumers, hasLength(11));
+      expect(allLibReferences, 154);
+      expect(scopeConsumers, hasLength(12));
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));
       expect(_logoReadFiles(), isNot(contains(target)));
@@ -338,7 +338,6 @@ void main() {
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
         'lib/features/financial_reports/inflows_report_screen.dart',
         'lib/features/financial_reports/outflows_report_screen.dart',
-        'lib/features/financial_reports/transfer_report_screen.dart',
       });
       expect(_logoInvocationFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
@@ -348,7 +347,6 @@ void main() {
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
         'lib/features/financial_reports/inflows_report_screen.dart',
         'lib/features/financial_reports/outflows_report_screen.dart',
-        'lib/features/financial_reports/transfer_report_screen.dart',
       });
     });
   });

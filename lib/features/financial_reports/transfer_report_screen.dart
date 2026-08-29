@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_report_models.dart';
@@ -481,8 +483,16 @@ class _TransferReportScreenState extends State<TransferReportScreen> {
           await AppRepositories.businessIdentityRepository.loadIdentity();
       Uint8List? logoBytes;
       if (identity.hasLogo && identity.logo != null) {
-        logoBytes = await AppRepositories.businessIdentityRepository
-            .loadLogoBytes(identity.logo!.managedFileName);
+        // The export contract intentionally resolves this only after identity.
+        final result =
+            // ignore: use_build_context_synchronously
+            await ApplicationScope.of(context).queries.businessLogo.execute(
+                  LoadBusinessLogoQuery(
+                    managedFileName: identity.logo!.managedFileName,
+                  ),
+                );
+
+        logoBytes = result.value;
       }
       final file = await FinancialReportPdfBuilder.buildTransferReport(
         report: _report!,
