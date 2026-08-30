@@ -253,10 +253,10 @@ void main() {
       const target =
           'lib/features/financial_reports/account_balance_report_screen.dart';
 
-      expect(featureSharedReferences, 138);
+      expect(featureSharedReferences, 137);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 154);
-      expect(scopeConsumers, hasLength(12));
+      expect(allLibReferences, 153);
+      expect(scopeConsumers, hasLength(13));
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));
       expect(_logoReadFiles(), isNot(contains(target)));

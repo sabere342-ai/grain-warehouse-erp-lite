@@ -17,7 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
-import 'package:grain_warehouse_erp_lite/features/financial_reports/transfer_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/inflows_report_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +41,7 @@ void main() {
     await AppCompositionRoot.close();
   });
 
-  group('Post-Phase-108R transfer-report PDF logo query migration', () {
+  group('Post-Transfer inflows-report PDF logo query migration', () {
     testWidgets('without a loaded report the PDF action remains disabled',
         (tester) async {
       final locatorRepository = _LocatorBusinessIdentityRepositorySpy(
@@ -116,7 +116,7 @@ void main() {
         events: events,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('intentional transfer query seam stop'),
+        failure: StateError('intentional inflows query seam stop'),
         events: events,
       );
 
@@ -183,7 +183,7 @@ void main() {
         identity: _identityWithLogo,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('transfer query failure'),
+        failure: StateError('inflows query failure'),
       );
 
       await _pumpReport(
@@ -198,7 +198,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('تعذر إنشاء ملف PDF.'), findsOneWidget);
-      expect(find.textContaining('transfer query failure'), findsNothing);
+      expect(find.textContaining('inflows query failure'), findsNothing);
       expect(locatorRepository.identityReads, 1);
       expect(locatorRepository.directLogoReads, 0);
       expect(queryRepository.logoReads, 1);
@@ -207,10 +207,10 @@ void main() {
     });
   });
 
-  group('Post-Phase-108R transfer source and architecture guards', () {
+  group('Post-Transfer inflows source and architecture guards', () {
     test('only the selected export block moves to the existing query', () {
       final source = File(
-        'lib/features/financial_reports/transfer_report_screen.dart',
+        'lib/features/financial_reports/inflows_report_screen.dart',
       ).readAsStringSync();
       final targetStart = source.indexOf('Future<void> _exportPdf()');
       final targetEnd =
@@ -242,6 +242,7 @@ void main() {
       expect(target, isNot(contains('.loadLogoBytes(')));
       expect(target, isNot(contains('LoadBusinessLogoQueryHandler(')));
       expect(target, contains('report: _report!'));
+      expect(target, contains('accountLabel: accountLabel'));
       expect(target, contains('businessIdentity: identity'));
       expect(target, contains('logoBytes: logoBytes'));
       expect(target, contains('await _showExportResult(file);'));
@@ -255,15 +256,19 @@ void main() {
         'if (identity.hasLogo && identity.logo != null)',
       );
       final queryLookup = target.indexOf('ApplicationScope.of(context)');
+      final accountLabel = target.indexOf(
+        'final accountLabel = _accountIdFilter != null',
+      );
       final builderCall = target.indexOf(
-        'FinancialReportPdfBuilder.buildTransferReport',
+        'FinancialReportPdfBuilder.buildInflowsReport',
       );
       final resultHandler = target.indexOf('await _showExportResult(file);');
       expect(earlyReturn, greaterThanOrEqualTo(0));
       expect(earlyReturn, lessThan(identityRead));
       expect(identityRead, lessThan(validLogoGate));
       expect(validLogoGate, lessThan(queryLookup));
-      expect(queryLookup, lessThan(builderCall));
+      expect(queryLookup, lessThan(accountLabel));
+      expect(accountLabel, lessThan(builderCall));
       expect(builderCall, lessThan(resultHandler));
 
       for (final writeToken in [
@@ -279,16 +284,19 @@ void main() {
         source,
         contains('onPressed: _report != null ? _exportPdf : null'),
       );
-      expect(source, contains('_service.transferReport'));
+      expect(source, contains('_service.inflowsReport'));
       expect(
-          source, contains('FinancialReportCsvExporter.exportTransferReport'));
-      expect(source, contains('_sourceAccountId'));
-      expect(source, contains('_destinationAccountId'));
-      expect(source, contains('_anyAccountId'));
-      expect(source, contains('_reversalFilter'));
+          source, contains('FinancialReportCsvExporter.exportInflowsReport'));
+      expect(source, contains('fromDate: _fromDate'));
+      expect(source, contains('toDate: _toDate'));
+      expect(source, contains('accountIdFilter: _accountIdFilter'));
+      expect(
+        source,
+        contains('exportInflowsReport(\n        report: _report!'),
+      );
     });
 
-    test('live inventories and direct-read sets have only the Transfer delta',
+    test('live inventories and direct-read sets have only the Inflows delta',
         () {
       final featureSharedFiles = _dartFilesUnder([
         Directory('lib/features'),
@@ -317,7 +325,7 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
       const target =
-          'lib/features/financial_reports/transfer_report_screen.dart';
+          'lib/features/financial_reports/inflows_report_screen.dart';
 
       expect(featureSharedReferences, 137);
       expect(locatorFiles, hasLength(36));
@@ -380,7 +388,7 @@ Future<void> _pumpReport(
         textDirection: TextDirection.rtl,
         child: routeChild ?? const SizedBox.shrink(),
       ),
-      home: const TransferReportScreen(),
+      home: const InflowsReportScreen(),
     ),
   );
   if (application != null) {
@@ -568,14 +576,14 @@ final class _QueryBusinessIdentityRepositorySpy
   String get managedLogosDirectory => '';
 }
 
-const _managedFileName = 'post-phase-108r-transfer-logo.png';
+const _managedFileName = 'post-transfer-inflows-logo.png';
 
 const _identityWithLogo = BusinessIdentity(
-  establishmentName: 'Post-Phase-108R transfer warehouse',
+  establishmentName: 'Post-Transfer inflows warehouse',
   logo: LogoMetadata(
     managedFileName: _managedFileName,
     mimeType: 'image/png',
-    sha256: 'post-phase-108r-transfer-logo',
+    sha256: 'post-transfer-inflows-logo',
     byteLength: 3,
     width: 1,
     height: 1,
@@ -583,11 +591,11 @@ const _identityWithLogo = BusinessIdentity(
 );
 
 const _identityWithInvalidLogo = BusinessIdentity(
-  establishmentName: 'Post-Phase-108R transfer invalid logo',
+  establishmentName: 'Post-Transfer inflows invalid logo',
   logo: LogoMetadata(
     managedFileName: '',
     mimeType: 'image/png',
-    sha256: 'post-phase-108r-transfer-invalid-logo',
+    sha256: 'post-transfer-inflows-invalid-logo',
     byteLength: 1,
     width: 1,
     height: 1,

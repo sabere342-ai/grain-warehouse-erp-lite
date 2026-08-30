@@ -360,7 +360,6 @@ void main() {
         'lib/features/exports/pdf_export_service.dart',
         'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
-        'lib/features/financial_reports/inflows_report_screen.dart',
         'lib/features/financial_reports/outflows_report_screen.dart',
       });
     });
