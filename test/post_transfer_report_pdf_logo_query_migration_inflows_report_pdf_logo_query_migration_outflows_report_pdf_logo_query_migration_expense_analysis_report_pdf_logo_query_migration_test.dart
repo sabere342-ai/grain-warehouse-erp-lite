@@ -17,7 +17,7 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
-import 'package:grain_warehouse_erp_lite/features/financial_reports/outflows_report_screen.dart';
+import 'package:grain_warehouse_erp_lite/features/financial_reports/expense_analysis_report_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +41,7 @@ void main() {
     await AppCompositionRoot.close();
   });
 
-  group('Post-Inflows outflows-report PDF logo query migration', () {
+  group('Post-Outflows expense-analysis PDF logo query migration', () {
     testWidgets('without a loaded report the PDF action remains disabled',
         (tester) async {
       final locatorRepository = _LocatorBusinessIdentityRepositorySpy(
@@ -116,7 +116,7 @@ void main() {
         events: events,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('intentional outflows query seam stop'),
+        failure: StateError('intentional expense-analysis query seam stop'),
         events: events,
       );
 
@@ -183,7 +183,7 @@ void main() {
         identity: _identityWithLogo,
       );
       final queryRepository = _QueryBusinessIdentityRepositorySpy(
-        failure: StateError('outflows query failure'),
+        failure: StateError('expense-analysis query failure'),
       );
 
       await _pumpReport(
@@ -198,7 +198,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('تعذر إنشاء ملف PDF.'), findsOneWidget);
-      expect(find.textContaining('outflows query failure'), findsNothing);
+      expect(
+          find.textContaining('expense-analysis query failure'), findsNothing);
       expect(locatorRepository.identityReads, 1);
       expect(locatorRepository.directLogoReads, 0);
       expect(queryRepository.logoReads, 1);
@@ -207,10 +208,10 @@ void main() {
     });
   });
 
-  group('Post-Inflows outflows source and architecture guards', () {
+  group('Post-Outflows expense-analysis source and architecture guards', () {
     test('only the selected export block moves to the existing query', () {
       final source = File(
-        'lib/features/financial_reports/outflows_report_screen.dart',
+        'lib/features/financial_reports/expense_analysis_report_screen.dart',
       ).readAsStringSync();
       final targetStart = source.indexOf('Future<void> _exportPdf()');
       final targetEnd =
@@ -242,7 +243,6 @@ void main() {
       expect(target, isNot(contains('.loadLogoBytes(')));
       expect(target, isNot(contains('LoadBusinessLogoQueryHandler(')));
       expect(target, contains('report: _report!'));
-      expect(target, contains('accountLabel: accountLabel'));
       expect(target, contains('businessIdentity: identity'));
       expect(target, contains('logoBytes: logoBytes'));
       expect(target, contains('await _showExportResult(file);'));
@@ -256,19 +256,15 @@ void main() {
         'if (identity.hasLogo && identity.logo != null)',
       );
       final queryLookup = target.indexOf('ApplicationScope.of(context)');
-      final accountLabel = target.indexOf(
-        'final accountLabel = _accountIdFilter != null',
-      );
       final builderCall = target.indexOf(
-        'FinancialReportPdfBuilder.buildOutflowsReport',
+        'FinancialReportPdfBuilder.buildExpenseAnalysisReport',
       );
       final resultHandler = target.indexOf('await _showExportResult(file);');
       expect(earlyReturn, greaterThanOrEqualTo(0));
       expect(earlyReturn, lessThan(identityRead));
       expect(identityRead, lessThan(validLogoGate));
       expect(validLogoGate, lessThan(queryLookup));
-      expect(queryLookup, lessThan(accountLabel));
-      expect(accountLabel, lessThan(builderCall));
+      expect(queryLookup, lessThan(builderCall));
       expect(builderCall, lessThan(resultHandler));
 
       for (final writeToken in [
@@ -284,19 +280,20 @@ void main() {
         source,
         contains('onPressed: _report != null ? _exportPdf : null'),
       );
-      expect(source, contains('_service.outflowsReport'));
+      expect(source, contains('_service.expenseAnalysisReport'));
       expect(
-          source, contains('FinancialReportCsvExporter.exportOutflowsReport'));
+        source,
+        contains('FinancialReportCsvExporter.exportExpenseAnalysisReport'),
+      );
       expect(source, contains('fromDate: _fromDate'));
       expect(source, contains('toDate: _toDate'));
       expect(source, contains('accountIdFilter: _accountIdFilter'));
-      expect(
-        source,
-        contains('exportOutflowsReport(\n        report: _report!'),
-      );
+      expect(source, contains('paymentMethodFilter: _paymentMethodFilter'));
+      expect(source, contains('_categorySearch.trim()'));
     });
 
-    test('live inventories and direct-read sets have only the Outflows delta',
+    test(
+        'live inventories and direct-read sets have only the Expense Analysis delta',
         () {
       final featureSharedFiles = _dartFilesUnder([
         Directory('lib/features'),
@@ -325,7 +322,7 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
       const target =
-          'lib/features/financial_reports/outflows_report_screen.dart';
+          'lib/features/financial_reports/expense_analysis_report_screen.dart';
 
       expect(featureSharedReferences, 135);
       expect(locatorFiles, hasLength(36));
@@ -335,7 +332,7 @@ void main() {
       expect(normalizedScopeFiles, contains(target));
       expect(
         locatorPattern.allMatches(File(target).readAsStringSync()),
-        hasLength(3),
+        hasLength(4),
       );
       expect(_logoReadFiles(), isNot(contains(target)));
       expect(_logoReadFiles(), {
@@ -384,7 +381,7 @@ Future<void> _pumpReport(
         textDirection: TextDirection.rtl,
         child: routeChild ?? const SizedBox.shrink(),
       ),
-      home: const OutflowsReportScreen(),
+      home: const ExpenseAnalysisReportScreen(),
     ),
   );
   if (application != null) {
@@ -572,14 +569,14 @@ final class _QueryBusinessIdentityRepositorySpy
   String get managedLogosDirectory => '';
 }
 
-const _managedFileName = 'post-inflows-outflows-logo.png';
+const _managedFileName = 'post-outflows-expense-analysis-logo.png';
 
 const _identityWithLogo = BusinessIdentity(
-  establishmentName: 'Post-Inflows outflows warehouse',
+  establishmentName: 'Post-Outflows expense-analysis warehouse',
   logo: LogoMetadata(
     managedFileName: _managedFileName,
     mimeType: 'image/png',
-    sha256: 'post-inflows-outflows-logo',
+    sha256: 'post-outflows-expense-analysis-logo',
     byteLength: 3,
     width: 1,
     height: 1,
@@ -587,11 +584,11 @@ const _identityWithLogo = BusinessIdentity(
 );
 
 const _identityWithInvalidLogo = BusinessIdentity(
-  establishmentName: 'Post-Inflows outflows invalid logo',
+  establishmentName: 'Post-Outflows expense-analysis invalid logo',
   logo: LogoMetadata(
     managedFileName: '',
     mimeType: 'image/png',
-    sha256: 'post-inflows-outflows-invalid-logo',
+    sha256: 'post-outflows-expense-analysis-invalid-logo',
     byteLength: 1,
     width: 1,
     height: 1,

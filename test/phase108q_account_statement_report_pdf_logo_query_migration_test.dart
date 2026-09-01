@@ -294,10 +294,10 @@ void main() {
       const target =
           'lib/features/financial_reports/account_statement_report_screen.dart';
 
-      expect(featureSharedReferences, 136);
+      expect(featureSharedReferences, 135);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 152);
-      expect(scopeConsumers, hasLength(14));
+      expect(allLibReferences, 151);
+      expect(scopeConsumers, hasLength(15));
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));
       expect(_logoReadFiles(), isNot(contains(target)));
@@ -307,9 +307,8 @@ void main() {
         'lib/core/business_identity/business_identity_repository.dart',
         'lib/features/exports/pdf_export_service.dart',
         'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
-        'lib/features/financial_reports/expense_analysis_report_screen.dart',
       });
-      expect(_logoInvocationFiles(), hasLength(5));
+      expect(_logoInvocationFiles(), hasLength(4));
       expect(_logoInvocationFiles(), isNot(contains(target)));
     });
   });
