@@ -315,7 +315,6 @@ void main() {
         'lib/features/exports/pdf_export_service.dart',
         'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
         'lib/features/financial_reports/expense_analysis_report_screen.dart',
-        'lib/features/financial_reports/outflows_report_screen.dart',
       });
     });
 
@@ -347,10 +346,10 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 137);
+      expect(featureSharedReferences, 136);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 153);
-      expect(scopeConsumers, hasLength(13));
+      expect(allLibReferences, 152);
+      expect(scopeConsumers, hasLength(14));
       expect(
         normalizedLocatorFiles,
         contains(
