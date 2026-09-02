@@ -313,7 +313,6 @@ void main() {
         'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
         'lib/features/exports/pdf_export_service.dart',
-        'lib/features/financial_reports/advances_and_refunds_report_screen.dart',
       });
     });
 
@@ -345,10 +344,10 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 135);
+      expect(featureSharedReferences, 134);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 151);
-      expect(scopeConsumers, hasLength(15));
+      expect(allLibReferences, 150);
+      expect(scopeConsumers, hasLength(16));
       expect(
         normalizedLocatorFiles,
         contains(

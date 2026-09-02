@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/customers/customer_repository.dart';
@@ -961,8 +963,15 @@ class _AdvancesAndRefundsReportScreenState
           await AppRepositories.businessIdentityRepository.loadIdentity();
       Uint8List? logoBytes;
       if (identity.hasLogo && identity.logo != null) {
-        logoBytes = await AppRepositories.businessIdentityRepository
-            .loadLogoBytes(identity.logo!.managedFileName);
+        final result =
+            // ignore: use_build_context_synchronously
+            await ApplicationScope.of(context).queries.businessLogo.execute(
+                  LoadBusinessLogoQuery(
+                    managedFileName: identity.logo!.managedFileName,
+                  ),
+                );
+
+        logoBytes = result.value;
       }
       final file =
           await FinancialReportPdfBuilder.buildAdvancesAndRefundsReport(
