@@ -5,6 +5,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
+import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/customer_accounts/customer_account_entry.dart';
 import 'package:grain_warehouse_erp_lite/core/purchases/purchase_intake.dart';
@@ -53,8 +55,10 @@ class PdfExportService {
     required Map<String, String> productNames,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final bytes = await PdfSalesInvoiceBuilder.build(
         sale: sale,
         customerName: customerName,
@@ -80,8 +84,10 @@ class PdfExportService {
     required String customerName,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final generatedAt = DateTime.now();
       final bytes = await PdfCustomerStatementBuilder.build(
         statement: statement,
@@ -109,8 +115,10 @@ class PdfExportService {
     required DateTime reportDate,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final bytes = await PdfDailyReportBuilder.build(
         report: report,
         reportDate: reportDate,
@@ -136,8 +144,10 @@ class PdfExportService {
     required String productName,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final bytes = await PdfPurchaseInvoiceBuilder.build(
         purchase: purchase,
         supplierName: supplierName,
@@ -164,8 +174,10 @@ class PdfExportService {
     required String supplierName,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final generatedAt = DateTime.now();
       final bytes = await PdfSupplierStatementBuilder.build(
         statement: statement,
@@ -209,17 +221,23 @@ class PdfExportService {
     }
   }
 
-  static Future<_PdfBranding> _loadBranding() async {
+  static Future<_PdfBranding> _loadBranding(
+    LoadBusinessLogoQueryHandler businessLogoQuery,
+  ) async {
     final identity =
         await AppRepositories.businessIdentityRepository.loadIdentity();
     if (!identity.hasLogo || identity.logo == null) {
       return _PdfBranding(identity: identity);
     }
     try {
+      final result = await businessLogoQuery.execute(
+        LoadBusinessLogoQuery(
+          managedFileName: identity.logo!.managedFileName,
+        ),
+      );
       return _PdfBranding(
         identity: identity,
-        logoBytes: await AppRepositories.businessIdentityRepository
-            .loadLogoBytes(identity.logo!.managedFileName),
+        logoBytes: result.value,
       );
     } catch (_) {
       return _PdfBranding(identity: identity);
@@ -245,8 +263,10 @@ class PdfExportService {
     required AccountBalanceReport report,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await FinancialReportPdfBuilder.initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final file = await FinancialReportPdfBuilder.buildAccountBalanceReport(
           report: report,
           businessIdentity: branding.identity,
@@ -266,8 +286,10 @@ class PdfExportService {
     required AccountStatementReport report,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await FinancialReportPdfBuilder.initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final file = await FinancialReportPdfBuilder.buildAccountStatementReport(
           report: report,
           businessIdentity: branding.identity,
@@ -287,8 +309,10 @@ class PdfExportService {
     required PaymentMethodReport report,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await FinancialReportPdfBuilder.initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final file = await FinancialReportPdfBuilder.buildPaymentMethodReport(
           report: report,
           businessIdentity: branding.identity,
@@ -308,8 +332,10 @@ class PdfExportService {
     required TransferReport report,
   }) async {
     try {
+      final businessLogoQuery =
+          ApplicationScope.of(context).queries.businessLogo;
       await FinancialReportPdfBuilder.initialize();
-      final branding = await _loadBranding();
+      final branding = await _loadBranding(businessLogoQuery);
       final file = await FinancialReportPdfBuilder.buildTransferReport(
           report: report,
           businessIdentity: branding.identity,

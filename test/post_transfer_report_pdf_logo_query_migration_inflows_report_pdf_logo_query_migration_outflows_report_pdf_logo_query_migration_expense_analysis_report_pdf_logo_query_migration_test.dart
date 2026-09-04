@@ -324,10 +324,10 @@ void main() {
       const target =
           'lib/features/financial_reports/expense_analysis_report_screen.dart';
 
-      expect(featureSharedReferences, 134);
+      expect(featureSharedReferences, 133);
       expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 150);
-      expect(scopeConsumers, hasLength(16));
+      expect(allLibReferences, 149);
+      expect(scopeConsumers, hasLength(17));
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));
       expect(
@@ -339,12 +339,10 @@ void main() {
         'lib/application/queries/load_business_logo_query.dart',
         'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
-        'lib/features/exports/pdf_export_service.dart',
       });
       expect(_logoInvocationFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
         'lib/core/backup/backup_export.dart',
-        'lib/features/exports/pdf_export_service.dart',
       });
     });
   });
