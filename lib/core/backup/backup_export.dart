@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
 import 'package:grain_warehouse_erp_lite/core/backup/backup_checksum.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
@@ -47,6 +48,7 @@ class BackupExportService {
     required SaleRepository saleRepository,
     required DocumentHistoryRepository documentHistoryRepository,
     BusinessIdentityRepository? businessIdentityRepository,
+    LoadBusinessLogoQueryHandler? businessLogoQuery,
     CustomerRepository? customerRepository,
     CustomerAccountRepository? customerAccountRepository,
     SupplierAccountRepository? supplierAccountRepository,
@@ -64,6 +66,12 @@ class BackupExportService {
         _saleRepository = saleRepository,
         _documentHistoryRepository = documentHistoryRepository,
         _businessIdentityRepository = businessIdentityRepository,
+        _businessLogoQuery = businessLogoQuery ??
+            (businessIdentityRepository == null
+                ? null
+                : LoadBusinessLogoQueryHandler(
+                    repository: businessIdentityRepository,
+                  )),
         _customerRepository = customerRepository ?? LocalCustomerRepository(),
         _customerAccountRepository = customerAccountRepository,
         _supplierAccountRepository = supplierAccountRepository,
@@ -86,6 +94,7 @@ class BackupExportService {
   final SaleRepository _saleRepository;
   final DocumentHistoryRepository _documentHistoryRepository;
   final BusinessIdentityRepository? _businessIdentityRepository;
+  final LoadBusinessLogoQueryHandler? _businessLogoQuery;
   final CustomerRepository _customerRepository;
   final CustomerAccountRepository? _customerAccountRepository;
   final SupplierAccountRepository? _supplierAccountRepository;
@@ -792,12 +801,17 @@ class BackupExportService {
     BusinessIdentity identity,
   ) async {
     final json = identity.toJson();
-    if (!identity.hasLogo || _businessIdentityRepository == null) {
+    final businessLogoQuery = _businessLogoQuery;
+    if (!identity.hasLogo ||
+        _businessIdentityRepository == null ||
+        businessLogoQuery == null) {
       return json;
     }
     try {
-      final logoBytes = await _businessIdentityRepository
-          .loadLogoBytes(identity.logo!.managedFileName);
+      final result = await businessLogoQuery.execute(
+        LoadBusinessLogoQuery(managedFileName: identity.logo!.managedFileName),
+      );
+      final logoBytes = result.value;
       if (logoBytes == null || logoBytes.isEmpty) {
         return json;
       }

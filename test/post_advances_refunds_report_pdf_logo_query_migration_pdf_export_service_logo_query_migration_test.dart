@@ -186,7 +186,8 @@ void main() {
       _expectNoWrites(locatorRepository, queryRepository);
     });
 
-    test('source keeps all nine lookups safe and the deferred seam intact', () {
+    test('source keeps all nine lookups safe and Backup canonically routed',
+        () {
       final source = File('lib/features/exports/pdf_export_service.dart')
           .readAsStringSync();
       final backup =
@@ -216,7 +217,10 @@ void main() {
       );
       expect(source, contains('identity.hasLogo || identity.logo == null'));
       expect(source, isNot(contains('.loadLogoBytes(')));
-      expect(backup, contains('.loadLogoBytes('));
+      expect(backup, isNot(contains('loadLogoBytes')));
+      expect(backup, contains('businessLogoQuery.execute('));
+      expect(backup, contains('LoadBusinessLogoQuery('));
+      expect(backup, contains('final logoBytes = result.value;'));
 
       for (final symbol in _pdfEntryPoints) {
         final start = source.indexOf('static Future<bool> $symbol(');
@@ -232,7 +236,6 @@ void main() {
 
       expect(_logoInvocationFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
-        'lib/core/backup/backup_export.dart',
       });
     });
   });

@@ -310,7 +310,6 @@ void main() {
     test('only the printable scaffold leaves the direct logo-read set', () {
       expect(_logoReadFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
-        'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
       });
     });

@@ -337,12 +337,10 @@ void main() {
       expect(_logoReadFiles(), isNot(contains(target)));
       expect(_logoReadFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
-        'lib/core/backup/backup_export.dart',
         'lib/core/business_identity/business_identity_repository.dart',
       });
       expect(_logoInvocationFiles(), {
         'lib/application/queries/load_business_logo_query.dart',
-        'lib/core/backup/backup_export.dart',
       });
     });
   });

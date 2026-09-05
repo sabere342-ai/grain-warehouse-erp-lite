@@ -1,3 +1,4 @@
+import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/drift_audit_log_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
@@ -265,6 +266,9 @@ class AppRepositories {
 
   static BackupExportService get backupExportService => BackupExportService(
         businessIdentityRepository: businessIdentityRepository,
+        businessLogoQuery: LoadBusinessLogoQueryHandler(
+          repository: businessIdentityRepository,
+        ),
         productCatalogReadRepository: productCatalogReadRepository,
         inventoryRepository: inventoryRepository,
         supplierRepository: supplierRepository,
