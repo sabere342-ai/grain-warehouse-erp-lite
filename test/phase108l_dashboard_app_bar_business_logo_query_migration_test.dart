@@ -359,7 +359,7 @@ void main() {
       });
     });
 
-    test('exactly four concrete typed query slices exist', () {
+    test('exactly five concrete typed query slices exist', () {
       final queryFiles = Directory('lib/application/queries')
           .listSync()
           .whereType<File>()
@@ -377,6 +377,7 @@ void main() {
         'lib/application/queries/load_audit_logs_query.dart',
         'lib/application/queries/load_business_logo_query.dart',
         'lib/application/queries/load_document_history_query.dart',
+        'lib/application/queries/load_expenses_query.dart',
         'lib/application/queries/load_product_catalog_query.dart',
       });
     });
@@ -406,6 +407,7 @@ ApplicationBoundary _withBusinessLogoHandler(
       auditLogs: application.queries.auditLogs,
       businessLogo: LoadBusinessLogoQueryHandler(repository: repository),
       documentHistory: application.queries.documentHistory,
+      expenses: application.queries.expenses,
       productCatalog: application.queries.productCatalog,
     ),
   );

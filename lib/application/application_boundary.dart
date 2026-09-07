@@ -5,6 +5,7 @@ import 'package:grain_warehouse_erp_lite/application/commands/post_internal_tran
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_expenses_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
 
 final class ApplicationBoundary {
@@ -36,11 +37,13 @@ final class ApplicationQueries {
     required this.auditLogs,
     required this.businessLogo,
     required this.documentHistory,
+    required this.expenses,
     required this.productCatalog,
   });
 
   final LoadAuditLogsQueryHandler auditLogs;
   final LoadBusinessLogoQueryHandler businessLogo;
   final LoadDocumentHistoryQueryHandler documentHistory;
+  final LoadExpensesQueryHandler expenses;
   final LoadProductCatalogQueryHandler productCatalog;
 }

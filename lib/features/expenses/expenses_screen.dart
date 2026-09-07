@@ -45,11 +45,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final application = ApplicationScope.of(context);
     _controller ??= ExpenseController(
-      repository: ApplicationScope.of(context)
-          .dependencies
-          .repositories
-          .expenseRepository,
+      queryHandler: application.queries.expenses,
+      repository: application.dependencies.repositories.expenseRepository,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = AuthScope.of(context).state.user;

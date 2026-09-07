@@ -394,8 +394,7 @@ void main() {
       expect(screen, isNot(contains('FoundationDatabase')));
     });
 
-    test('exactly four typed query slices exist and no second UI read moved',
-        () {
+    test('exactly five typed query slices exist', () {
       final queryFiles = Directory('lib/application/queries')
           .listSync()
           .whereType<File>()
@@ -414,6 +413,7 @@ void main() {
         'lib/application/queries/load_audit_logs_query.dart',
         'lib/application/queries/load_business_logo_query.dart',
         'lib/application/queries/load_document_history_query.dart',
+        'lib/application/queries/load_expenses_query.dart',
         'lib/application/queries/load_product_catalog_query.dart',
       });
       final controller = File(
@@ -440,6 +440,7 @@ ApplicationBoundary _withCatalogHandler(
       auditLogs: application.queries.auditLogs,
       businessLogo: application.queries.businessLogo,
       documentHistory: application.queries.documentHistory,
+      expenses: application.queries.expenses,
       productCatalog: LoadProductCatalogQueryHandler(repository: repository),
     ),
   );

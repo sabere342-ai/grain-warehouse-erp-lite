@@ -369,7 +369,7 @@ void main() {
       }
     });
 
-    test('all four production query slices are query handlers', () {
+    test('all five production query slices are query handlers', () {
       final queryFiles = Directory('lib/application/queries')
           .listSync()
           .whereType<File>()
@@ -390,6 +390,7 @@ void main() {
           'lib/application/queries/load_audit_logs_query.dart',
           'lib/application/queries/load_business_logo_query.dart',
           'lib/application/queries/load_document_history_query.dart',
+          'lib/application/queries/load_expenses_query.dart',
           'lib/application/queries/load_product_catalog_query.dart',
         },
       );

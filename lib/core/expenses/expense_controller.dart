@@ -1,12 +1,18 @@
 import 'package:flutter/foundation.dart';
+import 'package:grain_warehouse_erp_lite/application/queries/load_expenses_query.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
 
 class ExpenseController extends ChangeNotifier {
-  ExpenseController({required ExpenseRepository repository})
-      : _repository = repository;
+  ExpenseController({
+    required ExpenseRepository repository,
+    LoadExpensesQueryHandler? queryHandler,
+  })  : _queryHandler =
+            queryHandler ?? LoadExpensesQueryHandler(repository: repository),
+        _repository = repository;
 
+  final LoadExpensesQueryHandler _queryHandler;
   final ExpenseRepository _repository;
   List<ExpenseRecord> _expenses = const [];
   String? _errorMessage;
@@ -21,7 +27,8 @@ class ExpenseController extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-    _expenses = await _repository.listExpenses();
+    final result = await _queryHandler.execute(const LoadExpensesQuery());
+    _expenses = result.value;
     _isLoading = false;
     notifyListeners();
   }

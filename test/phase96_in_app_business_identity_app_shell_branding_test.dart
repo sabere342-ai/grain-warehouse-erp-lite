@@ -331,6 +331,7 @@ ApplicationBoundary _withBusinessLogoHandler(
       auditLogs: application.queries.auditLogs,
       businessLogo: LoadBusinessLogoQueryHandler(repository: repository),
       documentHistory: application.queries.documentHistory,
+      expenses: application.queries.expenses,
       productCatalog: application.queries.productCatalog,
     ),
   );

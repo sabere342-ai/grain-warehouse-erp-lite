@@ -129,7 +129,7 @@ void main() {
   });
 
   test(
-      'Q11 application boundary contains four concrete production query slices',
+      'Q11 application boundary contains five concrete production query slices',
       () {
     final queryFiles = Directory('lib/application/queries')
         .listSync()
@@ -142,7 +142,7 @@ void main() {
           source.contains('ApplicationQueryHandler<');
     }).toList();
 
-    expect(queryFiles, hasLength(4));
+    expect(queryFiles, hasLength(5));
     expect(
       queryFiles
           .map((file) => file.path.replaceAll('\\', '/'))
@@ -152,6 +152,7 @@ void main() {
         'lib/application/queries/load_audit_logs_query.dart',
         'lib/application/queries/load_business_logo_query.dart',
         'lib/application/queries/load_document_history_query.dart',
+        'lib/application/queries/load_expenses_query.dart',
         'lib/application/queries/load_product_catalog_query.dart',
       },
     );
