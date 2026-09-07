@@ -296,7 +296,7 @@ void main() {
           .readAsStringSync());
 
       expect(persistenceDiff, isEmpty);
-      expect(schema, contains('schemaVersion=>16'));
+      expect(schema, contains('schemaVersion=>17'));
     });
   });
 }

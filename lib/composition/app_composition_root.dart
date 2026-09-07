@@ -2,7 +2,9 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/application_boundary.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
+import 'package:grain_warehouse_erp_lite/application/commands/post_internal_transfer_command.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_gateway.dart';
+import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
@@ -16,8 +18,11 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_confirmed_internal_transfer_projection_writer.dart';
+import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_internal_transfer_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_cloud_session_adapter.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_expense_posting_gateway.dart';
+import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_internal_transfer_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_runtime_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
@@ -98,6 +103,18 @@ final class AppCompositionRoot {
     final ExpensePostingGateway gateway = activeSupabaseClient == null
         ? const _UnavailableExpensePostingGateway()
         : SupabaseExpensePostingGateway(activeSupabaseClient);
+    final transferAttemptStore = DriftInternalTransferPostingAttemptStore(
+      AppRepositories.database,
+    );
+    final transferProjectionWriter =
+        DriftConfirmedInternalTransferProjectionWriter(
+      AppRepositories.database,
+      financialAccountRepository: financialAccountRepository,
+    );
+    final InternalTransferPostingGateway transferGateway =
+        activeSupabaseClient == null
+            ? const _UnavailableInternalTransferPostingGateway()
+            : SupabaseInternalTransferPostingGateway(activeSupabaseClient);
     final dependencies =
         LegacyApplicationDependencyBridge.captureSharedInstances(
       trialEvaluator: sharedTrialEvaluator,
@@ -121,6 +138,13 @@ final class AppCompositionRoot {
           attemptStore: attemptStore,
           gateway: gateway,
           projectionWriter: projectionWriter,
+        ),
+        postInternalTransfer: PostInternalTransferCommandHandler(
+          sessionContextProvider: sessionContextProvider,
+          businessContextProvider: businessContextProvider,
+          attemptStore: transferAttemptStore,
+          gateway: transferGateway,
+          projectionWriter: transferProjectionWriter,
         ),
       ),
       queries: ApplicationQueries(
@@ -156,6 +180,21 @@ final class _UnavailableExpensePostingGateway implements ExpensePostingGateway {
   ) async =>
       const ExpensePostingGatewayFailure(
         category: PostExpenseFailureCategory.authentication,
+        code: 'unauthenticated.sessionRequired',
+        retryable: false,
+      );
+}
+
+final class _UnavailableInternalTransferPostingGateway
+    implements InternalTransferPostingGateway {
+  const _UnavailableInternalTransferPostingGateway();
+
+  @override
+  Future<InternalTransferPostingGatewayResponse> post(
+    InternalTransferPostingRequestPayload payload,
+  ) async =>
+      const InternalTransferPostingGatewayFailure(
+        category: PostInternalTransferFailureCategory.authentication,
         code: 'unauthenticated.sessionRequired',
         retryable: false,
       );

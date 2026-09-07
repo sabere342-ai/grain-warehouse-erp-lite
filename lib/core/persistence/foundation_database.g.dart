@@ -11637,6 +11637,582 @@ class ExpensePostingAttemptsCompanion
   }
 }
 
+class $InternalTransferPostingAttemptsTable
+    extends InternalTransferPostingAttempts
+    with
+        TableInfo<$InternalTransferPostingAttemptsTable,
+            InternalTransferPostingAttemptRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InternalTransferPostingAttemptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _commandIdMeta =
+      const VerificationMeta('commandId');
+  @override
+  late final GeneratedColumn<String> commandId = GeneratedColumn<String>(
+      'command_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _canonicalPayloadJsonMeta =
+      const VerificationMeta('canonicalPayloadJson');
+  @override
+  late final GeneratedColumn<String> canonicalPayloadJson =
+      GeneratedColumn<String>('canonical_payload_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localFingerprintMeta =
+      const VerificationMeta('localFingerprint');
+  @override
+  late final GeneratedColumn<String> localFingerprint = GeneratedColumn<String>(
+      'local_fingerprint', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lifecycleStateMeta =
+      const VerificationMeta('lifecycleState');
+  @override
+  late final GeneratedColumn<String> lifecycleState = GeneratedColumn<String>(
+      'lifecycle_state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _canonicalServerResultJsonMeta =
+      const VerificationMeta('canonicalServerResultJson');
+  @override
+  late final GeneratedColumn<String> canonicalServerResultJson =
+      GeneratedColumn<String>('canonical_server_result_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtUtcMeta =
+      const VerificationMeta('createdAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+      'created_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _attemptCountMeta =
+      const VerificationMeta('attemptCount');
+  @override
+  late final GeneratedColumn<int> attemptCount = GeneratedColumn<int>(
+      'attempt_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _lastErrorCodeMeta =
+      const VerificationMeta('lastErrorCode');
+  @override
+  late final GeneratedColumn<String> lastErrorCode = GeneratedColumn<String>(
+      'last_error_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        commandId,
+        businessId,
+        canonicalPayloadJson,
+        localFingerprint,
+        lifecycleState,
+        canonicalServerResultJson,
+        createdAtUtc,
+        updatedAtUtc,
+        attemptCount,
+        lastErrorCode
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'internal_transfer_posting_attempts';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<InternalTransferPostingAttemptRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('command_id')) {
+      context.handle(_commandIdMeta,
+          commandId.isAcceptableOrUnknown(data['command_id']!, _commandIdMeta));
+    } else if (isInserting) {
+      context.missing(_commandIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('canonical_payload_json')) {
+      context.handle(
+          _canonicalPayloadJsonMeta,
+          canonicalPayloadJson.isAcceptableOrUnknown(
+              data['canonical_payload_json']!, _canonicalPayloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_canonicalPayloadJsonMeta);
+    }
+    if (data.containsKey('local_fingerprint')) {
+      context.handle(
+          _localFingerprintMeta,
+          localFingerprint.isAcceptableOrUnknown(
+              data['local_fingerprint']!, _localFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_localFingerprintMeta);
+    }
+    if (data.containsKey('lifecycle_state')) {
+      context.handle(
+          _lifecycleStateMeta,
+          lifecycleState.isAcceptableOrUnknown(
+              data['lifecycle_state']!, _lifecycleStateMeta));
+    } else if (isInserting) {
+      context.missing(_lifecycleStateMeta);
+    }
+    if (data.containsKey('canonical_server_result_json')) {
+      context.handle(
+          _canonicalServerResultJsonMeta,
+          canonicalServerResultJson.isAcceptableOrUnknown(
+              data['canonical_server_result_json']!,
+              _canonicalServerResultJsonMeta));
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+          _createdAtUtcMeta,
+          createdAtUtc.isAcceptableOrUnknown(
+              data['created_at_utc']!, _createdAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('attempt_count')) {
+      context.handle(
+          _attemptCountMeta,
+          attemptCount.isAcceptableOrUnknown(
+              data['attempt_count']!, _attemptCountMeta));
+    }
+    if (data.containsKey('last_error_code')) {
+      context.handle(
+          _lastErrorCodeMeta,
+          lastErrorCode.isAcceptableOrUnknown(
+              data['last_error_code']!, _lastErrorCodeMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {commandId};
+  @override
+  InternalTransferPostingAttemptRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InternalTransferPostingAttemptRow(
+      commandId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}command_id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      canonicalPayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}canonical_payload_json'])!,
+      localFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_fingerprint'])!,
+      lifecycleState: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}lifecycle_state'])!,
+      canonicalServerResultJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}canonical_server_result_json']),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}created_at_utc'])!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      attemptCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempt_count'])!,
+      lastErrorCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error_code']),
+    );
+  }
+
+  @override
+  $InternalTransferPostingAttemptsTable createAlias(String alias) {
+    return $InternalTransferPostingAttemptsTable(attachedDatabase, alias);
+  }
+}
+
+class InternalTransferPostingAttemptRow extends DataClass
+    implements Insertable<InternalTransferPostingAttemptRow> {
+  final String commandId;
+  final String businessId;
+  final String canonicalPayloadJson;
+  final String localFingerprint;
+  final String lifecycleState;
+  final String? canonicalServerResultJson;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  final int attemptCount;
+  final String? lastErrorCode;
+  const InternalTransferPostingAttemptRow(
+      {required this.commandId,
+      required this.businessId,
+      required this.canonicalPayloadJson,
+      required this.localFingerprint,
+      required this.lifecycleState,
+      this.canonicalServerResultJson,
+      required this.createdAtUtc,
+      required this.updatedAtUtc,
+      required this.attemptCount,
+      this.lastErrorCode});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['command_id'] = Variable<String>(commandId);
+    map['business_id'] = Variable<String>(businessId);
+    map['canonical_payload_json'] = Variable<String>(canonicalPayloadJson);
+    map['local_fingerprint'] = Variable<String>(localFingerprint);
+    map['lifecycle_state'] = Variable<String>(lifecycleState);
+    if (!nullToAbsent || canonicalServerResultJson != null) {
+      map['canonical_server_result_json'] =
+          Variable<String>(canonicalServerResultJson);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['attempt_count'] = Variable<int>(attemptCount);
+    if (!nullToAbsent || lastErrorCode != null) {
+      map['last_error_code'] = Variable<String>(lastErrorCode);
+    }
+    return map;
+  }
+
+  InternalTransferPostingAttemptsCompanion toCompanion(bool nullToAbsent) {
+    return InternalTransferPostingAttemptsCompanion(
+      commandId: Value(commandId),
+      businessId: Value(businessId),
+      canonicalPayloadJson: Value(canonicalPayloadJson),
+      localFingerprint: Value(localFingerprint),
+      lifecycleState: Value(lifecycleState),
+      canonicalServerResultJson:
+          canonicalServerResultJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(canonicalServerResultJson),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+      attemptCount: Value(attemptCount),
+      lastErrorCode: lastErrorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorCode),
+    );
+  }
+
+  factory InternalTransferPostingAttemptRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InternalTransferPostingAttemptRow(
+      commandId: serializer.fromJson<String>(json['commandId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      canonicalPayloadJson:
+          serializer.fromJson<String>(json['canonicalPayloadJson']),
+      localFingerprint: serializer.fromJson<String>(json['localFingerprint']),
+      lifecycleState: serializer.fromJson<String>(json['lifecycleState']),
+      canonicalServerResultJson:
+          serializer.fromJson<String?>(json['canonicalServerResultJson']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      attemptCount: serializer.fromJson<int>(json['attemptCount']),
+      lastErrorCode: serializer.fromJson<String?>(json['lastErrorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'commandId': serializer.toJson<String>(commandId),
+      'businessId': serializer.toJson<String>(businessId),
+      'canonicalPayloadJson': serializer.toJson<String>(canonicalPayloadJson),
+      'localFingerprint': serializer.toJson<String>(localFingerprint),
+      'lifecycleState': serializer.toJson<String>(lifecycleState),
+      'canonicalServerResultJson':
+          serializer.toJson<String?>(canonicalServerResultJson),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'attemptCount': serializer.toJson<int>(attemptCount),
+      'lastErrorCode': serializer.toJson<String?>(lastErrorCode),
+    };
+  }
+
+  InternalTransferPostingAttemptRow copyWith(
+          {String? commandId,
+          String? businessId,
+          String? canonicalPayloadJson,
+          String? localFingerprint,
+          String? lifecycleState,
+          Value<String?> canonicalServerResultJson = const Value.absent(),
+          DateTime? createdAtUtc,
+          DateTime? updatedAtUtc,
+          int? attemptCount,
+          Value<String?> lastErrorCode = const Value.absent()}) =>
+      InternalTransferPostingAttemptRow(
+        commandId: commandId ?? this.commandId,
+        businessId: businessId ?? this.businessId,
+        canonicalPayloadJson: canonicalPayloadJson ?? this.canonicalPayloadJson,
+        localFingerprint: localFingerprint ?? this.localFingerprint,
+        lifecycleState: lifecycleState ?? this.lifecycleState,
+        canonicalServerResultJson: canonicalServerResultJson.present
+            ? canonicalServerResultJson.value
+            : this.canonicalServerResultJson,
+        createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        attemptCount: attemptCount ?? this.attemptCount,
+        lastErrorCode:
+            lastErrorCode.present ? lastErrorCode.value : this.lastErrorCode,
+      );
+  InternalTransferPostingAttemptRow copyWithCompanion(
+      InternalTransferPostingAttemptsCompanion data) {
+    return InternalTransferPostingAttemptRow(
+      commandId: data.commandId.present ? data.commandId.value : this.commandId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      canonicalPayloadJson: data.canonicalPayloadJson.present
+          ? data.canonicalPayloadJson.value
+          : this.canonicalPayloadJson,
+      localFingerprint: data.localFingerprint.present
+          ? data.localFingerprint.value
+          : this.localFingerprint,
+      lifecycleState: data.lifecycleState.present
+          ? data.lifecycleState.value
+          : this.lifecycleState,
+      canonicalServerResultJson: data.canonicalServerResultJson.present
+          ? data.canonicalServerResultJson.value
+          : this.canonicalServerResultJson,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      attemptCount: data.attemptCount.present
+          ? data.attemptCount.value
+          : this.attemptCount,
+      lastErrorCode: data.lastErrorCode.present
+          ? data.lastErrorCode.value
+          : this.lastErrorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InternalTransferPostingAttemptRow(')
+          ..write('commandId: $commandId, ')
+          ..write('businessId: $businessId, ')
+          ..write('canonicalPayloadJson: $canonicalPayloadJson, ')
+          ..write('localFingerprint: $localFingerprint, ')
+          ..write('lifecycleState: $lifecycleState, ')
+          ..write('canonicalServerResultJson: $canonicalServerResultJson, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastErrorCode: $lastErrorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      commandId,
+      businessId,
+      canonicalPayloadJson,
+      localFingerprint,
+      lifecycleState,
+      canonicalServerResultJson,
+      createdAtUtc,
+      updatedAtUtc,
+      attemptCount,
+      lastErrorCode);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InternalTransferPostingAttemptRow &&
+          other.commandId == this.commandId &&
+          other.businessId == this.businessId &&
+          other.canonicalPayloadJson == this.canonicalPayloadJson &&
+          other.localFingerprint == this.localFingerprint &&
+          other.lifecycleState == this.lifecycleState &&
+          other.canonicalServerResultJson == this.canonicalServerResultJson &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.attemptCount == this.attemptCount &&
+          other.lastErrorCode == this.lastErrorCode);
+}
+
+class InternalTransferPostingAttemptsCompanion
+    extends UpdateCompanion<InternalTransferPostingAttemptRow> {
+  final Value<String> commandId;
+  final Value<String> businessId;
+  final Value<String> canonicalPayloadJson;
+  final Value<String> localFingerprint;
+  final Value<String> lifecycleState;
+  final Value<String?> canonicalServerResultJson;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> attemptCount;
+  final Value<String?> lastErrorCode;
+  final Value<int> rowid;
+  const InternalTransferPostingAttemptsCompanion({
+    this.commandId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.canonicalPayloadJson = const Value.absent(),
+    this.localFingerprint = const Value.absent(),
+    this.lifecycleState = const Value.absent(),
+    this.canonicalServerResultJson = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.attemptCount = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InternalTransferPostingAttemptsCompanion.insert({
+    required String commandId,
+    required String businessId,
+    required String canonicalPayloadJson,
+    required String localFingerprint,
+    required String lifecycleState,
+    this.canonicalServerResultJson = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.attemptCount = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : commandId = Value(commandId),
+        businessId = Value(businessId),
+        canonicalPayloadJson = Value(canonicalPayloadJson),
+        localFingerprint = Value(localFingerprint),
+        lifecycleState = Value(lifecycleState),
+        createdAtUtc = Value(createdAtUtc),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<InternalTransferPostingAttemptRow> custom({
+    Expression<String>? commandId,
+    Expression<String>? businessId,
+    Expression<String>? canonicalPayloadJson,
+    Expression<String>? localFingerprint,
+    Expression<String>? lifecycleState,
+    Expression<String>? canonicalServerResultJson,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? attemptCount,
+    Expression<String>? lastErrorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (commandId != null) 'command_id': commandId,
+      if (businessId != null) 'business_id': businessId,
+      if (canonicalPayloadJson != null)
+        'canonical_payload_json': canonicalPayloadJson,
+      if (localFingerprint != null) 'local_fingerprint': localFingerprint,
+      if (lifecycleState != null) 'lifecycle_state': lifecycleState,
+      if (canonicalServerResultJson != null)
+        'canonical_server_result_json': canonicalServerResultJson,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (attemptCount != null) 'attempt_count': attemptCount,
+      if (lastErrorCode != null) 'last_error_code': lastErrorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InternalTransferPostingAttemptsCompanion copyWith(
+      {Value<String>? commandId,
+      Value<String>? businessId,
+      Value<String>? canonicalPayloadJson,
+      Value<String>? localFingerprint,
+      Value<String>? lifecycleState,
+      Value<String?>? canonicalServerResultJson,
+      Value<DateTime>? createdAtUtc,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? attemptCount,
+      Value<String?>? lastErrorCode,
+      Value<int>? rowid}) {
+    return InternalTransferPostingAttemptsCompanion(
+      commandId: commandId ?? this.commandId,
+      businessId: businessId ?? this.businessId,
+      canonicalPayloadJson: canonicalPayloadJson ?? this.canonicalPayloadJson,
+      localFingerprint: localFingerprint ?? this.localFingerprint,
+      lifecycleState: lifecycleState ?? this.lifecycleState,
+      canonicalServerResultJson:
+          canonicalServerResultJson ?? this.canonicalServerResultJson,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      attemptCount: attemptCount ?? this.attemptCount,
+      lastErrorCode: lastErrorCode ?? this.lastErrorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (commandId.present) {
+      map['command_id'] = Variable<String>(commandId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (canonicalPayloadJson.present) {
+      map['canonical_payload_json'] =
+          Variable<String>(canonicalPayloadJson.value);
+    }
+    if (localFingerprint.present) {
+      map['local_fingerprint'] = Variable<String>(localFingerprint.value);
+    }
+    if (lifecycleState.present) {
+      map['lifecycle_state'] = Variable<String>(lifecycleState.value);
+    }
+    if (canonicalServerResultJson.present) {
+      map['canonical_server_result_json'] =
+          Variable<String>(canonicalServerResultJson.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (attemptCount.present) {
+      map['attempt_count'] = Variable<int>(attemptCount.value);
+    }
+    if (lastErrorCode.present) {
+      map['last_error_code'] = Variable<String>(lastErrorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InternalTransferPostingAttemptsCompanion(')
+          ..write('commandId: $commandId, ')
+          ..write('businessId: $businessId, ')
+          ..write('canonicalPayloadJson: $canonicalPayloadJson, ')
+          ..write('localFingerprint: $localFingerprint, ')
+          ..write('lifecycleState: $lifecycleState, ')
+          ..write('canonicalServerResultJson: $canonicalServerResultJson, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CustomerAccountEntriesTable extends CustomerAccountEntries
     with TableInfo<$CustomerAccountEntriesTable, CustomerAccountEntryRow> {
   @override
@@ -16869,6 +17445,9 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $FinancialAccountCloudLinksTable(this);
   late final $ExpensePostingAttemptsTable expensePostingAttempts =
       $ExpensePostingAttemptsTable(this);
+  late final $InternalTransferPostingAttemptsTable
+      internalTransferPostingAttempts =
+      $InternalTransferPostingAttemptsTable(this);
   late final $CustomerAccountEntriesTable customerAccountEntries =
       $CustomerAccountEntriesTable(this);
   late final $CustomerCollectionsTable customerCollections =
@@ -16951,6 +17530,9 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index expensePostingAttemptsBusinessStateIdx = Index(
       'expense_posting_attempts_business_state_idx',
       'CREATE INDEX expense_posting_attempts_business_state_idx ON expense_posting_attempts (business_id, lifecycle_state, updated_at_utc)');
+  late final Index internalTransferPostingAttemptsBusinessStateIdx = Index(
+      'internal_transfer_posting_attempts_business_state_idx',
+      'CREATE INDEX internal_transfer_posting_attempts_business_state_idx ON internal_transfer_posting_attempts (business_id, lifecycle_state, updated_at_utc)');
   late final Index customerAccountEntriesCustomerTimestampIdx = Index(
       'customer_account_entries_customer_timestamp_idx',
       'CREATE INDEX customer_account_entries_customer_timestamp_idx ON customer_account_entries (customer_id, occurred_at, id)');
@@ -17019,6 +17601,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         expenses,
         financialAccountCloudLinks,
         expensePostingAttempts,
+        internalTransferPostingAttempts,
         customerAccountEntries,
         customerCollections,
         customerAdvances,
@@ -17054,6 +17637,7 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         expensesOperationRequestUq,
         financialAccountCloudLinksBusinessServerUq,
         expensePostingAttemptsBusinessStateIdx,
+        internalTransferPostingAttemptsBusinessStateIdx,
         customerAccountEntriesCustomerTimestampIdx,
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
@@ -22771,6 +23355,278 @@ typedef $$ExpensePostingAttemptsTableProcessedTableManager
         ),
         ExpensePostingAttemptRow,
         PrefetchHooks Function()>;
+typedef $$InternalTransferPostingAttemptsTableCreateCompanionBuilder
+    = InternalTransferPostingAttemptsCompanion Function({
+  required String commandId,
+  required String businessId,
+  required String canonicalPayloadJson,
+  required String localFingerprint,
+  required String lifecycleState,
+  Value<String?> canonicalServerResultJson,
+  required DateTime createdAtUtc,
+  required DateTime updatedAtUtc,
+  Value<int> attemptCount,
+  Value<String?> lastErrorCode,
+  Value<int> rowid,
+});
+typedef $$InternalTransferPostingAttemptsTableUpdateCompanionBuilder
+    = InternalTransferPostingAttemptsCompanion Function({
+  Value<String> commandId,
+  Value<String> businessId,
+  Value<String> canonicalPayloadJson,
+  Value<String> localFingerprint,
+  Value<String> lifecycleState,
+  Value<String?> canonicalServerResultJson,
+  Value<DateTime> createdAtUtc,
+  Value<DateTime> updatedAtUtc,
+  Value<int> attemptCount,
+  Value<String?> lastErrorCode,
+  Value<int> rowid,
+});
+
+class $$InternalTransferPostingAttemptsTableFilterComposer extends Composer<
+    _$FoundationDatabase, $InternalTransferPostingAttemptsTable> {
+  $$InternalTransferPostingAttemptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get commandId => $composableBuilder(
+      column: $table.commandId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => ColumnFilters(column));
+}
+
+class $$InternalTransferPostingAttemptsTableOrderingComposer extends Composer<
+    _$FoundationDatabase, $InternalTransferPostingAttemptsTable> {
+  $$InternalTransferPostingAttemptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get commandId => $composableBuilder(
+      column: $table.commandId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$InternalTransferPostingAttemptsTableAnnotationComposer extends Composer<
+    _$FoundationDatabase, $InternalTransferPostingAttemptsTable> {
+  $$InternalTransferPostingAttemptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get commandId =>
+      $composableBuilder(column: $table.commandId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get canonicalPayloadJson => $composableBuilder(
+      column: $table.canonicalPayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get localFingerprint => $composableBuilder(
+      column: $table.localFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get lifecycleState => $composableBuilder(
+      column: $table.lifecycleState, builder: (column) => column);
+
+  GeneratedColumn<String> get canonicalServerResultJson => $composableBuilder(
+      column: $table.canonicalServerResultJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => column);
+}
+
+class $$InternalTransferPostingAttemptsTableTableManager
+    extends RootTableManager<
+        _$FoundationDatabase,
+        $InternalTransferPostingAttemptsTable,
+        InternalTransferPostingAttemptRow,
+        $$InternalTransferPostingAttemptsTableFilterComposer,
+        $$InternalTransferPostingAttemptsTableOrderingComposer,
+        $$InternalTransferPostingAttemptsTableAnnotationComposer,
+        $$InternalTransferPostingAttemptsTableCreateCompanionBuilder,
+        $$InternalTransferPostingAttemptsTableUpdateCompanionBuilder,
+        (
+          InternalTransferPostingAttemptRow,
+          BaseReferences<
+              _$FoundationDatabase,
+              $InternalTransferPostingAttemptsTable,
+              InternalTransferPostingAttemptRow>
+        ),
+        InternalTransferPostingAttemptRow,
+        PrefetchHooks Function()> {
+  $$InternalTransferPostingAttemptsTableTableManager(
+      _$FoundationDatabase db, $InternalTransferPostingAttemptsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InternalTransferPostingAttemptsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InternalTransferPostingAttemptsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InternalTransferPostingAttemptsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> commandId = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> canonicalPayloadJson = const Value.absent(),
+            Value<String> localFingerprint = const Value.absent(),
+            Value<String> lifecycleState = const Value.absent(),
+            Value<String?> canonicalServerResultJson = const Value.absent(),
+            Value<DateTime> createdAtUtc = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> attemptCount = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InternalTransferPostingAttemptsCompanion(
+            commandId: commandId,
+            businessId: businessId,
+            canonicalPayloadJson: canonicalPayloadJson,
+            localFingerprint: localFingerprint,
+            lifecycleState: lifecycleState,
+            canonicalServerResultJson: canonicalServerResultJson,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            attemptCount: attemptCount,
+            lastErrorCode: lastErrorCode,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String commandId,
+            required String businessId,
+            required String canonicalPayloadJson,
+            required String localFingerprint,
+            required String lifecycleState,
+            Value<String?> canonicalServerResultJson = const Value.absent(),
+            required DateTime createdAtUtc,
+            required DateTime updatedAtUtc,
+            Value<int> attemptCount = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              InternalTransferPostingAttemptsCompanion.insert(
+            commandId: commandId,
+            businessId: businessId,
+            canonicalPayloadJson: canonicalPayloadJson,
+            localFingerprint: localFingerprint,
+            lifecycleState: lifecycleState,
+            canonicalServerResultJson: canonicalServerResultJson,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            attemptCount: attemptCount,
+            lastErrorCode: lastErrorCode,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$InternalTransferPostingAttemptsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $InternalTransferPostingAttemptsTable,
+        InternalTransferPostingAttemptRow,
+        $$InternalTransferPostingAttemptsTableFilterComposer,
+        $$InternalTransferPostingAttemptsTableOrderingComposer,
+        $$InternalTransferPostingAttemptsTableAnnotationComposer,
+        $$InternalTransferPostingAttemptsTableCreateCompanionBuilder,
+        $$InternalTransferPostingAttemptsTableUpdateCompanionBuilder,
+        (
+          InternalTransferPostingAttemptRow,
+          BaseReferences<
+              _$FoundationDatabase,
+              $InternalTransferPostingAttemptsTable,
+              InternalTransferPostingAttemptRow>
+        ),
+        InternalTransferPostingAttemptRow,
+        PrefetchHooks Function()>;
 typedef $$CustomerAccountEntriesTableCreateCompanionBuilder
     = CustomerAccountEntriesCompanion Function({
   required String id,
@@ -25733,6 +26589,10 @@ class $FoundationDatabaseManager {
   $$ExpensePostingAttemptsTableTableManager get expensePostingAttempts =>
       $$ExpensePostingAttemptsTableTableManager(
           _db, _db.expensePostingAttempts);
+  $$InternalTransferPostingAttemptsTableTableManager
+      get internalTransferPostingAttempts =>
+          $$InternalTransferPostingAttemptsTableTableManager(
+              _db, _db.internalTransferPostingAttempts);
   $$CustomerAccountEntriesTableTableManager get customerAccountEntries =>
       $$CustomerAccountEntriesTableTableManager(
           _db, _db.customerAccountEntries);

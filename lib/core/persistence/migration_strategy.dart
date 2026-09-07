@@ -143,6 +143,8 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.financialAccountCloudLinks);
         await migrator.createTable(database.expensePostingAttempts);
       },
+      17: (migrator) =>
+          migrator.createTable(database.internalTransferPostingAttempts),
     };
 
 Future<void> _createNegativeBalancePendingSignatureIndex(

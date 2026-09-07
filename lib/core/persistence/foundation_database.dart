@@ -393,6 +393,27 @@ class ExpensePostingAttempts extends Table {
   Set<Column<Object>> get primaryKey => {commandId};
 }
 
+@DataClassName('InternalTransferPostingAttemptRow')
+@TableIndex(
+  name: 'internal_transfer_posting_attempts_business_state_idx',
+  columns: {#businessId, #lifecycleState, #updatedAtUtc},
+)
+class InternalTransferPostingAttempts extends Table {
+  TextColumn get commandId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get canonicalPayloadJson => text()();
+  TextColumn get localFingerprint => text()();
+  TextColumn get lifecycleState => text()();
+  TextColumn get canonicalServerResultJson => text().nullable()();
+  DateTimeColumn get createdAtUtc => dateTime()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get attemptCount => integer().withDefault(const Constant(0))();
+  TextColumn get lastErrorCode => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {commandId};
+}
+
 abstract class CustomerAccountPayloadTable extends Table {
   TextColumn get id => text()();
   TextColumn get customerId => text()();
@@ -592,6 +613,7 @@ class NegativeBalanceApprovalRequestTransitions extends Table {
   Expenses,
   FinancialAccountCloudLinks,
   ExpensePostingAttempts,
+  InternalTransferPostingAttempts,
   CustomerAccountEntries,
   CustomerCollections,
   CustomerAdvances,
@@ -610,7 +632,7 @@ class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

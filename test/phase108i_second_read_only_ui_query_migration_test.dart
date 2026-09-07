@@ -436,8 +436,8 @@ void main() {
 
       expect(featureSharedReferences, 133);
       expect(featureSharedWithLocator, hasLength(36));
-      expect(scopeConsumers, hasLength(17));
-      expect(allLibReferences, 149);
+      expect(scopeConsumers, hasLength(18));
+      expect(allLibReferences, 151);
       expect(
         normalizedLocatorFiles,
         contains(

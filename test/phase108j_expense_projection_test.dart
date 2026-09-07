@@ -19,7 +19,7 @@ const serverAccountId = '22222222-2222-4222-8222-222222222222';
 const commandId = '018f7f65-8d31-7b84-bb46-4f47d82c1f70';
 
 void main() {
-  test('v15 to v16 is additive and preserves existing rows', () async {
+  test('v15 upgrades through v17 and preserves existing rows', () async {
     final directory = await Directory.systemTemp.createTemp('phase108j-v15-');
     final file = File('${directory.path}${Platform.pathSeparator}data.sqlite3');
     addTearDown(() async {
@@ -32,16 +32,20 @@ void main() {
     final legacy = sqlite3.open(file.path);
     legacy.execute('DROP TABLE financial_account_cloud_links');
     legacy.execute('DROP TABLE expense_posting_attempts');
+    legacy.execute('DROP TABLE internal_transfer_posting_attempts');
     legacy.execute('PRAGMA user_version = 15');
     legacy.dispose();
 
     database = openDatabaseFile(file);
     expect(await database.readProbe('preserved'), 'yes');
-    expect(database.schemaVersion, 16);
+    expect(database.schemaVersion, 17);
     expect(await database.select(database.financialAccountCloudLinks).get(),
         isEmpty);
     expect(
         await database.select(database.expensePostingAttempts).get(), isEmpty);
+    expect(
+        await database.select(database.internalTransferPostingAttempts).get(),
+        isEmpty);
     await database.close();
   });
 

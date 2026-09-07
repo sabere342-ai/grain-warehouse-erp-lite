@@ -26,7 +26,7 @@ void main() {
     });
     var database = openDatabaseFile(file);
     var repository = DriftExpenseRepository(database);
-    expect(database.schemaVersion, 16);
+    expect(database.schemaVersion, 17);
     final created = await repository.createExpense(ExpenseDraft(
       accountingClassification: ExpenseAccountingClassification.operating,
       date: DateTime.utc(2026, 7, 15, 18),
