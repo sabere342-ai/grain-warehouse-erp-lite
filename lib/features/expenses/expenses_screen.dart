@@ -168,10 +168,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   }) async {
     if (_isSubmittingExpense) return;
     final application = ApplicationScope.of(context);
-    final businessContext =
-        application.dependencies.runtime.businessContextProvider.current;
-    final sessionContext =
-        application.dependencies.runtime.sessionContextProvider.current;
+    final executionContext =
+        application.dependencies.runtime.executionContextProvider.current;
+    final businessContext = executionContext?.business;
+    final sessionContext = executionContext?.session;
     if (businessContext == null ||
         !businessContext.isVerifiedMembership ||
         sessionContext == null ||
@@ -190,7 +190,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       final link = await repositories.financialAccountCloudLinkResolver
           .readyLinkForLocalAccount(
         localAccountId: account.id,
-        businessId: businessContext.businessId,
+        businessId: businessContext.businessId.value,
       );
       if (link != null) financialAccounts.add(account);
     }
@@ -220,7 +220,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final link = await repositories.financialAccountCloudLinkResolver
         .readyLinkForLocalAccount(
       localAccountId: draft.localFinancialAccountId,
-      businessId: businessContext.businessId,
+      businessId: businessContext.businessId.value,
     );
     if (link == null) {
       _showMessage(
@@ -232,7 +232,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     }
     final command = PostExpenseCommand(
       commandId: const Uuid().v7(),
-      businessId: businessContext.businessId,
+      businessId: businessContext.businessId.value,
       businessDate: _formatDateOnly(draft.date),
       category: draft.category,
       amountQirsh: draft.amountQirsh,
@@ -243,7 +243,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
     final request = ApplicationCommandRequest<PostExpenseCommand>(
       command: command,
-      businessContext: businessContext,
+      executionContext: executionContext,
       idempotencyKey: command.commandId,
     );
     _retryRequest = request;

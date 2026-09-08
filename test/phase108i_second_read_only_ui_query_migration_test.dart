@@ -23,6 +23,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/documents/document_history_screen.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   group('Phase 108I document-history query handler parity', () {
     test('forwards the exact filter once and preserves list identity and order',
@@ -207,6 +209,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

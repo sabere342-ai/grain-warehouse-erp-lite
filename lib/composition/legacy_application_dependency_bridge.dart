@@ -1,8 +1,11 @@
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/application_dependencies.dart';
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
@@ -18,6 +21,10 @@ final class LegacyApplicationDependencyBridge {
     required ThemeController themeController,
     required BusinessIdentityController businessIdentityController,
     required BusinessIdentityRepository businessIdentityRepository,
+    required ExecutionContextProvider executionContextProvider,
+    required DeviceId deviceIdentity,
+    required ApplicationClock clock,
+    required bool cloudModeEnabled,
     required SessionContextProvider sessionContextProvider,
     required BusinessContextProvider businessContextProvider,
     required FinancialAccountCloudLinkResolver
@@ -43,6 +50,10 @@ final class LegacyApplicationDependencyBridge {
         authController: authController,
         themeController: themeController,
         businessIdentityController: businessIdentityController,
+        executionContextProvider: executionContextProvider,
+        deviceIdentity: deviceIdentity,
+        clock: clock,
+        cloudModeEnabled: cloudModeEnabled,
         sessionContextProvider: sessionContextProvider,
         businessContextProvider: businessContextProvider,
       ),

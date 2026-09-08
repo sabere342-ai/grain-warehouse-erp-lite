@@ -337,7 +337,11 @@ select is(public.post_expense_v1(
 select is(public.post_expense_v1(
   '50000000-0000-4000-8000-000000000011', 1,
   '20000000-0000-4000-8000-000000000001',
-  (current_date + 1)::text, 'Future', 1, null,
+  (
+    pg_catalog.timezone(
+      'Africa/Cairo', pg_catalog.clock_timestamp()
+    )::date + 1
+  )::text, 'Future', 1, null,
   '30000000-0000-4000-8000-000000000001', 'cash', 'operating'
 )->>'code', 'validation.invalidField', 'future date is rejected');
 
@@ -473,6 +477,28 @@ select is((select count(*) from public.audit_events where command_id in (
   '50000000-0000-4000-8000-000000000019',
   '50000000-0000-4000-8000-000000000020'
 )), 0::bigint, 'injected failures leave no audits');
+
+select is(
+  pg_catalog.timezone(
+    'Africa/Cairo', '2026-01-01 21:59:59+00'::timestamptz
+  )::date,
+  '2026-01-01'::date,
+  'Cairo business date remains on the prior day before winter midnight'
+);
+select is(
+  pg_catalog.timezone(
+    'Africa/Cairo', '2026-01-01 22:00:00+00'::timestamptz
+  )::date,
+  '2026-01-02'::date,
+  'Cairo business date advances at winter midnight independent of UTC date'
+);
+select ok(
+  pg_catalog.pg_get_functiondef(
+    'public.post_expense_v1(text,integer,text,text,text,bigint,text,text,text,text)'
+      ::regprocedure
+  ) like '%timezone(''Africa/Cairo'',%clock_timestamp()%::date%',
+  'expense future-date validation is frozen to the Cairo database clock'
+);
 
 select * from finish();
 rollback;

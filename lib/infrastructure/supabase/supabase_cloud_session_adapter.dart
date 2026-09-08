@@ -1,20 +1,28 @@
 import 'dart:async';
 
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 /// Converts only a live Supabase session plus an active server membership into
-/// the verified contexts consumed by PostExpense.
+/// one verified execution context consumed by distributed commands.
 final class SupabaseCloudSessionAdapter {
-  SupabaseCloudSessionAdapter(this._client)
-      : sessionContexts = MutableSessionContextProvider(),
-        businessContexts = MutableBusinessContextProvider();
+  SupabaseCloudSessionAdapter(
+    this._client, {
+    required this.executionContexts,
+    required this.deviceIdentity,
+    this.sessionIdGenerator = const UuidV4SessionIdGenerator(),
+  })  : sessionContexts = ExecutionSessionContextProvider(executionContexts),
+        businessContexts = ExecutionBusinessContextProvider(executionContexts);
 
   final SupabaseClient _client;
-  final MutableSessionContextProvider sessionContexts;
-  final MutableBusinessContextProvider businessContexts;
+  final MutableExecutionContextProvider executionContexts;
+  final DeviceId deviceIdentity;
+  final SessionIdGenerator sessionIdGenerator;
+  final SessionContextProvider sessionContexts;
+  final BusinessContextProvider businessContexts;
   StreamSubscription<AuthState>? _subscription;
 
   Future<void> initialize() async {
@@ -43,31 +51,43 @@ final class SupabaseCloudSessionAdapter {
         clear();
         return;
       }
-      final businessId = rows.single['business_id'] as String?;
+      final businessIdValue = rows.single['business_id'] as String?;
       final role = rows.single['role'] as String?;
-      if (businessId == null ||
-          role == null ||
-          !Uuid.isValidUUID(fromString: businessId) ||
-          (role != 'owner' && role != 'employee')) {
+      if (businessIdValue == null || role == null) {
         clear();
         return;
       }
-      sessionContexts.replace(SessionContext.verifiedRemote(
-        remoteAuthUserId: user.id,
-      ));
-      businessContexts.replace(BusinessContext.verifiedMembership(
-        businessId: businessId,
-        memberAuthUserId: user.id,
+      final remoteActor = RemoteAuthUserId(user.id);
+      final active = executionContexts.current;
+      final sessionId = active != null &&
+              active.session.isVerifiedRemote &&
+              active.session.remoteAuthUserIdentity == remoteActor
+          ? active.session.sessionId
+          : sessionIdGenerator.generate();
+      final sessionContext = SessionContext.verifiedRemote(
+        sessionId: sessionId,
+        remoteAuthUserId: remoteActor,
+      );
+      final businessContext = BusinessContext.verifiedMembership(
+        businessId: BusinessId(businessIdValue),
+        memberAuthUserId: remoteActor,
         role: role,
-      ));
+        scope: const BusinessWide(),
+      );
+      executionContexts.replace(
+        ExecutionContext.verifiedBusiness(
+          session: sessionContext,
+          business: businessContext,
+          deviceIdentity: deviceIdentity,
+        ),
+      );
     } on Object {
       clear();
     }
   }
 
   void clear() {
-    sessionContexts.clear();
-    businessContexts.clear();
+    executionContexts.clear();
   }
 
   Future<void> dispose() async => _subscription?.cancel();

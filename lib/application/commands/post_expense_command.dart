@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
-import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_gateway.dart';
@@ -228,15 +228,13 @@ final class PostExpenseCommandHandler
     implements
         ApplicationCommandHandler<PostExpenseCommand, PostExpenseResult> {
   const PostExpenseCommandHandler({
-    required this.sessionContextProvider,
-    required this.businessContextProvider,
+    required this.executionContextProvider,
     required this.attemptStore,
     required this.gateway,
     required this.projectionWriter,
   });
 
-  final SessionContextProvider sessionContextProvider;
-  final BusinessContextProvider businessContextProvider;
+  final ExecutionContextProvider executionContextProvider;
   final ExpensePostingAttemptStore attemptStore;
   final ExpensePostingGateway gateway;
   final ConfirmedExpenseProjectionWriter projectionWriter;
@@ -250,23 +248,26 @@ final class PostExpenseCommandHandler
       return _failure(command, PostExpenseFailureCategory.validation,
           'validation.invalidField');
     }
-    final session = sessionContextProvider.current;
-    if (session == null ||
-        !session.isVerifiedRemote ||
-        session.authUserId == null) {
+    final activeContext = executionContextProvider.current;
+    if (activeContext == null ||
+        !activeContext.session.isVerifiedRemote ||
+        activeContext.session.authUserId == null) {
       return _failure(command, PostExpenseFailureCategory.authentication,
           'unauthenticated.sessionRequired');
     }
-    final activeBusiness = businessContextProvider.current;
-    final requestBusiness = request.businessContext;
+    final capturedContext = request.executionContext;
+    final activeBusiness = activeContext.business;
+    final requestBusiness = capturedContext?.business;
     if (activeBusiness == null ||
+        capturedContext == null ||
         requestBusiness == null ||
-        !activeBusiness.isVerifiedMembership ||
-        !requestBusiness.isVerifiedMembership ||
-        activeBusiness.businessId != command.businessId ||
-        requestBusiness.businessId != command.businessId ||
-        activeBusiness.authUserId != session.authUserId ||
-        requestBusiness.authUserId != session.authUserId) {
+        !activeContext.isSameAuthenticatedScope(capturedContext) ||
+        activeBusiness.scope is! BusinessWide ||
+        requestBusiness.scope is! BusinessWide ||
+        activeBusiness.businessId.value != command.businessId ||
+        requestBusiness.businessId.value != command.businessId ||
+        activeBusiness.authUserId != activeContext.session.authUserId ||
+        requestBusiness.authUserId != activeContext.session.authUserId) {
       return _failure(command, PostExpenseFailureCategory.businessContext,
           'wrongBusinessContext');
     }
@@ -294,7 +295,7 @@ final class PostExpenseCommandHandler
             .cast<String, Object?>(),
       );
       if (attempt.state == ExpensePostingAttemptState.confirmed) return success;
-      return _project(command, session.authUserId!, success);
+      return _project(command, activeContext.session.authUserId!, success);
     }
 
     await attemptStore.markSending(command.commandId);
@@ -354,7 +355,7 @@ final class PostExpenseCommandHandler
       command.commandId,
       jsonEncode(success.toJson()),
     );
-    return _project(command, session.authUserId!, success);
+    return _project(command, activeContext.session.authUserId!, success);
   }
 
   Future<PostExpenseSuccess> _project(

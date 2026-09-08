@@ -25,6 +25,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/products/products_screen.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   group('Phase 108K product-catalog query handler parity', () {
     test('forwards false and true exactly once without changing results',
@@ -229,6 +231,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

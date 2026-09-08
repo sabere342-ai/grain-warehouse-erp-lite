@@ -1,75 +1,70 @@
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 
+enum AuthenticationKind { local, verifiedRemote }
+
 final class SessionContext {
-  const SessionContext({required this.userId})
-      : authUserId = null,
-        isVerifiedRemote = false;
+  const SessionContext.local({
+    required this.sessionId,
+    required this.localActorId,
+  })  : remoteAuthUserIdentity = null,
+        authenticationKind = AuthenticationKind.local;
 
-  const SessionContext.verifiedRemote({required String remoteAuthUserId})
-      : userId = remoteAuthUserId,
-        authUserId = remoteAuthUserId,
-        isVerifiedRemote = true;
+  const SessionContext.verifiedRemote({
+    required this.sessionId,
+    required RemoteAuthUserId remoteAuthUserId,
+  })  : localActorId = null,
+        remoteAuthUserIdentity = remoteAuthUserId,
+        authenticationKind = AuthenticationKind.verifiedRemote;
 
-  final String userId;
-  final String? authUserId;
-  final bool isVerifiedRemote;
+  final SessionId sessionId;
+  final LocalActorId? localActorId;
+  final RemoteAuthUserId? remoteAuthUserIdentity;
+  final AuthenticationKind authenticationKind;
+
+  bool get isVerifiedRemote =>
+      authenticationKind == AuthenticationKind.verifiedRemote;
+  String get userId => localActorId?.value ?? remoteAuthUserIdentity!.value;
+  String? get authUserId => remoteAuthUserIdentity?.value;
 }
 
 abstract interface class SessionContextProvider {
   SessionContext? get current;
-
-  void replace(SessionContext context);
-
-  void clear();
 }
 
-/// Application-local session state. Its lifetime is owned by the composition
-/// root; widgets may consume the auth controller but do not own this context.
-final class LocalSessionContextProvider implements SessionContextProvider {
-  SessionContext? _current;
-
-  @override
-  SessionContext? get current => _current;
-
-  @override
-  void replace(SessionContext context) {
-    _current = context;
-  }
-
-  @override
-  void clear() {
-    _current = null;
-  }
-}
-
-/// Replaceable Cloud session state. Values enter this provider only after the
-/// Supabase adapter has observed an authenticated remote session.
-final class MutableSessionContextProvider implements SessionContextProvider {
-  SessionContext? _current;
-
-  @override
-  SessionContext? get current => _current;
-
-  @override
-  void replace(SessionContext context) => _current = context;
-
-  @override
-  void clear() => _current = null;
-}
-
-/// Translates the existing local authentication authority into the narrower
-/// application session boundary. It deliberately does not create business
-/// identity: an authenticated user is not proof of business membership.
+/// Creates one local-only execution context per authenticated lifecycle.
 final class AuthSessionContextSynchronizer {
-  const AuthSessionContextSynchronizer({required this.provider});
+  const AuthSessionContextSynchronizer({
+    required this.provider,
+    required this.deviceIdentity,
+    required this.sessionIdGenerator,
+  });
 
-  final SessionContextProvider provider;
+  final MutableExecutionContextProvider provider;
+  final DeviceId deviceIdentity;
+  final SessionIdGenerator sessionIdGenerator;
 
   void synchronize(AppUser? user) {
     if (user == null || !user.canProceed) {
       provider.clear();
       return;
     }
-    provider.replace(SessionContext(userId: user.id));
+    final active = provider.current;
+    if (active != null &&
+        active.business == null &&
+        active.session.authenticationKind == AuthenticationKind.local &&
+        active.session.localActorId?.value == user.id) {
+      return;
+    }
+    provider.replace(
+      ExecutionContext.local(
+        session: SessionContext.local(
+          sessionId: sessionIdGenerator.generate(),
+          localActorId: LocalActorId(user.id),
+        ),
+        deviceIdentity: deviceIdentity,
+      ),
+    );
   }
 }

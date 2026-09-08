@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_internal_transfer_command.dart';
-import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/app_user.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/user_role.dart';
@@ -308,8 +307,7 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
   }
 
   bool get _isCloudMode =>
-      ApplicationScope.of(context).dependencies.runtime.sessionContextProvider
-          is! LocalSessionContextProvider;
+      ApplicationScope.of(context).dependencies.runtime.cloudModeEnabled;
 
   Future<void> _postCloudTransfer(
     FinancialAccount source,
@@ -318,8 +316,9 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
   ) async {
     final application = ApplicationScope.of(context);
     final runtime = application.dependencies.runtime;
-    final session = runtime.sessionContextProvider.current;
-    final business = runtime.businessContextProvider.current;
+    final executionContext = runtime.executionContextProvider.current;
+    final session = executionContext?.session;
+    final business = executionContext?.business;
     if (session == null ||
         !session.isVerifiedRemote ||
         business == null ||
@@ -335,11 +334,11 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
         application.dependencies.repositories.financialAccountCloudLinkResolver;
     final sourceLink = await resolver.readyLinkForLocalAccount(
       localAccountId: source.id,
-      businessId: business.businessId,
+      businessId: business.businessId.value,
     );
     final destinationLink = await resolver.readyLinkForLocalAccount(
       localAccountId: destination.id,
-      businessId: business.businessId,
+      businessId: business.businessId.value,
     );
     if (sourceLink == null ||
         destinationLink == null ||
@@ -352,7 +351,7 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
     }
     final command = PostInternalTransferCommand(
       commandId: const Uuid().v7(),
-      businessId: business.businessId,
+      businessId: business.businessId.value,
       sourceFinancialAccountId: sourceLink.serverAccountUuid,
       destinationFinancialAccountId: destinationLink.serverAccountUuid,
       amountQirsh: amountQirsh,
@@ -362,7 +361,7 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
     );
     final request = ApplicationCommandRequest<PostInternalTransferCommand>(
       command: command,
-      businessContext: business,
+      executionContext: executionContext,
       idempotencyKey: command.commandId,
     );
     _retryRequest = request;
@@ -438,8 +437,9 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
   Future<void> _restoreIncompleteCloudAttempt() async {
     if (!_isCloudMode) return;
     final application = ApplicationScope.of(context);
-    final business =
-        application.dependencies.runtime.businessContextProvider.current;
+    final executionContext =
+        application.dependencies.runtime.executionContextProvider.current;
+    final business = executionContext?.business;
     if (business == null ||
         !business.isVerifiedMembership ||
         business.role != 'owner') {
@@ -447,7 +447,7 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
     }
     final attempts = await application
         .commands.postInternalTransfer.attemptStore
-        .loadIncompleteForBusiness(business.businessId);
+        .loadIncompleteForBusiness(business.businessId.value);
     if (attempts.isEmpty || !mounted) return;
     final payload = (jsonDecode(attempts.first.canonicalPayloadJson)
             as Map<String, dynamic>)
@@ -468,7 +468,7 @@ class _FinancialTransfersScreenState extends State<FinancialTransfersScreen> {
       );
       _retryRequest = ApplicationCommandRequest<PostInternalTransferCommand>(
         command: command,
-        businessContext: business,
+        executionContext: executionContext,
         idempotencyKey: command.commandId,
       );
       setState(() {

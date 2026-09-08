@@ -1,14 +1,14 @@
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 
 final class ApplicationCommandRequest<C> {
   const ApplicationCommandRequest({
     required this.command,
-    this.businessContext,
+    this.executionContext,
     this.idempotencyKey,
   });
 
   final C command;
-  final BusinessContext? businessContext;
+  final ExecutionContext? executionContext;
 
   /// Optional until commands are migrated to durable/server execution. A real
   /// key can be carried without changing handler signatures later.

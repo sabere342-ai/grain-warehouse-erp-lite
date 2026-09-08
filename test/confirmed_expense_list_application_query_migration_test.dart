@@ -22,6 +22,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/app_theme.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/expenses/expenses_screen.dart';
+import 'support/fixed_device_identity_store.dart';
 
 void main() {
   group('confirmed expense-list application query handler', () {
@@ -188,6 +189,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

@@ -14,6 +14,8 @@ import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.da
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   group('Phase 108F audit-log query handler', () {
     test('Q1-Q3 preserves exact result objects, order, and membership',
@@ -77,6 +79,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

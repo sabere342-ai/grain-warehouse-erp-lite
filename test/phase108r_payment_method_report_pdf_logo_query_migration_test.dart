@@ -19,6 +19,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/financial_reports/payment_method_report_screen.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -29,6 +31,7 @@ void main() {
     database = openInMemoryTestDatabase();
     baseApplication = await AppCompositionRoot.initializeProduction(
       databaseFactory: () async => database,
+      deviceIdentityStore: FixedDeviceIdentityStore(),
       trialEvaluator: _TrialEvaluatorStub(),
     );
   });

@@ -23,6 +23,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/dashboard/dashboard_shell.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   group('Phase 108L business-logo query handler', () {
     test('empty filename returns managed-file null without a repository call',
@@ -102,6 +104,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

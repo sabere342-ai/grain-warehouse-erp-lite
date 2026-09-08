@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
@@ -10,10 +11,13 @@ final class DriftExpensePostingAttemptStore
   DriftExpensePostingAttemptStore(
     this._database, {
     required FinancialAccountRepository financialAccountRepository,
-  }) : _financialAccountRepository = financialAccountRepository;
+    ApplicationClock clock = const SystemApplicationClock(),
+  })  : _financialAccountRepository = financialAccountRepository,
+        _clock = clock;
 
   final db.FoundationDatabase _database;
   final FinancialAccountRepository _financialAccountRepository;
+  final ApplicationClock _clock;
 
   @override
   Future<ExpensePostingAttempt> prepare({
@@ -32,7 +36,7 @@ final class DriftExpensePostingAttemptStore
           }
           return existing;
         }
-        final now = DateTime.now().toUtc();
+        final now = requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc');
         await _database.into(_database.expensePostingAttempts).insert(
               db.ExpensePostingAttemptsCompanion.insert(
                 commandId: commandId,
@@ -109,7 +113,7 @@ final class DriftExpensePostingAttemptStore
         canonicalServerResultJson: canonicalServerResultJson == null
             ? const Value.absent()
             : Value(canonicalServerResultJson),
-        updatedAtUtc: Value(DateTime.now().toUtc()),
+        updatedAtUtc: Value(requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc')),
         attemptCount:
             attemptCount == null ? const Value.absent() : Value(attemptCount),
         lastErrorCode: clearError

@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/application/application_boundary.dart';
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/composition/app_composition_root.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_repository.dart';
@@ -11,23 +12,24 @@ import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
+import 'support/fixed_device_identity_store.dart';
 
 void main() {
   group('Phase 108G local session boundary', () {
-    test('provider has explicit unavailable, replacement, and clear states',
-        () {
-      final provider = LocalSessionContextProvider();
+    test('atomic provider has unavailable, replacement, and clear states', () {
+      final provider = MutableExecutionContextProvider();
+      final sessions = ExecutionSessionContextProvider(provider);
 
-      expect(provider.current, isNull);
+      expect(sessions.current, isNull);
 
-      provider.replace(const SessionContext(userId: 'user-a'));
-      expect(provider.current?.userId, 'user-a');
+      provider.replace(_localContext('user-a', _sessionIds[0]));
+      expect(sessions.current?.userId, 'user-a');
 
-      provider.replace(const SessionContext(userId: 'user-b'));
-      expect(provider.current?.userId, 'user-b');
+      provider.replace(_localContext('user-b', _sessionIds[1]));
+      expect(sessions.current?.userId, 'user-b');
 
       provider.clear();
-      expect(provider.current, isNull);
+      expect(sessions.current, isNull);
     });
 
     test('existing authenticated user recovery populates session context',
@@ -37,8 +39,8 @@ void main() {
         phone: '01000000000',
         password: 'owner123',
       );
-      final provider = LocalSessionContextProvider();
-      final synchronizer = AuthSessionContextSynchronizer(provider: provider);
+      final provider = MutableExecutionContextProvider();
+      final synchronizer = _synchronizer(provider);
       final controller = AuthController(
         repository: repository,
         onAuthenticatedUserChanged: synchronizer.synchronize,
@@ -47,12 +49,13 @@ void main() {
 
       await controller.initialize();
 
-      expect(provider.current?.userId, recovered?.id);
+      expect(provider.current?.session.userId, recovered?.id);
+      expect(provider.current?.business, isNull);
     });
 
     test('sign-in replaces and sign-out clears session context', () async {
-      final provider = LocalSessionContextProvider();
-      final synchronizer = AuthSessionContextSynchronizer(provider: provider);
+      final provider = MutableExecutionContextProvider();
+      final synchronizer = _synchronizer(provider);
       final controller = AuthController(
         repository: LocalAuthRepository.demo(),
         onAuthenticatedUserChanged: synchronizer.synchronize,
@@ -64,7 +67,8 @@ void main() {
         phone: '01000000000',
         password: 'owner123',
       );
-      expect(provider.current?.userId, 'owner-demo');
+      final ownerSession = provider.current?.session.sessionId;
+      expect(provider.current?.session.userId, 'owner-demo');
 
       await controller.signOut();
       expect(provider.current, isNull);
@@ -73,13 +77,14 @@ void main() {
         phone: '01100000000',
         password: 'employee123',
       );
-      expect(provider.current?.userId, 'employee-demo');
+      expect(provider.current?.session.userId, 'employee-demo');
+      expect(provider.current?.session.sessionId, isNot(ownerSession));
     });
 
     test('first-owner authentication populates only verified user identity',
         () async {
-      final provider = LocalSessionContextProvider();
-      final synchronizer = AuthSessionContextSynchronizer(provider: provider);
+      final provider = MutableExecutionContextProvider();
+      final synchronizer = _synchronizer(provider);
       final controller = AuthController(
         repository: LocalAuthRepository.empty(),
         onAuthenticatedUserChanged: synchronizer.synchronize,
@@ -93,8 +98,8 @@ void main() {
         password: 'owner123',
       );
 
-      expect(provider.current?.userId, controller.state.user?.id);
-      expect(provider.current?.userId, isNotEmpty);
+      expect(provider.current?.session.userId, controller.state.user?.id);
+      expect(provider.current?.session.userId, isNotEmpty);
     });
   });
 
@@ -106,6 +111,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });
@@ -122,7 +128,7 @@ void main() {
       );
       expect(
         application.dependencies.runtime.sessionContextProvider,
-        isA<LocalSessionContextProvider>(),
+        isA<ExecutionSessionContextProvider>(),
       );
       expect(
         application.dependencies.runtime.sessionContextProvider.current,
@@ -134,7 +140,7 @@ void main() {
       final businessProvider =
           application.dependencies.runtime.businessContextProvider;
 
-      expect(businessProvider, isA<NoBusinessContextProvider>());
+      expect(businessProvider, isA<ExecutionBusinessContextProvider>());
       expect(businessProvider.current, isNull);
     });
 
@@ -171,7 +177,7 @@ void main() {
 
     expect(appSource, isNot(contains('AppRepositories.authRepository')));
     expect(appSource, isNot(contains('AuthController(repository:')));
-    expect(rootSource, contains('LocalSessionContextProvider()'));
+    expect(rootSource, contains('MutableExecutionContextProvider()'));
     expect(rootSource, contains('AuthController('));
     expect(mainSource,
         contains('application.dependencies.runtime.authController'));
@@ -190,6 +196,38 @@ void main() {
     expect(productionSources, isNot(contains('businessId:')));
     expect(productionSources, isNot(contains('businessId =')));
   });
+}
+
+const _deviceIdValue = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const _sessionIds = <String>[
+  'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1',
+  'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2',
+  'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3',
+];
+
+ExecutionContext _localContext(String userId, String sessionId) =>
+    ExecutionContext.local(
+      session: SessionContext.local(
+        sessionId: SessionId(sessionId),
+        localActorId: LocalActorId(userId),
+      ),
+      deviceIdentity: DeviceId(_deviceIdValue),
+    );
+
+AuthSessionContextSynchronizer _synchronizer(
+  MutableExecutionContextProvider provider,
+) =>
+    AuthSessionContextSynchronizer(
+      provider: provider,
+      deviceIdentity: DeviceId(_deviceIdValue),
+      sessionIdGenerator: _SessionIdGenerator(),
+    );
+
+final class _SessionIdGenerator implements SessionIdGenerator {
+  int _index = 0;
+
+  @override
+  SessionId generate() => SessionId(_sessionIds[_index++]);
 }
 
 final class _TrialEvaluatorStub implements TrialEvaluator {

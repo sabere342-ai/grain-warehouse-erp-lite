@@ -1,5 +1,8 @@
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
@@ -63,6 +66,10 @@ final class ApplicationRuntimeDependencies {
     required this.authController,
     required this.themeController,
     required this.businessIdentityController,
+    required this.executionContextProvider,
+    required this.deviceIdentity,
+    required this.clock,
+    required this.cloudModeEnabled,
     required this.sessionContextProvider,
     required this.businessContextProvider,
   });
@@ -70,6 +77,10 @@ final class ApplicationRuntimeDependencies {
   final AuthController authController;
   final ThemeController themeController;
   final BusinessIdentityController businessIdentityController;
+  final ExecutionContextProvider executionContextProvider;
+  final DeviceId deviceIdentity;
+  final ApplicationClock clock;
+  final bool cloudModeEnabled;
   final SessionContextProvider sessionContextProvider;
   final BusinessContextProvider businessContextProvider;
 }

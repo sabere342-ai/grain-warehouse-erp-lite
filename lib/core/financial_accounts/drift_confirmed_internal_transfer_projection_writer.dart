@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
@@ -21,13 +22,16 @@ final class DriftConfirmedInternalTransferProjectionWriter
   DriftConfirmedInternalTransferProjectionWriter(
     this._database, {
     required DriftFinancialAccountRepository financialAccountRepository,
+    ApplicationClock clock = const SystemApplicationClock(),
     FutureOr<void> Function(ConfirmedInternalTransferProjectionStage stage)?
         failureInjector,
   })  : _financialAccountRepository = financialAccountRepository,
+        _clock = clock,
         _failureInjector = failureInjector;
 
   final db.FoundationDatabase _database;
   final DriftFinancialAccountRepository _financialAccountRepository;
+  final ApplicationClock _clock;
   final FutureOr<void> Function(ConfirmedInternalTransferProjectionStage stage)?
       _failureInjector;
 
@@ -202,7 +206,7 @@ final class DriftConfirmedInternalTransferProjectionWriter
       db.InternalTransferPostingAttemptsCompanion(
         lifecycleState:
             Value(InternalTransferPostingAttemptState.confirmed.name),
-        updatedAtUtc: Value(DateTime.now().toUtc()),
+        updatedAtUtc: Value(requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc')),
         lastErrorCode: const Value(null),
       ),
     );

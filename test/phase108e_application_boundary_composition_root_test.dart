@@ -5,13 +5,16 @@ import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/application_boundary.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_command.dart';
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/application_query.dart';
 import 'package:grain_warehouse_erp_lite/composition/app_composition_root.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/database_opener.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
+import 'support/fixed_device_identity_store.dart';
 
 void main() {
   group('Phase 108E application boundary and composition root', () {
@@ -24,6 +27,7 @@ void main() {
       trialEvaluator = _TrialEvaluatorSpy();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: trialEvaluator,
       );
     });
@@ -98,17 +102,20 @@ void main() {
   });
 
   test('command request has real context and idempotency extension seams', () {
-    const context = BusinessContext(
-      businessId: 'business-108e',
-      userId: 'user-108e',
+    final context = ExecutionContext.local(
+      session: SessionContext.local(
+        sessionId: SessionId('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+        localActorId: LocalActorId('user-108e'),
+      ),
+      deviceIdentity: DeviceId('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
     );
-    const request = ApplicationCommandRequest<String>(
+    final request = ApplicationCommandRequest<String>(
       command: 'sample-command',
-      businessContext: context,
+      executionContext: context,
       idempotencyKey: 'request-108e',
     );
 
-    expect(request.businessContext, same(context));
+    expect(request.executionContext, same(context));
     expect(request.idempotencyKey, 'request-108e');
   });
 

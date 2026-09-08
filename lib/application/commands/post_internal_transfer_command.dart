@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
-import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_gateway.dart';
@@ -262,15 +262,13 @@ final class PostInternalTransferCommandHandler
         ApplicationCommandHandler<PostInternalTransferCommand,
             PostInternalTransferResult> {
   const PostInternalTransferCommandHandler({
-    required this.sessionContextProvider,
-    required this.businessContextProvider,
+    required this.executionContextProvider,
     required this.attemptStore,
     required this.gateway,
     required this.projectionWriter,
   });
 
-  final SessionContextProvider sessionContextProvider;
-  final BusinessContextProvider businessContextProvider;
+  final ExecutionContextProvider executionContextProvider;
   final InternalTransferPostingAttemptStore attemptStore;
   final InternalTransferPostingGateway gateway;
   final ConfirmedInternalTransferProjectionWriter projectionWriter;
@@ -284,28 +282,31 @@ final class PostInternalTransferCommandHandler
       return _failure(command, PostInternalTransferFailureCategory.validation,
           'validation.invalidField');
     }
-    final session = sessionContextProvider.current;
-    if (session == null ||
-        !session.isVerifiedRemote ||
-        session.authUserId == null) {
+    final activeContext = executionContextProvider.current;
+    if (activeContext == null ||
+        !activeContext.session.isVerifiedRemote ||
+        activeContext.session.authUserId == null) {
       return _failure(
         command,
         PostInternalTransferFailureCategory.authentication,
         'unauthenticated.sessionRequired',
       );
     }
-    final activeBusiness = businessContextProvider.current;
-    final requestBusiness = request.businessContext;
+    final capturedContext = request.executionContext;
+    final activeBusiness = activeContext.business;
+    final requestBusiness = capturedContext?.business;
     if (activeBusiness == null ||
+        capturedContext == null ||
         requestBusiness == null ||
-        !activeBusiness.isVerifiedMembership ||
-        !requestBusiness.isVerifiedMembership ||
+        !activeContext.isSameAuthenticatedScope(capturedContext) ||
         activeBusiness.role != 'owner' ||
         requestBusiness.role != 'owner' ||
-        activeBusiness.businessId != command.businessId ||
-        requestBusiness.businessId != command.businessId ||
-        activeBusiness.authUserId != session.authUserId ||
-        requestBusiness.authUserId != session.authUserId) {
+        activeBusiness.scope is! BusinessWide ||
+        requestBusiness.scope is! BusinessWide ||
+        activeBusiness.businessId.value != command.businessId ||
+        requestBusiness.businessId.value != command.businessId ||
+        activeBusiness.authUserId != activeContext.session.authUserId ||
+        requestBusiness.authUserId != activeContext.session.authUserId) {
       return _failure(
         command,
         PostInternalTransferFailureCategory.businessContext,
@@ -340,7 +341,11 @@ final class PostInternalTransferCommandHandler
         if (attempt.state == InternalTransferPostingAttemptState.confirmed) {
           return success;
         }
-        return _project(command, session.authUserId!, success);
+        return _project(
+          command,
+          activeContext.session.authUserId!,
+          success,
+        );
       } on Object {
         await attemptStore.markFailure(
           command.commandId,
@@ -406,7 +411,7 @@ final class PostInternalTransferCommandHandler
       command.commandId,
       jsonEncode(success.toJson()),
     );
-    return _project(command, session.authUserId!, success);
+    return _project(command, activeContext.session.authUserId!, success);
   }
 
   bool _validEnvelope(

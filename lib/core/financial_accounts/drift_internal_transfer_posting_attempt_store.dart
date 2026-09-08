@@ -1,13 +1,18 @@
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
 
 final class DriftInternalTransferPostingAttemptStore
     implements InternalTransferPostingAttemptStore {
-  DriftInternalTransferPostingAttemptStore(this._database);
+  DriftInternalTransferPostingAttemptStore(
+    this._database, {
+    ApplicationClock clock = const SystemApplicationClock(),
+  }) : _clock = clock;
 
   final db.FoundationDatabase _database;
+  final ApplicationClock _clock;
 
   @override
   Future<InternalTransferPostingAttempt> prepare({
@@ -26,7 +31,7 @@ final class DriftInternalTransferPostingAttemptStore
           }
           return existing;
         }
-        final now = DateTime.now().toUtc();
+        final now = requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc');
         await _database.into(_database.internalTransferPostingAttempts).insert(
               db.InternalTransferPostingAttemptsCompanion.insert(
                 commandId: commandId,
@@ -124,7 +129,7 @@ final class DriftInternalTransferPostingAttemptStore
         canonicalServerResultJson: canonicalServerResultJson == null
             ? const Value.absent()
             : Value(canonicalServerResultJson),
-        updatedAtUtc: Value(DateTime.now().toUtc()),
+        updatedAtUtc: Value(requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc')),
         attemptCount:
             attemptCount == null ? const Value.absent() : Value(attemptCount),
         lastErrorCode: clearError

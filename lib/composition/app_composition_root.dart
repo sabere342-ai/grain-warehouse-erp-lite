@@ -5,13 +5,16 @@ import 'package:grain_warehouse_erp_lite/application/commands/post_expense_comma
 import 'package:grain_warehouse_erp_lite/application/commands/post_internal_transfer_command.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_gateway.dart';
-import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/device_identity_store.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_audit_logs_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_business_logo_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_document_history_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_expenses_query.dart';
 import 'package:grain_warehouse_erp_lite/application/queries/load_product_catalog_query.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/composition/legacy_application_dependency_bridge.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
@@ -25,6 +28,7 @@ import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_cloud_
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_expense_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_internal_transfer_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_runtime_config.dart';
+import 'package:grain_warehouse_erp_lite/infrastructure/local/file_device_identity_store.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
@@ -40,10 +44,25 @@ final class AppCompositionRoot {
     TrialEvaluator? trialEvaluator,
     SupabaseRuntimeConfig? supabaseConfig,
     SupabaseClient? supabaseClient,
+    DeviceIdentityStore? deviceIdentityStore,
+    ApplicationClock? clock,
+    SessionIdGenerator? sessionIdGenerator,
   }) async {
     await AppRepositories.initializeProduction(
       databaseFactory: databaseFactory,
     );
+
+    final sharedClock = clock ?? const SystemApplicationClock();
+    final sharedSessionIdGenerator =
+        sessionIdGenerator ?? const UuidV4SessionIdGenerator();
+    final resolvedDeviceStore =
+        deviceIdentityStore ?? await FileDeviceIdentityStore.production();
+    final deviceIdentity = await resolvedDeviceStore.loadOrProvision();
+    final executionContextProvider = MutableExecutionContextProvider();
+    final sessionContextProvider =
+        ExecutionSessionContextProvider(executionContextProvider);
+    final businessContextProvider =
+        ExecutionBusinessContextProvider(executionContextProvider);
 
     final sharedTrialEvaluator =
         trialEvaluator ?? await TrialService.production();
@@ -59,9 +78,10 @@ final class AppCompositionRoot {
       );
       activeSupabaseClient = Supabase.instance.client;
     }
-    final localSessionContextProvider = LocalSessionContextProvider();
     final sessionSynchronizer = AuthSessionContextSynchronizer(
-      provider: localSessionContextProvider,
+      provider: executionContextProvider,
+      deviceIdentity: deviceIdentity,
+      sessionIdGenerator: sharedSessionIdGenerator,
     );
     final authController = AuthController(
       repository: AppRepositories.authRepository,
@@ -78,15 +98,15 @@ final class AppCompositionRoot {
     final businessIdentityController = BusinessIdentityController(
       repository: sharedBusinessIdentityRepository,
     );
-    SessionContextProvider sessionContextProvider = localSessionContextProvider;
-    BusinessContextProvider businessContextProvider =
-        const NoBusinessContextProvider();
     if (activeSupabaseClient != null) {
-      final cloudAdapter = SupabaseCloudSessionAdapter(activeSupabaseClient);
+      final cloudAdapter = SupabaseCloudSessionAdapter(
+        activeSupabaseClient,
+        executionContexts: executionContextProvider,
+        deviceIdentity: deviceIdentity,
+        sessionIdGenerator: sharedSessionIdGenerator,
+      );
       await cloudAdapter.initialize();
       _cloudSessionAdapter = cloudAdapter;
-      sessionContextProvider = cloudAdapter.sessionContexts;
-      businessContextProvider = cloudAdapter.businessContexts;
     }
     final financialAccountRepository =
         AppRepositories.financialAccountRepository;
@@ -96,21 +116,25 @@ final class AppCompositionRoot {
     final attemptStore = DriftExpensePostingAttemptStore(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
+      clock: sharedClock,
     );
     final projectionWriter = DriftConfirmedExpenseProjectionWriter(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
+      clock: sharedClock,
     );
     final ExpensePostingGateway gateway = activeSupabaseClient == null
         ? const _UnavailableExpensePostingGateway()
         : SupabaseExpensePostingGateway(activeSupabaseClient);
     final transferAttemptStore = DriftInternalTransferPostingAttemptStore(
       AppRepositories.database,
+      clock: sharedClock,
     );
     final transferProjectionWriter =
         DriftConfirmedInternalTransferProjectionWriter(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
+      clock: sharedClock,
     );
     final InternalTransferPostingGateway transferGateway =
         activeSupabaseClient == null
@@ -123,6 +147,10 @@ final class AppCompositionRoot {
       themeController: themeController,
       businessIdentityController: businessIdentityController,
       businessIdentityRepository: sharedBusinessIdentityRepository,
+      executionContextProvider: executionContextProvider,
+      deviceIdentity: deviceIdentity,
+      clock: sharedClock,
+      cloudModeEnabled: activeSupabaseClient != null,
       sessionContextProvider: sessionContextProvider,
       businessContextProvider: businessContextProvider,
       financialAccountCloudLinkResolver: attemptStore,
@@ -134,15 +162,13 @@ final class AppCompositionRoot {
           trialEvaluator: dependencies.services.trialEvaluator,
         ),
         postExpense: PostExpenseCommandHandler(
-          sessionContextProvider: sessionContextProvider,
-          businessContextProvider: businessContextProvider,
+          executionContextProvider: executionContextProvider,
           attemptStore: attemptStore,
           gateway: gateway,
           projectionWriter: projectionWriter,
         ),
         postInternalTransfer: PostInternalTransferCommandHandler(
-          sessionContextProvider: sessionContextProvider,
-          businessContextProvider: businessContextProvider,
+          executionContextProvider: executionContextProvider,
           attemptStore: transferAttemptStore,
           gateway: transferGateway,
           projectionWriter: transferProjectionWriter,

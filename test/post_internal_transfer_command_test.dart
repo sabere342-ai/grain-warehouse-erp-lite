@@ -2,10 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_internal_transfer_command.dart';
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_gateway.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 
 void main() {
   const commandId = '018f7f65-8d31-7b84-bb46-4f47d82c1f70';
@@ -59,23 +61,14 @@ void main() {
   });
 
   group('handler authority, idempotency and recovery', () {
-    late MutableSessionContextProvider sessions;
-    late MutableBusinessContextProvider businesses;
+    late MutableExecutionContextProvider contexts;
     late _AttemptStore attempts;
     late _Gateway gateway;
     late _Projection projection;
 
     setUp(() {
-      sessions = MutableSessionContextProvider()
-        ..replace(const SessionContext.verifiedRemote(
-          remoteAuthUserId: actorId,
-        ));
-      businesses = MutableBusinessContextProvider()
-        ..replace(const BusinessContext.verifiedMembership(
-          businessId: businessId,
-          memberAuthUserId: actorId,
-          role: 'owner',
-        ));
+      contexts = MutableExecutionContextProvider()
+        ..replace(_verifiedContext(businessId, actorId, role: 'owner'));
       attempts = _AttemptStore();
       gateway = _Gateway(_success());
       projection = _Projection();
@@ -83,8 +76,7 @@ void main() {
 
     PostInternalTransferCommandHandler handler() =>
         PostInternalTransferCommandHandler(
-          sessionContextProvider: sessions,
-          businessContextProvider: businesses,
+          executionContextProvider: contexts,
           attemptStore: attempts,
           gateway: gateway,
           projectionWriter: projection,
@@ -95,27 +87,20 @@ void main() {
     ) =>
         ApplicationCommandRequest(
           command: value,
-          businessContext: businesses.current,
+          executionContext: contexts.current,
           idempotencyKey: value.commandId,
         );
 
     test('requires verified owner and does not persist while known offline',
         () async {
-      sessions.replace(const SessionContext(userId: 'local'));
+      contexts.replace(_localContext());
       final offline = await handler().execute(request(command()));
       expect((offline as PostInternalTransferFailure).code,
           'unauthenticated.sessionRequired');
       expect(attempts.events, isEmpty);
       expect(gateway.calls, 0);
 
-      sessions.replace(const SessionContext.verifiedRemote(
-        remoteAuthUserId: actorId,
-      ));
-      businesses.replace(const BusinessContext.verifiedMembership(
-        businessId: businessId,
-        memberAuthUserId: actorId,
-        role: 'employee',
-      ));
+      contexts.replace(_verifiedContext(businessId, actorId, role: 'employee'));
       final employee = await handler().execute(request(command()));
       expect((employee as PostInternalTransferFailure).code,
           'wrongBusinessContext');
@@ -131,6 +116,53 @@ void main() {
       expect(attempts.events.last, 'confirmed');
       expect(projection.calls, 1);
       expect(gateway.calls, 1);
+    });
+
+    test('rejects stale sessions and warehouse scope before persistence',
+        () async {
+      final captured = contexts.current!;
+      contexts.replace(
+        _verifiedContext(
+          businessId,
+          actorId,
+          role: 'owner',
+          sessionIdValue: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
+        ),
+      );
+      final stale = await handler().execute(
+        ApplicationCommandRequest(
+          command: command(),
+          executionContext: captured,
+          idempotencyKey: commandId,
+        ),
+      );
+      expect(
+        (stale as PostInternalTransferFailure).code,
+        'wrongBusinessContext',
+      );
+
+      final warehouseContext = _verifiedContext(
+        businessId,
+        actorId,
+        role: 'owner',
+        scope: WarehouseScope(
+          WarehouseId('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+        ),
+      );
+      contexts.replace(warehouseContext);
+      final warehouse = await handler().execute(
+        ApplicationCommandRequest(
+          command: command(),
+          executionContext: warehouseContext,
+          idempotencyKey: commandId,
+        ),
+      );
+      expect(
+        (warehouse as PostInternalTransferFailure).code,
+        'wrongBusinessContext',
+      );
+      expect(attempts.events, isEmpty);
+      expect(gateway.calls, 0);
     });
 
     test('unknown outcome retry preserves command ID and exact payload',
@@ -210,6 +242,39 @@ void main() {
     });
   });
 }
+
+ExecutionContext _verifiedContext(
+  String businessId,
+  String actorId, {
+  required String role,
+  String sessionIdValue = '55555555-5555-4555-8555-555555555555',
+  BusinessScope scope = const BusinessWide(),
+}) {
+  final actor = RemoteAuthUserId(actorId);
+  return ExecutionContext.verifiedBusiness(
+    session: SessionContext.verifiedRemote(
+      sessionId: SessionId(sessionIdValue),
+      remoteAuthUserId: actor,
+    ),
+    business: BusinessContext.verifiedMembership(
+      businessId: BusinessId(businessId),
+      memberAuthUserId: actor,
+      role: role,
+      scope: scope,
+      warehouseMembershipBusinessId:
+          scope is WarehouseScope ? BusinessId(businessId) : null,
+    ),
+    deviceIdentity: DeviceId('66666666-6666-4666-8666-666666666666'),
+  );
+}
+
+ExecutionContext _localContext() => ExecutionContext.local(
+      session: SessionContext.local(
+        sessionId: SessionId('55555555-5555-4555-8555-555555555555'),
+        localActorId: LocalActorId('local'),
+      ),
+      deviceIdentity: DeviceId('66666666-6666-4666-8666-666666666666'),
+    );
 
 InternalTransferPostingGatewaySuccess _success({bool replayed = false}) =>
     InternalTransferPostingGatewaySuccess(

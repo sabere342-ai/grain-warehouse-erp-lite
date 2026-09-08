@@ -214,6 +214,20 @@ select is(public.post_internal_transfer_v1(
 )->>'code', 'transactionFailure', 'injected failure is atomic');
 select set_config('internal_transfer.inject_failure', '', true);
 
+select is(public.post_internal_transfer_v1(
+  '51000000-0000-4000-8000-000000000010', 1,
+  '21000000-0000-4000-8000-000000000001',
+  '31000000-0000-4000-8000-000000000001',
+  '31000000-0000-4000-8000-000000000002', 1,
+  (
+    pg_catalog.timezone(
+      'Africa/Cairo', pg_catalog.clock_timestamp()
+    )::date + 1
+  )::text,
+  '61000000-0000-4000-8000-000000000010', null
+)->>'code', 'validation.invalidField',
+  'Cairo-relative future transfer date is rejected');
+
 reset role;
 
 select is((select count(*) from public.financial_transfers), 2::bigint,
@@ -316,6 +330,28 @@ select ok((select relrowsecurity from pg_class
 select ok(coalesce(current_setting('pgrst.db_schemas', true), 'public')
     not like '%private%',
   'private schema is not exposed through PostgREST');
+
+select is(
+  pg_catalog.timezone(
+    'Africa/Cairo', '2026-06-01 20:59:59+00'::timestamptz
+  )::date,
+  '2026-06-01'::date,
+  'Cairo business date remains on the prior day before summer midnight'
+);
+select is(
+  pg_catalog.timezone(
+    'Africa/Cairo', '2026-06-01 21:00:00+00'::timestamptz
+  )::date,
+  '2026-06-02'::date,
+  'Cairo business date advances at summer midnight independent of UTC date'
+);
+select ok(
+  pg_catalog.pg_get_functiondef(
+    'private.post_internal_transfer_v1(text,integer,text,text,text,bigint,text,text,text)'
+      ::regprocedure
+  ) like '%timezone(''Africa/Cairo'',%clock_timestamp()%::date%',
+  'transfer future-date validation is frozen to the Cairo database clock'
+);
 
 select * from finish();
 rollback;

@@ -2,10 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
 import 'package:grain_warehouse_erp_lite/application/context/business_context.dart';
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_gateway.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/financial_account_entry.dart';
 
@@ -81,31 +83,21 @@ void main() {
   });
 
   group('PostExpenseCommandHandler', () {
-    late MutableSessionContextProvider sessions;
-    late MutableBusinessContextProvider businesses;
+    late MutableExecutionContextProvider contexts;
     late _AttemptStoreSpy attempts;
     late _GatewaySpy gateway;
     late _ProjectionSpy projection;
 
     setUp(() {
-      sessions = MutableSessionContextProvider()
-        ..replace(const SessionContext.verifiedRemote(
-          remoteAuthUserId: '33333333-3333-4333-8333-333333333333',
-        ));
-      businesses = MutableBusinessContextProvider()
-        ..replace(const BusinessContext.verifiedMembership(
-          businessId: businessId,
-          memberAuthUserId: '33333333-3333-4333-8333-333333333333',
-          role: 'employee',
-        ));
+      contexts = MutableExecutionContextProvider()
+        ..replace(_verifiedContext(businessId, role: 'employee'));
       attempts = _AttemptStoreSpy();
       gateway = _GatewaySpy(_success(commandId, businessId));
       projection = _ProjectionSpy();
     });
 
     PostExpenseCommandHandler handler() => PostExpenseCommandHandler(
-          sessionContextProvider: sessions,
-          businessContextProvider: businesses,
+          executionContextProvider: contexts,
           attemptStore: attempts,
           gateway: gateway,
           projectionWriter: projection,
@@ -116,26 +108,24 @@ void main() {
     ) =>
         ApplicationCommandRequest(
           command: value,
-          businessContext: businesses.current,
+          executionContext: contexts.current,
           idempotencyKey: value.commandId,
         );
 
     test('requires a verified remote session and verified business context',
         () async {
-      sessions.replace(const SessionContext(userId: 'local-only'));
+      contexts.replace(_localContext());
       final noSession = await handler().execute(request(command()));
       expect(noSession, isA<PostExpenseFailure>());
       expect((noSession as PostExpenseFailure).code,
           'unauthenticated.sessionRequired');
       expect(gateway.calls, 0);
 
-      sessions.replace(const SessionContext.verifiedRemote(
-        remoteAuthUserId: '33333333-3333-4333-8333-333333333333',
-      ));
-      businesses.clear();
+      contexts.replace(_remoteContext());
       final noBusiness = await handler().execute(
         ApplicationCommandRequest(
           command: command(),
+          executionContext: contexts.current,
           idempotencyKey: commandId,
         ),
       );
@@ -147,12 +137,51 @@ void main() {
       final result = await handler().execute(
         ApplicationCommandRequest(
           command: command(),
-          businessContext: businesses.current,
+          executionContext: contexts.current,
           idempotencyKey: '44444444-4444-4444-8444-444444444444',
         ),
       );
 
       expect((result as PostExpenseFailure).code, 'validation.invalidField');
+      expect(attempts.events, isEmpty);
+      expect(gateway.calls, 0);
+    });
+
+    test('rejects stale sessions and warehouse scope before persistence',
+        () async {
+      final captured = contexts.current!;
+      contexts.replace(
+        _verifiedContext(
+          businessId,
+          role: 'employee',
+          sessionIdValue: '99999999-9999-4999-8999-999999999999',
+        ),
+      );
+      final stale = await handler().execute(
+        ApplicationCommandRequest(
+          command: command(),
+          executionContext: captured,
+          idempotencyKey: commandId,
+        ),
+      );
+      expect((stale as PostExpenseFailure).code, 'wrongBusinessContext');
+
+      final warehouseContext = _verifiedContext(
+        businessId,
+        role: 'employee',
+        scope: WarehouseScope(
+          WarehouseId('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+        ),
+      );
+      contexts.replace(warehouseContext);
+      final warehouse = await handler().execute(
+        ApplicationCommandRequest(
+          command: command(),
+          executionContext: warehouseContext,
+          idempotencyKey: commandId,
+        ),
+      );
+      expect((warehouse as PostExpenseFailure).code, 'wrongBusinessContext');
       expect(attempts.events, isEmpty);
       expect(gateway.calls, 0);
     });
@@ -239,6 +268,53 @@ void main() {
       expect(attempts.lastState, ExpensePostingAttemptState.confirmed);
     });
   });
+}
+
+ExecutionContext _verifiedContext(
+  String businessId, {
+  required String role,
+  String sessionIdValue = '44444444-4444-4444-8444-444444444444',
+  BusinessScope scope = const BusinessWide(),
+}) {
+  final actor = RemoteAuthUserId(
+    '33333333-3333-4333-8333-333333333333',
+  );
+  return ExecutionContext.verifiedBusiness(
+    session: SessionContext.verifiedRemote(
+      sessionId: SessionId(sessionIdValue),
+      remoteAuthUserId: actor,
+    ),
+    business: BusinessContext.verifiedMembership(
+      businessId: BusinessId(businessId),
+      memberAuthUserId: actor,
+      role: role,
+      scope: scope,
+      warehouseMembershipBusinessId:
+          scope is WarehouseScope ? BusinessId(businessId) : null,
+    ),
+    deviceIdentity: DeviceId('55555555-5555-4555-8555-555555555555'),
+  );
+}
+
+ExecutionContext _localContext() => ExecutionContext.local(
+      session: SessionContext.local(
+        sessionId: SessionId('44444444-4444-4444-8444-444444444444'),
+        localActorId: LocalActorId('local-only'),
+      ),
+      deviceIdentity: DeviceId('55555555-5555-4555-8555-555555555555'),
+    );
+
+ExecutionContext _remoteContext() {
+  final actor = RemoteAuthUserId(
+    '33333333-3333-4333-8333-333333333333',
+  );
+  return ExecutionContext.remoteSession(
+    session: SessionContext.verifiedRemote(
+      sessionId: SessionId('44444444-4444-4444-8444-444444444444'),
+      remoteAuthUserId: actor,
+    ),
+    deviceIdentity: DeviceId('55555555-5555-4555-8555-555555555555'),
+  );
 }
 
 ExpensePostingGatewaySuccess _success(

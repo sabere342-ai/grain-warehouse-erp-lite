@@ -20,6 +20,7 @@ import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_settings_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
+import 'support/fixed_device_identity_store.dart';
 
 void main() {
   group('Phase 108H central app-shell ownership', () {
@@ -30,6 +31,7 @@ void main() {
       database = openInMemoryTestDatabase();
       application = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
     });

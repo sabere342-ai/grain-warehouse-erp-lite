@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
@@ -19,13 +20,16 @@ final class DriftConfirmedExpenseProjectionWriter
   DriftConfirmedExpenseProjectionWriter(
     this._database, {
     required DriftFinancialAccountRepository financialAccountRepository,
+    ApplicationClock clock = const SystemApplicationClock(),
     FutureOr<void> Function(ConfirmedExpenseProjectionStage stage)?
         failureInjector,
   })  : _financialAccountRepository = financialAccountRepository,
+        _clock = clock,
         _failureInjector = failureInjector;
 
   final db.FoundationDatabase _database;
   final DriftFinancialAccountRepository _financialAccountRepository;
+  final ApplicationClock _clock;
   final FutureOr<void> Function(ConfirmedExpenseProjectionStage stage)?
       _failureInjector;
 
@@ -179,7 +183,7 @@ final class DriftConfirmedExpenseProjectionWriter
         .write(
       db.ExpensePostingAttemptsCompanion(
         lifecycleState: Value(ExpensePostingAttemptState.confirmed.name),
-        updatedAtUtc: Value(DateTime.now().toUtc()),
+        updatedAtUtc: Value(requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc')),
         lastErrorCode: const Value(null),
       ),
     );

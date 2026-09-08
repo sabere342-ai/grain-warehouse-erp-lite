@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense.dart';
@@ -87,7 +88,8 @@ void main() {
   test(
       'confirmed projection is atomic, exact, replay-safe and refreshes balance',
       () async {
-    final fixture = await _Fixture.open();
+    final recordedAt = DateTime.utc(2026, 8, 23, 9, 30);
+    final fixture = await _Fixture.open(clock: _FixedClock(recordedAt));
     addTearDown(fixture.close);
     final projection = fixture.projection();
 
@@ -110,6 +112,8 @@ void main() {
     );
     expect((await fixture.store.load(commandId))?.state,
         ExpensePostingAttemptState.confirmed);
+    expect((await fixture.store.load(commandId))?.createdAtUtc, recordedAt);
+    expect((await fixture.store.load(commandId))?.updatedAtUtc, recordedAt);
 
     await fixture.writer.project(projection);
 
@@ -211,6 +215,7 @@ final class _Fixture {
   final String localAccountId;
 
   static Future<_Fixture> open({
+    ApplicationClock clock = const SystemApplicationClock(),
     Future<void> Function(ConfirmedExpenseProjectionStage stage)?
         failureInjector,
   }) async {
@@ -236,6 +241,7 @@ final class _Fixture {
     final store = DriftExpensePostingAttemptStore(
       database,
       financialAccountRepository: accounts,
+      clock: clock,
     );
     await store.saveVerifiedCloudLink(
       FinancialAccountCloudLink(
@@ -261,6 +267,7 @@ final class _Fixture {
       writer: DriftConfirmedExpenseProjectionWriter(
         database,
         financialAccountRepository: accounts,
+        clock: clock,
         failureInjector: failureInjector,
       ),
       localAccountId: account.id,
@@ -290,4 +297,13 @@ final class _Fixture {
       );
 
   Future<void> close() => database.close();
+}
+
+final class _FixedClock implements ApplicationClock {
+  const _FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime nowUtc() => value;
 }

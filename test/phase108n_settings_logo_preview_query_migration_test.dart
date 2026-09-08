@@ -23,6 +23,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/features/settings/settings_screen.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/premium_card.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   late FoundationDatabase database;
   late ApplicationBoundary baseApplication;
@@ -31,6 +33,7 @@ void main() {
     database = openInMemoryTestDatabase();
     baseApplication = await AppCompositionRoot.initializeProduction(
       databaseFactory: () async => database,
+      deviceIdentityStore: FixedDeviceIdentityStore(),
       trialEvaluator: _TrialEvaluatorStub(),
     );
   });

@@ -15,6 +15,8 @@ import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_state.dart';
 import 'package:grain_warehouse_erp_lite/shared/widgets/business_identity_header.dart';
 
+import 'support/fixed_device_identity_store.dart';
+
 void main() {
   group('Phase 96 - BusinessIdentityHeader widget', () {
     testWidgets('shows display name and logo when both available',
@@ -26,6 +28,7 @@ void main() {
       final database = openInMemoryTestDatabase();
       final baseApplication = await AppCompositionRoot.initializeProduction(
         databaseFactory: () async => database,
+        deviceIdentityStore: FixedDeviceIdentityStore(),
         trialEvaluator: _TrialEvaluatorStub(),
       );
       final application = _withBusinessLogoHandler(

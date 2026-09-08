@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
@@ -82,7 +83,8 @@ void main() {
 
   test('confirmed projection atomically writes header, two legs and audits',
       () async {
-    final fixture = await _Fixture.open();
+    final recordedAt = DateTime.utc(2026, 9, 6, 9, 30);
+    final fixture = await _Fixture.open(clock: _FixedClock(recordedAt));
     addTearDown(fixture.close);
     final value = fixture.projection();
 
@@ -109,6 +111,8 @@ void main() {
     );
     expect((await fixture.store.load(commandId))?.state,
         InternalTransferPostingAttemptState.confirmed);
+    expect((await fixture.store.load(commandId))?.createdAtUtc, recordedAt);
+    expect((await fixture.store.load(commandId))?.updatedAtUtc, recordedAt);
 
     final linksBefore = await fixture.database
         .select(fixture.database.financialAccountCloudLinks)
@@ -187,6 +191,7 @@ final class _Fixture {
   final String destinationId;
 
   static Future<_Fixture> open({
+    ApplicationClock clock = const SystemApplicationClock(),
     Future<void> Function(ConfirmedInternalTransferProjectionStage stage)?
         failureInjector,
   }) async {
@@ -252,7 +257,10 @@ final class _Fixture {
         readyAtUtc: DateTime.utc(2026, 9, 6, 9),
       ),
     );
-    final store = DriftInternalTransferPostingAttemptStore(database);
+    final store = DriftInternalTransferPostingAttemptStore(
+      database,
+      clock: clock,
+    );
     await store.prepare(
       commandId: commandId,
       businessId: businessId,
@@ -266,6 +274,7 @@ final class _Fixture {
       writer: DriftConfirmedInternalTransferProjectionWriter(
         database,
         financialAccountRepository: accounts,
+        clock: clock,
         failureInjector: failureInjector,
       ),
       sourceId: source.id,
@@ -300,4 +309,13 @@ final class _Fixture {
       );
 
   Future<void> close() => database.close();
+}
+
+final class _FixedClock implements ApplicationClock {
+  const _FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime nowUtc() => value;
 }
