@@ -2,6 +2,11 @@ import 'package:grain_warehouse_erp_lite/application/context/business_context.da
 import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/context/session_context.dart';
 import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_conflict_repository.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_inbox_repository.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_outbox_repository.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_sync_checkpoint_repository.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_sync_transaction_coordinator.dart';
 import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/core/audit/audit_log_read_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
@@ -48,6 +53,11 @@ final class ApplicationRepositoryDependencies {
     required this.expenseRepository,
     required this.financialAccountRepository,
     required this.financialAccountCloudLinkResolver,
+    required this.durableOutboxRepository,
+    required this.durableInboxRepository,
+    required this.durableConflictRepository,
+    required this.durableSyncCheckpointRepository,
+    required this.durableSyncTransactionCoordinator,
   });
 
   final AuditLogReadRepository auditLogReadRepository;
@@ -59,6 +69,11 @@ final class ApplicationRepositoryDependencies {
   final ExpenseRepository expenseRepository;
   final FinancialAccountRepository financialAccountRepository;
   final FinancialAccountCloudLinkResolver financialAccountCloudLinkResolver;
+  final DurableOutboxRepository durableOutboxRepository;
+  final DurableInboxRepository durableInboxRepository;
+  final DurableConflictRepository durableConflictRepository;
+  final DurableSyncCheckpointRepository durableSyncCheckpointRepository;
+  final DurableSyncTransactionCoordinator durableSyncTransactionCoordinator;
 }
 
 final class ApplicationRuntimeDependencies {

@@ -1,3 +1,6 @@
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
+
 enum ExpensePostingAttemptState {
   draft,
   queued,
@@ -105,5 +108,17 @@ abstract interface class ExpensePostingAttemptStore {
     String commandId, {
     required ExpensePostingAttemptState state,
     required String errorCode,
+  });
+}
+
+abstract interface class DurableExpensePostingAttemptStore
+    implements ExpensePostingAttemptStore {
+  Future<ExpensePostingAttempt> prepareDurable({
+    required String commandId,
+    required String businessId,
+    required String canonicalPayloadJson,
+    required String localFingerprint,
+    required ExecutionContext executionContext,
+    required BusinessDate businessDate,
   });
 }

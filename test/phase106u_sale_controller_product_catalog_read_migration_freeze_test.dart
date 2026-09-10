@@ -412,7 +412,7 @@ void main() {
       () {
     final foundation =
         File('$_persistencePath/foundation_database.dart').readAsStringSync();
-    expect(foundation, contains('int get schemaVersion => 17;'));
+    expect(foundation, contains('int get schemaVersion => 18;'));
     expect(
       _git([
         'diff',

@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_gateway.dart';
@@ -316,12 +317,22 @@ final class PostInternalTransferCommandHandler
 
     late InternalTransferPostingAttempt attempt;
     try {
-      attempt = await attemptStore.prepare(
-        commandId: command.commandId,
-        businessId: command.businessId,
-        canonicalPayloadJson: command.canonicalPayloadJson,
-        localFingerprint: command.localFingerprint,
-      );
+      final store = attemptStore;
+      attempt = store is DurableInternalTransferPostingAttemptStore
+          ? await store.prepareDurable(
+              commandId: command.commandId,
+              businessId: command.businessId,
+              canonicalPayloadJson: command.canonicalPayloadJson,
+              localFingerprint: command.localFingerprint,
+              executionContext: capturedContext,
+              businessDate: BusinessDate(command.effectiveBusinessDate),
+            )
+          : await store.prepare(
+              commandId: command.commandId,
+              businessId: command.businessId,
+              canonicalPayloadJson: command.canonicalPayloadJson,
+              localFingerprint: command.localFingerprint,
+            );
     } on InternalTransferPostingAttemptConflictException {
       return _failure(command, PostInternalTransferFailureCategory.idempotency,
           'idempotencyConflict');

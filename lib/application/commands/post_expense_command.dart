@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/application_command.dart';
 import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
 import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_gateway.dart';
@@ -274,12 +275,22 @@ final class PostExpenseCommandHandler
 
     late ExpensePostingAttempt attempt;
     try {
-      attempt = await attemptStore.prepare(
-        commandId: command.commandId,
-        businessId: command.businessId,
-        canonicalPayloadJson: command.canonicalPayloadJson,
-        localFingerprint: command.localFingerprint,
-      );
+      final store = attemptStore;
+      attempt = store is DurableExpensePostingAttemptStore
+          ? await store.prepareDurable(
+              commandId: command.commandId,
+              businessId: command.businessId,
+              canonicalPayloadJson: command.canonicalPayloadJson,
+              localFingerprint: command.localFingerprint,
+              executionContext: capturedContext,
+              businessDate: BusinessDate(command.businessDate),
+            )
+          : await store.prepare(
+              commandId: command.commandId,
+              businessId: command.businessId,
+              canonicalPayloadJson: command.canonicalPayloadJson,
+              localFingerprint: command.localFingerprint,
+            );
     } on ExpensePostingAttemptConflictException {
       return _failure(command, PostExpenseFailureCategory.idempotency,
           'idempotencyConflict');

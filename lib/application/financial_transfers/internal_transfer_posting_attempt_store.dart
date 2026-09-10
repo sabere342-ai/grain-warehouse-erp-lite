@@ -1,3 +1,6 @@
+import 'package:grain_warehouse_erp_lite/application/context/execution_context.dart';
+import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
+
 enum InternalTransferPostingAttemptState {
   queued,
   sending,
@@ -60,5 +63,17 @@ abstract interface class InternalTransferPostingAttemptStore {
     String commandId, {
     required InternalTransferPostingAttemptState state,
     required String errorCode,
+  });
+}
+
+abstract interface class DurableInternalTransferPostingAttemptStore
+    implements InternalTransferPostingAttemptStore {
+  Future<InternalTransferPostingAttempt> prepareDurable({
+    required String commandId,
+    required String businessId,
+    required String canonicalPayloadJson,
+    required String localFingerprint,
+    required ExecutionContext executionContext,
+    required BusinessDate businessDate,
   });
 }

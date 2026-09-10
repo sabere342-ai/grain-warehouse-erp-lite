@@ -414,6 +414,288 @@ class InternalTransferPostingAttempts extends Table {
   Set<Column<Object>> get primaryKey => {commandId};
 }
 
+@DataClassName('DurableOutboxOperationRow')
+@TableIndex(
+  name: 'durable_outbox_business_state_idx',
+  columns: {
+    #businessId,
+    #scopeKind,
+    #warehouseId,
+    #state,
+    #nextAttemptAtUtc,
+    #createdAtUtc,
+    #operationId,
+  },
+)
+@TableIndex(
+  name: 'durable_outbox_aggregate_idx',
+  columns: {
+    #businessId,
+    #aggregateType,
+    #aggregateId,
+    #createdAtUtc,
+    #operationId
+  },
+)
+@TableIndex(
+  name: 'durable_outbox_dependency_idx',
+  columns: {#causalPredecessorOperationId, #state},
+)
+@TableIndex(
+  name: 'durable_outbox_lease_idx',
+  columns: {#leaseExpiresAtUtc, #state},
+)
+@TableIndex(
+  name: 'durable_outbox_idempotency_uq',
+  columns: {#businessId, #operationKind, #idempotencyKey},
+  unique: true,
+)
+class DurableOutboxOperations extends Table {
+  TextColumn get operationId => text()();
+  TextColumn get idempotencyKey => text()();
+  TextColumn get businessId => text()();
+  TextColumn get scopeKind => text()();
+  TextColumn get warehouseId => text().nullable()();
+  TextColumn get actorAuthUserId => text()();
+  TextColumn get deviceId => text()();
+  TextColumn get sessionId => text()();
+  TextColumn get capturedRole => text()();
+  TextColumn get operationKind => text()();
+  TextColumn get aggregateType => text()();
+  TextColumn get aggregateId => text().nullable()();
+  IntColumn get payloadSchemaVersion => integer()();
+  TextColumn get payloadJson => text()();
+  TextColumn get payloadFingerprint => text()();
+  IntColumn get baseEntityVersion => integer().nullable()();
+  BoolColumn get isDeletionIntent =>
+      boolean().withDefault(const Constant(false))();
+  DateTimeColumn get occurredAtUtc => dateTime()();
+  TextColumn get businessDate => text().nullable()();
+  TextColumn get causalPredecessorOperationId => text().nullable()();
+  TextColumn get state => text()();
+  IntColumn get attemptCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get nextAttemptAtUtc => dateTime().nullable()();
+  DateTimeColumn get lastAttemptAtUtc => dateTime().nullable()();
+  TextColumn get lastErrorClass => text().nullable()();
+  TextColumn get lastErrorCode => text().nullable()();
+  TextColumn get claimToken => text().nullable()();
+  DateTimeColumn get leaseExpiresAtUtc => dateTime().nullable()();
+  IntColumn get ackSchemaVersion => integer().nullable()();
+  TextColumn get ackPayloadJson => text().nullable()();
+  TextColumn get ackPayloadFingerprint => text().nullable()();
+  TextColumn get serverResultId => text().nullable()();
+  DateTimeColumn get serverAcceptedAtUtc => dateTime().nullable()();
+  IntColumn get acknowledgedEntityVersion => integer().nullable()();
+  TextColumn get conflictId => text().nullable()();
+  DateTimeColumn get createdAtUtc => dateTime()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get recordVersion => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {operationId};
+
+  @override
+  List<String> get customConstraints => const [
+        "CHECK (scope_kind IN ('businessWide','warehouse'))",
+        "CHECK ((scope_kind = 'businessWide' AND warehouse_id IS NULL) OR (scope_kind = 'warehouse' AND warehouse_id IS NOT NULL))",
+        'CHECK (payload_schema_version > 0)',
+        'CHECK (length(payload_fingerprint) = 64)',
+        'CHECK (base_entity_version IS NULL OR base_entity_version > 0)',
+        'CHECK (attempt_count >= 0)',
+        'CHECK (record_version > 0)',
+        "CHECK (state IN ('pending','claimed','retryWait','acknowledgedPendingApply','completed','permanentFailure','conflict','cancelled'))",
+        "CHECK ((claim_token IS NULL) = (lease_expires_at_utc IS NULL))",
+        "CHECK ((state = 'claimed') = (claim_token IS NOT NULL))",
+        "CHECK ((ack_schema_version IS NULL AND ack_payload_json IS NULL AND ack_payload_fingerprint IS NULL AND server_accepted_at_utc IS NULL) OR (ack_schema_version > 0 AND ack_payload_json IS NOT NULL AND length(ack_payload_fingerprint) = 64 AND server_accepted_at_utc IS NOT NULL))",
+        "CHECK (state NOT IN ('acknowledgedPendingApply','completed') OR ack_schema_version IS NOT NULL)",
+        "CHECK ((state = 'conflict') = (conflict_id IS NOT NULL))",
+      ];
+}
+
+@DataClassName('DurableConflictRow')
+@TableIndex(
+  name: 'durable_conflicts_scope_unresolved_idx',
+  columns: {
+    #businessId,
+    #scopeKind,
+    #warehouseId,
+    #resolutionState,
+    #detectedAtUtc,
+    #conflictId
+  },
+)
+@TableIndex(
+  name: 'durable_conflicts_entity_idx',
+  columns: {#businessId, #entityType, #entityId, #detectedAtUtc, #conflictId},
+)
+@TableIndex(
+    name: 'durable_conflicts_local_operation_idx', columns: {#localOperationId})
+@TableIndex(
+    name: 'durable_conflicts_remote_operation_idx',
+    columns: {#remoteOperationId})
+class DurableConflicts extends Table {
+  TextColumn get conflictId => text()();
+  TextColumn get conflictKey => text().unique()();
+  TextColumn get businessId => text()();
+  TextColumn get scopeKind => text()();
+  TextColumn get warehouseId => text().nullable()();
+  TextColumn get entityType => text()();
+  TextColumn get entityId => text()();
+  IntColumn get localEntityVersion => integer().nullable()();
+  IntColumn get remoteEntityVersion => integer().nullable()();
+  TextColumn get localPayloadJson => text()();
+  TextColumn get remotePayloadJson => text()();
+  TextColumn get localPayloadFingerprint => text()();
+  TextColumn get remotePayloadFingerprint => text()();
+  TextColumn get localOperationId => text().nullable()();
+  TextColumn get remoteOperationId => text().nullable()();
+  TextColumn get remoteSourceAuthority => text().nullable()();
+  BoolColumn get localDeleted => boolean().withDefault(const Constant(false))();
+  BoolColumn get remoteDeleted =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get localDeletionMetadataJson => text().nullable()();
+  TextColumn get remoteDeletionMetadataJson => text().nullable()();
+  TextColumn get classification => text()();
+  DateTimeColumn get detectedAtUtc => dateTime()();
+  TextColumn get resolutionState => text()();
+  TextColumn get resolutionKind => text().nullable()();
+  TextColumn get resolutionOperationId => text().nullable()();
+  TextColumn get resolverAuthUserId => text().nullable()();
+  DateTimeColumn get resolvedAtUtc => dateTime().nullable()();
+  DateTimeColumn get createdAtUtc => dateTime()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get recordVersion => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {conflictId};
+
+  @override
+  List<String> get customConstraints => const [
+        "CHECK (scope_kind IN ('businessWide','warehouse'))",
+        "CHECK ((scope_kind = 'businessWide' AND warehouse_id IS NULL) OR (scope_kind = 'warehouse' AND warehouse_id IS NOT NULL))",
+        'CHECK (length(local_payload_fingerprint) = 64)',
+        'CHECK (length(remote_payload_fingerprint) = 64)',
+        'CHECK (local_entity_version IS NULL OR local_entity_version > 0)',
+        'CHECK (remote_entity_version IS NULL OR remote_entity_version > 0)',
+        "CHECK (resolution_state IN ('unresolved','resolved'))",
+        "CHECK ((resolution_state = 'unresolved' AND resolution_kind IS NULL AND resolution_operation_id IS NULL AND resolver_auth_user_id IS NULL AND resolved_at_utc IS NULL) OR (resolution_state = 'resolved' AND resolution_kind IS NOT NULL AND resolution_operation_id IS NOT NULL AND resolver_auth_user_id IS NOT NULL AND resolved_at_utc IS NOT NULL))",
+        'CHECK (record_version > 0)',
+      ];
+}
+
+@DataClassName('DurableInboxOperationRow')
+@TableIndex(
+  name: 'durable_inbox_business_state_idx',
+  columns: {
+    #businessId,
+    #scopeKind,
+    #warehouseId,
+    #state,
+    #receivedAtUtc,
+    #sourceOperationId
+  },
+)
+@TableIndex(
+    name: 'durable_inbox_lease_idx', columns: {#leaseExpiresAtUtc, #state})
+@TableIndex(
+  name: 'durable_inbox_aggregate_idx',
+  columns: {
+    #businessId,
+    #aggregateType,
+    #aggregateId,
+    #serverOccurredAtUtc,
+    #sourceOperationId
+  },
+)
+@TableIndex(name: 'durable_inbox_conflict_idx', columns: {#conflictId})
+class DurableInboxOperations extends Table {
+  TextColumn get sourceAuthority => text()();
+  TextColumn get sourceOperationId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get scopeKind => text()();
+  TextColumn get warehouseId => text().nullable()();
+  TextColumn get operationKind => text()();
+  TextColumn get aggregateType => text()();
+  TextColumn get aggregateId => text().nullable()();
+  IntColumn get payloadSchemaVersion => integer()();
+  TextColumn get payloadJson => text()();
+  TextColumn get payloadFingerprint => text()();
+  TextColumn get sourceActorAuthUserId => text().nullable()();
+  TextColumn get sourceDeviceId => text().nullable()();
+  IntColumn get remoteEntityVersion => integer().nullable()();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  TextColumn get deletionMetadataJson => text().nullable()();
+  DateTimeColumn get serverOccurredAtUtc => dateTime()();
+  DateTimeColumn get receivedAtUtc => dateTime()();
+  TextColumn get state => text()();
+  IntColumn get applyAttemptCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastApplyAttemptAtUtc => dateTime().nullable()();
+  TextColumn get lastErrorClass => text().nullable()();
+  TextColumn get lastErrorCode => text().nullable()();
+  TextColumn get claimToken => text().nullable()();
+  DateTimeColumn get leaseExpiresAtUtc => dateTime().nullable()();
+  DateTimeColumn get appliedAtUtc => dateTime().nullable()();
+  DateTimeColumn get rejectedAtUtc => dateTime().nullable()();
+  TextColumn get conflictId => text().nullable().references(
+        DurableConflicts,
+        #conflictId,
+        onDelete: KeyAction.restrict,
+      )();
+  DateTimeColumn get createdAtUtc => dateTime()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get recordVersion => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {sourceAuthority, sourceOperationId};
+
+  @override
+  List<String> get customConstraints => const [
+        "CHECK (scope_kind IN ('businessWide','warehouse'))",
+        "CHECK ((scope_kind = 'businessWide' AND warehouse_id IS NULL) OR (scope_kind = 'warehouse' AND warehouse_id IS NOT NULL))",
+        'CHECK (payload_schema_version > 0)',
+        'CHECK (length(payload_fingerprint) = 64)',
+        'CHECK (remote_entity_version IS NULL OR remote_entity_version > 0)',
+        "CHECK ((is_deleted = 0 AND deletion_metadata_json IS NULL) OR (is_deleted = 1 AND deletion_metadata_json IS NOT NULL))",
+        'CHECK (apply_attempt_count >= 0)',
+        "CHECK (state IN ('received','applying','applied','conflict','rejected'))",
+        "CHECK ((claim_token IS NULL) = (lease_expires_at_utc IS NULL))",
+        "CHECK ((state = 'applying') = (claim_token IS NOT NULL))",
+        "CHECK ((state = 'applied') = (applied_at_utc IS NOT NULL))",
+        "CHECK ((state = 'rejected') = (rejected_at_utc IS NOT NULL))",
+        "CHECK ((state = 'conflict') = (conflict_id IS NOT NULL))",
+        'CHECK (record_version > 0)',
+      ];
+}
+
+@DataClassName('DurableSyncCheckpointRow')
+class DurableSyncCheckpoints extends Table {
+  TextColumn get businessId => text()();
+  TextColumn get scopeKind => text()();
+  TextColumn get warehouseId => text().nullable()();
+  TextColumn get sourceAuthority => text()();
+  TextColumn get streamName => text()();
+  TextColumn get cursorValue => text()();
+  TextColumn get lastSourceOperationId => text().nullable()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+  IntColumn get recordVersion => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {
+        businessId,
+        scopeKind,
+        warehouseId,
+        sourceAuthority,
+        streamName,
+      };
+
+  @override
+  List<String> get customConstraints => const [
+        "CHECK (scope_kind IN ('businessWide','warehouse'))",
+        "CHECK ((scope_kind = 'businessWide' AND warehouse_id IS NULL) OR (scope_kind = 'warehouse' AND warehouse_id IS NOT NULL))",
+        'CHECK (record_version > 0)',
+      ];
+}
+
 abstract class CustomerAccountPayloadTable extends Table {
   TextColumn get id => text()();
   TextColumn get customerId => text()();
@@ -614,6 +896,10 @@ class NegativeBalanceApprovalRequestTransitions extends Table {
   FinancialAccountCloudLinks,
   ExpensePostingAttempts,
   InternalTransferPostingAttempts,
+  DurableOutboxOperations,
+  DurableConflicts,
+  DurableInboxOperations,
+  DurableSyncCheckpoints,
   CustomerAccountEntries,
   CustomerCollections,
   CustomerAdvances,
@@ -632,7 +918,7 @@ class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

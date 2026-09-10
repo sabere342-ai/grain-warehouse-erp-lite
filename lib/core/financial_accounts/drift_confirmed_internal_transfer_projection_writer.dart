@@ -3,11 +3,16 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/confirmed_internal_transfer_projection_writer.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_operation.dart';
+import 'package:grain_warehouse_erp_lite/application/distributed_state/durable_conflict.dart';
 import 'package:grain_warehouse_erp_lite/application/financial_transfers/internal_transfer_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
+import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
+import 'package:grain_warehouse_erp_lite/core/distributed_state/drift_durable_sync_store.dart';
 import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_financial_account_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart'
     as db;
+import 'package:uuid/uuid.dart';
 
 enum ConfirmedInternalTransferProjectionStage {
   afterHeader,
@@ -25,15 +30,19 @@ final class DriftConfirmedInternalTransferProjectionWriter
     ApplicationClock clock = const SystemApplicationClock(),
     FutureOr<void> Function(ConfirmedInternalTransferProjectionStage stage)?
         failureInjector,
+    DriftDurableSyncStore? durableSyncStore,
   })  : _financialAccountRepository = financialAccountRepository,
         _clock = clock,
-        _failureInjector = failureInjector;
+        _failureInjector = failureInjector,
+        _durableSyncStore =
+            durableSyncStore ?? DriftDurableSyncStore(_database, clock: clock);
 
   final db.FoundationDatabase _database;
   final DriftFinancialAccountRepository _financialAccountRepository;
   final ApplicationClock _clock;
   final FutureOr<void> Function(ConfirmedInternalTransferProjectionStage stage)?
       _failureInjector;
+  final DriftDurableSyncStore _durableSyncStore;
 
   @override
   Future<void> project(ConfirmedInternalTransferProjection value) async {
@@ -43,9 +52,57 @@ final class DriftConfirmedInternalTransferProjectionWriter
         value.auditEventIds.toSet().length != 3) {
       throw StateError('Invalid authoritative transfer projection envelope.');
     }
-    await _financialAccountRepository.applySerializedExternalProjection(
-      () => _database.inTransaction(() => _projectTransaction(value)),
-    );
+    try {
+      await _financialAccountRepository.applySerializedExternalProjection(
+        () => _database.inTransaction(() => _projectTransaction(value)),
+      );
+    } on StateError catch (error) {
+      if (!_isProjectionMismatch(error)) rethrow;
+      final operation = await _durableSyncStore
+          .loadOutboxByOperationIdForCompatibility(value.commandId);
+      if (operation == null ||
+          operation.state != DurableOutboxState.acknowledgedPendingApply) {
+        rethrow;
+      }
+      final evidence = DurableConflictEvidence(
+        conflictId: const Uuid().v4(),
+        scope: operation.envelope.scope,
+        entityType: 'financialTransfer',
+        entityId: value.transferId,
+        localPayloadJson: canonicalJson(<String, Object?>{
+          'projectionState': 'incompatibleLocalEvidence',
+          'reason': error.message,
+        }),
+        remotePayloadJson: canonicalJson(<String, Object?>{
+          'commandId': value.commandId,
+          'transferId': value.transferId,
+          'sourceEntryId': value.sourceEntryId,
+          'destinationEntryId': value.destinationEntryId,
+          'amountQirsh': value.amountQirsh,
+          'sourceBalanceAfterQirsh': value.sourceBalanceAfterQirsh,
+          'destinationBalanceAfterQirsh': value.destinationBalanceAfterQirsh,
+          'serverAcceptedAtUtc': value.serverAcceptedAtUtc.toIso8601String(),
+        }),
+        localOperationId: OperationId(value.commandId),
+        classification:
+            DurableConflictClassification.acknowledgedProjectionMismatch,
+        detectedAtUtc: requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc'),
+      );
+      await _durableSyncStore.conflictOutbox(
+        operation.envelope.scope,
+        value.commandId,
+        expectedRecordVersion: operation.recordVersion,
+        evidence: evidence,
+      );
+      throw DurableProjectionConflictException(evidence);
+    }
+  }
+
+  bool _isProjectionMismatch(StateError error) {
+    final message = error.message.toString();
+    return message.contains('Conflicting acknowledged projection') ||
+        message.contains('Projected command conflicts') ||
+        message.contains('Projected account balance');
   }
 
   Future<void> _projectTransaction(
@@ -55,13 +112,28 @@ final class DriftConfirmedInternalTransferProjectionWriter
         await (_database.select(_database.internalTransferPostingAttempts)
               ..where((table) => table.commandId.equals(value.commandId)))
             .getSingleOrNull();
-    if (attempt == null ||
-        attempt.businessId != value.businessId ||
-        attempt.localFingerprint != value.localFingerprint) {
+    final genericAttempt = await (_database
+            .select(_database.durableOutboxOperations)
+          ..where((table) =>
+              table.operationId.equals(value.commandId) &
+              table.operationKind.equals('financial.internalTransfer.post.v1')))
+        .getSingleOrNull();
+    if ((attempt == null && genericAttempt == null) ||
+        (attempt != null &&
+            (attempt.businessId != value.businessId ||
+                attempt.localFingerprint != value.localFingerprint)) ||
+        (genericAttempt != null &&
+            (genericAttempt.businessId != value.businessId ||
+                genericAttempt.payloadFingerprint != value.localFingerprint ||
+                (genericAttempt.state !=
+                        DurableOutboxState.acknowledgedPendingApply.name &&
+                    genericAttempt.state !=
+                        DurableOutboxState.completed.name)))) {
       throw StateError('Matching transfer attempt is required.');
     }
-    final alreadyConfirmed = attempt.lifecycleState ==
-        InternalTransferPostingAttemptState.confirmed.name;
+    final alreadyConfirmed = attempt?.lifecycleState ==
+            InternalTransferPostingAttemptState.confirmed.name ||
+        genericAttempt?.state == DurableOutboxState.completed.name;
     final links = await (_database.select(_database.financialAccountCloudLinks)
           ..where((table) =>
               table.businessId.equals(value.businessId) &
@@ -200,16 +272,37 @@ final class DriftConfirmedInternalTransferProjectionWriter
       value.destinationBalanceAfterQirsh,
       value.serverAcceptedAtUtc,
     );
-    await (_database.update(_database.internalTransferPostingAttempts)
-          ..where((table) => table.commandId.equals(value.commandId)))
-        .write(
-      db.InternalTransferPostingAttemptsCompanion(
-        lifecycleState:
-            Value(InternalTransferPostingAttemptState.confirmed.name),
-        updatedAtUtc: Value(requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc')),
-        lastErrorCode: const Value(null),
-      ),
-    );
+    final now = requireUtcInstant(_clock.nowUtc(), 'clock.nowUtc');
+    if (attempt != null) {
+      await (_database.update(_database.internalTransferPostingAttempts)
+            ..where((table) => table.commandId.equals(value.commandId)))
+          .write(
+        db.InternalTransferPostingAttemptsCompanion(
+          lifecycleState:
+              Value(InternalTransferPostingAttemptState.confirmed.name),
+          updatedAtUtc: Value(now),
+          lastErrorCode: const Value(null),
+        ),
+      );
+    } else {
+      final generic = genericAttempt!;
+      final affected =
+          await (_database.update(_database.durableOutboxOperations)
+                ..where((table) =>
+                    table.operationId.equals(value.commandId) &
+                    table.state.equals(
+                      DurableOutboxState.acknowledgedPendingApply.name,
+                    ) &
+                    table.recordVersion.equals(generic.recordVersion)))
+              .write(
+        db.DurableOutboxOperationsCompanion(
+          state: Value(DurableOutboxState.completed.name),
+          updatedAtUtc: Value(now),
+          recordVersion: Value(generic.recordVersion + 1),
+        ),
+      );
+      if (affected != 1) throw StateError('Transfer completion lost a race.');
+    }
   }
 
   Future<void> _projectEntry({

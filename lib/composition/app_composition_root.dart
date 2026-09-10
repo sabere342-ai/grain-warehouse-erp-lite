@@ -18,6 +18,7 @@ import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart
 import 'package:grain_warehouse_erp_lite/composition/legacy_application_dependency_bridge.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/distributed_state/drift_durable_sync_store.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_confirmed_expense_projection_writer.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_expense_posting_attempt_store.dart';
@@ -113,15 +114,21 @@ final class AppCompositionRoot {
     if (financialAccountRepository is! DriftFinancialAccountRepository) {
       throw StateError('Production financial account adapter is not durable.');
     }
+    final durableSyncStore = DriftDurableSyncStore(
+      financialAccountRepository.database,
+      clock: sharedClock,
+    );
     final attemptStore = DriftExpensePostingAttemptStore(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
       clock: sharedClock,
+      durableSyncStore: durableSyncStore,
     );
     final projectionWriter = DriftConfirmedExpenseProjectionWriter(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
       clock: sharedClock,
+      durableSyncStore: durableSyncStore,
     );
     final ExpensePostingGateway gateway = activeSupabaseClient == null
         ? const _UnavailableExpensePostingGateway()
@@ -129,12 +136,14 @@ final class AppCompositionRoot {
     final transferAttemptStore = DriftInternalTransferPostingAttemptStore(
       AppRepositories.database,
       clock: sharedClock,
+      durableSyncStore: durableSyncStore,
     );
     final transferProjectionWriter =
         DriftConfirmedInternalTransferProjectionWriter(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
       clock: sharedClock,
+      durableSyncStore: durableSyncStore,
     );
     final InternalTransferPostingGateway transferGateway =
         activeSupabaseClient == null
@@ -154,6 +163,7 @@ final class AppCompositionRoot {
       sessionContextProvider: sessionContextProvider,
       businessContextProvider: businessContextProvider,
       financialAccountCloudLinkResolver: attemptStore,
+      durableSyncStore: durableSyncStore,
     );
     return ApplicationBoundary(
       dependencies: dependencies,

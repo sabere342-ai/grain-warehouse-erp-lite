@@ -7,6 +7,7 @@ MigrationStrategy foundationMigrationStrategy(FoundationDatabase database) {
     onCreate: (migrator) async {
       await migrator.createAll();
       await _createNegativeBalancePendingSignatureIndex(database);
+      await _createBusinessWideCheckpointIdentityIndex(database);
     },
     onUpgrade: (migrator, from, to) async {
       for (var version = from + 1; version <= to; version++) {
@@ -145,7 +146,24 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
       },
       17: (migrator) =>
           migrator.createTable(database.internalTransferPostingAttempts),
+      18: (migrator) async {
+        await migrator.createTable(database.durableOutboxOperations);
+        await migrator.createTable(database.durableConflicts);
+        await migrator.createTable(database.durableInboxOperations);
+        await migrator.createTable(database.durableSyncCheckpoints);
+        await _createBusinessWideCheckpointIdentityIndex(database);
+      },
     };
+
+Future<void> _createBusinessWideCheckpointIdentityIndex(
+  FoundationDatabase database,
+) =>
+    database.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS durable_sync_checkpoints_identity_uq '
+      'ON durable_sync_checkpoints ('
+      'business_id, scope_kind, COALESCE(warehouse_id, \'\'), '
+      'source_authority, stream_name)',
+    );
 
 Future<void> _createNegativeBalancePendingSignatureIndex(
   FoundationDatabase database,

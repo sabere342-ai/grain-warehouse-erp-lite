@@ -12213,6 +12213,5348 @@ class InternalTransferPostingAttemptsCompanion
   }
 }
 
+class $DurableOutboxOperationsTable extends DurableOutboxOperations
+    with TableInfo<$DurableOutboxOperationsTable, DurableOutboxOperationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DurableOutboxOperationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _operationIdMeta =
+      const VerificationMeta('operationId');
+  @override
+  late final GeneratedColumn<String> operationId = GeneratedColumn<String>(
+      'operation_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _idempotencyKeyMeta =
+      const VerificationMeta('idempotencyKey');
+  @override
+  late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
+      'idempotency_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _scopeKindMeta =
+      const VerificationMeta('scopeKind');
+  @override
+  late final GeneratedColumn<String> scopeKind = GeneratedColumn<String>(
+      'scope_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _actorAuthUserIdMeta =
+      const VerificationMeta('actorAuthUserId');
+  @override
+  late final GeneratedColumn<String> actorAuthUserId = GeneratedColumn<String>(
+      'actor_auth_user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _deviceIdMeta =
+      const VerificationMeta('deviceId');
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+      'device_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sessionIdMeta =
+      const VerificationMeta('sessionId');
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+      'session_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _capturedRoleMeta =
+      const VerificationMeta('capturedRole');
+  @override
+  late final GeneratedColumn<String> capturedRole = GeneratedColumn<String>(
+      'captured_role', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _operationKindMeta =
+      const VerificationMeta('operationKind');
+  @override
+  late final GeneratedColumn<String> operationKind = GeneratedColumn<String>(
+      'operation_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _aggregateTypeMeta =
+      const VerificationMeta('aggregateType');
+  @override
+  late final GeneratedColumn<String> aggregateType = GeneratedColumn<String>(
+      'aggregate_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _aggregateIdMeta =
+      const VerificationMeta('aggregateId');
+  @override
+  late final GeneratedColumn<String> aggregateId = GeneratedColumn<String>(
+      'aggregate_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _payloadSchemaVersionMeta =
+      const VerificationMeta('payloadSchemaVersion');
+  @override
+  late final GeneratedColumn<int> payloadSchemaVersion = GeneratedColumn<int>(
+      'payload_schema_version', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadFingerprintMeta =
+      const VerificationMeta('payloadFingerprint');
+  @override
+  late final GeneratedColumn<String> payloadFingerprint =
+      GeneratedColumn<String>('payload_fingerprint', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _baseEntityVersionMeta =
+      const VerificationMeta('baseEntityVersion');
+  @override
+  late final GeneratedColumn<int> baseEntityVersion = GeneratedColumn<int>(
+      'base_entity_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _isDeletionIntentMeta =
+      const VerificationMeta('isDeletionIntent');
+  @override
+  late final GeneratedColumn<bool> isDeletionIntent = GeneratedColumn<bool>(
+      'is_deletion_intent', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_deletion_intent" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _occurredAtUtcMeta =
+      const VerificationMeta('occurredAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> occurredAtUtc =
+      GeneratedColumn<DateTime>('occurred_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _businessDateMeta =
+      const VerificationMeta('businessDate');
+  @override
+  late final GeneratedColumn<String> businessDate = GeneratedColumn<String>(
+      'business_date', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _causalPredecessorOperationIdMeta =
+      const VerificationMeta('causalPredecessorOperationId');
+  @override
+  late final GeneratedColumn<String> causalPredecessorOperationId =
+      GeneratedColumn<String>(
+          'causal_predecessor_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+      'state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _attemptCountMeta =
+      const VerificationMeta('attemptCount');
+  @override
+  late final GeneratedColumn<int> attemptCount = GeneratedColumn<int>(
+      'attempt_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nextAttemptAtUtcMeta =
+      const VerificationMeta('nextAttemptAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAtUtc =
+      GeneratedColumn<DateTime>('next_attempt_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastAttemptAtUtcMeta =
+      const VerificationMeta('lastAttemptAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> lastAttemptAtUtc =
+      GeneratedColumn<DateTime>('last_attempt_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorClassMeta =
+      const VerificationMeta('lastErrorClass');
+  @override
+  late final GeneratedColumn<String> lastErrorClass = GeneratedColumn<String>(
+      'last_error_class', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorCodeMeta =
+      const VerificationMeta('lastErrorCode');
+  @override
+  late final GeneratedColumn<String> lastErrorCode = GeneratedColumn<String>(
+      'last_error_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _claimTokenMeta =
+      const VerificationMeta('claimToken');
+  @override
+  late final GeneratedColumn<String> claimToken = GeneratedColumn<String>(
+      'claim_token', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _leaseExpiresAtUtcMeta =
+      const VerificationMeta('leaseExpiresAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> leaseExpiresAtUtc =
+      GeneratedColumn<DateTime>('lease_expires_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _ackSchemaVersionMeta =
+      const VerificationMeta('ackSchemaVersion');
+  @override
+  late final GeneratedColumn<int> ackSchemaVersion = GeneratedColumn<int>(
+      'ack_schema_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _ackPayloadJsonMeta =
+      const VerificationMeta('ackPayloadJson');
+  @override
+  late final GeneratedColumn<String> ackPayloadJson = GeneratedColumn<String>(
+      'ack_payload_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _ackPayloadFingerprintMeta =
+      const VerificationMeta('ackPayloadFingerprint');
+  @override
+  late final GeneratedColumn<String> ackPayloadFingerprint =
+      GeneratedColumn<String>('ack_payload_fingerprint', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _serverResultIdMeta =
+      const VerificationMeta('serverResultId');
+  @override
+  late final GeneratedColumn<String> serverResultId = GeneratedColumn<String>(
+      'server_result_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _serverAcceptedAtUtcMeta =
+      const VerificationMeta('serverAcceptedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> serverAcceptedAtUtc =
+      GeneratedColumn<DateTime>('server_accepted_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedEntityVersionMeta =
+      const VerificationMeta('acknowledgedEntityVersion');
+  @override
+  late final GeneratedColumn<int> acknowledgedEntityVersion =
+      GeneratedColumn<int>('acknowledged_entity_version', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _conflictIdMeta =
+      const VerificationMeta('conflictId');
+  @override
+  late final GeneratedColumn<String> conflictId = GeneratedColumn<String>(
+      'conflict_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtUtcMeta =
+      const VerificationMeta('createdAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+      'created_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _recordVersionMeta =
+      const VerificationMeta('recordVersion');
+  @override
+  late final GeneratedColumn<int> recordVersion = GeneratedColumn<int>(
+      'record_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        operationId,
+        idempotencyKey,
+        businessId,
+        scopeKind,
+        warehouseId,
+        actorAuthUserId,
+        deviceId,
+        sessionId,
+        capturedRole,
+        operationKind,
+        aggregateType,
+        aggregateId,
+        payloadSchemaVersion,
+        payloadJson,
+        payloadFingerprint,
+        baseEntityVersion,
+        isDeletionIntent,
+        occurredAtUtc,
+        businessDate,
+        causalPredecessorOperationId,
+        state,
+        attemptCount,
+        nextAttemptAtUtc,
+        lastAttemptAtUtc,
+        lastErrorClass,
+        lastErrorCode,
+        claimToken,
+        leaseExpiresAtUtc,
+        ackSchemaVersion,
+        ackPayloadJson,
+        ackPayloadFingerprint,
+        serverResultId,
+        serverAcceptedAtUtc,
+        acknowledgedEntityVersion,
+        conflictId,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'durable_outbox_operations';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<DurableOutboxOperationRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('operation_id')) {
+      context.handle(
+          _operationIdMeta,
+          operationId.isAcceptableOrUnknown(
+              data['operation_id']!, _operationIdMeta));
+    } else if (isInserting) {
+      context.missing(_operationIdMeta);
+    }
+    if (data.containsKey('idempotency_key')) {
+      context.handle(
+          _idempotencyKeyMeta,
+          idempotencyKey.isAcceptableOrUnknown(
+              data['idempotency_key']!, _idempotencyKeyMeta));
+    } else if (isInserting) {
+      context.missing(_idempotencyKeyMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('scope_kind')) {
+      context.handle(_scopeKindMeta,
+          scopeKind.isAcceptableOrUnknown(data['scope_kind']!, _scopeKindMeta));
+    } else if (isInserting) {
+      context.missing(_scopeKindMeta);
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    }
+    if (data.containsKey('actor_auth_user_id')) {
+      context.handle(
+          _actorAuthUserIdMeta,
+          actorAuthUserId.isAcceptableOrUnknown(
+              data['actor_auth_user_id']!, _actorAuthUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_actorAuthUserIdMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(_deviceIdMeta,
+          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(_sessionIdMeta,
+          sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta));
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('captured_role')) {
+      context.handle(
+          _capturedRoleMeta,
+          capturedRole.isAcceptableOrUnknown(
+              data['captured_role']!, _capturedRoleMeta));
+    } else if (isInserting) {
+      context.missing(_capturedRoleMeta);
+    }
+    if (data.containsKey('operation_kind')) {
+      context.handle(
+          _operationKindMeta,
+          operationKind.isAcceptableOrUnknown(
+              data['operation_kind']!, _operationKindMeta));
+    } else if (isInserting) {
+      context.missing(_operationKindMeta);
+    }
+    if (data.containsKey('aggregate_type')) {
+      context.handle(
+          _aggregateTypeMeta,
+          aggregateType.isAcceptableOrUnknown(
+              data['aggregate_type']!, _aggregateTypeMeta));
+    } else if (isInserting) {
+      context.missing(_aggregateTypeMeta);
+    }
+    if (data.containsKey('aggregate_id')) {
+      context.handle(
+          _aggregateIdMeta,
+          aggregateId.isAcceptableOrUnknown(
+              data['aggregate_id']!, _aggregateIdMeta));
+    }
+    if (data.containsKey('payload_schema_version')) {
+      context.handle(
+          _payloadSchemaVersionMeta,
+          payloadSchemaVersion.isAcceptableOrUnknown(
+              data['payload_schema_version']!, _payloadSchemaVersionMeta));
+    } else if (isInserting) {
+      context.missing(_payloadSchemaVersionMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('payload_fingerprint')) {
+      context.handle(
+          _payloadFingerprintMeta,
+          payloadFingerprint.isAcceptableOrUnknown(
+              data['payload_fingerprint']!, _payloadFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_payloadFingerprintMeta);
+    }
+    if (data.containsKey('base_entity_version')) {
+      context.handle(
+          _baseEntityVersionMeta,
+          baseEntityVersion.isAcceptableOrUnknown(
+              data['base_entity_version']!, _baseEntityVersionMeta));
+    }
+    if (data.containsKey('is_deletion_intent')) {
+      context.handle(
+          _isDeletionIntentMeta,
+          isDeletionIntent.isAcceptableOrUnknown(
+              data['is_deletion_intent']!, _isDeletionIntentMeta));
+    }
+    if (data.containsKey('occurred_at_utc')) {
+      context.handle(
+          _occurredAtUtcMeta,
+          occurredAtUtc.isAcceptableOrUnknown(
+              data['occurred_at_utc']!, _occurredAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtUtcMeta);
+    }
+    if (data.containsKey('business_date')) {
+      context.handle(
+          _businessDateMeta,
+          businessDate.isAcceptableOrUnknown(
+              data['business_date']!, _businessDateMeta));
+    }
+    if (data.containsKey('causal_predecessor_operation_id')) {
+      context.handle(
+          _causalPredecessorOperationIdMeta,
+          causalPredecessorOperationId.isAcceptableOrUnknown(
+              data['causal_predecessor_operation_id']!,
+              _causalPredecessorOperationIdMeta));
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+          _stateMeta, state.isAcceptableOrUnknown(data['state']!, _stateMeta));
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('attempt_count')) {
+      context.handle(
+          _attemptCountMeta,
+          attemptCount.isAcceptableOrUnknown(
+              data['attempt_count']!, _attemptCountMeta));
+    }
+    if (data.containsKey('next_attempt_at_utc')) {
+      context.handle(
+          _nextAttemptAtUtcMeta,
+          nextAttemptAtUtc.isAcceptableOrUnknown(
+              data['next_attempt_at_utc']!, _nextAttemptAtUtcMeta));
+    }
+    if (data.containsKey('last_attempt_at_utc')) {
+      context.handle(
+          _lastAttemptAtUtcMeta,
+          lastAttemptAtUtc.isAcceptableOrUnknown(
+              data['last_attempt_at_utc']!, _lastAttemptAtUtcMeta));
+    }
+    if (data.containsKey('last_error_class')) {
+      context.handle(
+          _lastErrorClassMeta,
+          lastErrorClass.isAcceptableOrUnknown(
+              data['last_error_class']!, _lastErrorClassMeta));
+    }
+    if (data.containsKey('last_error_code')) {
+      context.handle(
+          _lastErrorCodeMeta,
+          lastErrorCode.isAcceptableOrUnknown(
+              data['last_error_code']!, _lastErrorCodeMeta));
+    }
+    if (data.containsKey('claim_token')) {
+      context.handle(
+          _claimTokenMeta,
+          claimToken.isAcceptableOrUnknown(
+              data['claim_token']!, _claimTokenMeta));
+    }
+    if (data.containsKey('lease_expires_at_utc')) {
+      context.handle(
+          _leaseExpiresAtUtcMeta,
+          leaseExpiresAtUtc.isAcceptableOrUnknown(
+              data['lease_expires_at_utc']!, _leaseExpiresAtUtcMeta));
+    }
+    if (data.containsKey('ack_schema_version')) {
+      context.handle(
+          _ackSchemaVersionMeta,
+          ackSchemaVersion.isAcceptableOrUnknown(
+              data['ack_schema_version']!, _ackSchemaVersionMeta));
+    }
+    if (data.containsKey('ack_payload_json')) {
+      context.handle(
+          _ackPayloadJsonMeta,
+          ackPayloadJson.isAcceptableOrUnknown(
+              data['ack_payload_json']!, _ackPayloadJsonMeta));
+    }
+    if (data.containsKey('ack_payload_fingerprint')) {
+      context.handle(
+          _ackPayloadFingerprintMeta,
+          ackPayloadFingerprint.isAcceptableOrUnknown(
+              data['ack_payload_fingerprint']!, _ackPayloadFingerprintMeta));
+    }
+    if (data.containsKey('server_result_id')) {
+      context.handle(
+          _serverResultIdMeta,
+          serverResultId.isAcceptableOrUnknown(
+              data['server_result_id']!, _serverResultIdMeta));
+    }
+    if (data.containsKey('server_accepted_at_utc')) {
+      context.handle(
+          _serverAcceptedAtUtcMeta,
+          serverAcceptedAtUtc.isAcceptableOrUnknown(
+              data['server_accepted_at_utc']!, _serverAcceptedAtUtcMeta));
+    }
+    if (data.containsKey('acknowledged_entity_version')) {
+      context.handle(
+          _acknowledgedEntityVersionMeta,
+          acknowledgedEntityVersion.isAcceptableOrUnknown(
+              data['acknowledged_entity_version']!,
+              _acknowledgedEntityVersionMeta));
+    }
+    if (data.containsKey('conflict_id')) {
+      context.handle(
+          _conflictIdMeta,
+          conflictId.isAcceptableOrUnknown(
+              data['conflict_id']!, _conflictIdMeta));
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+          _createdAtUtcMeta,
+          createdAtUtc.isAcceptableOrUnknown(
+              data['created_at_utc']!, _createdAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('record_version')) {
+      context.handle(
+          _recordVersionMeta,
+          recordVersion.isAcceptableOrUnknown(
+              data['record_version']!, _recordVersionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {operationId};
+  @override
+  DurableOutboxOperationRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DurableOutboxOperationRow(
+      operationId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation_id'])!,
+      idempotencyKey: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}idempotency_key'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      scopeKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}scope_kind'])!,
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id']),
+      actorAuthUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}actor_auth_user_id'])!,
+      deviceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
+      sessionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
+      capturedRole: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}captured_role'])!,
+      operationKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation_kind'])!,
+      aggregateType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}aggregate_type'])!,
+      aggregateId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}aggregate_id']),
+      payloadSchemaVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}payload_schema_version'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      payloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}payload_fingerprint'])!,
+      baseEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}base_entity_version']),
+      isDeletionIntent: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}is_deletion_intent'])!,
+      occurredAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}occurred_at_utc'])!,
+      businessDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_date']),
+      causalPredecessorOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}causal_predecessor_operation_id']),
+      state: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}state'])!,
+      attemptCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempt_count'])!,
+      nextAttemptAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}next_attempt_at_utc']),
+      lastAttemptAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_attempt_at_utc']),
+      lastErrorClass: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}last_error_class']),
+      lastErrorCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error_code']),
+      claimToken: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}claim_token']),
+      leaseExpiresAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}lease_expires_at_utc']),
+      ackSchemaVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ack_schema_version']),
+      ackPayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}ack_payload_json']),
+      ackPayloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}ack_payload_fingerprint']),
+      serverResultId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}server_result_id']),
+      serverAcceptedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}server_accepted_at_utc']),
+      acknowledgedEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}acknowledged_entity_version']),
+      conflictId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}conflict_id']),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}created_at_utc'])!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      recordVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}record_version'])!,
+    );
+  }
+
+  @override
+  $DurableOutboxOperationsTable createAlias(String alias) {
+    return $DurableOutboxOperationsTable(attachedDatabase, alias);
+  }
+}
+
+class DurableOutboxOperationRow extends DataClass
+    implements Insertable<DurableOutboxOperationRow> {
+  final String operationId;
+  final String idempotencyKey;
+  final String businessId;
+  final String scopeKind;
+  final String? warehouseId;
+  final String actorAuthUserId;
+  final String deviceId;
+  final String sessionId;
+  final String capturedRole;
+  final String operationKind;
+  final String aggregateType;
+  final String? aggregateId;
+  final int payloadSchemaVersion;
+  final String payloadJson;
+  final String payloadFingerprint;
+  final int? baseEntityVersion;
+  final bool isDeletionIntent;
+  final DateTime occurredAtUtc;
+  final String? businessDate;
+  final String? causalPredecessorOperationId;
+  final String state;
+  final int attemptCount;
+  final DateTime? nextAttemptAtUtc;
+  final DateTime? lastAttemptAtUtc;
+  final String? lastErrorClass;
+  final String? lastErrorCode;
+  final String? claimToken;
+  final DateTime? leaseExpiresAtUtc;
+  final int? ackSchemaVersion;
+  final String? ackPayloadJson;
+  final String? ackPayloadFingerprint;
+  final String? serverResultId;
+  final DateTime? serverAcceptedAtUtc;
+  final int? acknowledgedEntityVersion;
+  final String? conflictId;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  final int recordVersion;
+  const DurableOutboxOperationRow(
+      {required this.operationId,
+      required this.idempotencyKey,
+      required this.businessId,
+      required this.scopeKind,
+      this.warehouseId,
+      required this.actorAuthUserId,
+      required this.deviceId,
+      required this.sessionId,
+      required this.capturedRole,
+      required this.operationKind,
+      required this.aggregateType,
+      this.aggregateId,
+      required this.payloadSchemaVersion,
+      required this.payloadJson,
+      required this.payloadFingerprint,
+      this.baseEntityVersion,
+      required this.isDeletionIntent,
+      required this.occurredAtUtc,
+      this.businessDate,
+      this.causalPredecessorOperationId,
+      required this.state,
+      required this.attemptCount,
+      this.nextAttemptAtUtc,
+      this.lastAttemptAtUtc,
+      this.lastErrorClass,
+      this.lastErrorCode,
+      this.claimToken,
+      this.leaseExpiresAtUtc,
+      this.ackSchemaVersion,
+      this.ackPayloadJson,
+      this.ackPayloadFingerprint,
+      this.serverResultId,
+      this.serverAcceptedAtUtc,
+      this.acknowledgedEntityVersion,
+      this.conflictId,
+      required this.createdAtUtc,
+      required this.updatedAtUtc,
+      required this.recordVersion});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['operation_id'] = Variable<String>(operationId);
+    map['idempotency_key'] = Variable<String>(idempotencyKey);
+    map['business_id'] = Variable<String>(businessId);
+    map['scope_kind'] = Variable<String>(scopeKind);
+    if (!nullToAbsent || warehouseId != null) {
+      map['warehouse_id'] = Variable<String>(warehouseId);
+    }
+    map['actor_auth_user_id'] = Variable<String>(actorAuthUserId);
+    map['device_id'] = Variable<String>(deviceId);
+    map['session_id'] = Variable<String>(sessionId);
+    map['captured_role'] = Variable<String>(capturedRole);
+    map['operation_kind'] = Variable<String>(operationKind);
+    map['aggregate_type'] = Variable<String>(aggregateType);
+    if (!nullToAbsent || aggregateId != null) {
+      map['aggregate_id'] = Variable<String>(aggregateId);
+    }
+    map['payload_schema_version'] = Variable<int>(payloadSchemaVersion);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['payload_fingerprint'] = Variable<String>(payloadFingerprint);
+    if (!nullToAbsent || baseEntityVersion != null) {
+      map['base_entity_version'] = Variable<int>(baseEntityVersion);
+    }
+    map['is_deletion_intent'] = Variable<bool>(isDeletionIntent);
+    map['occurred_at_utc'] = Variable<DateTime>(occurredAtUtc);
+    if (!nullToAbsent || businessDate != null) {
+      map['business_date'] = Variable<String>(businessDate);
+    }
+    if (!nullToAbsent || causalPredecessorOperationId != null) {
+      map['causal_predecessor_operation_id'] =
+          Variable<String>(causalPredecessorOperationId);
+    }
+    map['state'] = Variable<String>(state);
+    map['attempt_count'] = Variable<int>(attemptCount);
+    if (!nullToAbsent || nextAttemptAtUtc != null) {
+      map['next_attempt_at_utc'] = Variable<DateTime>(nextAttemptAtUtc);
+    }
+    if (!nullToAbsent || lastAttemptAtUtc != null) {
+      map['last_attempt_at_utc'] = Variable<DateTime>(lastAttemptAtUtc);
+    }
+    if (!nullToAbsent || lastErrorClass != null) {
+      map['last_error_class'] = Variable<String>(lastErrorClass);
+    }
+    if (!nullToAbsent || lastErrorCode != null) {
+      map['last_error_code'] = Variable<String>(lastErrorCode);
+    }
+    if (!nullToAbsent || claimToken != null) {
+      map['claim_token'] = Variable<String>(claimToken);
+    }
+    if (!nullToAbsent || leaseExpiresAtUtc != null) {
+      map['lease_expires_at_utc'] = Variable<DateTime>(leaseExpiresAtUtc);
+    }
+    if (!nullToAbsent || ackSchemaVersion != null) {
+      map['ack_schema_version'] = Variable<int>(ackSchemaVersion);
+    }
+    if (!nullToAbsent || ackPayloadJson != null) {
+      map['ack_payload_json'] = Variable<String>(ackPayloadJson);
+    }
+    if (!nullToAbsent || ackPayloadFingerprint != null) {
+      map['ack_payload_fingerprint'] = Variable<String>(ackPayloadFingerprint);
+    }
+    if (!nullToAbsent || serverResultId != null) {
+      map['server_result_id'] = Variable<String>(serverResultId);
+    }
+    if (!nullToAbsent || serverAcceptedAtUtc != null) {
+      map['server_accepted_at_utc'] = Variable<DateTime>(serverAcceptedAtUtc);
+    }
+    if (!nullToAbsent || acknowledgedEntityVersion != null) {
+      map['acknowledged_entity_version'] =
+          Variable<int>(acknowledgedEntityVersion);
+    }
+    if (!nullToAbsent || conflictId != null) {
+      map['conflict_id'] = Variable<String>(conflictId);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['record_version'] = Variable<int>(recordVersion);
+    return map;
+  }
+
+  DurableOutboxOperationsCompanion toCompanion(bool nullToAbsent) {
+    return DurableOutboxOperationsCompanion(
+      operationId: Value(operationId),
+      idempotencyKey: Value(idempotencyKey),
+      businessId: Value(businessId),
+      scopeKind: Value(scopeKind),
+      warehouseId: warehouseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warehouseId),
+      actorAuthUserId: Value(actorAuthUserId),
+      deviceId: Value(deviceId),
+      sessionId: Value(sessionId),
+      capturedRole: Value(capturedRole),
+      operationKind: Value(operationKind),
+      aggregateType: Value(aggregateType),
+      aggregateId: aggregateId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aggregateId),
+      payloadSchemaVersion: Value(payloadSchemaVersion),
+      payloadJson: Value(payloadJson),
+      payloadFingerprint: Value(payloadFingerprint),
+      baseEntityVersion: baseEntityVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(baseEntityVersion),
+      isDeletionIntent: Value(isDeletionIntent),
+      occurredAtUtc: Value(occurredAtUtc),
+      businessDate: businessDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessDate),
+      causalPredecessorOperationId:
+          causalPredecessorOperationId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(causalPredecessorOperationId),
+      state: Value(state),
+      attemptCount: Value(attemptCount),
+      nextAttemptAtUtc: nextAttemptAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAtUtc),
+      lastAttemptAtUtc: lastAttemptAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttemptAtUtc),
+      lastErrorClass: lastErrorClass == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorClass),
+      lastErrorCode: lastErrorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorCode),
+      claimToken: claimToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(claimToken),
+      leaseExpiresAtUtc: leaseExpiresAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(leaseExpiresAtUtc),
+      ackSchemaVersion: ackSchemaVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackSchemaVersion),
+      ackPayloadJson: ackPayloadJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackPayloadJson),
+      ackPayloadFingerprint: ackPayloadFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackPayloadFingerprint),
+      serverResultId: serverResultId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverResultId),
+      serverAcceptedAtUtc: serverAcceptedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverAcceptedAtUtc),
+      acknowledgedEntityVersion:
+          acknowledgedEntityVersion == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedEntityVersion),
+      conflictId: conflictId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conflictId),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+      recordVersion: Value(recordVersion),
+    );
+  }
+
+  factory DurableOutboxOperationRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DurableOutboxOperationRow(
+      operationId: serializer.fromJson<String>(json['operationId']),
+      idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      scopeKind: serializer.fromJson<String>(json['scopeKind']),
+      warehouseId: serializer.fromJson<String?>(json['warehouseId']),
+      actorAuthUserId: serializer.fromJson<String>(json['actorAuthUserId']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      capturedRole: serializer.fromJson<String>(json['capturedRole']),
+      operationKind: serializer.fromJson<String>(json['operationKind']),
+      aggregateType: serializer.fromJson<String>(json['aggregateType']),
+      aggregateId: serializer.fromJson<String?>(json['aggregateId']),
+      payloadSchemaVersion:
+          serializer.fromJson<int>(json['payloadSchemaVersion']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      payloadFingerprint:
+          serializer.fromJson<String>(json['payloadFingerprint']),
+      baseEntityVersion: serializer.fromJson<int?>(json['baseEntityVersion']),
+      isDeletionIntent: serializer.fromJson<bool>(json['isDeletionIntent']),
+      occurredAtUtc: serializer.fromJson<DateTime>(json['occurredAtUtc']),
+      businessDate: serializer.fromJson<String?>(json['businessDate']),
+      causalPredecessorOperationId:
+          serializer.fromJson<String?>(json['causalPredecessorOperationId']),
+      state: serializer.fromJson<String>(json['state']),
+      attemptCount: serializer.fromJson<int>(json['attemptCount']),
+      nextAttemptAtUtc:
+          serializer.fromJson<DateTime?>(json['nextAttemptAtUtc']),
+      lastAttemptAtUtc:
+          serializer.fromJson<DateTime?>(json['lastAttemptAtUtc']),
+      lastErrorClass: serializer.fromJson<String?>(json['lastErrorClass']),
+      lastErrorCode: serializer.fromJson<String?>(json['lastErrorCode']),
+      claimToken: serializer.fromJson<String?>(json['claimToken']),
+      leaseExpiresAtUtc:
+          serializer.fromJson<DateTime?>(json['leaseExpiresAtUtc']),
+      ackSchemaVersion: serializer.fromJson<int?>(json['ackSchemaVersion']),
+      ackPayloadJson: serializer.fromJson<String?>(json['ackPayloadJson']),
+      ackPayloadFingerprint:
+          serializer.fromJson<String?>(json['ackPayloadFingerprint']),
+      serverResultId: serializer.fromJson<String?>(json['serverResultId']),
+      serverAcceptedAtUtc:
+          serializer.fromJson<DateTime?>(json['serverAcceptedAtUtc']),
+      acknowledgedEntityVersion:
+          serializer.fromJson<int?>(json['acknowledgedEntityVersion']),
+      conflictId: serializer.fromJson<String?>(json['conflictId']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      recordVersion: serializer.fromJson<int>(json['recordVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'operationId': serializer.toJson<String>(operationId),
+      'idempotencyKey': serializer.toJson<String>(idempotencyKey),
+      'businessId': serializer.toJson<String>(businessId),
+      'scopeKind': serializer.toJson<String>(scopeKind),
+      'warehouseId': serializer.toJson<String?>(warehouseId),
+      'actorAuthUserId': serializer.toJson<String>(actorAuthUserId),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'capturedRole': serializer.toJson<String>(capturedRole),
+      'operationKind': serializer.toJson<String>(operationKind),
+      'aggregateType': serializer.toJson<String>(aggregateType),
+      'aggregateId': serializer.toJson<String?>(aggregateId),
+      'payloadSchemaVersion': serializer.toJson<int>(payloadSchemaVersion),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'payloadFingerprint': serializer.toJson<String>(payloadFingerprint),
+      'baseEntityVersion': serializer.toJson<int?>(baseEntityVersion),
+      'isDeletionIntent': serializer.toJson<bool>(isDeletionIntent),
+      'occurredAtUtc': serializer.toJson<DateTime>(occurredAtUtc),
+      'businessDate': serializer.toJson<String?>(businessDate),
+      'causalPredecessorOperationId':
+          serializer.toJson<String?>(causalPredecessorOperationId),
+      'state': serializer.toJson<String>(state),
+      'attemptCount': serializer.toJson<int>(attemptCount),
+      'nextAttemptAtUtc': serializer.toJson<DateTime?>(nextAttemptAtUtc),
+      'lastAttemptAtUtc': serializer.toJson<DateTime?>(lastAttemptAtUtc),
+      'lastErrorClass': serializer.toJson<String?>(lastErrorClass),
+      'lastErrorCode': serializer.toJson<String?>(lastErrorCode),
+      'claimToken': serializer.toJson<String?>(claimToken),
+      'leaseExpiresAtUtc': serializer.toJson<DateTime?>(leaseExpiresAtUtc),
+      'ackSchemaVersion': serializer.toJson<int?>(ackSchemaVersion),
+      'ackPayloadJson': serializer.toJson<String?>(ackPayloadJson),
+      'ackPayloadFingerprint':
+          serializer.toJson<String?>(ackPayloadFingerprint),
+      'serverResultId': serializer.toJson<String?>(serverResultId),
+      'serverAcceptedAtUtc': serializer.toJson<DateTime?>(serverAcceptedAtUtc),
+      'acknowledgedEntityVersion':
+          serializer.toJson<int?>(acknowledgedEntityVersion),
+      'conflictId': serializer.toJson<String?>(conflictId),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'recordVersion': serializer.toJson<int>(recordVersion),
+    };
+  }
+
+  DurableOutboxOperationRow copyWith(
+          {String? operationId,
+          String? idempotencyKey,
+          String? businessId,
+          String? scopeKind,
+          Value<String?> warehouseId = const Value.absent(),
+          String? actorAuthUserId,
+          String? deviceId,
+          String? sessionId,
+          String? capturedRole,
+          String? operationKind,
+          String? aggregateType,
+          Value<String?> aggregateId = const Value.absent(),
+          int? payloadSchemaVersion,
+          String? payloadJson,
+          String? payloadFingerprint,
+          Value<int?> baseEntityVersion = const Value.absent(),
+          bool? isDeletionIntent,
+          DateTime? occurredAtUtc,
+          Value<String?> businessDate = const Value.absent(),
+          Value<String?> causalPredecessorOperationId = const Value.absent(),
+          String? state,
+          int? attemptCount,
+          Value<DateTime?> nextAttemptAtUtc = const Value.absent(),
+          Value<DateTime?> lastAttemptAtUtc = const Value.absent(),
+          Value<String?> lastErrorClass = const Value.absent(),
+          Value<String?> lastErrorCode = const Value.absent(),
+          Value<String?> claimToken = const Value.absent(),
+          Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+          Value<int?> ackSchemaVersion = const Value.absent(),
+          Value<String?> ackPayloadJson = const Value.absent(),
+          Value<String?> ackPayloadFingerprint = const Value.absent(),
+          Value<String?> serverResultId = const Value.absent(),
+          Value<DateTime?> serverAcceptedAtUtc = const Value.absent(),
+          Value<int?> acknowledgedEntityVersion = const Value.absent(),
+          Value<String?> conflictId = const Value.absent(),
+          DateTime? createdAtUtc,
+          DateTime? updatedAtUtc,
+          int? recordVersion}) =>
+      DurableOutboxOperationRow(
+        operationId: operationId ?? this.operationId,
+        idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+        businessId: businessId ?? this.businessId,
+        scopeKind: scopeKind ?? this.scopeKind,
+        warehouseId: warehouseId.present ? warehouseId.value : this.warehouseId,
+        actorAuthUserId: actorAuthUserId ?? this.actorAuthUserId,
+        deviceId: deviceId ?? this.deviceId,
+        sessionId: sessionId ?? this.sessionId,
+        capturedRole: capturedRole ?? this.capturedRole,
+        operationKind: operationKind ?? this.operationKind,
+        aggregateType: aggregateType ?? this.aggregateType,
+        aggregateId: aggregateId.present ? aggregateId.value : this.aggregateId,
+        payloadSchemaVersion: payloadSchemaVersion ?? this.payloadSchemaVersion,
+        payloadJson: payloadJson ?? this.payloadJson,
+        payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+        baseEntityVersion: baseEntityVersion.present
+            ? baseEntityVersion.value
+            : this.baseEntityVersion,
+        isDeletionIntent: isDeletionIntent ?? this.isDeletionIntent,
+        occurredAtUtc: occurredAtUtc ?? this.occurredAtUtc,
+        businessDate:
+            businessDate.present ? businessDate.value : this.businessDate,
+        causalPredecessorOperationId: causalPredecessorOperationId.present
+            ? causalPredecessorOperationId.value
+            : this.causalPredecessorOperationId,
+        state: state ?? this.state,
+        attemptCount: attemptCount ?? this.attemptCount,
+        nextAttemptAtUtc: nextAttemptAtUtc.present
+            ? nextAttemptAtUtc.value
+            : this.nextAttemptAtUtc,
+        lastAttemptAtUtc: lastAttemptAtUtc.present
+            ? lastAttemptAtUtc.value
+            : this.lastAttemptAtUtc,
+        lastErrorClass:
+            lastErrorClass.present ? lastErrorClass.value : this.lastErrorClass,
+        lastErrorCode:
+            lastErrorCode.present ? lastErrorCode.value : this.lastErrorCode,
+        claimToken: claimToken.present ? claimToken.value : this.claimToken,
+        leaseExpiresAtUtc: leaseExpiresAtUtc.present
+            ? leaseExpiresAtUtc.value
+            : this.leaseExpiresAtUtc,
+        ackSchemaVersion: ackSchemaVersion.present
+            ? ackSchemaVersion.value
+            : this.ackSchemaVersion,
+        ackPayloadJson:
+            ackPayloadJson.present ? ackPayloadJson.value : this.ackPayloadJson,
+        ackPayloadFingerprint: ackPayloadFingerprint.present
+            ? ackPayloadFingerprint.value
+            : this.ackPayloadFingerprint,
+        serverResultId:
+            serverResultId.present ? serverResultId.value : this.serverResultId,
+        serverAcceptedAtUtc: serverAcceptedAtUtc.present
+            ? serverAcceptedAtUtc.value
+            : this.serverAcceptedAtUtc,
+        acknowledgedEntityVersion: acknowledgedEntityVersion.present
+            ? acknowledgedEntityVersion.value
+            : this.acknowledgedEntityVersion,
+        conflictId: conflictId.present ? conflictId.value : this.conflictId,
+        createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        recordVersion: recordVersion ?? this.recordVersion,
+      );
+  DurableOutboxOperationRow copyWithCompanion(
+      DurableOutboxOperationsCompanion data) {
+    return DurableOutboxOperationRow(
+      operationId:
+          data.operationId.present ? data.operationId.value : this.operationId,
+      idempotencyKey: data.idempotencyKey.present
+          ? data.idempotencyKey.value
+          : this.idempotencyKey,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      scopeKind: data.scopeKind.present ? data.scopeKind.value : this.scopeKind,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      actorAuthUserId: data.actorAuthUserId.present
+          ? data.actorAuthUserId.value
+          : this.actorAuthUserId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      capturedRole: data.capturedRole.present
+          ? data.capturedRole.value
+          : this.capturedRole,
+      operationKind: data.operationKind.present
+          ? data.operationKind.value
+          : this.operationKind,
+      aggregateType: data.aggregateType.present
+          ? data.aggregateType.value
+          : this.aggregateType,
+      aggregateId:
+          data.aggregateId.present ? data.aggregateId.value : this.aggregateId,
+      payloadSchemaVersion: data.payloadSchemaVersion.present
+          ? data.payloadSchemaVersion.value
+          : this.payloadSchemaVersion,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      payloadFingerprint: data.payloadFingerprint.present
+          ? data.payloadFingerprint.value
+          : this.payloadFingerprint,
+      baseEntityVersion: data.baseEntityVersion.present
+          ? data.baseEntityVersion.value
+          : this.baseEntityVersion,
+      isDeletionIntent: data.isDeletionIntent.present
+          ? data.isDeletionIntent.value
+          : this.isDeletionIntent,
+      occurredAtUtc: data.occurredAtUtc.present
+          ? data.occurredAtUtc.value
+          : this.occurredAtUtc,
+      businessDate: data.businessDate.present
+          ? data.businessDate.value
+          : this.businessDate,
+      causalPredecessorOperationId: data.causalPredecessorOperationId.present
+          ? data.causalPredecessorOperationId.value
+          : this.causalPredecessorOperationId,
+      state: data.state.present ? data.state.value : this.state,
+      attemptCount: data.attemptCount.present
+          ? data.attemptCount.value
+          : this.attemptCount,
+      nextAttemptAtUtc: data.nextAttemptAtUtc.present
+          ? data.nextAttemptAtUtc.value
+          : this.nextAttemptAtUtc,
+      lastAttemptAtUtc: data.lastAttemptAtUtc.present
+          ? data.lastAttemptAtUtc.value
+          : this.lastAttemptAtUtc,
+      lastErrorClass: data.lastErrorClass.present
+          ? data.lastErrorClass.value
+          : this.lastErrorClass,
+      lastErrorCode: data.lastErrorCode.present
+          ? data.lastErrorCode.value
+          : this.lastErrorCode,
+      claimToken:
+          data.claimToken.present ? data.claimToken.value : this.claimToken,
+      leaseExpiresAtUtc: data.leaseExpiresAtUtc.present
+          ? data.leaseExpiresAtUtc.value
+          : this.leaseExpiresAtUtc,
+      ackSchemaVersion: data.ackSchemaVersion.present
+          ? data.ackSchemaVersion.value
+          : this.ackSchemaVersion,
+      ackPayloadJson: data.ackPayloadJson.present
+          ? data.ackPayloadJson.value
+          : this.ackPayloadJson,
+      ackPayloadFingerprint: data.ackPayloadFingerprint.present
+          ? data.ackPayloadFingerprint.value
+          : this.ackPayloadFingerprint,
+      serverResultId: data.serverResultId.present
+          ? data.serverResultId.value
+          : this.serverResultId,
+      serverAcceptedAtUtc: data.serverAcceptedAtUtc.present
+          ? data.serverAcceptedAtUtc.value
+          : this.serverAcceptedAtUtc,
+      acknowledgedEntityVersion: data.acknowledgedEntityVersion.present
+          ? data.acknowledgedEntityVersion.value
+          : this.acknowledgedEntityVersion,
+      conflictId:
+          data.conflictId.present ? data.conflictId.value : this.conflictId,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      recordVersion: data.recordVersion.present
+          ? data.recordVersion.value
+          : this.recordVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableOutboxOperationRow(')
+          ..write('operationId: $operationId, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('actorAuthUserId: $actorAuthUserId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('capturedRole: $capturedRole, ')
+          ..write('operationKind: $operationKind, ')
+          ..write('aggregateType: $aggregateType, ')
+          ..write('aggregateId: $aggregateId, ')
+          ..write('payloadSchemaVersion: $payloadSchemaVersion, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('baseEntityVersion: $baseEntityVersion, ')
+          ..write('isDeletionIntent: $isDeletionIntent, ')
+          ..write('occurredAtUtc: $occurredAtUtc, ')
+          ..write('businessDate: $businessDate, ')
+          ..write(
+              'causalPredecessorOperationId: $causalPredecessorOperationId, ')
+          ..write('state: $state, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('nextAttemptAtUtc: $nextAttemptAtUtc, ')
+          ..write('lastAttemptAtUtc: $lastAttemptAtUtc, ')
+          ..write('lastErrorClass: $lastErrorClass, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('claimToken: $claimToken, ')
+          ..write('leaseExpiresAtUtc: $leaseExpiresAtUtc, ')
+          ..write('ackSchemaVersion: $ackSchemaVersion, ')
+          ..write('ackPayloadJson: $ackPayloadJson, ')
+          ..write('ackPayloadFingerprint: $ackPayloadFingerprint, ')
+          ..write('serverResultId: $serverResultId, ')
+          ..write('serverAcceptedAtUtc: $serverAcceptedAtUtc, ')
+          ..write('acknowledgedEntityVersion: $acknowledgedEntityVersion, ')
+          ..write('conflictId: $conflictId, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        operationId,
+        idempotencyKey,
+        businessId,
+        scopeKind,
+        warehouseId,
+        actorAuthUserId,
+        deviceId,
+        sessionId,
+        capturedRole,
+        operationKind,
+        aggregateType,
+        aggregateId,
+        payloadSchemaVersion,
+        payloadJson,
+        payloadFingerprint,
+        baseEntityVersion,
+        isDeletionIntent,
+        occurredAtUtc,
+        businessDate,
+        causalPredecessorOperationId,
+        state,
+        attemptCount,
+        nextAttemptAtUtc,
+        lastAttemptAtUtc,
+        lastErrorClass,
+        lastErrorCode,
+        claimToken,
+        leaseExpiresAtUtc,
+        ackSchemaVersion,
+        ackPayloadJson,
+        ackPayloadFingerprint,
+        serverResultId,
+        serverAcceptedAtUtc,
+        acknowledgedEntityVersion,
+        conflictId,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DurableOutboxOperationRow &&
+          other.operationId == this.operationId &&
+          other.idempotencyKey == this.idempotencyKey &&
+          other.businessId == this.businessId &&
+          other.scopeKind == this.scopeKind &&
+          other.warehouseId == this.warehouseId &&
+          other.actorAuthUserId == this.actorAuthUserId &&
+          other.deviceId == this.deviceId &&
+          other.sessionId == this.sessionId &&
+          other.capturedRole == this.capturedRole &&
+          other.operationKind == this.operationKind &&
+          other.aggregateType == this.aggregateType &&
+          other.aggregateId == this.aggregateId &&
+          other.payloadSchemaVersion == this.payloadSchemaVersion &&
+          other.payloadJson == this.payloadJson &&
+          other.payloadFingerprint == this.payloadFingerprint &&
+          other.baseEntityVersion == this.baseEntityVersion &&
+          other.isDeletionIntent == this.isDeletionIntent &&
+          other.occurredAtUtc == this.occurredAtUtc &&
+          other.businessDate == this.businessDate &&
+          other.causalPredecessorOperationId ==
+              this.causalPredecessorOperationId &&
+          other.state == this.state &&
+          other.attemptCount == this.attemptCount &&
+          other.nextAttemptAtUtc == this.nextAttemptAtUtc &&
+          other.lastAttemptAtUtc == this.lastAttemptAtUtc &&
+          other.lastErrorClass == this.lastErrorClass &&
+          other.lastErrorCode == this.lastErrorCode &&
+          other.claimToken == this.claimToken &&
+          other.leaseExpiresAtUtc == this.leaseExpiresAtUtc &&
+          other.ackSchemaVersion == this.ackSchemaVersion &&
+          other.ackPayloadJson == this.ackPayloadJson &&
+          other.ackPayloadFingerprint == this.ackPayloadFingerprint &&
+          other.serverResultId == this.serverResultId &&
+          other.serverAcceptedAtUtc == this.serverAcceptedAtUtc &&
+          other.acknowledgedEntityVersion == this.acknowledgedEntityVersion &&
+          other.conflictId == this.conflictId &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.recordVersion == this.recordVersion);
+}
+
+class DurableOutboxOperationsCompanion
+    extends UpdateCompanion<DurableOutboxOperationRow> {
+  final Value<String> operationId;
+  final Value<String> idempotencyKey;
+  final Value<String> businessId;
+  final Value<String> scopeKind;
+  final Value<String?> warehouseId;
+  final Value<String> actorAuthUserId;
+  final Value<String> deviceId;
+  final Value<String> sessionId;
+  final Value<String> capturedRole;
+  final Value<String> operationKind;
+  final Value<String> aggregateType;
+  final Value<String?> aggregateId;
+  final Value<int> payloadSchemaVersion;
+  final Value<String> payloadJson;
+  final Value<String> payloadFingerprint;
+  final Value<int?> baseEntityVersion;
+  final Value<bool> isDeletionIntent;
+  final Value<DateTime> occurredAtUtc;
+  final Value<String?> businessDate;
+  final Value<String?> causalPredecessorOperationId;
+  final Value<String> state;
+  final Value<int> attemptCount;
+  final Value<DateTime?> nextAttemptAtUtc;
+  final Value<DateTime?> lastAttemptAtUtc;
+  final Value<String?> lastErrorClass;
+  final Value<String?> lastErrorCode;
+  final Value<String?> claimToken;
+  final Value<DateTime?> leaseExpiresAtUtc;
+  final Value<int?> ackSchemaVersion;
+  final Value<String?> ackPayloadJson;
+  final Value<String?> ackPayloadFingerprint;
+  final Value<String?> serverResultId;
+  final Value<DateTime?> serverAcceptedAtUtc;
+  final Value<int?> acknowledgedEntityVersion;
+  final Value<String?> conflictId;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> recordVersion;
+  final Value<int> rowid;
+  const DurableOutboxOperationsCompanion({
+    this.operationId = const Value.absent(),
+    this.idempotencyKey = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.scopeKind = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.actorAuthUserId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.capturedRole = const Value.absent(),
+    this.operationKind = const Value.absent(),
+    this.aggregateType = const Value.absent(),
+    this.aggregateId = const Value.absent(),
+    this.payloadSchemaVersion = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.payloadFingerprint = const Value.absent(),
+    this.baseEntityVersion = const Value.absent(),
+    this.isDeletionIntent = const Value.absent(),
+    this.occurredAtUtc = const Value.absent(),
+    this.businessDate = const Value.absent(),
+    this.causalPredecessorOperationId = const Value.absent(),
+    this.state = const Value.absent(),
+    this.attemptCount = const Value.absent(),
+    this.nextAttemptAtUtc = const Value.absent(),
+    this.lastAttemptAtUtc = const Value.absent(),
+    this.lastErrorClass = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.claimToken = const Value.absent(),
+    this.leaseExpiresAtUtc = const Value.absent(),
+    this.ackSchemaVersion = const Value.absent(),
+    this.ackPayloadJson = const Value.absent(),
+    this.ackPayloadFingerprint = const Value.absent(),
+    this.serverResultId = const Value.absent(),
+    this.serverAcceptedAtUtc = const Value.absent(),
+    this.acknowledgedEntityVersion = const Value.absent(),
+    this.conflictId = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DurableOutboxOperationsCompanion.insert({
+    required String operationId,
+    required String idempotencyKey,
+    required String businessId,
+    required String scopeKind,
+    this.warehouseId = const Value.absent(),
+    required String actorAuthUserId,
+    required String deviceId,
+    required String sessionId,
+    required String capturedRole,
+    required String operationKind,
+    required String aggregateType,
+    this.aggregateId = const Value.absent(),
+    required int payloadSchemaVersion,
+    required String payloadJson,
+    required String payloadFingerprint,
+    this.baseEntityVersion = const Value.absent(),
+    this.isDeletionIntent = const Value.absent(),
+    required DateTime occurredAtUtc,
+    this.businessDate = const Value.absent(),
+    this.causalPredecessorOperationId = const Value.absent(),
+    required String state,
+    this.attemptCount = const Value.absent(),
+    this.nextAttemptAtUtc = const Value.absent(),
+    this.lastAttemptAtUtc = const Value.absent(),
+    this.lastErrorClass = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.claimToken = const Value.absent(),
+    this.leaseExpiresAtUtc = const Value.absent(),
+    this.ackSchemaVersion = const Value.absent(),
+    this.ackPayloadJson = const Value.absent(),
+    this.ackPayloadFingerprint = const Value.absent(),
+    this.serverResultId = const Value.absent(),
+    this.serverAcceptedAtUtc = const Value.absent(),
+    this.acknowledgedEntityVersion = const Value.absent(),
+    this.conflictId = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : operationId = Value(operationId),
+        idempotencyKey = Value(idempotencyKey),
+        businessId = Value(businessId),
+        scopeKind = Value(scopeKind),
+        actorAuthUserId = Value(actorAuthUserId),
+        deviceId = Value(deviceId),
+        sessionId = Value(sessionId),
+        capturedRole = Value(capturedRole),
+        operationKind = Value(operationKind),
+        aggregateType = Value(aggregateType),
+        payloadSchemaVersion = Value(payloadSchemaVersion),
+        payloadJson = Value(payloadJson),
+        payloadFingerprint = Value(payloadFingerprint),
+        occurredAtUtc = Value(occurredAtUtc),
+        state = Value(state),
+        createdAtUtc = Value(createdAtUtc),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<DurableOutboxOperationRow> custom({
+    Expression<String>? operationId,
+    Expression<String>? idempotencyKey,
+    Expression<String>? businessId,
+    Expression<String>? scopeKind,
+    Expression<String>? warehouseId,
+    Expression<String>? actorAuthUserId,
+    Expression<String>? deviceId,
+    Expression<String>? sessionId,
+    Expression<String>? capturedRole,
+    Expression<String>? operationKind,
+    Expression<String>? aggregateType,
+    Expression<String>? aggregateId,
+    Expression<int>? payloadSchemaVersion,
+    Expression<String>? payloadJson,
+    Expression<String>? payloadFingerprint,
+    Expression<int>? baseEntityVersion,
+    Expression<bool>? isDeletionIntent,
+    Expression<DateTime>? occurredAtUtc,
+    Expression<String>? businessDate,
+    Expression<String>? causalPredecessorOperationId,
+    Expression<String>? state,
+    Expression<int>? attemptCount,
+    Expression<DateTime>? nextAttemptAtUtc,
+    Expression<DateTime>? lastAttemptAtUtc,
+    Expression<String>? lastErrorClass,
+    Expression<String>? lastErrorCode,
+    Expression<String>? claimToken,
+    Expression<DateTime>? leaseExpiresAtUtc,
+    Expression<int>? ackSchemaVersion,
+    Expression<String>? ackPayloadJson,
+    Expression<String>? ackPayloadFingerprint,
+    Expression<String>? serverResultId,
+    Expression<DateTime>? serverAcceptedAtUtc,
+    Expression<int>? acknowledgedEntityVersion,
+    Expression<String>? conflictId,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? recordVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (operationId != null) 'operation_id': operationId,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
+      if (businessId != null) 'business_id': businessId,
+      if (scopeKind != null) 'scope_kind': scopeKind,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (actorAuthUserId != null) 'actor_auth_user_id': actorAuthUserId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (sessionId != null) 'session_id': sessionId,
+      if (capturedRole != null) 'captured_role': capturedRole,
+      if (operationKind != null) 'operation_kind': operationKind,
+      if (aggregateType != null) 'aggregate_type': aggregateType,
+      if (aggregateId != null) 'aggregate_id': aggregateId,
+      if (payloadSchemaVersion != null)
+        'payload_schema_version': payloadSchemaVersion,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (payloadFingerprint != null) 'payload_fingerprint': payloadFingerprint,
+      if (baseEntityVersion != null) 'base_entity_version': baseEntityVersion,
+      if (isDeletionIntent != null) 'is_deletion_intent': isDeletionIntent,
+      if (occurredAtUtc != null) 'occurred_at_utc': occurredAtUtc,
+      if (businessDate != null) 'business_date': businessDate,
+      if (causalPredecessorOperationId != null)
+        'causal_predecessor_operation_id': causalPredecessorOperationId,
+      if (state != null) 'state': state,
+      if (attemptCount != null) 'attempt_count': attemptCount,
+      if (nextAttemptAtUtc != null) 'next_attempt_at_utc': nextAttemptAtUtc,
+      if (lastAttemptAtUtc != null) 'last_attempt_at_utc': lastAttemptAtUtc,
+      if (lastErrorClass != null) 'last_error_class': lastErrorClass,
+      if (lastErrorCode != null) 'last_error_code': lastErrorCode,
+      if (claimToken != null) 'claim_token': claimToken,
+      if (leaseExpiresAtUtc != null) 'lease_expires_at_utc': leaseExpiresAtUtc,
+      if (ackSchemaVersion != null) 'ack_schema_version': ackSchemaVersion,
+      if (ackPayloadJson != null) 'ack_payload_json': ackPayloadJson,
+      if (ackPayloadFingerprint != null)
+        'ack_payload_fingerprint': ackPayloadFingerprint,
+      if (serverResultId != null) 'server_result_id': serverResultId,
+      if (serverAcceptedAtUtc != null)
+        'server_accepted_at_utc': serverAcceptedAtUtc,
+      if (acknowledgedEntityVersion != null)
+        'acknowledged_entity_version': acknowledgedEntityVersion,
+      if (conflictId != null) 'conflict_id': conflictId,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (recordVersion != null) 'record_version': recordVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DurableOutboxOperationsCompanion copyWith(
+      {Value<String>? operationId,
+      Value<String>? idempotencyKey,
+      Value<String>? businessId,
+      Value<String>? scopeKind,
+      Value<String?>? warehouseId,
+      Value<String>? actorAuthUserId,
+      Value<String>? deviceId,
+      Value<String>? sessionId,
+      Value<String>? capturedRole,
+      Value<String>? operationKind,
+      Value<String>? aggregateType,
+      Value<String?>? aggregateId,
+      Value<int>? payloadSchemaVersion,
+      Value<String>? payloadJson,
+      Value<String>? payloadFingerprint,
+      Value<int?>? baseEntityVersion,
+      Value<bool>? isDeletionIntent,
+      Value<DateTime>? occurredAtUtc,
+      Value<String?>? businessDate,
+      Value<String?>? causalPredecessorOperationId,
+      Value<String>? state,
+      Value<int>? attemptCount,
+      Value<DateTime?>? nextAttemptAtUtc,
+      Value<DateTime?>? lastAttemptAtUtc,
+      Value<String?>? lastErrorClass,
+      Value<String?>? lastErrorCode,
+      Value<String?>? claimToken,
+      Value<DateTime?>? leaseExpiresAtUtc,
+      Value<int?>? ackSchemaVersion,
+      Value<String?>? ackPayloadJson,
+      Value<String?>? ackPayloadFingerprint,
+      Value<String?>? serverResultId,
+      Value<DateTime?>? serverAcceptedAtUtc,
+      Value<int?>? acknowledgedEntityVersion,
+      Value<String?>? conflictId,
+      Value<DateTime>? createdAtUtc,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? recordVersion,
+      Value<int>? rowid}) {
+    return DurableOutboxOperationsCompanion(
+      operationId: operationId ?? this.operationId,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      businessId: businessId ?? this.businessId,
+      scopeKind: scopeKind ?? this.scopeKind,
+      warehouseId: warehouseId ?? this.warehouseId,
+      actorAuthUserId: actorAuthUserId ?? this.actorAuthUserId,
+      deviceId: deviceId ?? this.deviceId,
+      sessionId: sessionId ?? this.sessionId,
+      capturedRole: capturedRole ?? this.capturedRole,
+      operationKind: operationKind ?? this.operationKind,
+      aggregateType: aggregateType ?? this.aggregateType,
+      aggregateId: aggregateId ?? this.aggregateId,
+      payloadSchemaVersion: payloadSchemaVersion ?? this.payloadSchemaVersion,
+      payloadJson: payloadJson ?? this.payloadJson,
+      payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+      baseEntityVersion: baseEntityVersion ?? this.baseEntityVersion,
+      isDeletionIntent: isDeletionIntent ?? this.isDeletionIntent,
+      occurredAtUtc: occurredAtUtc ?? this.occurredAtUtc,
+      businessDate: businessDate ?? this.businessDate,
+      causalPredecessorOperationId:
+          causalPredecessorOperationId ?? this.causalPredecessorOperationId,
+      state: state ?? this.state,
+      attemptCount: attemptCount ?? this.attemptCount,
+      nextAttemptAtUtc: nextAttemptAtUtc ?? this.nextAttemptAtUtc,
+      lastAttemptAtUtc: lastAttemptAtUtc ?? this.lastAttemptAtUtc,
+      lastErrorClass: lastErrorClass ?? this.lastErrorClass,
+      lastErrorCode: lastErrorCode ?? this.lastErrorCode,
+      claimToken: claimToken ?? this.claimToken,
+      leaseExpiresAtUtc: leaseExpiresAtUtc ?? this.leaseExpiresAtUtc,
+      ackSchemaVersion: ackSchemaVersion ?? this.ackSchemaVersion,
+      ackPayloadJson: ackPayloadJson ?? this.ackPayloadJson,
+      ackPayloadFingerprint:
+          ackPayloadFingerprint ?? this.ackPayloadFingerprint,
+      serverResultId: serverResultId ?? this.serverResultId,
+      serverAcceptedAtUtc: serverAcceptedAtUtc ?? this.serverAcceptedAtUtc,
+      acknowledgedEntityVersion:
+          acknowledgedEntityVersion ?? this.acknowledgedEntityVersion,
+      conflictId: conflictId ?? this.conflictId,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      recordVersion: recordVersion ?? this.recordVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (operationId.present) {
+      map['operation_id'] = Variable<String>(operationId.value);
+    }
+    if (idempotencyKey.present) {
+      map['idempotency_key'] = Variable<String>(idempotencyKey.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (scopeKind.present) {
+      map['scope_kind'] = Variable<String>(scopeKind.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (actorAuthUserId.present) {
+      map['actor_auth_user_id'] = Variable<String>(actorAuthUserId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (capturedRole.present) {
+      map['captured_role'] = Variable<String>(capturedRole.value);
+    }
+    if (operationKind.present) {
+      map['operation_kind'] = Variable<String>(operationKind.value);
+    }
+    if (aggregateType.present) {
+      map['aggregate_type'] = Variable<String>(aggregateType.value);
+    }
+    if (aggregateId.present) {
+      map['aggregate_id'] = Variable<String>(aggregateId.value);
+    }
+    if (payloadSchemaVersion.present) {
+      map['payload_schema_version'] = Variable<int>(payloadSchemaVersion.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (payloadFingerprint.present) {
+      map['payload_fingerprint'] = Variable<String>(payloadFingerprint.value);
+    }
+    if (baseEntityVersion.present) {
+      map['base_entity_version'] = Variable<int>(baseEntityVersion.value);
+    }
+    if (isDeletionIntent.present) {
+      map['is_deletion_intent'] = Variable<bool>(isDeletionIntent.value);
+    }
+    if (occurredAtUtc.present) {
+      map['occurred_at_utc'] = Variable<DateTime>(occurredAtUtc.value);
+    }
+    if (businessDate.present) {
+      map['business_date'] = Variable<String>(businessDate.value);
+    }
+    if (causalPredecessorOperationId.present) {
+      map['causal_predecessor_operation_id'] =
+          Variable<String>(causalPredecessorOperationId.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (attemptCount.present) {
+      map['attempt_count'] = Variable<int>(attemptCount.value);
+    }
+    if (nextAttemptAtUtc.present) {
+      map['next_attempt_at_utc'] = Variable<DateTime>(nextAttemptAtUtc.value);
+    }
+    if (lastAttemptAtUtc.present) {
+      map['last_attempt_at_utc'] = Variable<DateTime>(lastAttemptAtUtc.value);
+    }
+    if (lastErrorClass.present) {
+      map['last_error_class'] = Variable<String>(lastErrorClass.value);
+    }
+    if (lastErrorCode.present) {
+      map['last_error_code'] = Variable<String>(lastErrorCode.value);
+    }
+    if (claimToken.present) {
+      map['claim_token'] = Variable<String>(claimToken.value);
+    }
+    if (leaseExpiresAtUtc.present) {
+      map['lease_expires_at_utc'] = Variable<DateTime>(leaseExpiresAtUtc.value);
+    }
+    if (ackSchemaVersion.present) {
+      map['ack_schema_version'] = Variable<int>(ackSchemaVersion.value);
+    }
+    if (ackPayloadJson.present) {
+      map['ack_payload_json'] = Variable<String>(ackPayloadJson.value);
+    }
+    if (ackPayloadFingerprint.present) {
+      map['ack_payload_fingerprint'] =
+          Variable<String>(ackPayloadFingerprint.value);
+    }
+    if (serverResultId.present) {
+      map['server_result_id'] = Variable<String>(serverResultId.value);
+    }
+    if (serverAcceptedAtUtc.present) {
+      map['server_accepted_at_utc'] =
+          Variable<DateTime>(serverAcceptedAtUtc.value);
+    }
+    if (acknowledgedEntityVersion.present) {
+      map['acknowledged_entity_version'] =
+          Variable<int>(acknowledgedEntityVersion.value);
+    }
+    if (conflictId.present) {
+      map['conflict_id'] = Variable<String>(conflictId.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (recordVersion.present) {
+      map['record_version'] = Variable<int>(recordVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableOutboxOperationsCompanion(')
+          ..write('operationId: $operationId, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('actorAuthUserId: $actorAuthUserId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('capturedRole: $capturedRole, ')
+          ..write('operationKind: $operationKind, ')
+          ..write('aggregateType: $aggregateType, ')
+          ..write('aggregateId: $aggregateId, ')
+          ..write('payloadSchemaVersion: $payloadSchemaVersion, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('baseEntityVersion: $baseEntityVersion, ')
+          ..write('isDeletionIntent: $isDeletionIntent, ')
+          ..write('occurredAtUtc: $occurredAtUtc, ')
+          ..write('businessDate: $businessDate, ')
+          ..write(
+              'causalPredecessorOperationId: $causalPredecessorOperationId, ')
+          ..write('state: $state, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('nextAttemptAtUtc: $nextAttemptAtUtc, ')
+          ..write('lastAttemptAtUtc: $lastAttemptAtUtc, ')
+          ..write('lastErrorClass: $lastErrorClass, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('claimToken: $claimToken, ')
+          ..write('leaseExpiresAtUtc: $leaseExpiresAtUtc, ')
+          ..write('ackSchemaVersion: $ackSchemaVersion, ')
+          ..write('ackPayloadJson: $ackPayloadJson, ')
+          ..write('ackPayloadFingerprint: $ackPayloadFingerprint, ')
+          ..write('serverResultId: $serverResultId, ')
+          ..write('serverAcceptedAtUtc: $serverAcceptedAtUtc, ')
+          ..write('acknowledgedEntityVersion: $acknowledgedEntityVersion, ')
+          ..write('conflictId: $conflictId, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DurableConflictsTable extends DurableConflicts
+    with TableInfo<$DurableConflictsTable, DurableConflictRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DurableConflictsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _conflictIdMeta =
+      const VerificationMeta('conflictId');
+  @override
+  late final GeneratedColumn<String> conflictId = GeneratedColumn<String>(
+      'conflict_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _conflictKeyMeta =
+      const VerificationMeta('conflictKey');
+  @override
+  late final GeneratedColumn<String> conflictKey = GeneratedColumn<String>(
+      'conflict_key', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _scopeKindMeta =
+      const VerificationMeta('scopeKind');
+  @override
+  late final GeneratedColumn<String> scopeKind = GeneratedColumn<String>(
+      'scope_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _entityTypeMeta =
+      const VerificationMeta('entityType');
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+      'entity_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _entityIdMeta =
+      const VerificationMeta('entityId');
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+      'entity_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localEntityVersionMeta =
+      const VerificationMeta('localEntityVersion');
+  @override
+  late final GeneratedColumn<int> localEntityVersion = GeneratedColumn<int>(
+      'local_entity_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _remoteEntityVersionMeta =
+      const VerificationMeta('remoteEntityVersion');
+  @override
+  late final GeneratedColumn<int> remoteEntityVersion = GeneratedColumn<int>(
+      'remote_entity_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _localPayloadJsonMeta =
+      const VerificationMeta('localPayloadJson');
+  @override
+  late final GeneratedColumn<String> localPayloadJson = GeneratedColumn<String>(
+      'local_payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remotePayloadJsonMeta =
+      const VerificationMeta('remotePayloadJson');
+  @override
+  late final GeneratedColumn<String> remotePayloadJson =
+      GeneratedColumn<String>('remote_payload_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localPayloadFingerprintMeta =
+      const VerificationMeta('localPayloadFingerprint');
+  @override
+  late final GeneratedColumn<String> localPayloadFingerprint =
+      GeneratedColumn<String>('local_payload_fingerprint', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remotePayloadFingerprintMeta =
+      const VerificationMeta('remotePayloadFingerprint');
+  @override
+  late final GeneratedColumn<String> remotePayloadFingerprint =
+      GeneratedColumn<String>('remote_payload_fingerprint', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localOperationIdMeta =
+      const VerificationMeta('localOperationId');
+  @override
+  late final GeneratedColumn<String> localOperationId = GeneratedColumn<String>(
+      'local_operation_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteOperationIdMeta =
+      const VerificationMeta('remoteOperationId');
+  @override
+  late final GeneratedColumn<String> remoteOperationId =
+      GeneratedColumn<String>('remote_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteSourceAuthorityMeta =
+      const VerificationMeta('remoteSourceAuthority');
+  @override
+  late final GeneratedColumn<String> remoteSourceAuthority =
+      GeneratedColumn<String>('remote_source_authority', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _localDeletedMeta =
+      const VerificationMeta('localDeleted');
+  @override
+  late final GeneratedColumn<bool> localDeleted = GeneratedColumn<bool>(
+      'local_deleted', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("local_deleted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _remoteDeletedMeta =
+      const VerificationMeta('remoteDeleted');
+  @override
+  late final GeneratedColumn<bool> remoteDeleted = GeneratedColumn<bool>(
+      'remote_deleted', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("remote_deleted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _localDeletionMetadataJsonMeta =
+      const VerificationMeta('localDeletionMetadataJson');
+  @override
+  late final GeneratedColumn<String> localDeletionMetadataJson =
+      GeneratedColumn<String>('local_deletion_metadata_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteDeletionMetadataJsonMeta =
+      const VerificationMeta('remoteDeletionMetadataJson');
+  @override
+  late final GeneratedColumn<String> remoteDeletionMetadataJson =
+      GeneratedColumn<String>(
+          'remote_deletion_metadata_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _classificationMeta =
+      const VerificationMeta('classification');
+  @override
+  late final GeneratedColumn<String> classification = GeneratedColumn<String>(
+      'classification', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _detectedAtUtcMeta =
+      const VerificationMeta('detectedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> detectedAtUtc =
+      GeneratedColumn<DateTime>('detected_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _resolutionStateMeta =
+      const VerificationMeta('resolutionState');
+  @override
+  late final GeneratedColumn<String> resolutionState = GeneratedColumn<String>(
+      'resolution_state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _resolutionKindMeta =
+      const VerificationMeta('resolutionKind');
+  @override
+  late final GeneratedColumn<String> resolutionKind = GeneratedColumn<String>(
+      'resolution_kind', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resolutionOperationIdMeta =
+      const VerificationMeta('resolutionOperationId');
+  @override
+  late final GeneratedColumn<String> resolutionOperationId =
+      GeneratedColumn<String>('resolution_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resolverAuthUserIdMeta =
+      const VerificationMeta('resolverAuthUserId');
+  @override
+  late final GeneratedColumn<String> resolverAuthUserId =
+      GeneratedColumn<String>('resolver_auth_user_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resolvedAtUtcMeta =
+      const VerificationMeta('resolvedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> resolvedAtUtc =
+      GeneratedColumn<DateTime>('resolved_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtUtcMeta =
+      const VerificationMeta('createdAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+      'created_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _recordVersionMeta =
+      const VerificationMeta('recordVersion');
+  @override
+  late final GeneratedColumn<int> recordVersion = GeneratedColumn<int>(
+      'record_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        conflictId,
+        conflictKey,
+        businessId,
+        scopeKind,
+        warehouseId,
+        entityType,
+        entityId,
+        localEntityVersion,
+        remoteEntityVersion,
+        localPayloadJson,
+        remotePayloadJson,
+        localPayloadFingerprint,
+        remotePayloadFingerprint,
+        localOperationId,
+        remoteOperationId,
+        remoteSourceAuthority,
+        localDeleted,
+        remoteDeleted,
+        localDeletionMetadataJson,
+        remoteDeletionMetadataJson,
+        classification,
+        detectedAtUtc,
+        resolutionState,
+        resolutionKind,
+        resolutionOperationId,
+        resolverAuthUserId,
+        resolvedAtUtc,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'durable_conflicts';
+  @override
+  VerificationContext validateIntegrity(Insertable<DurableConflictRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('conflict_id')) {
+      context.handle(
+          _conflictIdMeta,
+          conflictId.isAcceptableOrUnknown(
+              data['conflict_id']!, _conflictIdMeta));
+    } else if (isInserting) {
+      context.missing(_conflictIdMeta);
+    }
+    if (data.containsKey('conflict_key')) {
+      context.handle(
+          _conflictKeyMeta,
+          conflictKey.isAcceptableOrUnknown(
+              data['conflict_key']!, _conflictKeyMeta));
+    } else if (isInserting) {
+      context.missing(_conflictKeyMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('scope_kind')) {
+      context.handle(_scopeKindMeta,
+          scopeKind.isAcceptableOrUnknown(data['scope_kind']!, _scopeKindMeta));
+    } else if (isInserting) {
+      context.missing(_scopeKindMeta);
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+          _entityTypeMeta,
+          entityType.isAcceptableOrUnknown(
+              data['entity_type']!, _entityTypeMeta));
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(_entityIdMeta,
+          entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta));
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('local_entity_version')) {
+      context.handle(
+          _localEntityVersionMeta,
+          localEntityVersion.isAcceptableOrUnknown(
+              data['local_entity_version']!, _localEntityVersionMeta));
+    }
+    if (data.containsKey('remote_entity_version')) {
+      context.handle(
+          _remoteEntityVersionMeta,
+          remoteEntityVersion.isAcceptableOrUnknown(
+              data['remote_entity_version']!, _remoteEntityVersionMeta));
+    }
+    if (data.containsKey('local_payload_json')) {
+      context.handle(
+          _localPayloadJsonMeta,
+          localPayloadJson.isAcceptableOrUnknown(
+              data['local_payload_json']!, _localPayloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_localPayloadJsonMeta);
+    }
+    if (data.containsKey('remote_payload_json')) {
+      context.handle(
+          _remotePayloadJsonMeta,
+          remotePayloadJson.isAcceptableOrUnknown(
+              data['remote_payload_json']!, _remotePayloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_remotePayloadJsonMeta);
+    }
+    if (data.containsKey('local_payload_fingerprint')) {
+      context.handle(
+          _localPayloadFingerprintMeta,
+          localPayloadFingerprint.isAcceptableOrUnknown(
+              data['local_payload_fingerprint']!,
+              _localPayloadFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_localPayloadFingerprintMeta);
+    }
+    if (data.containsKey('remote_payload_fingerprint')) {
+      context.handle(
+          _remotePayloadFingerprintMeta,
+          remotePayloadFingerprint.isAcceptableOrUnknown(
+              data['remote_payload_fingerprint']!,
+              _remotePayloadFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_remotePayloadFingerprintMeta);
+    }
+    if (data.containsKey('local_operation_id')) {
+      context.handle(
+          _localOperationIdMeta,
+          localOperationId.isAcceptableOrUnknown(
+              data['local_operation_id']!, _localOperationIdMeta));
+    }
+    if (data.containsKey('remote_operation_id')) {
+      context.handle(
+          _remoteOperationIdMeta,
+          remoteOperationId.isAcceptableOrUnknown(
+              data['remote_operation_id']!, _remoteOperationIdMeta));
+    }
+    if (data.containsKey('remote_source_authority')) {
+      context.handle(
+          _remoteSourceAuthorityMeta,
+          remoteSourceAuthority.isAcceptableOrUnknown(
+              data['remote_source_authority']!, _remoteSourceAuthorityMeta));
+    }
+    if (data.containsKey('local_deleted')) {
+      context.handle(
+          _localDeletedMeta,
+          localDeleted.isAcceptableOrUnknown(
+              data['local_deleted']!, _localDeletedMeta));
+    }
+    if (data.containsKey('remote_deleted')) {
+      context.handle(
+          _remoteDeletedMeta,
+          remoteDeleted.isAcceptableOrUnknown(
+              data['remote_deleted']!, _remoteDeletedMeta));
+    }
+    if (data.containsKey('local_deletion_metadata_json')) {
+      context.handle(
+          _localDeletionMetadataJsonMeta,
+          localDeletionMetadataJson.isAcceptableOrUnknown(
+              data['local_deletion_metadata_json']!,
+              _localDeletionMetadataJsonMeta));
+    }
+    if (data.containsKey('remote_deletion_metadata_json')) {
+      context.handle(
+          _remoteDeletionMetadataJsonMeta,
+          remoteDeletionMetadataJson.isAcceptableOrUnknown(
+              data['remote_deletion_metadata_json']!,
+              _remoteDeletionMetadataJsonMeta));
+    }
+    if (data.containsKey('classification')) {
+      context.handle(
+          _classificationMeta,
+          classification.isAcceptableOrUnknown(
+              data['classification']!, _classificationMeta));
+    } else if (isInserting) {
+      context.missing(_classificationMeta);
+    }
+    if (data.containsKey('detected_at_utc')) {
+      context.handle(
+          _detectedAtUtcMeta,
+          detectedAtUtc.isAcceptableOrUnknown(
+              data['detected_at_utc']!, _detectedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_detectedAtUtcMeta);
+    }
+    if (data.containsKey('resolution_state')) {
+      context.handle(
+          _resolutionStateMeta,
+          resolutionState.isAcceptableOrUnknown(
+              data['resolution_state']!, _resolutionStateMeta));
+    } else if (isInserting) {
+      context.missing(_resolutionStateMeta);
+    }
+    if (data.containsKey('resolution_kind')) {
+      context.handle(
+          _resolutionKindMeta,
+          resolutionKind.isAcceptableOrUnknown(
+              data['resolution_kind']!, _resolutionKindMeta));
+    }
+    if (data.containsKey('resolution_operation_id')) {
+      context.handle(
+          _resolutionOperationIdMeta,
+          resolutionOperationId.isAcceptableOrUnknown(
+              data['resolution_operation_id']!, _resolutionOperationIdMeta));
+    }
+    if (data.containsKey('resolver_auth_user_id')) {
+      context.handle(
+          _resolverAuthUserIdMeta,
+          resolverAuthUserId.isAcceptableOrUnknown(
+              data['resolver_auth_user_id']!, _resolverAuthUserIdMeta));
+    }
+    if (data.containsKey('resolved_at_utc')) {
+      context.handle(
+          _resolvedAtUtcMeta,
+          resolvedAtUtc.isAcceptableOrUnknown(
+              data['resolved_at_utc']!, _resolvedAtUtcMeta));
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+          _createdAtUtcMeta,
+          createdAtUtc.isAcceptableOrUnknown(
+              data['created_at_utc']!, _createdAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('record_version')) {
+      context.handle(
+          _recordVersionMeta,
+          recordVersion.isAcceptableOrUnknown(
+              data['record_version']!, _recordVersionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {conflictId};
+  @override
+  DurableConflictRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DurableConflictRow(
+      conflictId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}conflict_id'])!,
+      conflictKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}conflict_key'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      scopeKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}scope_kind'])!,
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id']),
+      entityType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entity_type'])!,
+      entityId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entity_id'])!,
+      localEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}local_entity_version']),
+      remoteEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}remote_entity_version']),
+      localPayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_payload_json'])!,
+      remotePayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}remote_payload_json'])!,
+      localPayloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}local_payload_fingerprint'])!,
+      remotePayloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}remote_payload_fingerprint'])!,
+      localOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_operation_id']),
+      remoteOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}remote_operation_id']),
+      remoteSourceAuthority: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}remote_source_authority']),
+      localDeleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}local_deleted'])!,
+      remoteDeleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}remote_deleted'])!,
+      localDeletionMetadataJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}local_deletion_metadata_json']),
+      remoteDeletionMetadataJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}remote_deletion_metadata_json']),
+      classification: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}classification'])!,
+      detectedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}detected_at_utc'])!,
+      resolutionState: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}resolution_state'])!,
+      resolutionKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}resolution_kind']),
+      resolutionOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}resolution_operation_id']),
+      resolverAuthUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}resolver_auth_user_id']),
+      resolvedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}resolved_at_utc']),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}created_at_utc'])!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      recordVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}record_version'])!,
+    );
+  }
+
+  @override
+  $DurableConflictsTable createAlias(String alias) {
+    return $DurableConflictsTable(attachedDatabase, alias);
+  }
+}
+
+class DurableConflictRow extends DataClass
+    implements Insertable<DurableConflictRow> {
+  final String conflictId;
+  final String conflictKey;
+  final String businessId;
+  final String scopeKind;
+  final String? warehouseId;
+  final String entityType;
+  final String entityId;
+  final int? localEntityVersion;
+  final int? remoteEntityVersion;
+  final String localPayloadJson;
+  final String remotePayloadJson;
+  final String localPayloadFingerprint;
+  final String remotePayloadFingerprint;
+  final String? localOperationId;
+  final String? remoteOperationId;
+  final String? remoteSourceAuthority;
+  final bool localDeleted;
+  final bool remoteDeleted;
+  final String? localDeletionMetadataJson;
+  final String? remoteDeletionMetadataJson;
+  final String classification;
+  final DateTime detectedAtUtc;
+  final String resolutionState;
+  final String? resolutionKind;
+  final String? resolutionOperationId;
+  final String? resolverAuthUserId;
+  final DateTime? resolvedAtUtc;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  final int recordVersion;
+  const DurableConflictRow(
+      {required this.conflictId,
+      required this.conflictKey,
+      required this.businessId,
+      required this.scopeKind,
+      this.warehouseId,
+      required this.entityType,
+      required this.entityId,
+      this.localEntityVersion,
+      this.remoteEntityVersion,
+      required this.localPayloadJson,
+      required this.remotePayloadJson,
+      required this.localPayloadFingerprint,
+      required this.remotePayloadFingerprint,
+      this.localOperationId,
+      this.remoteOperationId,
+      this.remoteSourceAuthority,
+      required this.localDeleted,
+      required this.remoteDeleted,
+      this.localDeletionMetadataJson,
+      this.remoteDeletionMetadataJson,
+      required this.classification,
+      required this.detectedAtUtc,
+      required this.resolutionState,
+      this.resolutionKind,
+      this.resolutionOperationId,
+      this.resolverAuthUserId,
+      this.resolvedAtUtc,
+      required this.createdAtUtc,
+      required this.updatedAtUtc,
+      required this.recordVersion});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['conflict_id'] = Variable<String>(conflictId);
+    map['conflict_key'] = Variable<String>(conflictKey);
+    map['business_id'] = Variable<String>(businessId);
+    map['scope_kind'] = Variable<String>(scopeKind);
+    if (!nullToAbsent || warehouseId != null) {
+      map['warehouse_id'] = Variable<String>(warehouseId);
+    }
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    if (!nullToAbsent || localEntityVersion != null) {
+      map['local_entity_version'] = Variable<int>(localEntityVersion);
+    }
+    if (!nullToAbsent || remoteEntityVersion != null) {
+      map['remote_entity_version'] = Variable<int>(remoteEntityVersion);
+    }
+    map['local_payload_json'] = Variable<String>(localPayloadJson);
+    map['remote_payload_json'] = Variable<String>(remotePayloadJson);
+    map['local_payload_fingerprint'] =
+        Variable<String>(localPayloadFingerprint);
+    map['remote_payload_fingerprint'] =
+        Variable<String>(remotePayloadFingerprint);
+    if (!nullToAbsent || localOperationId != null) {
+      map['local_operation_id'] = Variable<String>(localOperationId);
+    }
+    if (!nullToAbsent || remoteOperationId != null) {
+      map['remote_operation_id'] = Variable<String>(remoteOperationId);
+    }
+    if (!nullToAbsent || remoteSourceAuthority != null) {
+      map['remote_source_authority'] = Variable<String>(remoteSourceAuthority);
+    }
+    map['local_deleted'] = Variable<bool>(localDeleted);
+    map['remote_deleted'] = Variable<bool>(remoteDeleted);
+    if (!nullToAbsent || localDeletionMetadataJson != null) {
+      map['local_deletion_metadata_json'] =
+          Variable<String>(localDeletionMetadataJson);
+    }
+    if (!nullToAbsent || remoteDeletionMetadataJson != null) {
+      map['remote_deletion_metadata_json'] =
+          Variable<String>(remoteDeletionMetadataJson);
+    }
+    map['classification'] = Variable<String>(classification);
+    map['detected_at_utc'] = Variable<DateTime>(detectedAtUtc);
+    map['resolution_state'] = Variable<String>(resolutionState);
+    if (!nullToAbsent || resolutionKind != null) {
+      map['resolution_kind'] = Variable<String>(resolutionKind);
+    }
+    if (!nullToAbsent || resolutionOperationId != null) {
+      map['resolution_operation_id'] = Variable<String>(resolutionOperationId);
+    }
+    if (!nullToAbsent || resolverAuthUserId != null) {
+      map['resolver_auth_user_id'] = Variable<String>(resolverAuthUserId);
+    }
+    if (!nullToAbsent || resolvedAtUtc != null) {
+      map['resolved_at_utc'] = Variable<DateTime>(resolvedAtUtc);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['record_version'] = Variable<int>(recordVersion);
+    return map;
+  }
+
+  DurableConflictsCompanion toCompanion(bool nullToAbsent) {
+    return DurableConflictsCompanion(
+      conflictId: Value(conflictId),
+      conflictKey: Value(conflictKey),
+      businessId: Value(businessId),
+      scopeKind: Value(scopeKind),
+      warehouseId: warehouseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warehouseId),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      localEntityVersion: localEntityVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localEntityVersion),
+      remoteEntityVersion: remoteEntityVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteEntityVersion),
+      localPayloadJson: Value(localPayloadJson),
+      remotePayloadJson: Value(remotePayloadJson),
+      localPayloadFingerprint: Value(localPayloadFingerprint),
+      remotePayloadFingerprint: Value(remotePayloadFingerprint),
+      localOperationId: localOperationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localOperationId),
+      remoteOperationId: remoteOperationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteOperationId),
+      remoteSourceAuthority: remoteSourceAuthority == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteSourceAuthority),
+      localDeleted: Value(localDeleted),
+      remoteDeleted: Value(remoteDeleted),
+      localDeletionMetadataJson:
+          localDeletionMetadataJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(localDeletionMetadataJson),
+      remoteDeletionMetadataJson:
+          remoteDeletionMetadataJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteDeletionMetadataJson),
+      classification: Value(classification),
+      detectedAtUtc: Value(detectedAtUtc),
+      resolutionState: Value(resolutionState),
+      resolutionKind: resolutionKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolutionKind),
+      resolutionOperationId: resolutionOperationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolutionOperationId),
+      resolverAuthUserId: resolverAuthUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolverAuthUserId),
+      resolvedAtUtc: resolvedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedAtUtc),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+      recordVersion: Value(recordVersion),
+    );
+  }
+
+  factory DurableConflictRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DurableConflictRow(
+      conflictId: serializer.fromJson<String>(json['conflictId']),
+      conflictKey: serializer.fromJson<String>(json['conflictKey']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      scopeKind: serializer.fromJson<String>(json['scopeKind']),
+      warehouseId: serializer.fromJson<String?>(json['warehouseId']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      localEntityVersion: serializer.fromJson<int?>(json['localEntityVersion']),
+      remoteEntityVersion:
+          serializer.fromJson<int?>(json['remoteEntityVersion']),
+      localPayloadJson: serializer.fromJson<String>(json['localPayloadJson']),
+      remotePayloadJson: serializer.fromJson<String>(json['remotePayloadJson']),
+      localPayloadFingerprint:
+          serializer.fromJson<String>(json['localPayloadFingerprint']),
+      remotePayloadFingerprint:
+          serializer.fromJson<String>(json['remotePayloadFingerprint']),
+      localOperationId: serializer.fromJson<String?>(json['localOperationId']),
+      remoteOperationId:
+          serializer.fromJson<String?>(json['remoteOperationId']),
+      remoteSourceAuthority:
+          serializer.fromJson<String?>(json['remoteSourceAuthority']),
+      localDeleted: serializer.fromJson<bool>(json['localDeleted']),
+      remoteDeleted: serializer.fromJson<bool>(json['remoteDeleted']),
+      localDeletionMetadataJson:
+          serializer.fromJson<String?>(json['localDeletionMetadataJson']),
+      remoteDeletionMetadataJson:
+          serializer.fromJson<String?>(json['remoteDeletionMetadataJson']),
+      classification: serializer.fromJson<String>(json['classification']),
+      detectedAtUtc: serializer.fromJson<DateTime>(json['detectedAtUtc']),
+      resolutionState: serializer.fromJson<String>(json['resolutionState']),
+      resolutionKind: serializer.fromJson<String?>(json['resolutionKind']),
+      resolutionOperationId:
+          serializer.fromJson<String?>(json['resolutionOperationId']),
+      resolverAuthUserId:
+          serializer.fromJson<String?>(json['resolverAuthUserId']),
+      resolvedAtUtc: serializer.fromJson<DateTime?>(json['resolvedAtUtc']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      recordVersion: serializer.fromJson<int>(json['recordVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'conflictId': serializer.toJson<String>(conflictId),
+      'conflictKey': serializer.toJson<String>(conflictKey),
+      'businessId': serializer.toJson<String>(businessId),
+      'scopeKind': serializer.toJson<String>(scopeKind),
+      'warehouseId': serializer.toJson<String?>(warehouseId),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'localEntityVersion': serializer.toJson<int?>(localEntityVersion),
+      'remoteEntityVersion': serializer.toJson<int?>(remoteEntityVersion),
+      'localPayloadJson': serializer.toJson<String>(localPayloadJson),
+      'remotePayloadJson': serializer.toJson<String>(remotePayloadJson),
+      'localPayloadFingerprint':
+          serializer.toJson<String>(localPayloadFingerprint),
+      'remotePayloadFingerprint':
+          serializer.toJson<String>(remotePayloadFingerprint),
+      'localOperationId': serializer.toJson<String?>(localOperationId),
+      'remoteOperationId': serializer.toJson<String?>(remoteOperationId),
+      'remoteSourceAuthority':
+          serializer.toJson<String?>(remoteSourceAuthority),
+      'localDeleted': serializer.toJson<bool>(localDeleted),
+      'remoteDeleted': serializer.toJson<bool>(remoteDeleted),
+      'localDeletionMetadataJson':
+          serializer.toJson<String?>(localDeletionMetadataJson),
+      'remoteDeletionMetadataJson':
+          serializer.toJson<String?>(remoteDeletionMetadataJson),
+      'classification': serializer.toJson<String>(classification),
+      'detectedAtUtc': serializer.toJson<DateTime>(detectedAtUtc),
+      'resolutionState': serializer.toJson<String>(resolutionState),
+      'resolutionKind': serializer.toJson<String?>(resolutionKind),
+      'resolutionOperationId':
+          serializer.toJson<String?>(resolutionOperationId),
+      'resolverAuthUserId': serializer.toJson<String?>(resolverAuthUserId),
+      'resolvedAtUtc': serializer.toJson<DateTime?>(resolvedAtUtc),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'recordVersion': serializer.toJson<int>(recordVersion),
+    };
+  }
+
+  DurableConflictRow copyWith(
+          {String? conflictId,
+          String? conflictKey,
+          String? businessId,
+          String? scopeKind,
+          Value<String?> warehouseId = const Value.absent(),
+          String? entityType,
+          String? entityId,
+          Value<int?> localEntityVersion = const Value.absent(),
+          Value<int?> remoteEntityVersion = const Value.absent(),
+          String? localPayloadJson,
+          String? remotePayloadJson,
+          String? localPayloadFingerprint,
+          String? remotePayloadFingerprint,
+          Value<String?> localOperationId = const Value.absent(),
+          Value<String?> remoteOperationId = const Value.absent(),
+          Value<String?> remoteSourceAuthority = const Value.absent(),
+          bool? localDeleted,
+          bool? remoteDeleted,
+          Value<String?> localDeletionMetadataJson = const Value.absent(),
+          Value<String?> remoteDeletionMetadataJson = const Value.absent(),
+          String? classification,
+          DateTime? detectedAtUtc,
+          String? resolutionState,
+          Value<String?> resolutionKind = const Value.absent(),
+          Value<String?> resolutionOperationId = const Value.absent(),
+          Value<String?> resolverAuthUserId = const Value.absent(),
+          Value<DateTime?> resolvedAtUtc = const Value.absent(),
+          DateTime? createdAtUtc,
+          DateTime? updatedAtUtc,
+          int? recordVersion}) =>
+      DurableConflictRow(
+        conflictId: conflictId ?? this.conflictId,
+        conflictKey: conflictKey ?? this.conflictKey,
+        businessId: businessId ?? this.businessId,
+        scopeKind: scopeKind ?? this.scopeKind,
+        warehouseId: warehouseId.present ? warehouseId.value : this.warehouseId,
+        entityType: entityType ?? this.entityType,
+        entityId: entityId ?? this.entityId,
+        localEntityVersion: localEntityVersion.present
+            ? localEntityVersion.value
+            : this.localEntityVersion,
+        remoteEntityVersion: remoteEntityVersion.present
+            ? remoteEntityVersion.value
+            : this.remoteEntityVersion,
+        localPayloadJson: localPayloadJson ?? this.localPayloadJson,
+        remotePayloadJson: remotePayloadJson ?? this.remotePayloadJson,
+        localPayloadFingerprint:
+            localPayloadFingerprint ?? this.localPayloadFingerprint,
+        remotePayloadFingerprint:
+            remotePayloadFingerprint ?? this.remotePayloadFingerprint,
+        localOperationId: localOperationId.present
+            ? localOperationId.value
+            : this.localOperationId,
+        remoteOperationId: remoteOperationId.present
+            ? remoteOperationId.value
+            : this.remoteOperationId,
+        remoteSourceAuthority: remoteSourceAuthority.present
+            ? remoteSourceAuthority.value
+            : this.remoteSourceAuthority,
+        localDeleted: localDeleted ?? this.localDeleted,
+        remoteDeleted: remoteDeleted ?? this.remoteDeleted,
+        localDeletionMetadataJson: localDeletionMetadataJson.present
+            ? localDeletionMetadataJson.value
+            : this.localDeletionMetadataJson,
+        remoteDeletionMetadataJson: remoteDeletionMetadataJson.present
+            ? remoteDeletionMetadataJson.value
+            : this.remoteDeletionMetadataJson,
+        classification: classification ?? this.classification,
+        detectedAtUtc: detectedAtUtc ?? this.detectedAtUtc,
+        resolutionState: resolutionState ?? this.resolutionState,
+        resolutionKind:
+            resolutionKind.present ? resolutionKind.value : this.resolutionKind,
+        resolutionOperationId: resolutionOperationId.present
+            ? resolutionOperationId.value
+            : this.resolutionOperationId,
+        resolverAuthUserId: resolverAuthUserId.present
+            ? resolverAuthUserId.value
+            : this.resolverAuthUserId,
+        resolvedAtUtc:
+            resolvedAtUtc.present ? resolvedAtUtc.value : this.resolvedAtUtc,
+        createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        recordVersion: recordVersion ?? this.recordVersion,
+      );
+  DurableConflictRow copyWithCompanion(DurableConflictsCompanion data) {
+    return DurableConflictRow(
+      conflictId:
+          data.conflictId.present ? data.conflictId.value : this.conflictId,
+      conflictKey:
+          data.conflictKey.present ? data.conflictKey.value : this.conflictKey,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      scopeKind: data.scopeKind.present ? data.scopeKind.value : this.scopeKind,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      localEntityVersion: data.localEntityVersion.present
+          ? data.localEntityVersion.value
+          : this.localEntityVersion,
+      remoteEntityVersion: data.remoteEntityVersion.present
+          ? data.remoteEntityVersion.value
+          : this.remoteEntityVersion,
+      localPayloadJson: data.localPayloadJson.present
+          ? data.localPayloadJson.value
+          : this.localPayloadJson,
+      remotePayloadJson: data.remotePayloadJson.present
+          ? data.remotePayloadJson.value
+          : this.remotePayloadJson,
+      localPayloadFingerprint: data.localPayloadFingerprint.present
+          ? data.localPayloadFingerprint.value
+          : this.localPayloadFingerprint,
+      remotePayloadFingerprint: data.remotePayloadFingerprint.present
+          ? data.remotePayloadFingerprint.value
+          : this.remotePayloadFingerprint,
+      localOperationId: data.localOperationId.present
+          ? data.localOperationId.value
+          : this.localOperationId,
+      remoteOperationId: data.remoteOperationId.present
+          ? data.remoteOperationId.value
+          : this.remoteOperationId,
+      remoteSourceAuthority: data.remoteSourceAuthority.present
+          ? data.remoteSourceAuthority.value
+          : this.remoteSourceAuthority,
+      localDeleted: data.localDeleted.present
+          ? data.localDeleted.value
+          : this.localDeleted,
+      remoteDeleted: data.remoteDeleted.present
+          ? data.remoteDeleted.value
+          : this.remoteDeleted,
+      localDeletionMetadataJson: data.localDeletionMetadataJson.present
+          ? data.localDeletionMetadataJson.value
+          : this.localDeletionMetadataJson,
+      remoteDeletionMetadataJson: data.remoteDeletionMetadataJson.present
+          ? data.remoteDeletionMetadataJson.value
+          : this.remoteDeletionMetadataJson,
+      classification: data.classification.present
+          ? data.classification.value
+          : this.classification,
+      detectedAtUtc: data.detectedAtUtc.present
+          ? data.detectedAtUtc.value
+          : this.detectedAtUtc,
+      resolutionState: data.resolutionState.present
+          ? data.resolutionState.value
+          : this.resolutionState,
+      resolutionKind: data.resolutionKind.present
+          ? data.resolutionKind.value
+          : this.resolutionKind,
+      resolutionOperationId: data.resolutionOperationId.present
+          ? data.resolutionOperationId.value
+          : this.resolutionOperationId,
+      resolverAuthUserId: data.resolverAuthUserId.present
+          ? data.resolverAuthUserId.value
+          : this.resolverAuthUserId,
+      resolvedAtUtc: data.resolvedAtUtc.present
+          ? data.resolvedAtUtc.value
+          : this.resolvedAtUtc,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      recordVersion: data.recordVersion.present
+          ? data.recordVersion.value
+          : this.recordVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableConflictRow(')
+          ..write('conflictId: $conflictId, ')
+          ..write('conflictKey: $conflictKey, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('localEntityVersion: $localEntityVersion, ')
+          ..write('remoteEntityVersion: $remoteEntityVersion, ')
+          ..write('localPayloadJson: $localPayloadJson, ')
+          ..write('remotePayloadJson: $remotePayloadJson, ')
+          ..write('localPayloadFingerprint: $localPayloadFingerprint, ')
+          ..write('remotePayloadFingerprint: $remotePayloadFingerprint, ')
+          ..write('localOperationId: $localOperationId, ')
+          ..write('remoteOperationId: $remoteOperationId, ')
+          ..write('remoteSourceAuthority: $remoteSourceAuthority, ')
+          ..write('localDeleted: $localDeleted, ')
+          ..write('remoteDeleted: $remoteDeleted, ')
+          ..write('localDeletionMetadataJson: $localDeletionMetadataJson, ')
+          ..write('remoteDeletionMetadataJson: $remoteDeletionMetadataJson, ')
+          ..write('classification: $classification, ')
+          ..write('detectedAtUtc: $detectedAtUtc, ')
+          ..write('resolutionState: $resolutionState, ')
+          ..write('resolutionKind: $resolutionKind, ')
+          ..write('resolutionOperationId: $resolutionOperationId, ')
+          ..write('resolverAuthUserId: $resolverAuthUserId, ')
+          ..write('resolvedAtUtc: $resolvedAtUtc, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        conflictId,
+        conflictKey,
+        businessId,
+        scopeKind,
+        warehouseId,
+        entityType,
+        entityId,
+        localEntityVersion,
+        remoteEntityVersion,
+        localPayloadJson,
+        remotePayloadJson,
+        localPayloadFingerprint,
+        remotePayloadFingerprint,
+        localOperationId,
+        remoteOperationId,
+        remoteSourceAuthority,
+        localDeleted,
+        remoteDeleted,
+        localDeletionMetadataJson,
+        remoteDeletionMetadataJson,
+        classification,
+        detectedAtUtc,
+        resolutionState,
+        resolutionKind,
+        resolutionOperationId,
+        resolverAuthUserId,
+        resolvedAtUtc,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DurableConflictRow &&
+          other.conflictId == this.conflictId &&
+          other.conflictKey == this.conflictKey &&
+          other.businessId == this.businessId &&
+          other.scopeKind == this.scopeKind &&
+          other.warehouseId == this.warehouseId &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.localEntityVersion == this.localEntityVersion &&
+          other.remoteEntityVersion == this.remoteEntityVersion &&
+          other.localPayloadJson == this.localPayloadJson &&
+          other.remotePayloadJson == this.remotePayloadJson &&
+          other.localPayloadFingerprint == this.localPayloadFingerprint &&
+          other.remotePayloadFingerprint == this.remotePayloadFingerprint &&
+          other.localOperationId == this.localOperationId &&
+          other.remoteOperationId == this.remoteOperationId &&
+          other.remoteSourceAuthority == this.remoteSourceAuthority &&
+          other.localDeleted == this.localDeleted &&
+          other.remoteDeleted == this.remoteDeleted &&
+          other.localDeletionMetadataJson == this.localDeletionMetadataJson &&
+          other.remoteDeletionMetadataJson == this.remoteDeletionMetadataJson &&
+          other.classification == this.classification &&
+          other.detectedAtUtc == this.detectedAtUtc &&
+          other.resolutionState == this.resolutionState &&
+          other.resolutionKind == this.resolutionKind &&
+          other.resolutionOperationId == this.resolutionOperationId &&
+          other.resolverAuthUserId == this.resolverAuthUserId &&
+          other.resolvedAtUtc == this.resolvedAtUtc &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.recordVersion == this.recordVersion);
+}
+
+class DurableConflictsCompanion extends UpdateCompanion<DurableConflictRow> {
+  final Value<String> conflictId;
+  final Value<String> conflictKey;
+  final Value<String> businessId;
+  final Value<String> scopeKind;
+  final Value<String?> warehouseId;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<int?> localEntityVersion;
+  final Value<int?> remoteEntityVersion;
+  final Value<String> localPayloadJson;
+  final Value<String> remotePayloadJson;
+  final Value<String> localPayloadFingerprint;
+  final Value<String> remotePayloadFingerprint;
+  final Value<String?> localOperationId;
+  final Value<String?> remoteOperationId;
+  final Value<String?> remoteSourceAuthority;
+  final Value<bool> localDeleted;
+  final Value<bool> remoteDeleted;
+  final Value<String?> localDeletionMetadataJson;
+  final Value<String?> remoteDeletionMetadataJson;
+  final Value<String> classification;
+  final Value<DateTime> detectedAtUtc;
+  final Value<String> resolutionState;
+  final Value<String?> resolutionKind;
+  final Value<String?> resolutionOperationId;
+  final Value<String?> resolverAuthUserId;
+  final Value<DateTime?> resolvedAtUtc;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> recordVersion;
+  final Value<int> rowid;
+  const DurableConflictsCompanion({
+    this.conflictId = const Value.absent(),
+    this.conflictKey = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.scopeKind = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.localEntityVersion = const Value.absent(),
+    this.remoteEntityVersion = const Value.absent(),
+    this.localPayloadJson = const Value.absent(),
+    this.remotePayloadJson = const Value.absent(),
+    this.localPayloadFingerprint = const Value.absent(),
+    this.remotePayloadFingerprint = const Value.absent(),
+    this.localOperationId = const Value.absent(),
+    this.remoteOperationId = const Value.absent(),
+    this.remoteSourceAuthority = const Value.absent(),
+    this.localDeleted = const Value.absent(),
+    this.remoteDeleted = const Value.absent(),
+    this.localDeletionMetadataJson = const Value.absent(),
+    this.remoteDeletionMetadataJson = const Value.absent(),
+    this.classification = const Value.absent(),
+    this.detectedAtUtc = const Value.absent(),
+    this.resolutionState = const Value.absent(),
+    this.resolutionKind = const Value.absent(),
+    this.resolutionOperationId = const Value.absent(),
+    this.resolverAuthUserId = const Value.absent(),
+    this.resolvedAtUtc = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DurableConflictsCompanion.insert({
+    required String conflictId,
+    required String conflictKey,
+    required String businessId,
+    required String scopeKind,
+    this.warehouseId = const Value.absent(),
+    required String entityType,
+    required String entityId,
+    this.localEntityVersion = const Value.absent(),
+    this.remoteEntityVersion = const Value.absent(),
+    required String localPayloadJson,
+    required String remotePayloadJson,
+    required String localPayloadFingerprint,
+    required String remotePayloadFingerprint,
+    this.localOperationId = const Value.absent(),
+    this.remoteOperationId = const Value.absent(),
+    this.remoteSourceAuthority = const Value.absent(),
+    this.localDeleted = const Value.absent(),
+    this.remoteDeleted = const Value.absent(),
+    this.localDeletionMetadataJson = const Value.absent(),
+    this.remoteDeletionMetadataJson = const Value.absent(),
+    required String classification,
+    required DateTime detectedAtUtc,
+    required String resolutionState,
+    this.resolutionKind = const Value.absent(),
+    this.resolutionOperationId = const Value.absent(),
+    this.resolverAuthUserId = const Value.absent(),
+    this.resolvedAtUtc = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : conflictId = Value(conflictId),
+        conflictKey = Value(conflictKey),
+        businessId = Value(businessId),
+        scopeKind = Value(scopeKind),
+        entityType = Value(entityType),
+        entityId = Value(entityId),
+        localPayloadJson = Value(localPayloadJson),
+        remotePayloadJson = Value(remotePayloadJson),
+        localPayloadFingerprint = Value(localPayloadFingerprint),
+        remotePayloadFingerprint = Value(remotePayloadFingerprint),
+        classification = Value(classification),
+        detectedAtUtc = Value(detectedAtUtc),
+        resolutionState = Value(resolutionState),
+        createdAtUtc = Value(createdAtUtc),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<DurableConflictRow> custom({
+    Expression<String>? conflictId,
+    Expression<String>? conflictKey,
+    Expression<String>? businessId,
+    Expression<String>? scopeKind,
+    Expression<String>? warehouseId,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<int>? localEntityVersion,
+    Expression<int>? remoteEntityVersion,
+    Expression<String>? localPayloadJson,
+    Expression<String>? remotePayloadJson,
+    Expression<String>? localPayloadFingerprint,
+    Expression<String>? remotePayloadFingerprint,
+    Expression<String>? localOperationId,
+    Expression<String>? remoteOperationId,
+    Expression<String>? remoteSourceAuthority,
+    Expression<bool>? localDeleted,
+    Expression<bool>? remoteDeleted,
+    Expression<String>? localDeletionMetadataJson,
+    Expression<String>? remoteDeletionMetadataJson,
+    Expression<String>? classification,
+    Expression<DateTime>? detectedAtUtc,
+    Expression<String>? resolutionState,
+    Expression<String>? resolutionKind,
+    Expression<String>? resolutionOperationId,
+    Expression<String>? resolverAuthUserId,
+    Expression<DateTime>? resolvedAtUtc,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? recordVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (conflictId != null) 'conflict_id': conflictId,
+      if (conflictKey != null) 'conflict_key': conflictKey,
+      if (businessId != null) 'business_id': businessId,
+      if (scopeKind != null) 'scope_kind': scopeKind,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (localEntityVersion != null)
+        'local_entity_version': localEntityVersion,
+      if (remoteEntityVersion != null)
+        'remote_entity_version': remoteEntityVersion,
+      if (localPayloadJson != null) 'local_payload_json': localPayloadJson,
+      if (remotePayloadJson != null) 'remote_payload_json': remotePayloadJson,
+      if (localPayloadFingerprint != null)
+        'local_payload_fingerprint': localPayloadFingerprint,
+      if (remotePayloadFingerprint != null)
+        'remote_payload_fingerprint': remotePayloadFingerprint,
+      if (localOperationId != null) 'local_operation_id': localOperationId,
+      if (remoteOperationId != null) 'remote_operation_id': remoteOperationId,
+      if (remoteSourceAuthority != null)
+        'remote_source_authority': remoteSourceAuthority,
+      if (localDeleted != null) 'local_deleted': localDeleted,
+      if (remoteDeleted != null) 'remote_deleted': remoteDeleted,
+      if (localDeletionMetadataJson != null)
+        'local_deletion_metadata_json': localDeletionMetadataJson,
+      if (remoteDeletionMetadataJson != null)
+        'remote_deletion_metadata_json': remoteDeletionMetadataJson,
+      if (classification != null) 'classification': classification,
+      if (detectedAtUtc != null) 'detected_at_utc': detectedAtUtc,
+      if (resolutionState != null) 'resolution_state': resolutionState,
+      if (resolutionKind != null) 'resolution_kind': resolutionKind,
+      if (resolutionOperationId != null)
+        'resolution_operation_id': resolutionOperationId,
+      if (resolverAuthUserId != null)
+        'resolver_auth_user_id': resolverAuthUserId,
+      if (resolvedAtUtc != null) 'resolved_at_utc': resolvedAtUtc,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (recordVersion != null) 'record_version': recordVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DurableConflictsCompanion copyWith(
+      {Value<String>? conflictId,
+      Value<String>? conflictKey,
+      Value<String>? businessId,
+      Value<String>? scopeKind,
+      Value<String?>? warehouseId,
+      Value<String>? entityType,
+      Value<String>? entityId,
+      Value<int?>? localEntityVersion,
+      Value<int?>? remoteEntityVersion,
+      Value<String>? localPayloadJson,
+      Value<String>? remotePayloadJson,
+      Value<String>? localPayloadFingerprint,
+      Value<String>? remotePayloadFingerprint,
+      Value<String?>? localOperationId,
+      Value<String?>? remoteOperationId,
+      Value<String?>? remoteSourceAuthority,
+      Value<bool>? localDeleted,
+      Value<bool>? remoteDeleted,
+      Value<String?>? localDeletionMetadataJson,
+      Value<String?>? remoteDeletionMetadataJson,
+      Value<String>? classification,
+      Value<DateTime>? detectedAtUtc,
+      Value<String>? resolutionState,
+      Value<String?>? resolutionKind,
+      Value<String?>? resolutionOperationId,
+      Value<String?>? resolverAuthUserId,
+      Value<DateTime?>? resolvedAtUtc,
+      Value<DateTime>? createdAtUtc,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? recordVersion,
+      Value<int>? rowid}) {
+    return DurableConflictsCompanion(
+      conflictId: conflictId ?? this.conflictId,
+      conflictKey: conflictKey ?? this.conflictKey,
+      businessId: businessId ?? this.businessId,
+      scopeKind: scopeKind ?? this.scopeKind,
+      warehouseId: warehouseId ?? this.warehouseId,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      localEntityVersion: localEntityVersion ?? this.localEntityVersion,
+      remoteEntityVersion: remoteEntityVersion ?? this.remoteEntityVersion,
+      localPayloadJson: localPayloadJson ?? this.localPayloadJson,
+      remotePayloadJson: remotePayloadJson ?? this.remotePayloadJson,
+      localPayloadFingerprint:
+          localPayloadFingerprint ?? this.localPayloadFingerprint,
+      remotePayloadFingerprint:
+          remotePayloadFingerprint ?? this.remotePayloadFingerprint,
+      localOperationId: localOperationId ?? this.localOperationId,
+      remoteOperationId: remoteOperationId ?? this.remoteOperationId,
+      remoteSourceAuthority:
+          remoteSourceAuthority ?? this.remoteSourceAuthority,
+      localDeleted: localDeleted ?? this.localDeleted,
+      remoteDeleted: remoteDeleted ?? this.remoteDeleted,
+      localDeletionMetadataJson:
+          localDeletionMetadataJson ?? this.localDeletionMetadataJson,
+      remoteDeletionMetadataJson:
+          remoteDeletionMetadataJson ?? this.remoteDeletionMetadataJson,
+      classification: classification ?? this.classification,
+      detectedAtUtc: detectedAtUtc ?? this.detectedAtUtc,
+      resolutionState: resolutionState ?? this.resolutionState,
+      resolutionKind: resolutionKind ?? this.resolutionKind,
+      resolutionOperationId:
+          resolutionOperationId ?? this.resolutionOperationId,
+      resolverAuthUserId: resolverAuthUserId ?? this.resolverAuthUserId,
+      resolvedAtUtc: resolvedAtUtc ?? this.resolvedAtUtc,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      recordVersion: recordVersion ?? this.recordVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (conflictId.present) {
+      map['conflict_id'] = Variable<String>(conflictId.value);
+    }
+    if (conflictKey.present) {
+      map['conflict_key'] = Variable<String>(conflictKey.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (scopeKind.present) {
+      map['scope_kind'] = Variable<String>(scopeKind.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (localEntityVersion.present) {
+      map['local_entity_version'] = Variable<int>(localEntityVersion.value);
+    }
+    if (remoteEntityVersion.present) {
+      map['remote_entity_version'] = Variable<int>(remoteEntityVersion.value);
+    }
+    if (localPayloadJson.present) {
+      map['local_payload_json'] = Variable<String>(localPayloadJson.value);
+    }
+    if (remotePayloadJson.present) {
+      map['remote_payload_json'] = Variable<String>(remotePayloadJson.value);
+    }
+    if (localPayloadFingerprint.present) {
+      map['local_payload_fingerprint'] =
+          Variable<String>(localPayloadFingerprint.value);
+    }
+    if (remotePayloadFingerprint.present) {
+      map['remote_payload_fingerprint'] =
+          Variable<String>(remotePayloadFingerprint.value);
+    }
+    if (localOperationId.present) {
+      map['local_operation_id'] = Variable<String>(localOperationId.value);
+    }
+    if (remoteOperationId.present) {
+      map['remote_operation_id'] = Variable<String>(remoteOperationId.value);
+    }
+    if (remoteSourceAuthority.present) {
+      map['remote_source_authority'] =
+          Variable<String>(remoteSourceAuthority.value);
+    }
+    if (localDeleted.present) {
+      map['local_deleted'] = Variable<bool>(localDeleted.value);
+    }
+    if (remoteDeleted.present) {
+      map['remote_deleted'] = Variable<bool>(remoteDeleted.value);
+    }
+    if (localDeletionMetadataJson.present) {
+      map['local_deletion_metadata_json'] =
+          Variable<String>(localDeletionMetadataJson.value);
+    }
+    if (remoteDeletionMetadataJson.present) {
+      map['remote_deletion_metadata_json'] =
+          Variable<String>(remoteDeletionMetadataJson.value);
+    }
+    if (classification.present) {
+      map['classification'] = Variable<String>(classification.value);
+    }
+    if (detectedAtUtc.present) {
+      map['detected_at_utc'] = Variable<DateTime>(detectedAtUtc.value);
+    }
+    if (resolutionState.present) {
+      map['resolution_state'] = Variable<String>(resolutionState.value);
+    }
+    if (resolutionKind.present) {
+      map['resolution_kind'] = Variable<String>(resolutionKind.value);
+    }
+    if (resolutionOperationId.present) {
+      map['resolution_operation_id'] =
+          Variable<String>(resolutionOperationId.value);
+    }
+    if (resolverAuthUserId.present) {
+      map['resolver_auth_user_id'] = Variable<String>(resolverAuthUserId.value);
+    }
+    if (resolvedAtUtc.present) {
+      map['resolved_at_utc'] = Variable<DateTime>(resolvedAtUtc.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (recordVersion.present) {
+      map['record_version'] = Variable<int>(recordVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableConflictsCompanion(')
+          ..write('conflictId: $conflictId, ')
+          ..write('conflictKey: $conflictKey, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('localEntityVersion: $localEntityVersion, ')
+          ..write('remoteEntityVersion: $remoteEntityVersion, ')
+          ..write('localPayloadJson: $localPayloadJson, ')
+          ..write('remotePayloadJson: $remotePayloadJson, ')
+          ..write('localPayloadFingerprint: $localPayloadFingerprint, ')
+          ..write('remotePayloadFingerprint: $remotePayloadFingerprint, ')
+          ..write('localOperationId: $localOperationId, ')
+          ..write('remoteOperationId: $remoteOperationId, ')
+          ..write('remoteSourceAuthority: $remoteSourceAuthority, ')
+          ..write('localDeleted: $localDeleted, ')
+          ..write('remoteDeleted: $remoteDeleted, ')
+          ..write('localDeletionMetadataJson: $localDeletionMetadataJson, ')
+          ..write('remoteDeletionMetadataJson: $remoteDeletionMetadataJson, ')
+          ..write('classification: $classification, ')
+          ..write('detectedAtUtc: $detectedAtUtc, ')
+          ..write('resolutionState: $resolutionState, ')
+          ..write('resolutionKind: $resolutionKind, ')
+          ..write('resolutionOperationId: $resolutionOperationId, ')
+          ..write('resolverAuthUserId: $resolverAuthUserId, ')
+          ..write('resolvedAtUtc: $resolvedAtUtc, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DurableInboxOperationsTable extends DurableInboxOperations
+    with TableInfo<$DurableInboxOperationsTable, DurableInboxOperationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DurableInboxOperationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sourceAuthorityMeta =
+      const VerificationMeta('sourceAuthority');
+  @override
+  late final GeneratedColumn<String> sourceAuthority = GeneratedColumn<String>(
+      'source_authority', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceOperationIdMeta =
+      const VerificationMeta('sourceOperationId');
+  @override
+  late final GeneratedColumn<String> sourceOperationId =
+      GeneratedColumn<String>('source_operation_id', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _scopeKindMeta =
+      const VerificationMeta('scopeKind');
+  @override
+  late final GeneratedColumn<String> scopeKind = GeneratedColumn<String>(
+      'scope_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _operationKindMeta =
+      const VerificationMeta('operationKind');
+  @override
+  late final GeneratedColumn<String> operationKind = GeneratedColumn<String>(
+      'operation_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _aggregateTypeMeta =
+      const VerificationMeta('aggregateType');
+  @override
+  late final GeneratedColumn<String> aggregateType = GeneratedColumn<String>(
+      'aggregate_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _aggregateIdMeta =
+      const VerificationMeta('aggregateId');
+  @override
+  late final GeneratedColumn<String> aggregateId = GeneratedColumn<String>(
+      'aggregate_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _payloadSchemaVersionMeta =
+      const VerificationMeta('payloadSchemaVersion');
+  @override
+  late final GeneratedColumn<int> payloadSchemaVersion = GeneratedColumn<int>(
+      'payload_schema_version', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadFingerprintMeta =
+      const VerificationMeta('payloadFingerprint');
+  @override
+  late final GeneratedColumn<String> payloadFingerprint =
+      GeneratedColumn<String>('payload_fingerprint', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceActorAuthUserIdMeta =
+      const VerificationMeta('sourceActorAuthUserId');
+  @override
+  late final GeneratedColumn<String> sourceActorAuthUserId =
+      GeneratedColumn<String>('source_actor_auth_user_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sourceDeviceIdMeta =
+      const VerificationMeta('sourceDeviceId');
+  @override
+  late final GeneratedColumn<String> sourceDeviceId = GeneratedColumn<String>(
+      'source_device_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remoteEntityVersionMeta =
+      const VerificationMeta('remoteEntityVersion');
+  @override
+  late final GeneratedColumn<int> remoteEntityVersion = GeneratedColumn<int>(
+      'remote_entity_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _isDeletedMeta =
+      const VerificationMeta('isDeleted');
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+      'is_deleted', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_deleted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _deletionMetadataJsonMeta =
+      const VerificationMeta('deletionMetadataJson');
+  @override
+  late final GeneratedColumn<String> deletionMetadataJson =
+      GeneratedColumn<String>('deletion_metadata_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _serverOccurredAtUtcMeta =
+      const VerificationMeta('serverOccurredAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> serverOccurredAtUtc =
+      GeneratedColumn<DateTime>('server_occurred_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _receivedAtUtcMeta =
+      const VerificationMeta('receivedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> receivedAtUtc =
+      GeneratedColumn<DateTime>('received_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+      'state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _applyAttemptCountMeta =
+      const VerificationMeta('applyAttemptCount');
+  @override
+  late final GeneratedColumn<int> applyAttemptCount = GeneratedColumn<int>(
+      'apply_attempt_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _lastApplyAttemptAtUtcMeta =
+      const VerificationMeta('lastApplyAttemptAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> lastApplyAttemptAtUtc =
+      GeneratedColumn<DateTime>('last_apply_attempt_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorClassMeta =
+      const VerificationMeta('lastErrorClass');
+  @override
+  late final GeneratedColumn<String> lastErrorClass = GeneratedColumn<String>(
+      'last_error_class', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorCodeMeta =
+      const VerificationMeta('lastErrorCode');
+  @override
+  late final GeneratedColumn<String> lastErrorCode = GeneratedColumn<String>(
+      'last_error_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _claimTokenMeta =
+      const VerificationMeta('claimToken');
+  @override
+  late final GeneratedColumn<String> claimToken = GeneratedColumn<String>(
+      'claim_token', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _leaseExpiresAtUtcMeta =
+      const VerificationMeta('leaseExpiresAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> leaseExpiresAtUtc =
+      GeneratedColumn<DateTime>('lease_expires_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _appliedAtUtcMeta =
+      const VerificationMeta('appliedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> appliedAtUtc = GeneratedColumn<DateTime>(
+      'applied_at_utc', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _rejectedAtUtcMeta =
+      const VerificationMeta('rejectedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> rejectedAtUtc =
+      GeneratedColumn<DateTime>('rejected_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _conflictIdMeta =
+      const VerificationMeta('conflictId');
+  @override
+  late final GeneratedColumn<String> conflictId = GeneratedColumn<String>(
+      'conflict_id', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES durable_conflicts (conflict_id) ON DELETE RESTRICT'));
+  static const VerificationMeta _createdAtUtcMeta =
+      const VerificationMeta('createdAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+      'created_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _recordVersionMeta =
+      const VerificationMeta('recordVersion');
+  @override
+  late final GeneratedColumn<int> recordVersion = GeneratedColumn<int>(
+      'record_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        sourceAuthority,
+        sourceOperationId,
+        businessId,
+        scopeKind,
+        warehouseId,
+        operationKind,
+        aggregateType,
+        aggregateId,
+        payloadSchemaVersion,
+        payloadJson,
+        payloadFingerprint,
+        sourceActorAuthUserId,
+        sourceDeviceId,
+        remoteEntityVersion,
+        isDeleted,
+        deletionMetadataJson,
+        serverOccurredAtUtc,
+        receivedAtUtc,
+        state,
+        applyAttemptCount,
+        lastApplyAttemptAtUtc,
+        lastErrorClass,
+        lastErrorCode,
+        claimToken,
+        leaseExpiresAtUtc,
+        appliedAtUtc,
+        rejectedAtUtc,
+        conflictId,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'durable_inbox_operations';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<DurableInboxOperationRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('source_authority')) {
+      context.handle(
+          _sourceAuthorityMeta,
+          sourceAuthority.isAcceptableOrUnknown(
+              data['source_authority']!, _sourceAuthorityMeta));
+    } else if (isInserting) {
+      context.missing(_sourceAuthorityMeta);
+    }
+    if (data.containsKey('source_operation_id')) {
+      context.handle(
+          _sourceOperationIdMeta,
+          sourceOperationId.isAcceptableOrUnknown(
+              data['source_operation_id']!, _sourceOperationIdMeta));
+    } else if (isInserting) {
+      context.missing(_sourceOperationIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('scope_kind')) {
+      context.handle(_scopeKindMeta,
+          scopeKind.isAcceptableOrUnknown(data['scope_kind']!, _scopeKindMeta));
+    } else if (isInserting) {
+      context.missing(_scopeKindMeta);
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    }
+    if (data.containsKey('operation_kind')) {
+      context.handle(
+          _operationKindMeta,
+          operationKind.isAcceptableOrUnknown(
+              data['operation_kind']!, _operationKindMeta));
+    } else if (isInserting) {
+      context.missing(_operationKindMeta);
+    }
+    if (data.containsKey('aggregate_type')) {
+      context.handle(
+          _aggregateTypeMeta,
+          aggregateType.isAcceptableOrUnknown(
+              data['aggregate_type']!, _aggregateTypeMeta));
+    } else if (isInserting) {
+      context.missing(_aggregateTypeMeta);
+    }
+    if (data.containsKey('aggregate_id')) {
+      context.handle(
+          _aggregateIdMeta,
+          aggregateId.isAcceptableOrUnknown(
+              data['aggregate_id']!, _aggregateIdMeta));
+    }
+    if (data.containsKey('payload_schema_version')) {
+      context.handle(
+          _payloadSchemaVersionMeta,
+          payloadSchemaVersion.isAcceptableOrUnknown(
+              data['payload_schema_version']!, _payloadSchemaVersionMeta));
+    } else if (isInserting) {
+      context.missing(_payloadSchemaVersionMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('payload_fingerprint')) {
+      context.handle(
+          _payloadFingerprintMeta,
+          payloadFingerprint.isAcceptableOrUnknown(
+              data['payload_fingerprint']!, _payloadFingerprintMeta));
+    } else if (isInserting) {
+      context.missing(_payloadFingerprintMeta);
+    }
+    if (data.containsKey('source_actor_auth_user_id')) {
+      context.handle(
+          _sourceActorAuthUserIdMeta,
+          sourceActorAuthUserId.isAcceptableOrUnknown(
+              data['source_actor_auth_user_id']!, _sourceActorAuthUserIdMeta));
+    }
+    if (data.containsKey('source_device_id')) {
+      context.handle(
+          _sourceDeviceIdMeta,
+          sourceDeviceId.isAcceptableOrUnknown(
+              data['source_device_id']!, _sourceDeviceIdMeta));
+    }
+    if (data.containsKey('remote_entity_version')) {
+      context.handle(
+          _remoteEntityVersionMeta,
+          remoteEntityVersion.isAcceptableOrUnknown(
+              data['remote_entity_version']!, _remoteEntityVersionMeta));
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(_isDeletedMeta,
+          isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta));
+    }
+    if (data.containsKey('deletion_metadata_json')) {
+      context.handle(
+          _deletionMetadataJsonMeta,
+          deletionMetadataJson.isAcceptableOrUnknown(
+              data['deletion_metadata_json']!, _deletionMetadataJsonMeta));
+    }
+    if (data.containsKey('server_occurred_at_utc')) {
+      context.handle(
+          _serverOccurredAtUtcMeta,
+          serverOccurredAtUtc.isAcceptableOrUnknown(
+              data['server_occurred_at_utc']!, _serverOccurredAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_serverOccurredAtUtcMeta);
+    }
+    if (data.containsKey('received_at_utc')) {
+      context.handle(
+          _receivedAtUtcMeta,
+          receivedAtUtc.isAcceptableOrUnknown(
+              data['received_at_utc']!, _receivedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_receivedAtUtcMeta);
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+          _stateMeta, state.isAcceptableOrUnknown(data['state']!, _stateMeta));
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('apply_attempt_count')) {
+      context.handle(
+          _applyAttemptCountMeta,
+          applyAttemptCount.isAcceptableOrUnknown(
+              data['apply_attempt_count']!, _applyAttemptCountMeta));
+    }
+    if (data.containsKey('last_apply_attempt_at_utc')) {
+      context.handle(
+          _lastApplyAttemptAtUtcMeta,
+          lastApplyAttemptAtUtc.isAcceptableOrUnknown(
+              data['last_apply_attempt_at_utc']!, _lastApplyAttemptAtUtcMeta));
+    }
+    if (data.containsKey('last_error_class')) {
+      context.handle(
+          _lastErrorClassMeta,
+          lastErrorClass.isAcceptableOrUnknown(
+              data['last_error_class']!, _lastErrorClassMeta));
+    }
+    if (data.containsKey('last_error_code')) {
+      context.handle(
+          _lastErrorCodeMeta,
+          lastErrorCode.isAcceptableOrUnknown(
+              data['last_error_code']!, _lastErrorCodeMeta));
+    }
+    if (data.containsKey('claim_token')) {
+      context.handle(
+          _claimTokenMeta,
+          claimToken.isAcceptableOrUnknown(
+              data['claim_token']!, _claimTokenMeta));
+    }
+    if (data.containsKey('lease_expires_at_utc')) {
+      context.handle(
+          _leaseExpiresAtUtcMeta,
+          leaseExpiresAtUtc.isAcceptableOrUnknown(
+              data['lease_expires_at_utc']!, _leaseExpiresAtUtcMeta));
+    }
+    if (data.containsKey('applied_at_utc')) {
+      context.handle(
+          _appliedAtUtcMeta,
+          appliedAtUtc.isAcceptableOrUnknown(
+              data['applied_at_utc']!, _appliedAtUtcMeta));
+    }
+    if (data.containsKey('rejected_at_utc')) {
+      context.handle(
+          _rejectedAtUtcMeta,
+          rejectedAtUtc.isAcceptableOrUnknown(
+              data['rejected_at_utc']!, _rejectedAtUtcMeta));
+    }
+    if (data.containsKey('conflict_id')) {
+      context.handle(
+          _conflictIdMeta,
+          conflictId.isAcceptableOrUnknown(
+              data['conflict_id']!, _conflictIdMeta));
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+          _createdAtUtcMeta,
+          createdAtUtc.isAcceptableOrUnknown(
+              data['created_at_utc']!, _createdAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('record_version')) {
+      context.handle(
+          _recordVersionMeta,
+          recordVersion.isAcceptableOrUnknown(
+              data['record_version']!, _recordVersionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sourceAuthority, sourceOperationId};
+  @override
+  DurableInboxOperationRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DurableInboxOperationRow(
+      sourceAuthority: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_authority'])!,
+      sourceOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_operation_id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      scopeKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}scope_kind'])!,
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id']),
+      operationKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation_kind'])!,
+      aggregateType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}aggregate_type'])!,
+      aggregateId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}aggregate_id']),
+      payloadSchemaVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}payload_schema_version'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      payloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}payload_fingerprint'])!,
+      sourceActorAuthUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}source_actor_auth_user_id']),
+      sourceDeviceId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_device_id']),
+      remoteEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}remote_entity_version']),
+      isDeleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_deleted'])!,
+      deletionMetadataJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}deletion_metadata_json']),
+      serverOccurredAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}server_occurred_at_utc'])!,
+      receivedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}received_at_utc'])!,
+      state: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}state'])!,
+      applyAttemptCount: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}apply_attempt_count'])!,
+      lastApplyAttemptAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}last_apply_attempt_at_utc']),
+      lastErrorClass: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}last_error_class']),
+      lastErrorCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error_code']),
+      claimToken: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}claim_token']),
+      leaseExpiresAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}lease_expires_at_utc']),
+      appliedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}applied_at_utc']),
+      rejectedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}rejected_at_utc']),
+      conflictId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}conflict_id']),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}created_at_utc'])!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      recordVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}record_version'])!,
+    );
+  }
+
+  @override
+  $DurableInboxOperationsTable createAlias(String alias) {
+    return $DurableInboxOperationsTable(attachedDatabase, alias);
+  }
+}
+
+class DurableInboxOperationRow extends DataClass
+    implements Insertable<DurableInboxOperationRow> {
+  final String sourceAuthority;
+  final String sourceOperationId;
+  final String businessId;
+  final String scopeKind;
+  final String? warehouseId;
+  final String operationKind;
+  final String aggregateType;
+  final String? aggregateId;
+  final int payloadSchemaVersion;
+  final String payloadJson;
+  final String payloadFingerprint;
+  final String? sourceActorAuthUserId;
+  final String? sourceDeviceId;
+  final int? remoteEntityVersion;
+  final bool isDeleted;
+  final String? deletionMetadataJson;
+  final DateTime serverOccurredAtUtc;
+  final DateTime receivedAtUtc;
+  final String state;
+  final int applyAttemptCount;
+  final DateTime? lastApplyAttemptAtUtc;
+  final String? lastErrorClass;
+  final String? lastErrorCode;
+  final String? claimToken;
+  final DateTime? leaseExpiresAtUtc;
+  final DateTime? appliedAtUtc;
+  final DateTime? rejectedAtUtc;
+  final String? conflictId;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  final int recordVersion;
+  const DurableInboxOperationRow(
+      {required this.sourceAuthority,
+      required this.sourceOperationId,
+      required this.businessId,
+      required this.scopeKind,
+      this.warehouseId,
+      required this.operationKind,
+      required this.aggregateType,
+      this.aggregateId,
+      required this.payloadSchemaVersion,
+      required this.payloadJson,
+      required this.payloadFingerprint,
+      this.sourceActorAuthUserId,
+      this.sourceDeviceId,
+      this.remoteEntityVersion,
+      required this.isDeleted,
+      this.deletionMetadataJson,
+      required this.serverOccurredAtUtc,
+      required this.receivedAtUtc,
+      required this.state,
+      required this.applyAttemptCount,
+      this.lastApplyAttemptAtUtc,
+      this.lastErrorClass,
+      this.lastErrorCode,
+      this.claimToken,
+      this.leaseExpiresAtUtc,
+      this.appliedAtUtc,
+      this.rejectedAtUtc,
+      this.conflictId,
+      required this.createdAtUtc,
+      required this.updatedAtUtc,
+      required this.recordVersion});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['source_authority'] = Variable<String>(sourceAuthority);
+    map['source_operation_id'] = Variable<String>(sourceOperationId);
+    map['business_id'] = Variable<String>(businessId);
+    map['scope_kind'] = Variable<String>(scopeKind);
+    if (!nullToAbsent || warehouseId != null) {
+      map['warehouse_id'] = Variable<String>(warehouseId);
+    }
+    map['operation_kind'] = Variable<String>(operationKind);
+    map['aggregate_type'] = Variable<String>(aggregateType);
+    if (!nullToAbsent || aggregateId != null) {
+      map['aggregate_id'] = Variable<String>(aggregateId);
+    }
+    map['payload_schema_version'] = Variable<int>(payloadSchemaVersion);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['payload_fingerprint'] = Variable<String>(payloadFingerprint);
+    if (!nullToAbsent || sourceActorAuthUserId != null) {
+      map['source_actor_auth_user_id'] =
+          Variable<String>(sourceActorAuthUserId);
+    }
+    if (!nullToAbsent || sourceDeviceId != null) {
+      map['source_device_id'] = Variable<String>(sourceDeviceId);
+    }
+    if (!nullToAbsent || remoteEntityVersion != null) {
+      map['remote_entity_version'] = Variable<int>(remoteEntityVersion);
+    }
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    if (!nullToAbsent || deletionMetadataJson != null) {
+      map['deletion_metadata_json'] = Variable<String>(deletionMetadataJson);
+    }
+    map['server_occurred_at_utc'] = Variable<DateTime>(serverOccurredAtUtc);
+    map['received_at_utc'] = Variable<DateTime>(receivedAtUtc);
+    map['state'] = Variable<String>(state);
+    map['apply_attempt_count'] = Variable<int>(applyAttemptCount);
+    if (!nullToAbsent || lastApplyAttemptAtUtc != null) {
+      map['last_apply_attempt_at_utc'] =
+          Variable<DateTime>(lastApplyAttemptAtUtc);
+    }
+    if (!nullToAbsent || lastErrorClass != null) {
+      map['last_error_class'] = Variable<String>(lastErrorClass);
+    }
+    if (!nullToAbsent || lastErrorCode != null) {
+      map['last_error_code'] = Variable<String>(lastErrorCode);
+    }
+    if (!nullToAbsent || claimToken != null) {
+      map['claim_token'] = Variable<String>(claimToken);
+    }
+    if (!nullToAbsent || leaseExpiresAtUtc != null) {
+      map['lease_expires_at_utc'] = Variable<DateTime>(leaseExpiresAtUtc);
+    }
+    if (!nullToAbsent || appliedAtUtc != null) {
+      map['applied_at_utc'] = Variable<DateTime>(appliedAtUtc);
+    }
+    if (!nullToAbsent || rejectedAtUtc != null) {
+      map['rejected_at_utc'] = Variable<DateTime>(rejectedAtUtc);
+    }
+    if (!nullToAbsent || conflictId != null) {
+      map['conflict_id'] = Variable<String>(conflictId);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['record_version'] = Variable<int>(recordVersion);
+    return map;
+  }
+
+  DurableInboxOperationsCompanion toCompanion(bool nullToAbsent) {
+    return DurableInboxOperationsCompanion(
+      sourceAuthority: Value(sourceAuthority),
+      sourceOperationId: Value(sourceOperationId),
+      businessId: Value(businessId),
+      scopeKind: Value(scopeKind),
+      warehouseId: warehouseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warehouseId),
+      operationKind: Value(operationKind),
+      aggregateType: Value(aggregateType),
+      aggregateId: aggregateId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aggregateId),
+      payloadSchemaVersion: Value(payloadSchemaVersion),
+      payloadJson: Value(payloadJson),
+      payloadFingerprint: Value(payloadFingerprint),
+      sourceActorAuthUserId: sourceActorAuthUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceActorAuthUserId),
+      sourceDeviceId: sourceDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceDeviceId),
+      remoteEntityVersion: remoteEntityVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteEntityVersion),
+      isDeleted: Value(isDeleted),
+      deletionMetadataJson: deletionMetadataJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletionMetadataJson),
+      serverOccurredAtUtc: Value(serverOccurredAtUtc),
+      receivedAtUtc: Value(receivedAtUtc),
+      state: Value(state),
+      applyAttemptCount: Value(applyAttemptCount),
+      lastApplyAttemptAtUtc: lastApplyAttemptAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastApplyAttemptAtUtc),
+      lastErrorClass: lastErrorClass == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorClass),
+      lastErrorCode: lastErrorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorCode),
+      claimToken: claimToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(claimToken),
+      leaseExpiresAtUtc: leaseExpiresAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(leaseExpiresAtUtc),
+      appliedAtUtc: appliedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appliedAtUtc),
+      rejectedAtUtc: rejectedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rejectedAtUtc),
+      conflictId: conflictId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conflictId),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+      recordVersion: Value(recordVersion),
+    );
+  }
+
+  factory DurableInboxOperationRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DurableInboxOperationRow(
+      sourceAuthority: serializer.fromJson<String>(json['sourceAuthority']),
+      sourceOperationId: serializer.fromJson<String>(json['sourceOperationId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      scopeKind: serializer.fromJson<String>(json['scopeKind']),
+      warehouseId: serializer.fromJson<String?>(json['warehouseId']),
+      operationKind: serializer.fromJson<String>(json['operationKind']),
+      aggregateType: serializer.fromJson<String>(json['aggregateType']),
+      aggregateId: serializer.fromJson<String?>(json['aggregateId']),
+      payloadSchemaVersion:
+          serializer.fromJson<int>(json['payloadSchemaVersion']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      payloadFingerprint:
+          serializer.fromJson<String>(json['payloadFingerprint']),
+      sourceActorAuthUserId:
+          serializer.fromJson<String?>(json['sourceActorAuthUserId']),
+      sourceDeviceId: serializer.fromJson<String?>(json['sourceDeviceId']),
+      remoteEntityVersion:
+          serializer.fromJson<int?>(json['remoteEntityVersion']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      deletionMetadataJson:
+          serializer.fromJson<String?>(json['deletionMetadataJson']),
+      serverOccurredAtUtc:
+          serializer.fromJson<DateTime>(json['serverOccurredAtUtc']),
+      receivedAtUtc: serializer.fromJson<DateTime>(json['receivedAtUtc']),
+      state: serializer.fromJson<String>(json['state']),
+      applyAttemptCount: serializer.fromJson<int>(json['applyAttemptCount']),
+      lastApplyAttemptAtUtc:
+          serializer.fromJson<DateTime?>(json['lastApplyAttemptAtUtc']),
+      lastErrorClass: serializer.fromJson<String?>(json['lastErrorClass']),
+      lastErrorCode: serializer.fromJson<String?>(json['lastErrorCode']),
+      claimToken: serializer.fromJson<String?>(json['claimToken']),
+      leaseExpiresAtUtc:
+          serializer.fromJson<DateTime?>(json['leaseExpiresAtUtc']),
+      appliedAtUtc: serializer.fromJson<DateTime?>(json['appliedAtUtc']),
+      rejectedAtUtc: serializer.fromJson<DateTime?>(json['rejectedAtUtc']),
+      conflictId: serializer.fromJson<String?>(json['conflictId']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      recordVersion: serializer.fromJson<int>(json['recordVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sourceAuthority': serializer.toJson<String>(sourceAuthority),
+      'sourceOperationId': serializer.toJson<String>(sourceOperationId),
+      'businessId': serializer.toJson<String>(businessId),
+      'scopeKind': serializer.toJson<String>(scopeKind),
+      'warehouseId': serializer.toJson<String?>(warehouseId),
+      'operationKind': serializer.toJson<String>(operationKind),
+      'aggregateType': serializer.toJson<String>(aggregateType),
+      'aggregateId': serializer.toJson<String?>(aggregateId),
+      'payloadSchemaVersion': serializer.toJson<int>(payloadSchemaVersion),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'payloadFingerprint': serializer.toJson<String>(payloadFingerprint),
+      'sourceActorAuthUserId':
+          serializer.toJson<String?>(sourceActorAuthUserId),
+      'sourceDeviceId': serializer.toJson<String?>(sourceDeviceId),
+      'remoteEntityVersion': serializer.toJson<int?>(remoteEntityVersion),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'deletionMetadataJson': serializer.toJson<String?>(deletionMetadataJson),
+      'serverOccurredAtUtc': serializer.toJson<DateTime>(serverOccurredAtUtc),
+      'receivedAtUtc': serializer.toJson<DateTime>(receivedAtUtc),
+      'state': serializer.toJson<String>(state),
+      'applyAttemptCount': serializer.toJson<int>(applyAttemptCount),
+      'lastApplyAttemptAtUtc':
+          serializer.toJson<DateTime?>(lastApplyAttemptAtUtc),
+      'lastErrorClass': serializer.toJson<String?>(lastErrorClass),
+      'lastErrorCode': serializer.toJson<String?>(lastErrorCode),
+      'claimToken': serializer.toJson<String?>(claimToken),
+      'leaseExpiresAtUtc': serializer.toJson<DateTime?>(leaseExpiresAtUtc),
+      'appliedAtUtc': serializer.toJson<DateTime?>(appliedAtUtc),
+      'rejectedAtUtc': serializer.toJson<DateTime?>(rejectedAtUtc),
+      'conflictId': serializer.toJson<String?>(conflictId),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'recordVersion': serializer.toJson<int>(recordVersion),
+    };
+  }
+
+  DurableInboxOperationRow copyWith(
+          {String? sourceAuthority,
+          String? sourceOperationId,
+          String? businessId,
+          String? scopeKind,
+          Value<String?> warehouseId = const Value.absent(),
+          String? operationKind,
+          String? aggregateType,
+          Value<String?> aggregateId = const Value.absent(),
+          int? payloadSchemaVersion,
+          String? payloadJson,
+          String? payloadFingerprint,
+          Value<String?> sourceActorAuthUserId = const Value.absent(),
+          Value<String?> sourceDeviceId = const Value.absent(),
+          Value<int?> remoteEntityVersion = const Value.absent(),
+          bool? isDeleted,
+          Value<String?> deletionMetadataJson = const Value.absent(),
+          DateTime? serverOccurredAtUtc,
+          DateTime? receivedAtUtc,
+          String? state,
+          int? applyAttemptCount,
+          Value<DateTime?> lastApplyAttemptAtUtc = const Value.absent(),
+          Value<String?> lastErrorClass = const Value.absent(),
+          Value<String?> lastErrorCode = const Value.absent(),
+          Value<String?> claimToken = const Value.absent(),
+          Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+          Value<DateTime?> appliedAtUtc = const Value.absent(),
+          Value<DateTime?> rejectedAtUtc = const Value.absent(),
+          Value<String?> conflictId = const Value.absent(),
+          DateTime? createdAtUtc,
+          DateTime? updatedAtUtc,
+          int? recordVersion}) =>
+      DurableInboxOperationRow(
+        sourceAuthority: sourceAuthority ?? this.sourceAuthority,
+        sourceOperationId: sourceOperationId ?? this.sourceOperationId,
+        businessId: businessId ?? this.businessId,
+        scopeKind: scopeKind ?? this.scopeKind,
+        warehouseId: warehouseId.present ? warehouseId.value : this.warehouseId,
+        operationKind: operationKind ?? this.operationKind,
+        aggregateType: aggregateType ?? this.aggregateType,
+        aggregateId: aggregateId.present ? aggregateId.value : this.aggregateId,
+        payloadSchemaVersion: payloadSchemaVersion ?? this.payloadSchemaVersion,
+        payloadJson: payloadJson ?? this.payloadJson,
+        payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+        sourceActorAuthUserId: sourceActorAuthUserId.present
+            ? sourceActorAuthUserId.value
+            : this.sourceActorAuthUserId,
+        sourceDeviceId:
+            sourceDeviceId.present ? sourceDeviceId.value : this.sourceDeviceId,
+        remoteEntityVersion: remoteEntityVersion.present
+            ? remoteEntityVersion.value
+            : this.remoteEntityVersion,
+        isDeleted: isDeleted ?? this.isDeleted,
+        deletionMetadataJson: deletionMetadataJson.present
+            ? deletionMetadataJson.value
+            : this.deletionMetadataJson,
+        serverOccurredAtUtc: serverOccurredAtUtc ?? this.serverOccurredAtUtc,
+        receivedAtUtc: receivedAtUtc ?? this.receivedAtUtc,
+        state: state ?? this.state,
+        applyAttemptCount: applyAttemptCount ?? this.applyAttemptCount,
+        lastApplyAttemptAtUtc: lastApplyAttemptAtUtc.present
+            ? lastApplyAttemptAtUtc.value
+            : this.lastApplyAttemptAtUtc,
+        lastErrorClass:
+            lastErrorClass.present ? lastErrorClass.value : this.lastErrorClass,
+        lastErrorCode:
+            lastErrorCode.present ? lastErrorCode.value : this.lastErrorCode,
+        claimToken: claimToken.present ? claimToken.value : this.claimToken,
+        leaseExpiresAtUtc: leaseExpiresAtUtc.present
+            ? leaseExpiresAtUtc.value
+            : this.leaseExpiresAtUtc,
+        appliedAtUtc:
+            appliedAtUtc.present ? appliedAtUtc.value : this.appliedAtUtc,
+        rejectedAtUtc:
+            rejectedAtUtc.present ? rejectedAtUtc.value : this.rejectedAtUtc,
+        conflictId: conflictId.present ? conflictId.value : this.conflictId,
+        createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        recordVersion: recordVersion ?? this.recordVersion,
+      );
+  DurableInboxOperationRow copyWithCompanion(
+      DurableInboxOperationsCompanion data) {
+    return DurableInboxOperationRow(
+      sourceAuthority: data.sourceAuthority.present
+          ? data.sourceAuthority.value
+          : this.sourceAuthority,
+      sourceOperationId: data.sourceOperationId.present
+          ? data.sourceOperationId.value
+          : this.sourceOperationId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      scopeKind: data.scopeKind.present ? data.scopeKind.value : this.scopeKind,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      operationKind: data.operationKind.present
+          ? data.operationKind.value
+          : this.operationKind,
+      aggregateType: data.aggregateType.present
+          ? data.aggregateType.value
+          : this.aggregateType,
+      aggregateId:
+          data.aggregateId.present ? data.aggregateId.value : this.aggregateId,
+      payloadSchemaVersion: data.payloadSchemaVersion.present
+          ? data.payloadSchemaVersion.value
+          : this.payloadSchemaVersion,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      payloadFingerprint: data.payloadFingerprint.present
+          ? data.payloadFingerprint.value
+          : this.payloadFingerprint,
+      sourceActorAuthUserId: data.sourceActorAuthUserId.present
+          ? data.sourceActorAuthUserId.value
+          : this.sourceActorAuthUserId,
+      sourceDeviceId: data.sourceDeviceId.present
+          ? data.sourceDeviceId.value
+          : this.sourceDeviceId,
+      remoteEntityVersion: data.remoteEntityVersion.present
+          ? data.remoteEntityVersion.value
+          : this.remoteEntityVersion,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      deletionMetadataJson: data.deletionMetadataJson.present
+          ? data.deletionMetadataJson.value
+          : this.deletionMetadataJson,
+      serverOccurredAtUtc: data.serverOccurredAtUtc.present
+          ? data.serverOccurredAtUtc.value
+          : this.serverOccurredAtUtc,
+      receivedAtUtc: data.receivedAtUtc.present
+          ? data.receivedAtUtc.value
+          : this.receivedAtUtc,
+      state: data.state.present ? data.state.value : this.state,
+      applyAttemptCount: data.applyAttemptCount.present
+          ? data.applyAttemptCount.value
+          : this.applyAttemptCount,
+      lastApplyAttemptAtUtc: data.lastApplyAttemptAtUtc.present
+          ? data.lastApplyAttemptAtUtc.value
+          : this.lastApplyAttemptAtUtc,
+      lastErrorClass: data.lastErrorClass.present
+          ? data.lastErrorClass.value
+          : this.lastErrorClass,
+      lastErrorCode: data.lastErrorCode.present
+          ? data.lastErrorCode.value
+          : this.lastErrorCode,
+      claimToken:
+          data.claimToken.present ? data.claimToken.value : this.claimToken,
+      leaseExpiresAtUtc: data.leaseExpiresAtUtc.present
+          ? data.leaseExpiresAtUtc.value
+          : this.leaseExpiresAtUtc,
+      appliedAtUtc: data.appliedAtUtc.present
+          ? data.appliedAtUtc.value
+          : this.appliedAtUtc,
+      rejectedAtUtc: data.rejectedAtUtc.present
+          ? data.rejectedAtUtc.value
+          : this.rejectedAtUtc,
+      conflictId:
+          data.conflictId.present ? data.conflictId.value : this.conflictId,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      recordVersion: data.recordVersion.present
+          ? data.recordVersion.value
+          : this.recordVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableInboxOperationRow(')
+          ..write('sourceAuthority: $sourceAuthority, ')
+          ..write('sourceOperationId: $sourceOperationId, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('operationKind: $operationKind, ')
+          ..write('aggregateType: $aggregateType, ')
+          ..write('aggregateId: $aggregateId, ')
+          ..write('payloadSchemaVersion: $payloadSchemaVersion, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('sourceActorAuthUserId: $sourceActorAuthUserId, ')
+          ..write('sourceDeviceId: $sourceDeviceId, ')
+          ..write('remoteEntityVersion: $remoteEntityVersion, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('deletionMetadataJson: $deletionMetadataJson, ')
+          ..write('serverOccurredAtUtc: $serverOccurredAtUtc, ')
+          ..write('receivedAtUtc: $receivedAtUtc, ')
+          ..write('state: $state, ')
+          ..write('applyAttemptCount: $applyAttemptCount, ')
+          ..write('lastApplyAttemptAtUtc: $lastApplyAttemptAtUtc, ')
+          ..write('lastErrorClass: $lastErrorClass, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('claimToken: $claimToken, ')
+          ..write('leaseExpiresAtUtc: $leaseExpiresAtUtc, ')
+          ..write('appliedAtUtc: $appliedAtUtc, ')
+          ..write('rejectedAtUtc: $rejectedAtUtc, ')
+          ..write('conflictId: $conflictId, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        sourceAuthority,
+        sourceOperationId,
+        businessId,
+        scopeKind,
+        warehouseId,
+        operationKind,
+        aggregateType,
+        aggregateId,
+        payloadSchemaVersion,
+        payloadJson,
+        payloadFingerprint,
+        sourceActorAuthUserId,
+        sourceDeviceId,
+        remoteEntityVersion,
+        isDeleted,
+        deletionMetadataJson,
+        serverOccurredAtUtc,
+        receivedAtUtc,
+        state,
+        applyAttemptCount,
+        lastApplyAttemptAtUtc,
+        lastErrorClass,
+        lastErrorCode,
+        claimToken,
+        leaseExpiresAtUtc,
+        appliedAtUtc,
+        rejectedAtUtc,
+        conflictId,
+        createdAtUtc,
+        updatedAtUtc,
+        recordVersion
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DurableInboxOperationRow &&
+          other.sourceAuthority == this.sourceAuthority &&
+          other.sourceOperationId == this.sourceOperationId &&
+          other.businessId == this.businessId &&
+          other.scopeKind == this.scopeKind &&
+          other.warehouseId == this.warehouseId &&
+          other.operationKind == this.operationKind &&
+          other.aggregateType == this.aggregateType &&
+          other.aggregateId == this.aggregateId &&
+          other.payloadSchemaVersion == this.payloadSchemaVersion &&
+          other.payloadJson == this.payloadJson &&
+          other.payloadFingerprint == this.payloadFingerprint &&
+          other.sourceActorAuthUserId == this.sourceActorAuthUserId &&
+          other.sourceDeviceId == this.sourceDeviceId &&
+          other.remoteEntityVersion == this.remoteEntityVersion &&
+          other.isDeleted == this.isDeleted &&
+          other.deletionMetadataJson == this.deletionMetadataJson &&
+          other.serverOccurredAtUtc == this.serverOccurredAtUtc &&
+          other.receivedAtUtc == this.receivedAtUtc &&
+          other.state == this.state &&
+          other.applyAttemptCount == this.applyAttemptCount &&
+          other.lastApplyAttemptAtUtc == this.lastApplyAttemptAtUtc &&
+          other.lastErrorClass == this.lastErrorClass &&
+          other.lastErrorCode == this.lastErrorCode &&
+          other.claimToken == this.claimToken &&
+          other.leaseExpiresAtUtc == this.leaseExpiresAtUtc &&
+          other.appliedAtUtc == this.appliedAtUtc &&
+          other.rejectedAtUtc == this.rejectedAtUtc &&
+          other.conflictId == this.conflictId &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.recordVersion == this.recordVersion);
+}
+
+class DurableInboxOperationsCompanion
+    extends UpdateCompanion<DurableInboxOperationRow> {
+  final Value<String> sourceAuthority;
+  final Value<String> sourceOperationId;
+  final Value<String> businessId;
+  final Value<String> scopeKind;
+  final Value<String?> warehouseId;
+  final Value<String> operationKind;
+  final Value<String> aggregateType;
+  final Value<String?> aggregateId;
+  final Value<int> payloadSchemaVersion;
+  final Value<String> payloadJson;
+  final Value<String> payloadFingerprint;
+  final Value<String?> sourceActorAuthUserId;
+  final Value<String?> sourceDeviceId;
+  final Value<int?> remoteEntityVersion;
+  final Value<bool> isDeleted;
+  final Value<String?> deletionMetadataJson;
+  final Value<DateTime> serverOccurredAtUtc;
+  final Value<DateTime> receivedAtUtc;
+  final Value<String> state;
+  final Value<int> applyAttemptCount;
+  final Value<DateTime?> lastApplyAttemptAtUtc;
+  final Value<String?> lastErrorClass;
+  final Value<String?> lastErrorCode;
+  final Value<String?> claimToken;
+  final Value<DateTime?> leaseExpiresAtUtc;
+  final Value<DateTime?> appliedAtUtc;
+  final Value<DateTime?> rejectedAtUtc;
+  final Value<String?> conflictId;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> recordVersion;
+  final Value<int> rowid;
+  const DurableInboxOperationsCompanion({
+    this.sourceAuthority = const Value.absent(),
+    this.sourceOperationId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.scopeKind = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.operationKind = const Value.absent(),
+    this.aggregateType = const Value.absent(),
+    this.aggregateId = const Value.absent(),
+    this.payloadSchemaVersion = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.payloadFingerprint = const Value.absent(),
+    this.sourceActorAuthUserId = const Value.absent(),
+    this.sourceDeviceId = const Value.absent(),
+    this.remoteEntityVersion = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.deletionMetadataJson = const Value.absent(),
+    this.serverOccurredAtUtc = const Value.absent(),
+    this.receivedAtUtc = const Value.absent(),
+    this.state = const Value.absent(),
+    this.applyAttemptCount = const Value.absent(),
+    this.lastApplyAttemptAtUtc = const Value.absent(),
+    this.lastErrorClass = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.claimToken = const Value.absent(),
+    this.leaseExpiresAtUtc = const Value.absent(),
+    this.appliedAtUtc = const Value.absent(),
+    this.rejectedAtUtc = const Value.absent(),
+    this.conflictId = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DurableInboxOperationsCompanion.insert({
+    required String sourceAuthority,
+    required String sourceOperationId,
+    required String businessId,
+    required String scopeKind,
+    this.warehouseId = const Value.absent(),
+    required String operationKind,
+    required String aggregateType,
+    this.aggregateId = const Value.absent(),
+    required int payloadSchemaVersion,
+    required String payloadJson,
+    required String payloadFingerprint,
+    this.sourceActorAuthUserId = const Value.absent(),
+    this.sourceDeviceId = const Value.absent(),
+    this.remoteEntityVersion = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.deletionMetadataJson = const Value.absent(),
+    required DateTime serverOccurredAtUtc,
+    required DateTime receivedAtUtc,
+    required String state,
+    this.applyAttemptCount = const Value.absent(),
+    this.lastApplyAttemptAtUtc = const Value.absent(),
+    this.lastErrorClass = const Value.absent(),
+    this.lastErrorCode = const Value.absent(),
+    this.claimToken = const Value.absent(),
+    this.leaseExpiresAtUtc = const Value.absent(),
+    this.appliedAtUtc = const Value.absent(),
+    this.rejectedAtUtc = const Value.absent(),
+    this.conflictId = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : sourceAuthority = Value(sourceAuthority),
+        sourceOperationId = Value(sourceOperationId),
+        businessId = Value(businessId),
+        scopeKind = Value(scopeKind),
+        operationKind = Value(operationKind),
+        aggregateType = Value(aggregateType),
+        payloadSchemaVersion = Value(payloadSchemaVersion),
+        payloadJson = Value(payloadJson),
+        payloadFingerprint = Value(payloadFingerprint),
+        serverOccurredAtUtc = Value(serverOccurredAtUtc),
+        receivedAtUtc = Value(receivedAtUtc),
+        state = Value(state),
+        createdAtUtc = Value(createdAtUtc),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<DurableInboxOperationRow> custom({
+    Expression<String>? sourceAuthority,
+    Expression<String>? sourceOperationId,
+    Expression<String>? businessId,
+    Expression<String>? scopeKind,
+    Expression<String>? warehouseId,
+    Expression<String>? operationKind,
+    Expression<String>? aggregateType,
+    Expression<String>? aggregateId,
+    Expression<int>? payloadSchemaVersion,
+    Expression<String>? payloadJson,
+    Expression<String>? payloadFingerprint,
+    Expression<String>? sourceActorAuthUserId,
+    Expression<String>? sourceDeviceId,
+    Expression<int>? remoteEntityVersion,
+    Expression<bool>? isDeleted,
+    Expression<String>? deletionMetadataJson,
+    Expression<DateTime>? serverOccurredAtUtc,
+    Expression<DateTime>? receivedAtUtc,
+    Expression<String>? state,
+    Expression<int>? applyAttemptCount,
+    Expression<DateTime>? lastApplyAttemptAtUtc,
+    Expression<String>? lastErrorClass,
+    Expression<String>? lastErrorCode,
+    Expression<String>? claimToken,
+    Expression<DateTime>? leaseExpiresAtUtc,
+    Expression<DateTime>? appliedAtUtc,
+    Expression<DateTime>? rejectedAtUtc,
+    Expression<String>? conflictId,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? recordVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sourceAuthority != null) 'source_authority': sourceAuthority,
+      if (sourceOperationId != null) 'source_operation_id': sourceOperationId,
+      if (businessId != null) 'business_id': businessId,
+      if (scopeKind != null) 'scope_kind': scopeKind,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (operationKind != null) 'operation_kind': operationKind,
+      if (aggregateType != null) 'aggregate_type': aggregateType,
+      if (aggregateId != null) 'aggregate_id': aggregateId,
+      if (payloadSchemaVersion != null)
+        'payload_schema_version': payloadSchemaVersion,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (payloadFingerprint != null) 'payload_fingerprint': payloadFingerprint,
+      if (sourceActorAuthUserId != null)
+        'source_actor_auth_user_id': sourceActorAuthUserId,
+      if (sourceDeviceId != null) 'source_device_id': sourceDeviceId,
+      if (remoteEntityVersion != null)
+        'remote_entity_version': remoteEntityVersion,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (deletionMetadataJson != null)
+        'deletion_metadata_json': deletionMetadataJson,
+      if (serverOccurredAtUtc != null)
+        'server_occurred_at_utc': serverOccurredAtUtc,
+      if (receivedAtUtc != null) 'received_at_utc': receivedAtUtc,
+      if (state != null) 'state': state,
+      if (applyAttemptCount != null) 'apply_attempt_count': applyAttemptCount,
+      if (lastApplyAttemptAtUtc != null)
+        'last_apply_attempt_at_utc': lastApplyAttemptAtUtc,
+      if (lastErrorClass != null) 'last_error_class': lastErrorClass,
+      if (lastErrorCode != null) 'last_error_code': lastErrorCode,
+      if (claimToken != null) 'claim_token': claimToken,
+      if (leaseExpiresAtUtc != null) 'lease_expires_at_utc': leaseExpiresAtUtc,
+      if (appliedAtUtc != null) 'applied_at_utc': appliedAtUtc,
+      if (rejectedAtUtc != null) 'rejected_at_utc': rejectedAtUtc,
+      if (conflictId != null) 'conflict_id': conflictId,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (recordVersion != null) 'record_version': recordVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DurableInboxOperationsCompanion copyWith(
+      {Value<String>? sourceAuthority,
+      Value<String>? sourceOperationId,
+      Value<String>? businessId,
+      Value<String>? scopeKind,
+      Value<String?>? warehouseId,
+      Value<String>? operationKind,
+      Value<String>? aggregateType,
+      Value<String?>? aggregateId,
+      Value<int>? payloadSchemaVersion,
+      Value<String>? payloadJson,
+      Value<String>? payloadFingerprint,
+      Value<String?>? sourceActorAuthUserId,
+      Value<String?>? sourceDeviceId,
+      Value<int?>? remoteEntityVersion,
+      Value<bool>? isDeleted,
+      Value<String?>? deletionMetadataJson,
+      Value<DateTime>? serverOccurredAtUtc,
+      Value<DateTime>? receivedAtUtc,
+      Value<String>? state,
+      Value<int>? applyAttemptCount,
+      Value<DateTime?>? lastApplyAttemptAtUtc,
+      Value<String?>? lastErrorClass,
+      Value<String?>? lastErrorCode,
+      Value<String?>? claimToken,
+      Value<DateTime?>? leaseExpiresAtUtc,
+      Value<DateTime?>? appliedAtUtc,
+      Value<DateTime?>? rejectedAtUtc,
+      Value<String?>? conflictId,
+      Value<DateTime>? createdAtUtc,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? recordVersion,
+      Value<int>? rowid}) {
+    return DurableInboxOperationsCompanion(
+      sourceAuthority: sourceAuthority ?? this.sourceAuthority,
+      sourceOperationId: sourceOperationId ?? this.sourceOperationId,
+      businessId: businessId ?? this.businessId,
+      scopeKind: scopeKind ?? this.scopeKind,
+      warehouseId: warehouseId ?? this.warehouseId,
+      operationKind: operationKind ?? this.operationKind,
+      aggregateType: aggregateType ?? this.aggregateType,
+      aggregateId: aggregateId ?? this.aggregateId,
+      payloadSchemaVersion: payloadSchemaVersion ?? this.payloadSchemaVersion,
+      payloadJson: payloadJson ?? this.payloadJson,
+      payloadFingerprint: payloadFingerprint ?? this.payloadFingerprint,
+      sourceActorAuthUserId:
+          sourceActorAuthUserId ?? this.sourceActorAuthUserId,
+      sourceDeviceId: sourceDeviceId ?? this.sourceDeviceId,
+      remoteEntityVersion: remoteEntityVersion ?? this.remoteEntityVersion,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletionMetadataJson: deletionMetadataJson ?? this.deletionMetadataJson,
+      serverOccurredAtUtc: serverOccurredAtUtc ?? this.serverOccurredAtUtc,
+      receivedAtUtc: receivedAtUtc ?? this.receivedAtUtc,
+      state: state ?? this.state,
+      applyAttemptCount: applyAttemptCount ?? this.applyAttemptCount,
+      lastApplyAttemptAtUtc:
+          lastApplyAttemptAtUtc ?? this.lastApplyAttemptAtUtc,
+      lastErrorClass: lastErrorClass ?? this.lastErrorClass,
+      lastErrorCode: lastErrorCode ?? this.lastErrorCode,
+      claimToken: claimToken ?? this.claimToken,
+      leaseExpiresAtUtc: leaseExpiresAtUtc ?? this.leaseExpiresAtUtc,
+      appliedAtUtc: appliedAtUtc ?? this.appliedAtUtc,
+      rejectedAtUtc: rejectedAtUtc ?? this.rejectedAtUtc,
+      conflictId: conflictId ?? this.conflictId,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      recordVersion: recordVersion ?? this.recordVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sourceAuthority.present) {
+      map['source_authority'] = Variable<String>(sourceAuthority.value);
+    }
+    if (sourceOperationId.present) {
+      map['source_operation_id'] = Variable<String>(sourceOperationId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (scopeKind.present) {
+      map['scope_kind'] = Variable<String>(scopeKind.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (operationKind.present) {
+      map['operation_kind'] = Variable<String>(operationKind.value);
+    }
+    if (aggregateType.present) {
+      map['aggregate_type'] = Variable<String>(aggregateType.value);
+    }
+    if (aggregateId.present) {
+      map['aggregate_id'] = Variable<String>(aggregateId.value);
+    }
+    if (payloadSchemaVersion.present) {
+      map['payload_schema_version'] = Variable<int>(payloadSchemaVersion.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (payloadFingerprint.present) {
+      map['payload_fingerprint'] = Variable<String>(payloadFingerprint.value);
+    }
+    if (sourceActorAuthUserId.present) {
+      map['source_actor_auth_user_id'] =
+          Variable<String>(sourceActorAuthUserId.value);
+    }
+    if (sourceDeviceId.present) {
+      map['source_device_id'] = Variable<String>(sourceDeviceId.value);
+    }
+    if (remoteEntityVersion.present) {
+      map['remote_entity_version'] = Variable<int>(remoteEntityVersion.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (deletionMetadataJson.present) {
+      map['deletion_metadata_json'] =
+          Variable<String>(deletionMetadataJson.value);
+    }
+    if (serverOccurredAtUtc.present) {
+      map['server_occurred_at_utc'] =
+          Variable<DateTime>(serverOccurredAtUtc.value);
+    }
+    if (receivedAtUtc.present) {
+      map['received_at_utc'] = Variable<DateTime>(receivedAtUtc.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (applyAttemptCount.present) {
+      map['apply_attempt_count'] = Variable<int>(applyAttemptCount.value);
+    }
+    if (lastApplyAttemptAtUtc.present) {
+      map['last_apply_attempt_at_utc'] =
+          Variable<DateTime>(lastApplyAttemptAtUtc.value);
+    }
+    if (lastErrorClass.present) {
+      map['last_error_class'] = Variable<String>(lastErrorClass.value);
+    }
+    if (lastErrorCode.present) {
+      map['last_error_code'] = Variable<String>(lastErrorCode.value);
+    }
+    if (claimToken.present) {
+      map['claim_token'] = Variable<String>(claimToken.value);
+    }
+    if (leaseExpiresAtUtc.present) {
+      map['lease_expires_at_utc'] = Variable<DateTime>(leaseExpiresAtUtc.value);
+    }
+    if (appliedAtUtc.present) {
+      map['applied_at_utc'] = Variable<DateTime>(appliedAtUtc.value);
+    }
+    if (rejectedAtUtc.present) {
+      map['rejected_at_utc'] = Variable<DateTime>(rejectedAtUtc.value);
+    }
+    if (conflictId.present) {
+      map['conflict_id'] = Variable<String>(conflictId.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (recordVersion.present) {
+      map['record_version'] = Variable<int>(recordVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableInboxOperationsCompanion(')
+          ..write('sourceAuthority: $sourceAuthority, ')
+          ..write('sourceOperationId: $sourceOperationId, ')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('operationKind: $operationKind, ')
+          ..write('aggregateType: $aggregateType, ')
+          ..write('aggregateId: $aggregateId, ')
+          ..write('payloadSchemaVersion: $payloadSchemaVersion, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('payloadFingerprint: $payloadFingerprint, ')
+          ..write('sourceActorAuthUserId: $sourceActorAuthUserId, ')
+          ..write('sourceDeviceId: $sourceDeviceId, ')
+          ..write('remoteEntityVersion: $remoteEntityVersion, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('deletionMetadataJson: $deletionMetadataJson, ')
+          ..write('serverOccurredAtUtc: $serverOccurredAtUtc, ')
+          ..write('receivedAtUtc: $receivedAtUtc, ')
+          ..write('state: $state, ')
+          ..write('applyAttemptCount: $applyAttemptCount, ')
+          ..write('lastApplyAttemptAtUtc: $lastApplyAttemptAtUtc, ')
+          ..write('lastErrorClass: $lastErrorClass, ')
+          ..write('lastErrorCode: $lastErrorCode, ')
+          ..write('claimToken: $claimToken, ')
+          ..write('leaseExpiresAtUtc: $leaseExpiresAtUtc, ')
+          ..write('appliedAtUtc: $appliedAtUtc, ')
+          ..write('rejectedAtUtc: $rejectedAtUtc, ')
+          ..write('conflictId: $conflictId, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DurableSyncCheckpointsTable extends DurableSyncCheckpoints
+    with TableInfo<$DurableSyncCheckpointsTable, DurableSyncCheckpointRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DurableSyncCheckpointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _scopeKindMeta =
+      const VerificationMeta('scopeKind');
+  @override
+  late final GeneratedColumn<String> scopeKind = GeneratedColumn<String>(
+      'scope_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sourceAuthorityMeta =
+      const VerificationMeta('sourceAuthority');
+  @override
+  late final GeneratedColumn<String> sourceAuthority = GeneratedColumn<String>(
+      'source_authority', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _streamNameMeta =
+      const VerificationMeta('streamName');
+  @override
+  late final GeneratedColumn<String> streamName = GeneratedColumn<String>(
+      'stream_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _cursorValueMeta =
+      const VerificationMeta('cursorValue');
+  @override
+  late final GeneratedColumn<String> cursorValue = GeneratedColumn<String>(
+      'cursor_value', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lastSourceOperationIdMeta =
+      const VerificationMeta('lastSourceOperationId');
+  @override
+  late final GeneratedColumn<String> lastSourceOperationId =
+      GeneratedColumn<String>('last_source_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _recordVersionMeta =
+      const VerificationMeta('recordVersion');
+  @override
+  late final GeneratedColumn<int> recordVersion = GeneratedColumn<int>(
+      'record_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        businessId,
+        scopeKind,
+        warehouseId,
+        sourceAuthority,
+        streamName,
+        cursorValue,
+        lastSourceOperationId,
+        updatedAtUtc,
+        recordVersion
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'durable_sync_checkpoints';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<DurableSyncCheckpointRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('scope_kind')) {
+      context.handle(_scopeKindMeta,
+          scopeKind.isAcceptableOrUnknown(data['scope_kind']!, _scopeKindMeta));
+    } else if (isInserting) {
+      context.missing(_scopeKindMeta);
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    }
+    if (data.containsKey('source_authority')) {
+      context.handle(
+          _sourceAuthorityMeta,
+          sourceAuthority.isAcceptableOrUnknown(
+              data['source_authority']!, _sourceAuthorityMeta));
+    } else if (isInserting) {
+      context.missing(_sourceAuthorityMeta);
+    }
+    if (data.containsKey('stream_name')) {
+      context.handle(
+          _streamNameMeta,
+          streamName.isAcceptableOrUnknown(
+              data['stream_name']!, _streamNameMeta));
+    } else if (isInserting) {
+      context.missing(_streamNameMeta);
+    }
+    if (data.containsKey('cursor_value')) {
+      context.handle(
+          _cursorValueMeta,
+          cursorValue.isAcceptableOrUnknown(
+              data['cursor_value']!, _cursorValueMeta));
+    } else if (isInserting) {
+      context.missing(_cursorValueMeta);
+    }
+    if (data.containsKey('last_source_operation_id')) {
+      context.handle(
+          _lastSourceOperationIdMeta,
+          lastSourceOperationId.isAcceptableOrUnknown(
+              data['last_source_operation_id']!, _lastSourceOperationIdMeta));
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    if (data.containsKey('record_version')) {
+      context.handle(
+          _recordVersionMeta,
+          recordVersion.isAcceptableOrUnknown(
+              data['record_version']!, _recordVersionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey =>
+      {businessId, scopeKind, warehouseId, sourceAuthority, streamName};
+  @override
+  DurableSyncCheckpointRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DurableSyncCheckpointRow(
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      scopeKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}scope_kind'])!,
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id']),
+      sourceAuthority: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_authority'])!,
+      streamName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}stream_name'])!,
+      cursorValue: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cursor_value'])!,
+      lastSourceOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}last_source_operation_id']),
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+      recordVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}record_version'])!,
+    );
+  }
+
+  @override
+  $DurableSyncCheckpointsTable createAlias(String alias) {
+    return $DurableSyncCheckpointsTable(attachedDatabase, alias);
+  }
+}
+
+class DurableSyncCheckpointRow extends DataClass
+    implements Insertable<DurableSyncCheckpointRow> {
+  final String businessId;
+  final String scopeKind;
+  final String? warehouseId;
+  final String sourceAuthority;
+  final String streamName;
+  final String cursorValue;
+  final String? lastSourceOperationId;
+  final DateTime updatedAtUtc;
+  final int recordVersion;
+  const DurableSyncCheckpointRow(
+      {required this.businessId,
+      required this.scopeKind,
+      this.warehouseId,
+      required this.sourceAuthority,
+      required this.streamName,
+      required this.cursorValue,
+      this.lastSourceOperationId,
+      required this.updatedAtUtc,
+      required this.recordVersion});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['business_id'] = Variable<String>(businessId);
+    map['scope_kind'] = Variable<String>(scopeKind);
+    if (!nullToAbsent || warehouseId != null) {
+      map['warehouse_id'] = Variable<String>(warehouseId);
+    }
+    map['source_authority'] = Variable<String>(sourceAuthority);
+    map['stream_name'] = Variable<String>(streamName);
+    map['cursor_value'] = Variable<String>(cursorValue);
+    if (!nullToAbsent || lastSourceOperationId != null) {
+      map['last_source_operation_id'] = Variable<String>(lastSourceOperationId);
+    }
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    map['record_version'] = Variable<int>(recordVersion);
+    return map;
+  }
+
+  DurableSyncCheckpointsCompanion toCompanion(bool nullToAbsent) {
+    return DurableSyncCheckpointsCompanion(
+      businessId: Value(businessId),
+      scopeKind: Value(scopeKind),
+      warehouseId: warehouseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warehouseId),
+      sourceAuthority: Value(sourceAuthority),
+      streamName: Value(streamName),
+      cursorValue: Value(cursorValue),
+      lastSourceOperationId: lastSourceOperationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSourceOperationId),
+      updatedAtUtc: Value(updatedAtUtc),
+      recordVersion: Value(recordVersion),
+    );
+  }
+
+  factory DurableSyncCheckpointRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DurableSyncCheckpointRow(
+      businessId: serializer.fromJson<String>(json['businessId']),
+      scopeKind: serializer.fromJson<String>(json['scopeKind']),
+      warehouseId: serializer.fromJson<String?>(json['warehouseId']),
+      sourceAuthority: serializer.fromJson<String>(json['sourceAuthority']),
+      streamName: serializer.fromJson<String>(json['streamName']),
+      cursorValue: serializer.fromJson<String>(json['cursorValue']),
+      lastSourceOperationId:
+          serializer.fromJson<String?>(json['lastSourceOperationId']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+      recordVersion: serializer.fromJson<int>(json['recordVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'businessId': serializer.toJson<String>(businessId),
+      'scopeKind': serializer.toJson<String>(scopeKind),
+      'warehouseId': serializer.toJson<String?>(warehouseId),
+      'sourceAuthority': serializer.toJson<String>(sourceAuthority),
+      'streamName': serializer.toJson<String>(streamName),
+      'cursorValue': serializer.toJson<String>(cursorValue),
+      'lastSourceOperationId':
+          serializer.toJson<String?>(lastSourceOperationId),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+      'recordVersion': serializer.toJson<int>(recordVersion),
+    };
+  }
+
+  DurableSyncCheckpointRow copyWith(
+          {String? businessId,
+          String? scopeKind,
+          Value<String?> warehouseId = const Value.absent(),
+          String? sourceAuthority,
+          String? streamName,
+          String? cursorValue,
+          Value<String?> lastSourceOperationId = const Value.absent(),
+          DateTime? updatedAtUtc,
+          int? recordVersion}) =>
+      DurableSyncCheckpointRow(
+        businessId: businessId ?? this.businessId,
+        scopeKind: scopeKind ?? this.scopeKind,
+        warehouseId: warehouseId.present ? warehouseId.value : this.warehouseId,
+        sourceAuthority: sourceAuthority ?? this.sourceAuthority,
+        streamName: streamName ?? this.streamName,
+        cursorValue: cursorValue ?? this.cursorValue,
+        lastSourceOperationId: lastSourceOperationId.present
+            ? lastSourceOperationId.value
+            : this.lastSourceOperationId,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+        recordVersion: recordVersion ?? this.recordVersion,
+      );
+  DurableSyncCheckpointRow copyWithCompanion(
+      DurableSyncCheckpointsCompanion data) {
+    return DurableSyncCheckpointRow(
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      scopeKind: data.scopeKind.present ? data.scopeKind.value : this.scopeKind,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      sourceAuthority: data.sourceAuthority.present
+          ? data.sourceAuthority.value
+          : this.sourceAuthority,
+      streamName:
+          data.streamName.present ? data.streamName.value : this.streamName,
+      cursorValue:
+          data.cursorValue.present ? data.cursorValue.value : this.cursorValue,
+      lastSourceOperationId: data.lastSourceOperationId.present
+          ? data.lastSourceOperationId.value
+          : this.lastSourceOperationId,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+      recordVersion: data.recordVersion.present
+          ? data.recordVersion.value
+          : this.recordVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableSyncCheckpointRow(')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('sourceAuthority: $sourceAuthority, ')
+          ..write('streamName: $streamName, ')
+          ..write('cursorValue: $cursorValue, ')
+          ..write('lastSourceOperationId: $lastSourceOperationId, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      businessId,
+      scopeKind,
+      warehouseId,
+      sourceAuthority,
+      streamName,
+      cursorValue,
+      lastSourceOperationId,
+      updatedAtUtc,
+      recordVersion);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DurableSyncCheckpointRow &&
+          other.businessId == this.businessId &&
+          other.scopeKind == this.scopeKind &&
+          other.warehouseId == this.warehouseId &&
+          other.sourceAuthority == this.sourceAuthority &&
+          other.streamName == this.streamName &&
+          other.cursorValue == this.cursorValue &&
+          other.lastSourceOperationId == this.lastSourceOperationId &&
+          other.updatedAtUtc == this.updatedAtUtc &&
+          other.recordVersion == this.recordVersion);
+}
+
+class DurableSyncCheckpointsCompanion
+    extends UpdateCompanion<DurableSyncCheckpointRow> {
+  final Value<String> businessId;
+  final Value<String> scopeKind;
+  final Value<String?> warehouseId;
+  final Value<String> sourceAuthority;
+  final Value<String> streamName;
+  final Value<String> cursorValue;
+  final Value<String?> lastSourceOperationId;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> recordVersion;
+  final Value<int> rowid;
+  const DurableSyncCheckpointsCompanion({
+    this.businessId = const Value.absent(),
+    this.scopeKind = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.sourceAuthority = const Value.absent(),
+    this.streamName = const Value.absent(),
+    this.cursorValue = const Value.absent(),
+    this.lastSourceOperationId = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DurableSyncCheckpointsCompanion.insert({
+    required String businessId,
+    required String scopeKind,
+    this.warehouseId = const Value.absent(),
+    required String sourceAuthority,
+    required String streamName,
+    required String cursorValue,
+    this.lastSourceOperationId = const Value.absent(),
+    required DateTime updatedAtUtc,
+    this.recordVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : businessId = Value(businessId),
+        scopeKind = Value(scopeKind),
+        sourceAuthority = Value(sourceAuthority),
+        streamName = Value(streamName),
+        cursorValue = Value(cursorValue),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<DurableSyncCheckpointRow> custom({
+    Expression<String>? businessId,
+    Expression<String>? scopeKind,
+    Expression<String>? warehouseId,
+    Expression<String>? sourceAuthority,
+    Expression<String>? streamName,
+    Expression<String>? cursorValue,
+    Expression<String>? lastSourceOperationId,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? recordVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (businessId != null) 'business_id': businessId,
+      if (scopeKind != null) 'scope_kind': scopeKind,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (sourceAuthority != null) 'source_authority': sourceAuthority,
+      if (streamName != null) 'stream_name': streamName,
+      if (cursorValue != null) 'cursor_value': cursorValue,
+      if (lastSourceOperationId != null)
+        'last_source_operation_id': lastSourceOperationId,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (recordVersion != null) 'record_version': recordVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DurableSyncCheckpointsCompanion copyWith(
+      {Value<String>? businessId,
+      Value<String>? scopeKind,
+      Value<String?>? warehouseId,
+      Value<String>? sourceAuthority,
+      Value<String>? streamName,
+      Value<String>? cursorValue,
+      Value<String?>? lastSourceOperationId,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? recordVersion,
+      Value<int>? rowid}) {
+    return DurableSyncCheckpointsCompanion(
+      businessId: businessId ?? this.businessId,
+      scopeKind: scopeKind ?? this.scopeKind,
+      warehouseId: warehouseId ?? this.warehouseId,
+      sourceAuthority: sourceAuthority ?? this.sourceAuthority,
+      streamName: streamName ?? this.streamName,
+      cursorValue: cursorValue ?? this.cursorValue,
+      lastSourceOperationId:
+          lastSourceOperationId ?? this.lastSourceOperationId,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      recordVersion: recordVersion ?? this.recordVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (scopeKind.present) {
+      map['scope_kind'] = Variable<String>(scopeKind.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (sourceAuthority.present) {
+      map['source_authority'] = Variable<String>(sourceAuthority.value);
+    }
+    if (streamName.present) {
+      map['stream_name'] = Variable<String>(streamName.value);
+    }
+    if (cursorValue.present) {
+      map['cursor_value'] = Variable<String>(cursorValue.value);
+    }
+    if (lastSourceOperationId.present) {
+      map['last_source_operation_id'] =
+          Variable<String>(lastSourceOperationId.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (recordVersion.present) {
+      map['record_version'] = Variable<int>(recordVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurableSyncCheckpointsCompanion(')
+          ..write('businessId: $businessId, ')
+          ..write('scopeKind: $scopeKind, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('sourceAuthority: $sourceAuthority, ')
+          ..write('streamName: $streamName, ')
+          ..write('cursorValue: $cursorValue, ')
+          ..write('lastSourceOperationId: $lastSourceOperationId, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('recordVersion: $recordVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CustomerAccountEntriesTable extends CustomerAccountEntries
     with TableInfo<$CustomerAccountEntriesTable, CustomerAccountEntryRow> {
   @override
@@ -17448,6 +22790,14 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final $InternalTransferPostingAttemptsTable
       internalTransferPostingAttempts =
       $InternalTransferPostingAttemptsTable(this);
+  late final $DurableOutboxOperationsTable durableOutboxOperations =
+      $DurableOutboxOperationsTable(this);
+  late final $DurableConflictsTable durableConflicts =
+      $DurableConflictsTable(this);
+  late final $DurableInboxOperationsTable durableInboxOperations =
+      $DurableInboxOperationsTable(this);
+  late final $DurableSyncCheckpointsTable durableSyncCheckpoints =
+      $DurableSyncCheckpointsTable(this);
   late final $CustomerAccountEntriesTable customerAccountEntries =
       $CustomerAccountEntriesTable(this);
   late final $CustomerCollectionsTable customerCollections =
@@ -17533,6 +22883,42 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
   late final Index internalTransferPostingAttemptsBusinessStateIdx = Index(
       'internal_transfer_posting_attempts_business_state_idx',
       'CREATE INDEX internal_transfer_posting_attempts_business_state_idx ON internal_transfer_posting_attempts (business_id, lifecycle_state, updated_at_utc)');
+  late final Index durableOutboxBusinessStateIdx = Index(
+      'durable_outbox_business_state_idx',
+      'CREATE INDEX durable_outbox_business_state_idx ON durable_outbox_operations (business_id, scope_kind, warehouse_id, state, next_attempt_at_utc, created_at_utc, operation_id)');
+  late final Index durableOutboxAggregateIdx = Index(
+      'durable_outbox_aggregate_idx',
+      'CREATE INDEX durable_outbox_aggregate_idx ON durable_outbox_operations (business_id, aggregate_type, aggregate_id, created_at_utc, operation_id)');
+  late final Index durableOutboxDependencyIdx = Index(
+      'durable_outbox_dependency_idx',
+      'CREATE INDEX durable_outbox_dependency_idx ON durable_outbox_operations (causal_predecessor_operation_id, state)');
+  late final Index durableOutboxLeaseIdx = Index('durable_outbox_lease_idx',
+      'CREATE INDEX durable_outbox_lease_idx ON durable_outbox_operations (lease_expires_at_utc, state)');
+  late final Index durableOutboxIdempotencyUq = Index(
+      'durable_outbox_idempotency_uq',
+      'CREATE UNIQUE INDEX durable_outbox_idempotency_uq ON durable_outbox_operations (business_id, operation_kind, idempotency_key)');
+  late final Index durableConflictsScopeUnresolvedIdx = Index(
+      'durable_conflicts_scope_unresolved_idx',
+      'CREATE INDEX durable_conflicts_scope_unresolved_idx ON durable_conflicts (business_id, scope_kind, warehouse_id, resolution_state, detected_at_utc, conflict_id)');
+  late final Index durableConflictsEntityIdx = Index(
+      'durable_conflicts_entity_idx',
+      'CREATE INDEX durable_conflicts_entity_idx ON durable_conflicts (business_id, entity_type, entity_id, detected_at_utc, conflict_id)');
+  late final Index durableConflictsLocalOperationIdx = Index(
+      'durable_conflicts_local_operation_idx',
+      'CREATE INDEX durable_conflicts_local_operation_idx ON durable_conflicts (local_operation_id)');
+  late final Index durableConflictsRemoteOperationIdx = Index(
+      'durable_conflicts_remote_operation_idx',
+      'CREATE INDEX durable_conflicts_remote_operation_idx ON durable_conflicts (remote_operation_id)');
+  late final Index durableInboxBusinessStateIdx = Index(
+      'durable_inbox_business_state_idx',
+      'CREATE INDEX durable_inbox_business_state_idx ON durable_inbox_operations (business_id, scope_kind, warehouse_id, state, received_at_utc, source_operation_id)');
+  late final Index durableInboxLeaseIdx = Index('durable_inbox_lease_idx',
+      'CREATE INDEX durable_inbox_lease_idx ON durable_inbox_operations (lease_expires_at_utc, state)');
+  late final Index durableInboxAggregateIdx = Index(
+      'durable_inbox_aggregate_idx',
+      'CREATE INDEX durable_inbox_aggregate_idx ON durable_inbox_operations (business_id, aggregate_type, aggregate_id, server_occurred_at_utc, source_operation_id)');
+  late final Index durableInboxConflictIdx = Index('durable_inbox_conflict_idx',
+      'CREATE INDEX durable_inbox_conflict_idx ON durable_inbox_operations (conflict_id)');
   late final Index customerAccountEntriesCustomerTimestampIdx = Index(
       'customer_account_entries_customer_timestamp_idx',
       'CREATE INDEX customer_account_entries_customer_timestamp_idx ON customer_account_entries (customer_id, occurred_at, id)');
@@ -17602,6 +22988,10 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         financialAccountCloudLinks,
         expensePostingAttempts,
         internalTransferPostingAttempts,
+        durableOutboxOperations,
+        durableConflicts,
+        durableInboxOperations,
+        durableSyncCheckpoints,
         customerAccountEntries,
         customerCollections,
         customerAdvances,
@@ -17638,6 +23028,19 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         financialAccountCloudLinksBusinessServerUq,
         expensePostingAttemptsBusinessStateIdx,
         internalTransferPostingAttemptsBusinessStateIdx,
+        durableOutboxBusinessStateIdx,
+        durableOutboxAggregateIdx,
+        durableOutboxDependencyIdx,
+        durableOutboxLeaseIdx,
+        durableOutboxIdempotencyUq,
+        durableConflictsScopeUnresolvedIdx,
+        durableConflictsEntityIdx,
+        durableConflictsLocalOperationIdx,
+        durableConflictsRemoteOperationIdx,
+        durableInboxBusinessStateIdx,
+        durableInboxLeaseIdx,
+        durableInboxAggregateIdx,
+        durableInboxConflictIdx,
         customerAccountEntriesCustomerTimestampIdx,
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
@@ -23627,6 +29030,2364 @@ typedef $$InternalTransferPostingAttemptsTableProcessedTableManager
         ),
         InternalTransferPostingAttemptRow,
         PrefetchHooks Function()>;
+typedef $$DurableOutboxOperationsTableCreateCompanionBuilder
+    = DurableOutboxOperationsCompanion Function({
+  required String operationId,
+  required String idempotencyKey,
+  required String businessId,
+  required String scopeKind,
+  Value<String?> warehouseId,
+  required String actorAuthUserId,
+  required String deviceId,
+  required String sessionId,
+  required String capturedRole,
+  required String operationKind,
+  required String aggregateType,
+  Value<String?> aggregateId,
+  required int payloadSchemaVersion,
+  required String payloadJson,
+  required String payloadFingerprint,
+  Value<int?> baseEntityVersion,
+  Value<bool> isDeletionIntent,
+  required DateTime occurredAtUtc,
+  Value<String?> businessDate,
+  Value<String?> causalPredecessorOperationId,
+  required String state,
+  Value<int> attemptCount,
+  Value<DateTime?> nextAttemptAtUtc,
+  Value<DateTime?> lastAttemptAtUtc,
+  Value<String?> lastErrorClass,
+  Value<String?> lastErrorCode,
+  Value<String?> claimToken,
+  Value<DateTime?> leaseExpiresAtUtc,
+  Value<int?> ackSchemaVersion,
+  Value<String?> ackPayloadJson,
+  Value<String?> ackPayloadFingerprint,
+  Value<String?> serverResultId,
+  Value<DateTime?> serverAcceptedAtUtc,
+  Value<int?> acknowledgedEntityVersion,
+  Value<String?> conflictId,
+  required DateTime createdAtUtc,
+  required DateTime updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+typedef $$DurableOutboxOperationsTableUpdateCompanionBuilder
+    = DurableOutboxOperationsCompanion Function({
+  Value<String> operationId,
+  Value<String> idempotencyKey,
+  Value<String> businessId,
+  Value<String> scopeKind,
+  Value<String?> warehouseId,
+  Value<String> actorAuthUserId,
+  Value<String> deviceId,
+  Value<String> sessionId,
+  Value<String> capturedRole,
+  Value<String> operationKind,
+  Value<String> aggregateType,
+  Value<String?> aggregateId,
+  Value<int> payloadSchemaVersion,
+  Value<String> payloadJson,
+  Value<String> payloadFingerprint,
+  Value<int?> baseEntityVersion,
+  Value<bool> isDeletionIntent,
+  Value<DateTime> occurredAtUtc,
+  Value<String?> businessDate,
+  Value<String?> causalPredecessorOperationId,
+  Value<String> state,
+  Value<int> attemptCount,
+  Value<DateTime?> nextAttemptAtUtc,
+  Value<DateTime?> lastAttemptAtUtc,
+  Value<String?> lastErrorClass,
+  Value<String?> lastErrorCode,
+  Value<String?> claimToken,
+  Value<DateTime?> leaseExpiresAtUtc,
+  Value<int?> ackSchemaVersion,
+  Value<String?> ackPayloadJson,
+  Value<String?> ackPayloadFingerprint,
+  Value<String?> serverResultId,
+  Value<DateTime?> serverAcceptedAtUtc,
+  Value<int?> acknowledgedEntityVersion,
+  Value<String?> conflictId,
+  Value<DateTime> createdAtUtc,
+  Value<DateTime> updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+
+class $$DurableOutboxOperationsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $DurableOutboxOperationsTable> {
+  $$DurableOutboxOperationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get operationId => $composableBuilder(
+      column: $table.operationId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get actorAuthUserId => $composableBuilder(
+      column: $table.actorAuthUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get capturedRole => $composableBuilder(
+      column: $table.capturedRole, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationKind => $composableBuilder(
+      column: $table.operationKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get baseEntityVersion => $composableBuilder(
+      column: $table.baseEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDeletionIntent => $composableBuilder(
+      column: $table.isDeletionIntent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAtUtc => $composableBuilder(
+      column: $table.occurredAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessDate => $composableBuilder(
+      column: $table.businessDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get causalPredecessorOperationId => $composableBuilder(
+      column: $table.causalPredecessorOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get state => $composableBuilder(
+      column: $table.state, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get nextAttemptAtUtc => $composableBuilder(
+      column: $table.nextAttemptAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastAttemptAtUtc => $composableBuilder(
+      column: $table.lastAttemptAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get ackSchemaVersion => $composableBuilder(
+      column: $table.ackSchemaVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ackPayloadJson => $composableBuilder(
+      column: $table.ackPayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ackPayloadFingerprint => $composableBuilder(
+      column: $table.ackPayloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get serverResultId => $composableBuilder(
+      column: $table.serverResultId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get serverAcceptedAtUtc => $composableBuilder(
+      column: $table.serverAcceptedAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => ColumnFilters(column));
+}
+
+class $$DurableOutboxOperationsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $DurableOutboxOperationsTable> {
+  $$DurableOutboxOperationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get operationId => $composableBuilder(
+      column: $table.operationId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get actorAuthUserId => $composableBuilder(
+      column: $table.actorAuthUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get capturedRole => $composableBuilder(
+      column: $table.capturedRole,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationKind => $composableBuilder(
+      column: $table.operationKind,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get baseEntityVersion => $composableBuilder(
+      column: $table.baseEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDeletionIntent => $composableBuilder(
+      column: $table.isDeletionIntent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAtUtc => $composableBuilder(
+      column: $table.occurredAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessDate => $composableBuilder(
+      column: $table.businessDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get causalPredecessorOperationId =>
+      $composableBuilder(
+          column: $table.causalPredecessorOperationId,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get state => $composableBuilder(
+      column: $table.state, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get nextAttemptAtUtc => $composableBuilder(
+      column: $table.nextAttemptAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastAttemptAtUtc => $composableBuilder(
+      column: $table.lastAttemptAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get ackSchemaVersion => $composableBuilder(
+      column: $table.ackSchemaVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ackPayloadJson => $composableBuilder(
+      column: $table.ackPayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ackPayloadFingerprint => $composableBuilder(
+      column: $table.ackPayloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get serverResultId => $composableBuilder(
+      column: $table.serverResultId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get serverAcceptedAtUtc => $composableBuilder(
+      column: $table.serverAcceptedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$DurableOutboxOperationsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $DurableOutboxOperationsTable> {
+  $$DurableOutboxOperationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get operationId => $composableBuilder(
+      column: $table.operationId, builder: (column) => column);
+
+  GeneratedColumn<String> get idempotencyKey => $composableBuilder(
+      column: $table.idempotencyKey, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeKind =>
+      $composableBuilder(column: $table.scopeKind, builder: (column) => column);
+
+  GeneratedColumn<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => column);
+
+  GeneratedColumn<String> get actorAuthUserId => $composableBuilder(
+      column: $table.actorAuthUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<String> get capturedRole => $composableBuilder(
+      column: $table.capturedRole, builder: (column) => column);
+
+  GeneratedColumn<String> get operationKind => $composableBuilder(
+      column: $table.operationKind, builder: (column) => column);
+
+  GeneratedColumn<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType, builder: (column) => column);
+
+  GeneratedColumn<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => column);
+
+  GeneratedColumn<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<int> get baseEntityVersion => $composableBuilder(
+      column: $table.baseEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeletionIntent => $composableBuilder(
+      column: $table.isDeletionIntent, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAtUtc => $composableBuilder(
+      column: $table.occurredAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get businessDate => $composableBuilder(
+      column: $table.businessDate, builder: (column) => column);
+
+  GeneratedColumn<String> get causalPredecessorOperationId =>
+      $composableBuilder(
+          column: $table.causalPredecessorOperationId,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<int> get attemptCount => $composableBuilder(
+      column: $table.attemptCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextAttemptAtUtc => $composableBuilder(
+      column: $table.nextAttemptAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAttemptAtUtc => $composableBuilder(
+      column: $table.lastAttemptAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => column);
+
+  GeneratedColumn<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get ackSchemaVersion => $composableBuilder(
+      column: $table.ackSchemaVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get ackPayloadJson => $composableBuilder(
+      column: $table.ackPayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get ackPayloadFingerprint => $composableBuilder(
+      column: $table.ackPayloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get serverResultId => $composableBuilder(
+      column: $table.serverResultId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get serverAcceptedAtUtc => $composableBuilder(
+      column: $table.serverAcceptedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => column);
+}
+
+class $$DurableOutboxOperationsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $DurableOutboxOperationsTable,
+    DurableOutboxOperationRow,
+    $$DurableOutboxOperationsTableFilterComposer,
+    $$DurableOutboxOperationsTableOrderingComposer,
+    $$DurableOutboxOperationsTableAnnotationComposer,
+    $$DurableOutboxOperationsTableCreateCompanionBuilder,
+    $$DurableOutboxOperationsTableUpdateCompanionBuilder,
+    (
+      DurableOutboxOperationRow,
+      BaseReferences<_$FoundationDatabase, $DurableOutboxOperationsTable,
+          DurableOutboxOperationRow>
+    ),
+    DurableOutboxOperationRow,
+    PrefetchHooks Function()> {
+  $$DurableOutboxOperationsTableTableManager(
+      _$FoundationDatabase db, $DurableOutboxOperationsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DurableOutboxOperationsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DurableOutboxOperationsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DurableOutboxOperationsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> operationId = const Value.absent(),
+            Value<String> idempotencyKey = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> scopeKind = const Value.absent(),
+            Value<String?> warehouseId = const Value.absent(),
+            Value<String> actorAuthUserId = const Value.absent(),
+            Value<String> deviceId = const Value.absent(),
+            Value<String> sessionId = const Value.absent(),
+            Value<String> capturedRole = const Value.absent(),
+            Value<String> operationKind = const Value.absent(),
+            Value<String> aggregateType = const Value.absent(),
+            Value<String?> aggregateId = const Value.absent(),
+            Value<int> payloadSchemaVersion = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<String> payloadFingerprint = const Value.absent(),
+            Value<int?> baseEntityVersion = const Value.absent(),
+            Value<bool> isDeletionIntent = const Value.absent(),
+            Value<DateTime> occurredAtUtc = const Value.absent(),
+            Value<String?> businessDate = const Value.absent(),
+            Value<String?> causalPredecessorOperationId = const Value.absent(),
+            Value<String> state = const Value.absent(),
+            Value<int> attemptCount = const Value.absent(),
+            Value<DateTime?> nextAttemptAtUtc = const Value.absent(),
+            Value<DateTime?> lastAttemptAtUtc = const Value.absent(),
+            Value<String?> lastErrorClass = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<String?> claimToken = const Value.absent(),
+            Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+            Value<int?> ackSchemaVersion = const Value.absent(),
+            Value<String?> ackPayloadJson = const Value.absent(),
+            Value<String?> ackPayloadFingerprint = const Value.absent(),
+            Value<String?> serverResultId = const Value.absent(),
+            Value<DateTime?> serverAcceptedAtUtc = const Value.absent(),
+            Value<int?> acknowledgedEntityVersion = const Value.absent(),
+            Value<String?> conflictId = const Value.absent(),
+            Value<DateTime> createdAtUtc = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableOutboxOperationsCompanion(
+            operationId: operationId,
+            idempotencyKey: idempotencyKey,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            actorAuthUserId: actorAuthUserId,
+            deviceId: deviceId,
+            sessionId: sessionId,
+            capturedRole: capturedRole,
+            operationKind: operationKind,
+            aggregateType: aggregateType,
+            aggregateId: aggregateId,
+            payloadSchemaVersion: payloadSchemaVersion,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            baseEntityVersion: baseEntityVersion,
+            isDeletionIntent: isDeletionIntent,
+            occurredAtUtc: occurredAtUtc,
+            businessDate: businessDate,
+            causalPredecessorOperationId: causalPredecessorOperationId,
+            state: state,
+            attemptCount: attemptCount,
+            nextAttemptAtUtc: nextAttemptAtUtc,
+            lastAttemptAtUtc: lastAttemptAtUtc,
+            lastErrorClass: lastErrorClass,
+            lastErrorCode: lastErrorCode,
+            claimToken: claimToken,
+            leaseExpiresAtUtc: leaseExpiresAtUtc,
+            ackSchemaVersion: ackSchemaVersion,
+            ackPayloadJson: ackPayloadJson,
+            ackPayloadFingerprint: ackPayloadFingerprint,
+            serverResultId: serverResultId,
+            serverAcceptedAtUtc: serverAcceptedAtUtc,
+            acknowledgedEntityVersion: acknowledgedEntityVersion,
+            conflictId: conflictId,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String operationId,
+            required String idempotencyKey,
+            required String businessId,
+            required String scopeKind,
+            Value<String?> warehouseId = const Value.absent(),
+            required String actorAuthUserId,
+            required String deviceId,
+            required String sessionId,
+            required String capturedRole,
+            required String operationKind,
+            required String aggregateType,
+            Value<String?> aggregateId = const Value.absent(),
+            required int payloadSchemaVersion,
+            required String payloadJson,
+            required String payloadFingerprint,
+            Value<int?> baseEntityVersion = const Value.absent(),
+            Value<bool> isDeletionIntent = const Value.absent(),
+            required DateTime occurredAtUtc,
+            Value<String?> businessDate = const Value.absent(),
+            Value<String?> causalPredecessorOperationId = const Value.absent(),
+            required String state,
+            Value<int> attemptCount = const Value.absent(),
+            Value<DateTime?> nextAttemptAtUtc = const Value.absent(),
+            Value<DateTime?> lastAttemptAtUtc = const Value.absent(),
+            Value<String?> lastErrorClass = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<String?> claimToken = const Value.absent(),
+            Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+            Value<int?> ackSchemaVersion = const Value.absent(),
+            Value<String?> ackPayloadJson = const Value.absent(),
+            Value<String?> ackPayloadFingerprint = const Value.absent(),
+            Value<String?> serverResultId = const Value.absent(),
+            Value<DateTime?> serverAcceptedAtUtc = const Value.absent(),
+            Value<int?> acknowledgedEntityVersion = const Value.absent(),
+            Value<String?> conflictId = const Value.absent(),
+            required DateTime createdAtUtc,
+            required DateTime updatedAtUtc,
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableOutboxOperationsCompanion.insert(
+            operationId: operationId,
+            idempotencyKey: idempotencyKey,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            actorAuthUserId: actorAuthUserId,
+            deviceId: deviceId,
+            sessionId: sessionId,
+            capturedRole: capturedRole,
+            operationKind: operationKind,
+            aggregateType: aggregateType,
+            aggregateId: aggregateId,
+            payloadSchemaVersion: payloadSchemaVersion,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            baseEntityVersion: baseEntityVersion,
+            isDeletionIntent: isDeletionIntent,
+            occurredAtUtc: occurredAtUtc,
+            businessDate: businessDate,
+            causalPredecessorOperationId: causalPredecessorOperationId,
+            state: state,
+            attemptCount: attemptCount,
+            nextAttemptAtUtc: nextAttemptAtUtc,
+            lastAttemptAtUtc: lastAttemptAtUtc,
+            lastErrorClass: lastErrorClass,
+            lastErrorCode: lastErrorCode,
+            claimToken: claimToken,
+            leaseExpiresAtUtc: leaseExpiresAtUtc,
+            ackSchemaVersion: ackSchemaVersion,
+            ackPayloadJson: ackPayloadJson,
+            ackPayloadFingerprint: ackPayloadFingerprint,
+            serverResultId: serverResultId,
+            serverAcceptedAtUtc: serverAcceptedAtUtc,
+            acknowledgedEntityVersion: acknowledgedEntityVersion,
+            conflictId: conflictId,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DurableOutboxOperationsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $DurableOutboxOperationsTable,
+        DurableOutboxOperationRow,
+        $$DurableOutboxOperationsTableFilterComposer,
+        $$DurableOutboxOperationsTableOrderingComposer,
+        $$DurableOutboxOperationsTableAnnotationComposer,
+        $$DurableOutboxOperationsTableCreateCompanionBuilder,
+        $$DurableOutboxOperationsTableUpdateCompanionBuilder,
+        (
+          DurableOutboxOperationRow,
+          BaseReferences<_$FoundationDatabase, $DurableOutboxOperationsTable,
+              DurableOutboxOperationRow>
+        ),
+        DurableOutboxOperationRow,
+        PrefetchHooks Function()>;
+typedef $$DurableConflictsTableCreateCompanionBuilder
+    = DurableConflictsCompanion Function({
+  required String conflictId,
+  required String conflictKey,
+  required String businessId,
+  required String scopeKind,
+  Value<String?> warehouseId,
+  required String entityType,
+  required String entityId,
+  Value<int?> localEntityVersion,
+  Value<int?> remoteEntityVersion,
+  required String localPayloadJson,
+  required String remotePayloadJson,
+  required String localPayloadFingerprint,
+  required String remotePayloadFingerprint,
+  Value<String?> localOperationId,
+  Value<String?> remoteOperationId,
+  Value<String?> remoteSourceAuthority,
+  Value<bool> localDeleted,
+  Value<bool> remoteDeleted,
+  Value<String?> localDeletionMetadataJson,
+  Value<String?> remoteDeletionMetadataJson,
+  required String classification,
+  required DateTime detectedAtUtc,
+  required String resolutionState,
+  Value<String?> resolutionKind,
+  Value<String?> resolutionOperationId,
+  Value<String?> resolverAuthUserId,
+  Value<DateTime?> resolvedAtUtc,
+  required DateTime createdAtUtc,
+  required DateTime updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+typedef $$DurableConflictsTableUpdateCompanionBuilder
+    = DurableConflictsCompanion Function({
+  Value<String> conflictId,
+  Value<String> conflictKey,
+  Value<String> businessId,
+  Value<String> scopeKind,
+  Value<String?> warehouseId,
+  Value<String> entityType,
+  Value<String> entityId,
+  Value<int?> localEntityVersion,
+  Value<int?> remoteEntityVersion,
+  Value<String> localPayloadJson,
+  Value<String> remotePayloadJson,
+  Value<String> localPayloadFingerprint,
+  Value<String> remotePayloadFingerprint,
+  Value<String?> localOperationId,
+  Value<String?> remoteOperationId,
+  Value<String?> remoteSourceAuthority,
+  Value<bool> localDeleted,
+  Value<bool> remoteDeleted,
+  Value<String?> localDeletionMetadataJson,
+  Value<String?> remoteDeletionMetadataJson,
+  Value<String> classification,
+  Value<DateTime> detectedAtUtc,
+  Value<String> resolutionState,
+  Value<String?> resolutionKind,
+  Value<String?> resolutionOperationId,
+  Value<String?> resolverAuthUserId,
+  Value<DateTime?> resolvedAtUtc,
+  Value<DateTime> createdAtUtc,
+  Value<DateTime> updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+
+final class $$DurableConflictsTableReferences extends BaseReferences<
+    _$FoundationDatabase, $DurableConflictsTable, DurableConflictRow> {
+  $$DurableConflictsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$DurableInboxOperationsTable,
+      List<DurableInboxOperationRow>> _durableInboxOperationsRefsTable(
+          _$FoundationDatabase db) =>
+      MultiTypedResultKey.fromTable(db.durableInboxOperations,
+          aliasName: $_aliasNameGenerator(db.durableConflicts.conflictId,
+              db.durableInboxOperations.conflictId));
+
+  $$DurableInboxOperationsTableProcessedTableManager
+      get durableInboxOperationsRefs {
+    final manager = $$DurableInboxOperationsTableTableManager(
+            $_db, $_db.durableInboxOperations)
+        .filter((f) => f.conflictId.conflictId($_item.conflictId));
+
+    final cache =
+        $_typedResult.readTableOrNull(_durableInboxOperationsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$DurableConflictsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $DurableConflictsTable> {
+  $$DurableConflictsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get conflictKey => $composableBuilder(
+      column: $table.conflictKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get localEntityVersion => $composableBuilder(
+      column: $table.localEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localPayloadJson => $composableBuilder(
+      column: $table.localPayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remotePayloadJson => $composableBuilder(
+      column: $table.remotePayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localPayloadFingerprint => $composableBuilder(
+      column: $table.localPayloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remotePayloadFingerprint => $composableBuilder(
+      column: $table.remotePayloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localOperationId => $composableBuilder(
+      column: $table.localOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteOperationId => $composableBuilder(
+      column: $table.remoteOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteSourceAuthority => $composableBuilder(
+      column: $table.remoteSourceAuthority,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get localDeleted => $composableBuilder(
+      column: $table.localDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get remoteDeleted => $composableBuilder(
+      column: $table.remoteDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localDeletionMetadataJson => $composableBuilder(
+      column: $table.localDeletionMetadataJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteDeletionMetadataJson => $composableBuilder(
+      column: $table.remoteDeletionMetadataJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get classification => $composableBuilder(
+      column: $table.classification,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get detectedAtUtc => $composableBuilder(
+      column: $table.detectedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolutionState => $composableBuilder(
+      column: $table.resolutionState,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolutionKind => $composableBuilder(
+      column: $table.resolutionKind,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolutionOperationId => $composableBuilder(
+      column: $table.resolutionOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resolverAuthUserId => $composableBuilder(
+      column: $table.resolverAuthUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get resolvedAtUtc => $composableBuilder(
+      column: $table.resolvedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> durableInboxOperationsRefs(
+      Expression<bool> Function($$DurableInboxOperationsTableFilterComposer f)
+          f) {
+    final $$DurableInboxOperationsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.conflictId,
+            referencedTable: $db.durableInboxOperations,
+            getReferencedColumn: (t) => t.conflictId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$DurableInboxOperationsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.durableInboxOperations,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$DurableConflictsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $DurableConflictsTable> {
+  $$DurableConflictsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get conflictKey => $composableBuilder(
+      column: $table.conflictKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get localEntityVersion => $composableBuilder(
+      column: $table.localEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localPayloadJson => $composableBuilder(
+      column: $table.localPayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remotePayloadJson => $composableBuilder(
+      column: $table.remotePayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localPayloadFingerprint => $composableBuilder(
+      column: $table.localPayloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remotePayloadFingerprint => $composableBuilder(
+      column: $table.remotePayloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localOperationId => $composableBuilder(
+      column: $table.localOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteOperationId => $composableBuilder(
+      column: $table.remoteOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteSourceAuthority => $composableBuilder(
+      column: $table.remoteSourceAuthority,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get localDeleted => $composableBuilder(
+      column: $table.localDeleted,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get remoteDeleted => $composableBuilder(
+      column: $table.remoteDeleted,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localDeletionMetadataJson => $composableBuilder(
+      column: $table.localDeletionMetadataJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteDeletionMetadataJson => $composableBuilder(
+      column: $table.remoteDeletionMetadataJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get classification => $composableBuilder(
+      column: $table.classification,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get detectedAtUtc => $composableBuilder(
+      column: $table.detectedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolutionState => $composableBuilder(
+      column: $table.resolutionState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolutionKind => $composableBuilder(
+      column: $table.resolutionKind,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolutionOperationId => $composableBuilder(
+      column: $table.resolutionOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resolverAuthUserId => $composableBuilder(
+      column: $table.resolverAuthUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get resolvedAtUtc => $composableBuilder(
+      column: $table.resolvedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$DurableConflictsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $DurableConflictsTable> {
+  $$DurableConflictsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get conflictId => $composableBuilder(
+      column: $table.conflictId, builder: (column) => column);
+
+  GeneratedColumn<String> get conflictKey => $composableBuilder(
+      column: $table.conflictKey, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeKind =>
+      $composableBuilder(column: $table.scopeKind, builder: (column) => column);
+
+  GeneratedColumn<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => column);
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<int> get localEntityVersion => $composableBuilder(
+      column: $table.localEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get localPayloadJson => $composableBuilder(
+      column: $table.localPayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get remotePayloadJson => $composableBuilder(
+      column: $table.remotePayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get localPayloadFingerprint => $composableBuilder(
+      column: $table.localPayloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get remotePayloadFingerprint => $composableBuilder(
+      column: $table.remotePayloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get localOperationId => $composableBuilder(
+      column: $table.localOperationId, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteOperationId => $composableBuilder(
+      column: $table.remoteOperationId, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteSourceAuthority => $composableBuilder(
+      column: $table.remoteSourceAuthority, builder: (column) => column);
+
+  GeneratedColumn<bool> get localDeleted => $composableBuilder(
+      column: $table.localDeleted, builder: (column) => column);
+
+  GeneratedColumn<bool> get remoteDeleted => $composableBuilder(
+      column: $table.remoteDeleted, builder: (column) => column);
+
+  GeneratedColumn<String> get localDeletionMetadataJson => $composableBuilder(
+      column: $table.localDeletionMetadataJson, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteDeletionMetadataJson => $composableBuilder(
+      column: $table.remoteDeletionMetadataJson, builder: (column) => column);
+
+  GeneratedColumn<String> get classification => $composableBuilder(
+      column: $table.classification, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get detectedAtUtc => $composableBuilder(
+      column: $table.detectedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get resolutionState => $composableBuilder(
+      column: $table.resolutionState, builder: (column) => column);
+
+  GeneratedColumn<String> get resolutionKind => $composableBuilder(
+      column: $table.resolutionKind, builder: (column) => column);
+
+  GeneratedColumn<String> get resolutionOperationId => $composableBuilder(
+      column: $table.resolutionOperationId, builder: (column) => column);
+
+  GeneratedColumn<String> get resolverAuthUserId => $composableBuilder(
+      column: $table.resolverAuthUserId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get resolvedAtUtc => $composableBuilder(
+      column: $table.resolvedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => column);
+
+  Expression<T> durableInboxOperationsRefs<T extends Object>(
+      Expression<T> Function($$DurableInboxOperationsTableAnnotationComposer a)
+          f) {
+    final $$DurableInboxOperationsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.conflictId,
+            referencedTable: $db.durableInboxOperations,
+            getReferencedColumn: (t) => t.conflictId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$DurableInboxOperationsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.durableInboxOperations,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$DurableConflictsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $DurableConflictsTable,
+    DurableConflictRow,
+    $$DurableConflictsTableFilterComposer,
+    $$DurableConflictsTableOrderingComposer,
+    $$DurableConflictsTableAnnotationComposer,
+    $$DurableConflictsTableCreateCompanionBuilder,
+    $$DurableConflictsTableUpdateCompanionBuilder,
+    (DurableConflictRow, $$DurableConflictsTableReferences),
+    DurableConflictRow,
+    PrefetchHooks Function({bool durableInboxOperationsRefs})> {
+  $$DurableConflictsTableTableManager(
+      _$FoundationDatabase db, $DurableConflictsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DurableConflictsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DurableConflictsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DurableConflictsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> conflictId = const Value.absent(),
+            Value<String> conflictKey = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> scopeKind = const Value.absent(),
+            Value<String?> warehouseId = const Value.absent(),
+            Value<String> entityType = const Value.absent(),
+            Value<String> entityId = const Value.absent(),
+            Value<int?> localEntityVersion = const Value.absent(),
+            Value<int?> remoteEntityVersion = const Value.absent(),
+            Value<String> localPayloadJson = const Value.absent(),
+            Value<String> remotePayloadJson = const Value.absent(),
+            Value<String> localPayloadFingerprint = const Value.absent(),
+            Value<String> remotePayloadFingerprint = const Value.absent(),
+            Value<String?> localOperationId = const Value.absent(),
+            Value<String?> remoteOperationId = const Value.absent(),
+            Value<String?> remoteSourceAuthority = const Value.absent(),
+            Value<bool> localDeleted = const Value.absent(),
+            Value<bool> remoteDeleted = const Value.absent(),
+            Value<String?> localDeletionMetadataJson = const Value.absent(),
+            Value<String?> remoteDeletionMetadataJson = const Value.absent(),
+            Value<String> classification = const Value.absent(),
+            Value<DateTime> detectedAtUtc = const Value.absent(),
+            Value<String> resolutionState = const Value.absent(),
+            Value<String?> resolutionKind = const Value.absent(),
+            Value<String?> resolutionOperationId = const Value.absent(),
+            Value<String?> resolverAuthUserId = const Value.absent(),
+            Value<DateTime?> resolvedAtUtc = const Value.absent(),
+            Value<DateTime> createdAtUtc = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableConflictsCompanion(
+            conflictId: conflictId,
+            conflictKey: conflictKey,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            entityType: entityType,
+            entityId: entityId,
+            localEntityVersion: localEntityVersion,
+            remoteEntityVersion: remoteEntityVersion,
+            localPayloadJson: localPayloadJson,
+            remotePayloadJson: remotePayloadJson,
+            localPayloadFingerprint: localPayloadFingerprint,
+            remotePayloadFingerprint: remotePayloadFingerprint,
+            localOperationId: localOperationId,
+            remoteOperationId: remoteOperationId,
+            remoteSourceAuthority: remoteSourceAuthority,
+            localDeleted: localDeleted,
+            remoteDeleted: remoteDeleted,
+            localDeletionMetadataJson: localDeletionMetadataJson,
+            remoteDeletionMetadataJson: remoteDeletionMetadataJson,
+            classification: classification,
+            detectedAtUtc: detectedAtUtc,
+            resolutionState: resolutionState,
+            resolutionKind: resolutionKind,
+            resolutionOperationId: resolutionOperationId,
+            resolverAuthUserId: resolverAuthUserId,
+            resolvedAtUtc: resolvedAtUtc,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String conflictId,
+            required String conflictKey,
+            required String businessId,
+            required String scopeKind,
+            Value<String?> warehouseId = const Value.absent(),
+            required String entityType,
+            required String entityId,
+            Value<int?> localEntityVersion = const Value.absent(),
+            Value<int?> remoteEntityVersion = const Value.absent(),
+            required String localPayloadJson,
+            required String remotePayloadJson,
+            required String localPayloadFingerprint,
+            required String remotePayloadFingerprint,
+            Value<String?> localOperationId = const Value.absent(),
+            Value<String?> remoteOperationId = const Value.absent(),
+            Value<String?> remoteSourceAuthority = const Value.absent(),
+            Value<bool> localDeleted = const Value.absent(),
+            Value<bool> remoteDeleted = const Value.absent(),
+            Value<String?> localDeletionMetadataJson = const Value.absent(),
+            Value<String?> remoteDeletionMetadataJson = const Value.absent(),
+            required String classification,
+            required DateTime detectedAtUtc,
+            required String resolutionState,
+            Value<String?> resolutionKind = const Value.absent(),
+            Value<String?> resolutionOperationId = const Value.absent(),
+            Value<String?> resolverAuthUserId = const Value.absent(),
+            Value<DateTime?> resolvedAtUtc = const Value.absent(),
+            required DateTime createdAtUtc,
+            required DateTime updatedAtUtc,
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableConflictsCompanion.insert(
+            conflictId: conflictId,
+            conflictKey: conflictKey,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            entityType: entityType,
+            entityId: entityId,
+            localEntityVersion: localEntityVersion,
+            remoteEntityVersion: remoteEntityVersion,
+            localPayloadJson: localPayloadJson,
+            remotePayloadJson: remotePayloadJson,
+            localPayloadFingerprint: localPayloadFingerprint,
+            remotePayloadFingerprint: remotePayloadFingerprint,
+            localOperationId: localOperationId,
+            remoteOperationId: remoteOperationId,
+            remoteSourceAuthority: remoteSourceAuthority,
+            localDeleted: localDeleted,
+            remoteDeleted: remoteDeleted,
+            localDeletionMetadataJson: localDeletionMetadataJson,
+            remoteDeletionMetadataJson: remoteDeletionMetadataJson,
+            classification: classification,
+            detectedAtUtc: detectedAtUtc,
+            resolutionState: resolutionState,
+            resolutionKind: resolutionKind,
+            resolutionOperationId: resolutionOperationId,
+            resolverAuthUserId: resolverAuthUserId,
+            resolvedAtUtc: resolvedAtUtc,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$DurableConflictsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({durableInboxOperationsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (durableInboxOperationsRefs) db.durableInboxOperations
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (durableInboxOperationsRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$DurableConflictsTableReferences
+                            ._durableInboxOperationsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$DurableConflictsTableReferences(db, table, p0)
+                                .durableInboxOperationsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.conflictId == item.conflictId),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$DurableConflictsTableProcessedTableManager = ProcessedTableManager<
+    _$FoundationDatabase,
+    $DurableConflictsTable,
+    DurableConflictRow,
+    $$DurableConflictsTableFilterComposer,
+    $$DurableConflictsTableOrderingComposer,
+    $$DurableConflictsTableAnnotationComposer,
+    $$DurableConflictsTableCreateCompanionBuilder,
+    $$DurableConflictsTableUpdateCompanionBuilder,
+    (DurableConflictRow, $$DurableConflictsTableReferences),
+    DurableConflictRow,
+    PrefetchHooks Function({bool durableInboxOperationsRefs})>;
+typedef $$DurableInboxOperationsTableCreateCompanionBuilder
+    = DurableInboxOperationsCompanion Function({
+  required String sourceAuthority,
+  required String sourceOperationId,
+  required String businessId,
+  required String scopeKind,
+  Value<String?> warehouseId,
+  required String operationKind,
+  required String aggregateType,
+  Value<String?> aggregateId,
+  required int payloadSchemaVersion,
+  required String payloadJson,
+  required String payloadFingerprint,
+  Value<String?> sourceActorAuthUserId,
+  Value<String?> sourceDeviceId,
+  Value<int?> remoteEntityVersion,
+  Value<bool> isDeleted,
+  Value<String?> deletionMetadataJson,
+  required DateTime serverOccurredAtUtc,
+  required DateTime receivedAtUtc,
+  required String state,
+  Value<int> applyAttemptCount,
+  Value<DateTime?> lastApplyAttemptAtUtc,
+  Value<String?> lastErrorClass,
+  Value<String?> lastErrorCode,
+  Value<String?> claimToken,
+  Value<DateTime?> leaseExpiresAtUtc,
+  Value<DateTime?> appliedAtUtc,
+  Value<DateTime?> rejectedAtUtc,
+  Value<String?> conflictId,
+  required DateTime createdAtUtc,
+  required DateTime updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+typedef $$DurableInboxOperationsTableUpdateCompanionBuilder
+    = DurableInboxOperationsCompanion Function({
+  Value<String> sourceAuthority,
+  Value<String> sourceOperationId,
+  Value<String> businessId,
+  Value<String> scopeKind,
+  Value<String?> warehouseId,
+  Value<String> operationKind,
+  Value<String> aggregateType,
+  Value<String?> aggregateId,
+  Value<int> payloadSchemaVersion,
+  Value<String> payloadJson,
+  Value<String> payloadFingerprint,
+  Value<String?> sourceActorAuthUserId,
+  Value<String?> sourceDeviceId,
+  Value<int?> remoteEntityVersion,
+  Value<bool> isDeleted,
+  Value<String?> deletionMetadataJson,
+  Value<DateTime> serverOccurredAtUtc,
+  Value<DateTime> receivedAtUtc,
+  Value<String> state,
+  Value<int> applyAttemptCount,
+  Value<DateTime?> lastApplyAttemptAtUtc,
+  Value<String?> lastErrorClass,
+  Value<String?> lastErrorCode,
+  Value<String?> claimToken,
+  Value<DateTime?> leaseExpiresAtUtc,
+  Value<DateTime?> appliedAtUtc,
+  Value<DateTime?> rejectedAtUtc,
+  Value<String?> conflictId,
+  Value<DateTime> createdAtUtc,
+  Value<DateTime> updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+
+final class $$DurableInboxOperationsTableReferences extends BaseReferences<
+    _$FoundationDatabase,
+    $DurableInboxOperationsTable,
+    DurableInboxOperationRow> {
+  $$DurableInboxOperationsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $DurableConflictsTable _conflictIdTable(_$FoundationDatabase db) =>
+      db.durableConflicts.createAlias($_aliasNameGenerator(
+          db.durableInboxOperations.conflictId,
+          db.durableConflicts.conflictId));
+
+  $$DurableConflictsTableProcessedTableManager? get conflictId {
+    if ($_item.conflictId == null) return null;
+    final manager =
+        $$DurableConflictsTableTableManager($_db, $_db.durableConflicts)
+            .filter((f) => f.conflictId($_item.conflictId!));
+    final item = $_typedResult.readTableOrNull(_conflictIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$DurableInboxOperationsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $DurableInboxOperationsTable> {
+  $$DurableInboxOperationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceOperationId => $composableBuilder(
+      column: $table.sourceOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operationKind => $composableBuilder(
+      column: $table.operationKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceActorAuthUserId => $composableBuilder(
+      column: $table.sourceActorAuthUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+      column: $table.isDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletionMetadataJson => $composableBuilder(
+      column: $table.deletionMetadataJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get serverOccurredAtUtc => $composableBuilder(
+      column: $table.serverOccurredAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get receivedAtUtc => $composableBuilder(
+      column: $table.receivedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get state => $composableBuilder(
+      column: $table.state, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get applyAttemptCount => $composableBuilder(
+      column: $table.applyAttemptCount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastApplyAttemptAtUtc => $composableBuilder(
+      column: $table.lastApplyAttemptAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get appliedAtUtc => $composableBuilder(
+      column: $table.appliedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get rejectedAtUtc => $composableBuilder(
+      column: $table.rejectedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => ColumnFilters(column));
+
+  $$DurableConflictsTableFilterComposer get conflictId {
+    final $$DurableConflictsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.conflictId,
+        referencedTable: $db.durableConflicts,
+        getReferencedColumn: (t) => t.conflictId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$DurableConflictsTableFilterComposer(
+              $db: $db,
+              $table: $db.durableConflicts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DurableInboxOperationsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $DurableInboxOperationsTable> {
+  $$DurableInboxOperationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceOperationId => $composableBuilder(
+      column: $table.sourceOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operationKind => $composableBuilder(
+      column: $table.operationKind,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceActorAuthUserId => $composableBuilder(
+      column: $table.sourceActorAuthUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+      column: $table.isDeleted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletionMetadataJson => $composableBuilder(
+      column: $table.deletionMetadataJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get serverOccurredAtUtc => $composableBuilder(
+      column: $table.serverOccurredAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get receivedAtUtc => $composableBuilder(
+      column: $table.receivedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get state => $composableBuilder(
+      column: $table.state, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get applyAttemptCount => $composableBuilder(
+      column: $table.applyAttemptCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastApplyAttemptAtUtc => $composableBuilder(
+      column: $table.lastApplyAttemptAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get appliedAtUtc => $composableBuilder(
+      column: $table.appliedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get rejectedAtUtc => $composableBuilder(
+      column: $table.rejectedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  $$DurableConflictsTableOrderingComposer get conflictId {
+    final $$DurableConflictsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.conflictId,
+        referencedTable: $db.durableConflicts,
+        getReferencedColumn: (t) => t.conflictId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$DurableConflictsTableOrderingComposer(
+              $db: $db,
+              $table: $db.durableConflicts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DurableInboxOperationsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $DurableInboxOperationsTable> {
+  $$DurableInboxOperationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceOperationId => $composableBuilder(
+      column: $table.sourceOperationId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeKind =>
+      $composableBuilder(column: $table.scopeKind, builder: (column) => column);
+
+  GeneratedColumn<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => column);
+
+  GeneratedColumn<String> get operationKind => $composableBuilder(
+      column: $table.operationKind, builder: (column) => column);
+
+  GeneratedColumn<String> get aggregateType => $composableBuilder(
+      column: $table.aggregateType, builder: (column) => column);
+
+  GeneratedColumn<String> get aggregateId => $composableBuilder(
+      column: $table.aggregateId, builder: (column) => column);
+
+  GeneratedColumn<int> get payloadSchemaVersion => $composableBuilder(
+      column: $table.payloadSchemaVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadFingerprint => $composableBuilder(
+      column: $table.payloadFingerprint, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceActorAuthUserId => $composableBuilder(
+      column: $table.sourceActorAuthUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceDeviceId => $composableBuilder(
+      column: $table.sourceDeviceId, builder: (column) => column);
+
+  GeneratedColumn<int> get remoteEntityVersion => $composableBuilder(
+      column: $table.remoteEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<String> get deletionMetadataJson => $composableBuilder(
+      column: $table.deletionMetadataJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get serverOccurredAtUtc => $composableBuilder(
+      column: $table.serverOccurredAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get receivedAtUtc => $composableBuilder(
+      column: $table.receivedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<int> get applyAttemptCount => $composableBuilder(
+      column: $table.applyAttemptCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastApplyAttemptAtUtc => $composableBuilder(
+      column: $table.lastApplyAttemptAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorClass => $composableBuilder(
+      column: $table.lastErrorClass, builder: (column) => column);
+
+  GeneratedColumn<String> get lastErrorCode => $composableBuilder(
+      column: $table.lastErrorCode, builder: (column) => column);
+
+  GeneratedColumn<String> get claimToken => $composableBuilder(
+      column: $table.claimToken, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get leaseExpiresAtUtc => $composableBuilder(
+      column: $table.leaseExpiresAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get appliedAtUtc => $composableBuilder(
+      column: $table.appliedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get rejectedAtUtc => $composableBuilder(
+      column: $table.rejectedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+      column: $table.createdAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => column);
+
+  $$DurableConflictsTableAnnotationComposer get conflictId {
+    final $$DurableConflictsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.conflictId,
+        referencedTable: $db.durableConflicts,
+        getReferencedColumn: (t) => t.conflictId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$DurableConflictsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.durableConflicts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DurableInboxOperationsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $DurableInboxOperationsTable,
+    DurableInboxOperationRow,
+    $$DurableInboxOperationsTableFilterComposer,
+    $$DurableInboxOperationsTableOrderingComposer,
+    $$DurableInboxOperationsTableAnnotationComposer,
+    $$DurableInboxOperationsTableCreateCompanionBuilder,
+    $$DurableInboxOperationsTableUpdateCompanionBuilder,
+    (DurableInboxOperationRow, $$DurableInboxOperationsTableReferences),
+    DurableInboxOperationRow,
+    PrefetchHooks Function({bool conflictId})> {
+  $$DurableInboxOperationsTableTableManager(
+      _$FoundationDatabase db, $DurableInboxOperationsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DurableInboxOperationsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DurableInboxOperationsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DurableInboxOperationsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> sourceAuthority = const Value.absent(),
+            Value<String> sourceOperationId = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> scopeKind = const Value.absent(),
+            Value<String?> warehouseId = const Value.absent(),
+            Value<String> operationKind = const Value.absent(),
+            Value<String> aggregateType = const Value.absent(),
+            Value<String?> aggregateId = const Value.absent(),
+            Value<int> payloadSchemaVersion = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<String> payloadFingerprint = const Value.absent(),
+            Value<String?> sourceActorAuthUserId = const Value.absent(),
+            Value<String?> sourceDeviceId = const Value.absent(),
+            Value<int?> remoteEntityVersion = const Value.absent(),
+            Value<bool> isDeleted = const Value.absent(),
+            Value<String?> deletionMetadataJson = const Value.absent(),
+            Value<DateTime> serverOccurredAtUtc = const Value.absent(),
+            Value<DateTime> receivedAtUtc = const Value.absent(),
+            Value<String> state = const Value.absent(),
+            Value<int> applyAttemptCount = const Value.absent(),
+            Value<DateTime?> lastApplyAttemptAtUtc = const Value.absent(),
+            Value<String?> lastErrorClass = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<String?> claimToken = const Value.absent(),
+            Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+            Value<DateTime?> appliedAtUtc = const Value.absent(),
+            Value<DateTime?> rejectedAtUtc = const Value.absent(),
+            Value<String?> conflictId = const Value.absent(),
+            Value<DateTime> createdAtUtc = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableInboxOperationsCompanion(
+            sourceAuthority: sourceAuthority,
+            sourceOperationId: sourceOperationId,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            operationKind: operationKind,
+            aggregateType: aggregateType,
+            aggregateId: aggregateId,
+            payloadSchemaVersion: payloadSchemaVersion,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            sourceActorAuthUserId: sourceActorAuthUserId,
+            sourceDeviceId: sourceDeviceId,
+            remoteEntityVersion: remoteEntityVersion,
+            isDeleted: isDeleted,
+            deletionMetadataJson: deletionMetadataJson,
+            serverOccurredAtUtc: serverOccurredAtUtc,
+            receivedAtUtc: receivedAtUtc,
+            state: state,
+            applyAttemptCount: applyAttemptCount,
+            lastApplyAttemptAtUtc: lastApplyAttemptAtUtc,
+            lastErrorClass: lastErrorClass,
+            lastErrorCode: lastErrorCode,
+            claimToken: claimToken,
+            leaseExpiresAtUtc: leaseExpiresAtUtc,
+            appliedAtUtc: appliedAtUtc,
+            rejectedAtUtc: rejectedAtUtc,
+            conflictId: conflictId,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String sourceAuthority,
+            required String sourceOperationId,
+            required String businessId,
+            required String scopeKind,
+            Value<String?> warehouseId = const Value.absent(),
+            required String operationKind,
+            required String aggregateType,
+            Value<String?> aggregateId = const Value.absent(),
+            required int payloadSchemaVersion,
+            required String payloadJson,
+            required String payloadFingerprint,
+            Value<String?> sourceActorAuthUserId = const Value.absent(),
+            Value<String?> sourceDeviceId = const Value.absent(),
+            Value<int?> remoteEntityVersion = const Value.absent(),
+            Value<bool> isDeleted = const Value.absent(),
+            Value<String?> deletionMetadataJson = const Value.absent(),
+            required DateTime serverOccurredAtUtc,
+            required DateTime receivedAtUtc,
+            required String state,
+            Value<int> applyAttemptCount = const Value.absent(),
+            Value<DateTime?> lastApplyAttemptAtUtc = const Value.absent(),
+            Value<String?> lastErrorClass = const Value.absent(),
+            Value<String?> lastErrorCode = const Value.absent(),
+            Value<String?> claimToken = const Value.absent(),
+            Value<DateTime?> leaseExpiresAtUtc = const Value.absent(),
+            Value<DateTime?> appliedAtUtc = const Value.absent(),
+            Value<DateTime?> rejectedAtUtc = const Value.absent(),
+            Value<String?> conflictId = const Value.absent(),
+            required DateTime createdAtUtc,
+            required DateTime updatedAtUtc,
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableInboxOperationsCompanion.insert(
+            sourceAuthority: sourceAuthority,
+            sourceOperationId: sourceOperationId,
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            operationKind: operationKind,
+            aggregateType: aggregateType,
+            aggregateId: aggregateId,
+            payloadSchemaVersion: payloadSchemaVersion,
+            payloadJson: payloadJson,
+            payloadFingerprint: payloadFingerprint,
+            sourceActorAuthUserId: sourceActorAuthUserId,
+            sourceDeviceId: sourceDeviceId,
+            remoteEntityVersion: remoteEntityVersion,
+            isDeleted: isDeleted,
+            deletionMetadataJson: deletionMetadataJson,
+            serverOccurredAtUtc: serverOccurredAtUtc,
+            receivedAtUtc: receivedAtUtc,
+            state: state,
+            applyAttemptCount: applyAttemptCount,
+            lastApplyAttemptAtUtc: lastApplyAttemptAtUtc,
+            lastErrorClass: lastErrorClass,
+            lastErrorCode: lastErrorCode,
+            claimToken: claimToken,
+            leaseExpiresAtUtc: leaseExpiresAtUtc,
+            appliedAtUtc: appliedAtUtc,
+            rejectedAtUtc: rejectedAtUtc,
+            conflictId: conflictId,
+            createdAtUtc: createdAtUtc,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$DurableInboxOperationsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({conflictId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (conflictId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.conflictId,
+                    referencedTable: $$DurableInboxOperationsTableReferences
+                        ._conflictIdTable(db),
+                    referencedColumn: $$DurableInboxOperationsTableReferences
+                        ._conflictIdTable(db)
+                        .conflictId,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$DurableInboxOperationsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $DurableInboxOperationsTable,
+        DurableInboxOperationRow,
+        $$DurableInboxOperationsTableFilterComposer,
+        $$DurableInboxOperationsTableOrderingComposer,
+        $$DurableInboxOperationsTableAnnotationComposer,
+        $$DurableInboxOperationsTableCreateCompanionBuilder,
+        $$DurableInboxOperationsTableUpdateCompanionBuilder,
+        (DurableInboxOperationRow, $$DurableInboxOperationsTableReferences),
+        DurableInboxOperationRow,
+        PrefetchHooks Function({bool conflictId})>;
+typedef $$DurableSyncCheckpointsTableCreateCompanionBuilder
+    = DurableSyncCheckpointsCompanion Function({
+  required String businessId,
+  required String scopeKind,
+  Value<String?> warehouseId,
+  required String sourceAuthority,
+  required String streamName,
+  required String cursorValue,
+  Value<String?> lastSourceOperationId,
+  required DateTime updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+typedef $$DurableSyncCheckpointsTableUpdateCompanionBuilder
+    = DurableSyncCheckpointsCompanion Function({
+  Value<String> businessId,
+  Value<String> scopeKind,
+  Value<String?> warehouseId,
+  Value<String> sourceAuthority,
+  Value<String> streamName,
+  Value<String> cursorValue,
+  Value<String?> lastSourceOperationId,
+  Value<DateTime> updatedAtUtc,
+  Value<int> recordVersion,
+  Value<int> rowid,
+});
+
+class $$DurableSyncCheckpointsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $DurableSyncCheckpointsTable> {
+  $$DurableSyncCheckpointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get streamName => $composableBuilder(
+      column: $table.streamName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cursorValue => $composableBuilder(
+      column: $table.cursorValue, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastSourceOperationId => $composableBuilder(
+      column: $table.lastSourceOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => ColumnFilters(column));
+}
+
+class $$DurableSyncCheckpointsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $DurableSyncCheckpointsTable> {
+  $$DurableSyncCheckpointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scopeKind => $composableBuilder(
+      column: $table.scopeKind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get streamName => $composableBuilder(
+      column: $table.streamName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cursorValue => $composableBuilder(
+      column: $table.cursorValue, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastSourceOperationId => $composableBuilder(
+      column: $table.lastSourceOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$DurableSyncCheckpointsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $DurableSyncCheckpointsTable> {
+  $$DurableSyncCheckpointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeKind =>
+      $composableBuilder(column: $table.scopeKind, builder: (column) => column);
+
+  GeneratedColumn<String> get warehouseId => $composableBuilder(
+      column: $table.warehouseId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceAuthority => $composableBuilder(
+      column: $table.sourceAuthority, builder: (column) => column);
+
+  GeneratedColumn<String> get streamName => $composableBuilder(
+      column: $table.streamName, builder: (column) => column);
+
+  GeneratedColumn<String> get cursorValue => $composableBuilder(
+      column: $table.cursorValue, builder: (column) => column);
+
+  GeneratedColumn<String> get lastSourceOperationId => $composableBuilder(
+      column: $table.lastSourceOperationId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<int> get recordVersion => $composableBuilder(
+      column: $table.recordVersion, builder: (column) => column);
+}
+
+class $$DurableSyncCheckpointsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $DurableSyncCheckpointsTable,
+    DurableSyncCheckpointRow,
+    $$DurableSyncCheckpointsTableFilterComposer,
+    $$DurableSyncCheckpointsTableOrderingComposer,
+    $$DurableSyncCheckpointsTableAnnotationComposer,
+    $$DurableSyncCheckpointsTableCreateCompanionBuilder,
+    $$DurableSyncCheckpointsTableUpdateCompanionBuilder,
+    (
+      DurableSyncCheckpointRow,
+      BaseReferences<_$FoundationDatabase, $DurableSyncCheckpointsTable,
+          DurableSyncCheckpointRow>
+    ),
+    DurableSyncCheckpointRow,
+    PrefetchHooks Function()> {
+  $$DurableSyncCheckpointsTableTableManager(
+      _$FoundationDatabase db, $DurableSyncCheckpointsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DurableSyncCheckpointsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DurableSyncCheckpointsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DurableSyncCheckpointsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> businessId = const Value.absent(),
+            Value<String> scopeKind = const Value.absent(),
+            Value<String?> warehouseId = const Value.absent(),
+            Value<String> sourceAuthority = const Value.absent(),
+            Value<String> streamName = const Value.absent(),
+            Value<String> cursorValue = const Value.absent(),
+            Value<String?> lastSourceOperationId = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableSyncCheckpointsCompanion(
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            sourceAuthority: sourceAuthority,
+            streamName: streamName,
+            cursorValue: cursorValue,
+            lastSourceOperationId: lastSourceOperationId,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String businessId,
+            required String scopeKind,
+            Value<String?> warehouseId = const Value.absent(),
+            required String sourceAuthority,
+            required String streamName,
+            required String cursorValue,
+            Value<String?> lastSourceOperationId = const Value.absent(),
+            required DateTime updatedAtUtc,
+            Value<int> recordVersion = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DurableSyncCheckpointsCompanion.insert(
+            businessId: businessId,
+            scopeKind: scopeKind,
+            warehouseId: warehouseId,
+            sourceAuthority: sourceAuthority,
+            streamName: streamName,
+            cursorValue: cursorValue,
+            lastSourceOperationId: lastSourceOperationId,
+            updatedAtUtc: updatedAtUtc,
+            recordVersion: recordVersion,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DurableSyncCheckpointsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $DurableSyncCheckpointsTable,
+        DurableSyncCheckpointRow,
+        $$DurableSyncCheckpointsTableFilterComposer,
+        $$DurableSyncCheckpointsTableOrderingComposer,
+        $$DurableSyncCheckpointsTableAnnotationComposer,
+        $$DurableSyncCheckpointsTableCreateCompanionBuilder,
+        $$DurableSyncCheckpointsTableUpdateCompanionBuilder,
+        (
+          DurableSyncCheckpointRow,
+          BaseReferences<_$FoundationDatabase, $DurableSyncCheckpointsTable,
+              DurableSyncCheckpointRow>
+        ),
+        DurableSyncCheckpointRow,
+        PrefetchHooks Function()>;
 typedef $$CustomerAccountEntriesTableCreateCompanionBuilder
     = CustomerAccountEntriesCompanion Function({
   required String id,
@@ -26593,6 +34354,17 @@ class $FoundationDatabaseManager {
       get internalTransferPostingAttempts =>
           $$InternalTransferPostingAttemptsTableTableManager(
               _db, _db.internalTransferPostingAttempts);
+  $$DurableOutboxOperationsTableTableManager get durableOutboxOperations =>
+      $$DurableOutboxOperationsTableTableManager(
+          _db, _db.durableOutboxOperations);
+  $$DurableConflictsTableTableManager get durableConflicts =>
+      $$DurableConflictsTableTableManager(_db, _db.durableConflicts);
+  $$DurableInboxOperationsTableTableManager get durableInboxOperations =>
+      $$DurableInboxOperationsTableTableManager(
+          _db, _db.durableInboxOperations);
+  $$DurableSyncCheckpointsTableTableManager get durableSyncCheckpoints =>
+      $$DurableSyncCheckpointsTableTableManager(
+          _db, _db.durableSyncCheckpoints);
   $$CustomerAccountEntriesTableTableManager get customerAccountEntries =>
       $$CustomerAccountEntriesTableTableManager(
           _db, _db.customerAccountEntries);

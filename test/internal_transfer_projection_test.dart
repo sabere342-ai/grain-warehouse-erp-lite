@@ -22,8 +22,7 @@ const destinationServerId = '33333333-3333-4333-8333-333333333333';
 const commandId = '018f7f65-8d31-7b84-bb46-4f47d82c1f70';
 
 void main() {
-  test('v16 to v17 adds only the transfer attempt table and preserves rows',
-      () async {
+  test('v16 upgrades through v18 and preserves rows', () async {
     final directory = await Directory.systemTemp.createTemp('transfer-v16-');
     final file = File('${directory.path}${Platform.pathSeparator}data.sqlite3');
     addTearDown(() async {
@@ -38,7 +37,7 @@ void main() {
     legacy.dispose();
 
     database = openDatabaseFile(file);
-    expect(database.schemaVersion, 17);
+    expect(database.schemaVersion, 18);
     expect(await database.readProbe('preserved'), 'yes');
     expect(
       await database.select(database.internalTransferPostingAttempts).get(),

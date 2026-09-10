@@ -6,6 +6,7 @@ import 'package:grain_warehouse_erp_lite/application/context/session_context.dar
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/application/identity/distributed_identity.dart';
 import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart';
+import 'package:grain_warehouse_erp_lite/core/distributed_state/drift_durable_sync_store.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
@@ -29,6 +30,7 @@ final class LegacyApplicationDependencyBridge {
     required BusinessContextProvider businessContextProvider,
     required FinancialAccountCloudLinkResolver
         financialAccountCloudLinkResolver,
+    required DriftDurableSyncStore durableSyncStore,
   }) {
     return ApplicationDependencies(
       repositories: ApplicationRepositoryDependencies(
@@ -42,6 +44,11 @@ final class LegacyApplicationDependencyBridge {
         expenseRepository: AppRepositories.expenseRepository,
         financialAccountRepository: AppRepositories.financialAccountRepository,
         financialAccountCloudLinkResolver: financialAccountCloudLinkResolver,
+        durableOutboxRepository: durableSyncStore,
+        durableInboxRepository: durableSyncStore,
+        durableConflictRepository: durableSyncStore,
+        durableSyncCheckpointRepository: durableSyncStore,
+        durableSyncTransactionCoordinator: durableSyncStore,
       ),
       services: ApplicationServiceDependencies(
         trialEvaluator: trialEvaluator,
