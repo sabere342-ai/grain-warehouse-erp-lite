@@ -13,6 +13,8 @@ import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/product_catalog_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/product_repository.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_coordinator.dart';
 import 'package:grain_warehouse_erp_lite/core/documents/document_history.dart';
 import 'package:grain_warehouse_erp_lite/application/expenses/expense_posting_attempt_store.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/expense_repository.dart';
@@ -37,9 +39,11 @@ final class ApplicationDependencies {
 final class ApplicationServiceDependencies {
   const ApplicationServiceDependencies({
     required this.trialEvaluator,
+    required this.productCatalogSyncCoordinator,
   });
 
   final TrialEvaluator trialEvaluator;
+  final ProductCatalogSyncCoordinator productCatalogSyncCoordinator;
 }
 
 final class ApplicationRepositoryDependencies {
@@ -48,6 +52,7 @@ final class ApplicationRepositoryDependencies {
     required this.businessIdentityRepository,
     required this.documentHistoryRepository,
     required this.productCatalogReadRepository,
+    required this.productRepository,
     required this.inventoryRepository,
     required this.saleRepository,
     required this.expenseRepository,
@@ -64,6 +69,7 @@ final class ApplicationRepositoryDependencies {
   final BusinessIdentityRepository businessIdentityRepository;
   final DocumentHistoryRepository documentHistoryRepository;
   final ProductCatalogReadRepository productCatalogReadRepository;
+  final ProductRepository productRepository;
   final InventoryRepository inventoryRepository;
   final SaleRepository saleRepository;
   final ExpenseRepository expenseRepository;

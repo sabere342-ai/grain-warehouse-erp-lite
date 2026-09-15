@@ -202,8 +202,8 @@ void main() {
     expect(adapter, contains('createdAt:row.read(products.createdAt)!'));
     expect(adapter, contains('updatedAt:row.read(products.updatedAt)!'));
     expect(adapter, isNot(contains('DateTime.now')));
-    expect(adapter, isNot(contains('toUtc()')));
     expect(adapter, isNot(contains('toLocal()')));
+    expect(adapter, contains('_clock.nowUtc()'));
     expect(
         backup,
         contains(
@@ -226,7 +226,7 @@ void main() {
         .where((file) => file.path.endsWith('.dart'))
         .map((file) => file.readAsStringSync())
         .join('\n');
-    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(6));
+    expect(RegExp(r'\.listProducts\(').allMatches(libSource), hasLength(8));
     expect(
         RegExp(r'\.listProductCatalog\(').allMatches(libSource), hasLength(20));
 

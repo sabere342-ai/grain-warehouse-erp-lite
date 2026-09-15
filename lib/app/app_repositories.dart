@@ -112,6 +112,14 @@ class AppRepositories {
   static ProductCatalogReadRepository get productCatalogReadRepository =>
       _productCatalogReadRepository;
 
+  static void configureProductCatalog({
+    required ProductDataRepository productRepository,
+    required ProductCatalogReadRepository productCatalogReadRepository,
+  }) {
+    _productRepository = productRepository;
+    _productCatalogReadRepository = productCatalogReadRepository;
+  }
+
   static Future<void> initializeProduction({
     Future<FoundationDatabase> Function()? databaseFactory,
   }) async {

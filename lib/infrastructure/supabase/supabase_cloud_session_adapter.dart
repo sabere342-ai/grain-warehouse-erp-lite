@@ -14,6 +14,7 @@ final class SupabaseCloudSessionAdapter {
     required this.executionContexts,
     required this.deviceIdentity,
     this.sessionIdGenerator = const UuidV4SessionIdGenerator(),
+    this.onVerifiedBusiness,
   })  : sessionContexts = ExecutionSessionContextProvider(executionContexts),
         businessContexts = ExecutionBusinessContextProvider(executionContexts);
 
@@ -21,6 +22,7 @@ final class SupabaseCloudSessionAdapter {
   final MutableExecutionContextProvider executionContexts;
   final DeviceId deviceIdentity;
   final SessionIdGenerator sessionIdGenerator;
+  final Future<void> Function(BusinessContext context)? onVerifiedBusiness;
   final SessionContextProvider sessionContexts;
   final BusinessContextProvider businessContexts;
   StreamSubscription<AuthState>? _subscription;
@@ -81,6 +83,7 @@ final class SupabaseCloudSessionAdapter {
           deviceIdentity: deviceIdentity,
         ),
       );
+      await onVerifiedBusiness?.call(businessContext);
     } on Object {
       clear();
     }

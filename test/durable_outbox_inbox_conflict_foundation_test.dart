@@ -40,8 +40,7 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('schema 18 creates four additive durable tables and v17 preserves data',
-      () async {
+  test('schema 19 chains durable and product sync tables from v17', () async {
     final directory = await Directory.systemTemp.createTemp('durable-v17-');
     final file = File('${directory.path}${Platform.pathSeparator}data.sqlite3');
     addTearDown(() async {
@@ -56,11 +55,13 @@ void main() {
     legacy.execute('DROP TABLE durable_conflicts');
     legacy.execute('DROP TABLE durable_sync_checkpoints');
     legacy.execute('DROP TABLE durable_outbox_operations');
+    legacy.execute('DROP TABLE product_catalog_sync_states');
+    legacy.execute('DROP TABLE product_catalog_scope_bindings');
     legacy.execute('PRAGMA user_version = 17');
     legacy.dispose();
 
     fileDatabase = openDatabaseFile(file);
-    expect(fileDatabase.schemaVersion, 18);
+    expect(fileDatabase.schemaVersion, 19);
     expect(await fileDatabase.readProbe('preserved'), 'yes');
     final names = (await fileDatabase
             .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -74,6 +75,8 @@ void main() {
         'durable_inbox_operations',
         'durable_conflicts',
         'durable_sync_checkpoints',
+        'product_catalog_scope_bindings',
+        'product_catalog_sync_states',
       }),
     );
     await fileDatabase.close();

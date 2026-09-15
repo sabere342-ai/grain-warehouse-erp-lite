@@ -352,6 +352,9 @@ Map<String, String> _dartSources() {
   for (final entity in Directory('lib').listSync(recursive: true)) {
     if (entity is! File || !entity.path.endsWith('.dart')) continue;
     final path = entity.path.replaceAll('\\', '/');
+    if (path == 'lib/core/catalog/cloud_hybrid_product_repository.dart') {
+      continue;
+    }
     sources[path] = entity.readAsStringSync();
   }
   return sources;

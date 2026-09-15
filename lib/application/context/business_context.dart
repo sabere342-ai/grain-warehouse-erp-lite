@@ -9,7 +9,7 @@ final class BusinessContext {
     BusinessId? warehouseMembershipBusinessId,
   }) {
     final normalizedRole = role.trim();
-    if (normalizedRole != 'owner' && normalizedRole != 'employee') {
+    if (!const {'owner', 'employee', 'viewer'}.contains(normalizedRole)) {
       throw ArgumentError.value(role, 'role');
     }
     if (scope is WarehouseScope &&

@@ -37,7 +37,7 @@ void main() {
     legacy.dispose();
 
     database = openDatabaseFile(file);
-    expect(database.schemaVersion, 18);
+    expect(database.schemaVersion, 19);
     expect(await database.readProbe('preserved'), 'yes');
     expect(
       await database.select(database.internalTransferPostingAttempts).get(),

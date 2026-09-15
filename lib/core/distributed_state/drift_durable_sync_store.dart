@@ -362,6 +362,7 @@ final class DriftDurableSyncStore
     if (affected != 1) throw const DurableLostRaceException();
   }
 
+  @override
   Future<void> failOutboxPermanently(
     DurableScope scope,
     String operationId, {
@@ -483,6 +484,49 @@ final class DriftDurableSyncStore
         .getSingleOrNull();
     return row == null ? null : _inbox(row);
   }
+
+  Future<DurableInboxOperation> claimInbox(
+    DurableScope scope,
+    String sourceAuthority,
+    String sourceOperationId, {
+    required DateTime nowUtc,
+    required Duration leaseDuration,
+  }) =>
+      database.inTransaction(() async {
+        requireUtcInstant(nowUtc, 'nowUtc');
+        if (leaseDuration <= Duration.zero) {
+          throw ArgumentError.value(leaseDuration, 'leaseDuration');
+        }
+        final current = await loadInbox(
+          scope,
+          sourceAuthority,
+          sourceOperationId,
+        );
+        if (current == null || current.state != DurableInboxState.received) {
+          throw const DurableLostRaceException();
+        }
+        final token = const Uuid().v4();
+        final affected = await (database.update(database.durableInboxOperations)
+              ..where((table) =>
+                  table.sourceAuthority.equals(sourceAuthority) &
+                  table.sourceOperationId.equals(sourceOperationId) &
+                  _inboxScope(table, scope) &
+                  table.state.equals(DurableInboxState.received.name) &
+                  table.recordVersion.equals(current.recordVersion)))
+            .write(
+          db.DurableInboxOperationsCompanion(
+            state: Value(DurableInboxState.applying.name),
+            applyAttemptCount: Value(current.applyAttemptCount + 1),
+            lastApplyAttemptAtUtc: Value(nowUtc),
+            claimToken: Value(token),
+            leaseExpiresAtUtc: Value(nowUtc.add(leaseDuration)),
+            updatedAtUtc: Value(nowUtc),
+            recordVersion: Value(current.recordVersion + 1),
+          ),
+        );
+        if (affected != 1) throw const DurableLostRaceException();
+        return (await loadInbox(scope, sourceAuthority, sourceOperationId))!;
+      });
 
   @override
   Future<DurableInboxOperation?> claimNextInbox(
@@ -709,6 +753,72 @@ final class DriftDurableSyncStore
   }
 
   @override
+  Future<DurableConflict> resolveConflict(
+    String conflictId, {
+    required DurableScope scope,
+    required int expectedRecordVersion,
+    required DurableConflictResolutionKind resolutionKind,
+    required String resolutionOperationId,
+    required String resolverAuthUserId,
+    required DateTime resolvedAtUtc,
+  }) =>
+      database.inTransaction(() async {
+        requireUtcInstant(resolvedAtUtc, 'resolvedAtUtc');
+        OperationId(resolutionOperationId);
+        RemoteAuthUserId(resolverAuthUserId);
+        final affected = await (database.update(database.durableConflicts)
+              ..where((table) =>
+                  table.conflictId.equals(conflictId) &
+                  _conflictScope(table, scope) &
+                  table.resolutionState.equals(
+                    DurableConflictResolutionState.unresolved.name,
+                  ) &
+                  table.recordVersion.equals(expectedRecordVersion)))
+            .write(
+          db.DurableConflictsCompanion(
+            resolutionState:
+                Value(DurableConflictResolutionState.resolved.name),
+            resolutionKind: Value(resolutionKind.name),
+            resolutionOperationId: Value(resolutionOperationId),
+            resolverAuthUserId: Value(resolverAuthUserId),
+            resolvedAtUtc: Value(resolvedAtUtc),
+            updatedAtUtc: Value(_now()),
+            recordVersion: Value(expectedRecordVersion + 1),
+          ),
+        );
+        if (affected != 1) throw const DurableLostRaceException();
+        return (await loadConflict(conflictId))!;
+      });
+
+  Future<void> cancelConflictedOutbox(
+    DurableScope scope,
+    String operationId, {
+    required int expectedRecordVersion,
+    required String conflictId,
+    required DateTime cancelledAtUtc,
+  }) =>
+      database.inTransaction(() async {
+        requireUtcInstant(cancelledAtUtc, 'cancelledAtUtc');
+        final affected =
+            await (database.update(database.durableOutboxOperations)
+                  ..where((table) =>
+                      table.operationId.equals(operationId) &
+                      _outboxScope(table, scope) &
+                      table.state.equals(DurableOutboxState.conflict.name) &
+                      table.conflictId.equals(conflictId) &
+                      table.recordVersion.equals(expectedRecordVersion)))
+                .write(
+          db.DurableOutboxOperationsCompanion(
+            state: Value(DurableOutboxState.cancelled.name),
+            conflictId: const Value(null),
+            updatedAtUtc: Value(cancelledAtUtc),
+            recordVersion: Value(expectedRecordVersion + 1),
+          ),
+        );
+        if (affected != 1) throw const DurableLostRaceException();
+      });
+
+  @override
   Future<DurableConflict> conflictOutbox(
     DurableScope scope,
     String operationId, {
@@ -812,6 +922,29 @@ final class DriftDurableSyncStore
         .getSingleOrNull();
     return row == null ? null : _checkpoint(row);
   }
+
+  Future<void> recordSuccessfulPull(
+    DurableScope scope,
+    String sourceAuthority,
+    String streamName,
+    DateTime nowUtc,
+  ) =>
+      database.inTransaction(() async {
+        final existing =
+            await loadCheckpoint(scope, sourceAuthority, streamName);
+        await _saveCheckpoint(
+          DurableCheckpoint(
+            scope: scope,
+            sourceAuthority: sourceAuthority,
+            streamName: streamName,
+            cursorValue: existing?.cursorValue ?? '0',
+            lastSourceOperationId: existing?.lastSourceOperationId,
+            updatedAtUtc: nowUtc,
+            recordVersion: existing?.recordVersion ?? 1,
+          ),
+          nowUtc,
+        );
+      });
 
   Future<void> _saveCheckpoint(
     DurableCheckpoint checkpoint,
@@ -1119,6 +1252,16 @@ final class DriftDurableSyncStore
         createdAtUtc: row.createdAtUtc.toUtc(),
         updatedAtUtc: row.updatedAtUtc.toUtc(),
         recordVersion: row.recordVersion,
+        resolutionKind: row.resolutionKind == null
+            ? null
+            : DurableConflictResolutionKind.values.byName(row.resolutionKind!),
+        resolutionOperationId: row.resolutionOperationId == null
+            ? null
+            : OperationId(row.resolutionOperationId!),
+        resolverAuthUserId: row.resolverAuthUserId == null
+            ? null
+            : RemoteAuthUserId(row.resolverAuthUserId!),
+        resolvedAtUtc: row.resolvedAtUtc?.toUtc(),
       );
 
   DurableCheckpoint _checkpoint(db.DurableSyncCheckpointRow row) =>

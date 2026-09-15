@@ -53,6 +53,7 @@ const _legacyConsumerFiles = {
 
 const _legacyInfrastructureFiles = {
   'lib/app/app_repositories.dart',
+  'lib/core/catalog/cloud_hybrid_product_repository.dart',
   'lib/core/catalog/drift_product_repository.dart',
 };
 
@@ -87,6 +88,10 @@ const _frozenReadModelFields = {
   'defaultSalePricePiastersPerKg',
   'minimumSalePricePiastersPerKg',
   'notes',
+  'remoteProductId',
+  'acknowledgedEntityVersion',
+  'pendingOperationId',
+  'isStale',
 };
 
 const _nextPhaseProductionFiles = {

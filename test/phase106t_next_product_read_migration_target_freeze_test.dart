@@ -65,6 +65,7 @@ const _legacyConsumerFiles = {
 
 const _legacyInfrastructureFiles = {
   'lib/app/app_repositories.dart',
+  'lib/core/catalog/cloud_hybrid_product_repository.dart',
   'lib/core/catalog/drift_product_repository.dart',
 };
 
@@ -99,6 +100,10 @@ const _frozenReadModelFields = {
   'defaultSalePricePiastersPerKg',
   'minimumSalePricePiastersPerKg',
   'notes',
+  'remoteProductId',
+  'acknowledgedEntityVersion',
+  'pendingOperationId',
+  'isStale',
 };
 
 void main() {
@@ -521,7 +526,7 @@ void main() {
   test('schemaVersion stays 15 and no fallback appears', () {
     final foundation = File('lib/core/persistence/foundation_database.dart')
         .readAsStringSync();
-    expect(foundation, contains('int get schemaVersion => 18;'));
+    expect(foundation, contains('int get schemaVersion => 19;'));
 
     final contract = File(_contractPath).readAsStringSync();
     final adapter = File(_adapterPath).readAsStringSync();

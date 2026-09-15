@@ -39,7 +39,7 @@ void main() {
 
     database = openDatabaseFile(file);
     expect(await database.readProbe('preserved'), 'yes');
-    expect(database.schemaVersion, 18);
+    expect(database.schemaVersion, 19);
     expect(await database.select(database.financialAccountCloudLinks).get(),
         isEmpty);
     expect(

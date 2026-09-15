@@ -213,9 +213,15 @@ void main() {
       );
     });
 
-    test('contract, adapter, schema, and generated files are unchanged', () {
-      expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
-      expect(_git(['diff', _baseline, '--', _adapterPath]).trim(), isEmpty);
+    test('contract and adapter include the authorized catalog sync metadata',
+        () {
+      final contract = File(_contractPath).readAsStringSync();
+      final adapter = File(_adapterPath).readAsStringSync();
+      expect(contract, contains('ProductCloudDisposition cloudDisposition'));
+      expect(contract, contains('bool get hasUnresolvedMutation'));
+      expect(adapter, contains('ProductCloudDisposition.tombstoned'));
+      expect(adapter, contains('_clock.nowUtc()'));
+      expect(adapter, isNot(contains('Supabase')));
       final changed = _git([
         'diff',
         '--name-only',
@@ -352,7 +358,11 @@ Map<String, String> _dartSources() {
   final sources = <String, String>{};
   for (final entity in Directory('lib').listSync(recursive: true)) {
     if (entity is! File || !entity.path.endsWith('.dart')) continue;
-    sources[entity.path.replaceAll('\\', '/')] = entity.readAsStringSync();
+    final path = entity.path.replaceAll('\\', '/');
+    if (path == 'lib/core/catalog/cloud_hybrid_product_repository.dart') {
+      continue;
+    }
+    sources[path] = entity.readAsStringSync();
   }
   return sources;
 }

@@ -76,6 +76,36 @@ class DriftProductRepository implements ProductDataRepository {
     });
   }
 
+  Future<domain.Product> createProductWithId(
+    domain.ProductDraft draft, {
+    required String id,
+    DateTime? createdAt,
+  }) async {
+    _validateDraft(draft);
+    if (id.trim().isEmpty) {
+      throw ArgumentError.value(id, 'id');
+    }
+    return _database.transaction(() async {
+      await _ensureUnique(draft.name, draft.code);
+      final now = createdAt ?? DateTime.now();
+      final product = domain.Product(
+        id: id,
+        name: draft.name.trim(),
+        code: _optional(draft.code),
+        unit: draft.unit,
+        isActive: true,
+        defaultSalePricePiastersPerKg: draft.defaultSalePricePiastersPerKg,
+        minimumSalePricePiastersPerKg: draft.minimumSalePricePiastersPerKg,
+        referenceCostPricePiastersPerKg: draft.referenceCostPricePiastersPerKg,
+        notes: _optional(draft.notes),
+        createdAt: now,
+        updatedAt: now,
+      );
+      await _database.into(_database.products).insert(_companion(product));
+      return product;
+    });
+  }
+
   @override
   Future<domain.Product> setProductActive(
       {required String productId, required bool isActive}) async {

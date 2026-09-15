@@ -696,6 +696,73 @@ class DurableSyncCheckpoints extends Table {
       ];
 }
 
+@DataClassName('ProductCatalogScopeBindingRow')
+class ProductCatalogScopeBindings extends Table {
+  TextColumn get businessId => text()();
+  TextColumn get authUserId => text()();
+  TextColumn get role => text()();
+  DateTimeColumn get verifiedAtUtc => dateTime()();
+  BoolColumn get isActive => boolean()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {businessId};
+
+  @override
+  List<String> get customConstraints => const [
+        "CHECK (role IN ('owner','employee','viewer'))",
+        'CHECK (is_active IN (0,1))',
+      ];
+}
+
+@DataClassName('ProductCatalogSyncStateRow')
+@TableIndex(
+  name: 'product_catalog_sync_states_disposition_idx',
+  columns: {#businessId, #projectionState, #localProductId},
+)
+@TableIndex(
+  name: 'product_catalog_sync_states_remote_idx',
+  columns: {#businessId, #remoteProductId},
+  unique: true,
+)
+class ProductCatalogSyncStates extends Table {
+  TextColumn get localProductId => text().references(
+        Products,
+        #id,
+        onDelete: KeyAction.restrict,
+      )();
+  TextColumn get businessId => text()();
+  TextColumn get remoteProductId => text().unique()();
+  IntColumn get acknowledgedEntityVersion => integer().nullable()();
+  TextColumn get acknowledgedPayloadJson => text().nullable()();
+  TextColumn get acknowledgedPayloadFingerprint => text().nullable()();
+  DateTimeColumn get acknowledgedServerModifiedAtUtc => dateTime().nullable()();
+  TextColumn get acknowledgedSourceOperationId => text().nullable()();
+  TextColumn get acknowledgedActorAuthUserId => text().nullable()();
+  TextColumn get acknowledgedDeviceId => text().nullable()();
+  TextColumn get pendingOperationId => text().nullable().unique()();
+  TextColumn get projectionState => text()();
+  IntColumn get tombstoneVersion => integer().nullable()();
+  DateTimeColumn get deletedAtUtc => dateTime().nullable()();
+  TextColumn get deletedByAuthUserId => text().nullable()();
+  TextColumn get deletedByDeviceId => text().nullable()();
+  TextColumn get deletionSourceOperationId => text().nullable()();
+  DateTimeColumn get updatedAtUtc => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {localProductId};
+
+  @override
+  List<String> get customConstraints => const [
+        'CHECK (acknowledged_entity_version IS NULL OR acknowledged_entity_version > 0)',
+        'CHECK (acknowledged_payload_fingerprint IS NULL OR length(acknowledged_payload_fingerprint) = 64)',
+        "CHECK (projection_state IN ('pending','acknowledged','attentionRequired','tombstoned'))",
+        'CHECK (tombstone_version IS NULL OR tombstone_version > 0)',
+        "CHECK ((acknowledged_entity_version IS NULL AND acknowledged_payload_json IS NULL AND acknowledged_payload_fingerprint IS NULL AND acknowledged_server_modified_at_utc IS NULL AND acknowledged_source_operation_id IS NULL AND acknowledged_actor_auth_user_id IS NULL AND acknowledged_device_id IS NULL) OR (acknowledged_entity_version > 0 AND acknowledged_payload_json IS NOT NULL AND length(acknowledged_payload_fingerprint) = 64 AND acknowledged_server_modified_at_utc IS NOT NULL AND acknowledged_source_operation_id IS NOT NULL AND acknowledged_actor_auth_user_id IS NOT NULL AND acknowledged_device_id IS NOT NULL))",
+        "CHECK ((tombstone_version IS NULL AND deleted_at_utc IS NULL AND deleted_by_auth_user_id IS NULL AND deleted_by_device_id IS NULL AND deletion_source_operation_id IS NULL) OR (tombstone_version > 0 AND tombstone_version = acknowledged_entity_version AND deleted_at_utc IS NOT NULL AND deleted_by_auth_user_id IS NOT NULL AND deleted_by_device_id IS NOT NULL AND deletion_source_operation_id IS NOT NULL AND projection_state = 'tombstoned'))",
+        "CHECK ((projection_state = 'tombstoned') = (tombstone_version IS NOT NULL))",
+      ];
+}
+
 abstract class CustomerAccountPayloadTable extends Table {
   TextColumn get id => text()();
   TextColumn get customerId => text()();
@@ -900,6 +967,8 @@ class NegativeBalanceApprovalRequestTransitions extends Table {
   DurableConflicts,
   DurableInboxOperations,
   DurableSyncCheckpoints,
+  ProductCatalogScopeBindings,
+  ProductCatalogSyncStates,
   CustomerAccountEntries,
   CustomerCollections,
   CustomerAdvances,
@@ -918,7 +987,7 @@ class FoundationDatabase extends _$FoundationDatabase {
   FoundationDatabase(super.executor);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => foundationMigrationStrategy(this);

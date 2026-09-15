@@ -376,23 +376,22 @@ void main() {
       }
     });
 
-    test('ProductsScreen owns only the unchanged write locator', () {
+    test('ProductsScreen uses the composed query and product repository', () {
       final screen = File(
         'lib/features/products/products_screen.dart',
       ).readAsStringSync();
 
       expect(
         screen,
-        contains('ApplicationScope.of(context).queries.productCatalog'),
+        contains('application.queries.productCatalog'),
       );
       expect(
         screen,
         isNot(contains('AppRepositories.productCatalogReadRepository')),
       );
-      expect(
-        'AppRepositories.productRepository'.allMatches(screen),
-        hasLength(1),
-      );
+      expect(screen,
+          contains('application.dependencies.repositories.productRepository'));
+      expect(screen, isNot(contains('AppRepositories.productRepository')));
       expect(screen, isNot(contains('DriftProductCatalogReadRepository')));
       expect(screen, isNot(contains('FoundationDatabase')));
     });

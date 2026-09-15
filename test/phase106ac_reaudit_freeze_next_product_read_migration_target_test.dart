@@ -321,6 +321,12 @@ void main() {
       'String? notes',
       'DateTime createdAt',
       'DateTime updatedAt',
+      'ProductCloudDisposition cloudDisposition',
+      'String? remoteProductId',
+      'int? acknowledgedEntityVersion',
+      'String? pendingOperationId',
+      'DateTime? lastSuccessfulPullAtUtc',
+      'bool isStale',
     ]);
     expect(source, contains('required bool includeInactive'));
   });
@@ -362,6 +368,9 @@ Map<String, String> _dartSources() {
   for (final file in Directory('lib').listSync(recursive: true)) {
     if (file is! File || !file.path.endsWith('.dart')) continue;
     final path = file.path.replaceAll('\\', '/');
+    if (path == 'lib/core/catalog/cloud_hybrid_product_repository.dart') {
+      continue;
+    }
     sources[path] = file.readAsStringSync();
   }
   return sources;

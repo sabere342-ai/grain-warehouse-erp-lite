@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_contracts.dart';
 import 'package:grain_warehouse_erp_lite/composition/application_scope.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
@@ -23,14 +23,17 @@ class ProductsScreen extends StatefulWidget {
   State<ProductsScreen> createState() => _ProductsScreenState();
 }
 
-class _ProductsScreenState extends State<ProductsScreen> {
+class _ProductsScreenState extends State<ProductsScreen>
+    with WidgetsBindingObserver {
   late final ProductController _controller;
   late final bool _ownsController;
   bool _initialized = false;
+  bool _cloudModeEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ownsController = widget.controller == null;
     if (widget.controller != null) {
       _controller = widget.controller!;
@@ -43,22 +46,39 @@ class _ProductsScreenState extends State<ProductsScreen> {
     if (_initialized) return;
     _initialized = true;
     if (_ownsController) {
+      final application = ApplicationScope.of(context);
+      _cloudModeEnabled = application.dependencies.runtime.cloudModeEnabled;
       _controller = ProductController(
-        queryHandler: ApplicationScope.of(context).queries.productCatalog,
-        repository: AppRepositories.productRepository,
+        queryHandler: application.queries.productCatalog,
+        repository: application.dependencies.repositories.productRepository,
+        syncCoordinator:
+            application.dependencies.services.productCatalogSyncCoordinator,
       );
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final user = AuthScope.of(context).state.user;
       if (user != null) {
-        _controller.loadProducts(user);
+        await _controller.loadProducts(user);
+        if (mounted && _cloudModeEnabled) {
+          await _controller.synchronize(user);
+        }
       }
     });
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted || !_cloudModeEnabled) {
+      return;
+    }
+    final user = AuthScope.of(context).state.user;
+    if (user != null) _controller.synchronize(user);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (_ownsController) {
       _controller.dispose();
     }
@@ -86,6 +106,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   : 'عرض الأصناف النشطة فقط. إضافة وتعديل الأصناف للمالك فقط.',
               icon: Icons.inventory_2_rounded,
               actions: [
+                IconButton(
+                  key: const Key('products_sync_button'),
+                  tooltip: 'تحديث المزامنة',
+                  onPressed: !_cloudModeEnabled || _controller.isSynchronizing
+                      ? null
+                      : () => _controller.synchronize(user),
+                  icon: _controller.isSynchronizing
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.sync_rounded),
+                ),
                 if (canManage)
                   FilledButton.icon(
                     key: const Key('products_add_button'),
@@ -128,6 +161,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   child: _ProductCard(
                     product: product,
                     canManage: canManage,
+                    cloudModeEnabled: _cloudModeEnabled,
                     onEdit: () => _showProductForm(
                       context,
                       user: user,
@@ -137,6 +171,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       user: user,
                       productId: product.id,
                       isActive: !product.isActive,
+                    ),
+                    onAdopt: () => _controller.adoptLegacyProduct(
+                      user: user,
+                      productId: product.id,
+                    ),
+                    onAcceptServer: () => _controller.resolveConflict(
+                      user: user,
+                      productId: product.id,
+                      acceptServer: true,
+                    ),
+                    onKeepLocal: () => _controller.resolveConflict(
+                      user: user,
+                      productId: product.id,
+                      acceptServer: false,
                     ),
                   ),
                 ),
@@ -177,14 +225,22 @@ class _ProductCard extends StatelessWidget {
   const _ProductCard({
     required this.product,
     required this.canManage,
+    required this.cloudModeEnabled,
     required this.onEdit,
     required this.onToggleActive,
+    required this.onAdopt,
+    required this.onAcceptServer,
+    required this.onKeepLocal,
   });
 
   final ProductCatalogReadModel product;
   final bool canManage;
+  final bool cloudModeEnabled;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
+  final VoidCallback onAdopt;
+  final VoidCallback onAcceptServer;
+  final VoidCallback onKeepLocal;
 
   @override
   Widget build(BuildContext context) {
@@ -199,6 +255,8 @@ class _ProductCard extends StatelessWidget {
               Expanded(
                 child: Text(product.name, style: textTheme.titleLarge),
               ),
+              _CloudDispositionChip(product: product),
+              const SizedBox(width: 8),
               _StatusChip(isActive: product.isActive),
             ],
           ),
@@ -231,14 +289,18 @@ class _ProductCard extends StatelessWidget {
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
-                  onPressed: onEdit,
+                  key: Key('product_edit_${product.id}'),
+                  onPressed: product.hasUnresolvedMutation ? null : onEdit,
                   icon: const Icon(Icons.edit_rounded),
                   label: const Text('تعديل'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: onToggleActive,
+                  key: Key('product_toggle_${product.id}'),
+                  onPressed:
+                      product.hasUnresolvedMutation ? null : onToggleActive,
                   icon: Icon(
                     product.isActive
                         ? Icons.visibility_off_rounded
@@ -246,6 +308,28 @@ class _ProductCard extends StatelessWidget {
                   ),
                   label: Text(product.isActive ? 'إيقاف' : 'تفعيل'),
                 ),
+                if (cloudModeEnabled &&
+                    product.cloudDisposition ==
+                        ProductCloudDisposition.localOnly)
+                  OutlinedButton.icon(
+                    key: Key('product_adopt_${product.id}'),
+                    onPressed: onAdopt,
+                    icon: const Icon(Icons.cloud_upload_outlined),
+                    label: const Text('ربط بالسحابة'),
+                  ),
+                if (product.cloudDisposition ==
+                    ProductCloudDisposition.attentionRequired) ...[
+                  FilledButton.tonal(
+                    key: Key('product_accept_server_${product.id}'),
+                    onPressed: onAcceptServer,
+                    child: const Text('اعتماد نسخة الخادم'),
+                  ),
+                  OutlinedButton(
+                    key: Key('product_keep_local_${product.id}'),
+                    onPressed: onKeepLocal,
+                    child: const Text('إعادة إرسال النسخة المحلية'),
+                  ),
+                ],
               ],
             ),
           ],
@@ -268,6 +352,37 @@ class _ProductCard extends StatelessWidget {
     }
 
     return '${MoneyUtils.formatPiastersAsEgp(price)} / كجم';
+  }
+}
+
+class _CloudDispositionChip extends StatelessWidget {
+  const _CloudDispositionChip({required this.product});
+
+  final ProductCatalogReadModel product;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (product.cloudDisposition) {
+      ProductCloudDisposition.localOnly => 'محلي - دون اتصال سحابي',
+      ProductCloudDisposition.pending => 'بانتظار المزامنة',
+      ProductCloudDisposition.acknowledged =>
+        product.isStale ? 'سحابي - قديم' : 'متزامن',
+      ProductCloudDisposition.attentionRequired => 'يتطلب مراجعة',
+      ProductCloudDisposition.tombstoned => 'محذوف سحابيا',
+    };
+    final icon = switch (product.cloudDisposition) {
+      ProductCloudDisposition.localOnly => Icons.cloud_off_outlined,
+      ProductCloudDisposition.pending => Icons.schedule_rounded,
+      ProductCloudDisposition.acknowledged =>
+        product.isStale ? Icons.cloud_sync_outlined : Icons.cloud_done_outlined,
+      ProductCloudDisposition.attentionRequired => Icons.warning_amber_rounded,
+      ProductCloudDisposition.tombstoned => Icons.delete_outline_rounded,
+    };
+    return Chip(
+      key: Key('product_cloud_state_${product.id}'),
+      avatar: Icon(icon, size: 18),
+      label: Text(label),
+    );
   }
 }
 

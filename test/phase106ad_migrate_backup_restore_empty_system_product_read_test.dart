@@ -153,7 +153,9 @@ void main() {
       'lib/core/sales/drift_sale_repository.dart',
       'lib/core/sales/sale_repository.dart',
     });
-    expect(_git(['diff', _baseline, '--', _contractPath]).trim(), isEmpty);
+    final contract = File(_contractPath).readAsStringSync();
+    expect(contract, contains('ProductCloudDisposition cloudDisposition'));
+    expect(contract, contains('bool get hasUnresolvedMutation'));
     expect(
       _git([
         'diff',

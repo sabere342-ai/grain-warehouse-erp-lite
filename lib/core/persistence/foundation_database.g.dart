@@ -17555,6 +17555,1376 @@ class DurableSyncCheckpointsCompanion
   }
 }
 
+class $ProductCatalogScopeBindingsTable extends ProductCatalogScopeBindings
+    with
+        TableInfo<$ProductCatalogScopeBindingsTable,
+            ProductCatalogScopeBindingRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductCatalogScopeBindingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _authUserIdMeta =
+      const VerificationMeta('authUserId');
+  @override
+  late final GeneratedColumn<String> authUserId = GeneratedColumn<String>(
+      'auth_user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+      'role', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _verifiedAtUtcMeta =
+      const VerificationMeta('verifiedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> verifiedAtUtc =
+      GeneratedColumn<DateTime>('verified_at_utc', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [businessId, authUserId, role, verifiedAtUtc, isActive];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'product_catalog_scope_bindings';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<ProductCatalogScopeBindingRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('auth_user_id')) {
+      context.handle(
+          _authUserIdMeta,
+          authUserId.isAcceptableOrUnknown(
+              data['auth_user_id']!, _authUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_authUserIdMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+          _roleMeta, role.isAcceptableOrUnknown(data['role']!, _roleMeta));
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('verified_at_utc')) {
+      context.handle(
+          _verifiedAtUtcMeta,
+          verifiedAtUtc.isAcceptableOrUnknown(
+              data['verified_at_utc']!, _verifiedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_verifiedAtUtcMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {businessId};
+  @override
+  ProductCatalogScopeBindingRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProductCatalogScopeBindingRow(
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      authUserId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}auth_user_id'])!,
+      role: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}role'])!,
+      verifiedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}verified_at_utc'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+    );
+  }
+
+  @override
+  $ProductCatalogScopeBindingsTable createAlias(String alias) {
+    return $ProductCatalogScopeBindingsTable(attachedDatabase, alias);
+  }
+}
+
+class ProductCatalogScopeBindingRow extends DataClass
+    implements Insertable<ProductCatalogScopeBindingRow> {
+  final String businessId;
+  final String authUserId;
+  final String role;
+  final DateTime verifiedAtUtc;
+  final bool isActive;
+  const ProductCatalogScopeBindingRow(
+      {required this.businessId,
+      required this.authUserId,
+      required this.role,
+      required this.verifiedAtUtc,
+      required this.isActive});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['business_id'] = Variable<String>(businessId);
+    map['auth_user_id'] = Variable<String>(authUserId);
+    map['role'] = Variable<String>(role);
+    map['verified_at_utc'] = Variable<DateTime>(verifiedAtUtc);
+    map['is_active'] = Variable<bool>(isActive);
+    return map;
+  }
+
+  ProductCatalogScopeBindingsCompanion toCompanion(bool nullToAbsent) {
+    return ProductCatalogScopeBindingsCompanion(
+      businessId: Value(businessId),
+      authUserId: Value(authUserId),
+      role: Value(role),
+      verifiedAtUtc: Value(verifiedAtUtc),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory ProductCatalogScopeBindingRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProductCatalogScopeBindingRow(
+      businessId: serializer.fromJson<String>(json['businessId']),
+      authUserId: serializer.fromJson<String>(json['authUserId']),
+      role: serializer.fromJson<String>(json['role']),
+      verifiedAtUtc: serializer.fromJson<DateTime>(json['verifiedAtUtc']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'businessId': serializer.toJson<String>(businessId),
+      'authUserId': serializer.toJson<String>(authUserId),
+      'role': serializer.toJson<String>(role),
+      'verifiedAtUtc': serializer.toJson<DateTime>(verifiedAtUtc),
+      'isActive': serializer.toJson<bool>(isActive),
+    };
+  }
+
+  ProductCatalogScopeBindingRow copyWith(
+          {String? businessId,
+          String? authUserId,
+          String? role,
+          DateTime? verifiedAtUtc,
+          bool? isActive}) =>
+      ProductCatalogScopeBindingRow(
+        businessId: businessId ?? this.businessId,
+        authUserId: authUserId ?? this.authUserId,
+        role: role ?? this.role,
+        verifiedAtUtc: verifiedAtUtc ?? this.verifiedAtUtc,
+        isActive: isActive ?? this.isActive,
+      );
+  ProductCatalogScopeBindingRow copyWithCompanion(
+      ProductCatalogScopeBindingsCompanion data) {
+    return ProductCatalogScopeBindingRow(
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      authUserId:
+          data.authUserId.present ? data.authUserId.value : this.authUserId,
+      role: data.role.present ? data.role.value : this.role,
+      verifiedAtUtc: data.verifiedAtUtc.present
+          ? data.verifiedAtUtc.value
+          : this.verifiedAtUtc,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductCatalogScopeBindingRow(')
+          ..write('businessId: $businessId, ')
+          ..write('authUserId: $authUserId, ')
+          ..write('role: $role, ')
+          ..write('verifiedAtUtc: $verifiedAtUtc, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(businessId, authUserId, role, verifiedAtUtc, isActive);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProductCatalogScopeBindingRow &&
+          other.businessId == this.businessId &&
+          other.authUserId == this.authUserId &&
+          other.role == this.role &&
+          other.verifiedAtUtc == this.verifiedAtUtc &&
+          other.isActive == this.isActive);
+}
+
+class ProductCatalogScopeBindingsCompanion
+    extends UpdateCompanion<ProductCatalogScopeBindingRow> {
+  final Value<String> businessId;
+  final Value<String> authUserId;
+  final Value<String> role;
+  final Value<DateTime> verifiedAtUtc;
+  final Value<bool> isActive;
+  final Value<int> rowid;
+  const ProductCatalogScopeBindingsCompanion({
+    this.businessId = const Value.absent(),
+    this.authUserId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.verifiedAtUtc = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProductCatalogScopeBindingsCompanion.insert({
+    required String businessId,
+    required String authUserId,
+    required String role,
+    required DateTime verifiedAtUtc,
+    required bool isActive,
+    this.rowid = const Value.absent(),
+  })  : businessId = Value(businessId),
+        authUserId = Value(authUserId),
+        role = Value(role),
+        verifiedAtUtc = Value(verifiedAtUtc),
+        isActive = Value(isActive);
+  static Insertable<ProductCatalogScopeBindingRow> custom({
+    Expression<String>? businessId,
+    Expression<String>? authUserId,
+    Expression<String>? role,
+    Expression<DateTime>? verifiedAtUtc,
+    Expression<bool>? isActive,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (businessId != null) 'business_id': businessId,
+      if (authUserId != null) 'auth_user_id': authUserId,
+      if (role != null) 'role': role,
+      if (verifiedAtUtc != null) 'verified_at_utc': verifiedAtUtc,
+      if (isActive != null) 'is_active': isActive,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProductCatalogScopeBindingsCompanion copyWith(
+      {Value<String>? businessId,
+      Value<String>? authUserId,
+      Value<String>? role,
+      Value<DateTime>? verifiedAtUtc,
+      Value<bool>? isActive,
+      Value<int>? rowid}) {
+    return ProductCatalogScopeBindingsCompanion(
+      businessId: businessId ?? this.businessId,
+      authUserId: authUserId ?? this.authUserId,
+      role: role ?? this.role,
+      verifiedAtUtc: verifiedAtUtc ?? this.verifiedAtUtc,
+      isActive: isActive ?? this.isActive,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (authUserId.present) {
+      map['auth_user_id'] = Variable<String>(authUserId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (verifiedAtUtc.present) {
+      map['verified_at_utc'] = Variable<DateTime>(verifiedAtUtc.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductCatalogScopeBindingsCompanion(')
+          ..write('businessId: $businessId, ')
+          ..write('authUserId: $authUserId, ')
+          ..write('role: $role, ')
+          ..write('verifiedAtUtc: $verifiedAtUtc, ')
+          ..write('isActive: $isActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProductCatalogSyncStatesTable extends ProductCatalogSyncStates
+    with TableInfo<$ProductCatalogSyncStatesTable, ProductCatalogSyncStateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductCatalogSyncStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localProductIdMeta =
+      const VerificationMeta('localProductId');
+  @override
+  late final GeneratedColumn<String> localProductId = GeneratedColumn<String>(
+      'local_product_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES products (id) ON DELETE RESTRICT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remoteProductIdMeta =
+      const VerificationMeta('remoteProductId');
+  @override
+  late final GeneratedColumn<String> remoteProductId = GeneratedColumn<String>(
+      'remote_product_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _acknowledgedEntityVersionMeta =
+      const VerificationMeta('acknowledgedEntityVersion');
+  @override
+  late final GeneratedColumn<int> acknowledgedEntityVersion =
+      GeneratedColumn<int>('acknowledged_entity_version', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedPayloadJsonMeta =
+      const VerificationMeta('acknowledgedPayloadJson');
+  @override
+  late final GeneratedColumn<String> acknowledgedPayloadJson =
+      GeneratedColumn<String>('acknowledged_payload_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedPayloadFingerprintMeta =
+      const VerificationMeta('acknowledgedPayloadFingerprint');
+  @override
+  late final GeneratedColumn<String> acknowledgedPayloadFingerprint =
+      GeneratedColumn<String>(
+          'acknowledged_payload_fingerprint', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedServerModifiedAtUtcMeta =
+      const VerificationMeta('acknowledgedServerModifiedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> acknowledgedServerModifiedAtUtc =
+      GeneratedColumn<DateTime>(
+          'acknowledged_server_modified_at_utc', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedSourceOperationIdMeta =
+      const VerificationMeta('acknowledgedSourceOperationId');
+  @override
+  late final GeneratedColumn<String> acknowledgedSourceOperationId =
+      GeneratedColumn<String>(
+          'acknowledged_source_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedActorAuthUserIdMeta =
+      const VerificationMeta('acknowledgedActorAuthUserId');
+  @override
+  late final GeneratedColumn<String> acknowledgedActorAuthUserId =
+      GeneratedColumn<String>(
+          'acknowledged_actor_auth_user_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _acknowledgedDeviceIdMeta =
+      const VerificationMeta('acknowledgedDeviceId');
+  @override
+  late final GeneratedColumn<String> acknowledgedDeviceId =
+      GeneratedColumn<String>('acknowledged_device_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _pendingOperationIdMeta =
+      const VerificationMeta('pendingOperationId');
+  @override
+  late final GeneratedColumn<String> pendingOperationId =
+      GeneratedColumn<String>('pending_operation_id', aliasedName, true,
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _projectionStateMeta =
+      const VerificationMeta('projectionState');
+  @override
+  late final GeneratedColumn<String> projectionState = GeneratedColumn<String>(
+      'projection_state', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _tombstoneVersionMeta =
+      const VerificationMeta('tombstoneVersion');
+  @override
+  late final GeneratedColumn<int> tombstoneVersion = GeneratedColumn<int>(
+      'tombstone_version', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _deletedAtUtcMeta =
+      const VerificationMeta('deletedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> deletedAtUtc = GeneratedColumn<DateTime>(
+      'deleted_at_utc', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _deletedByAuthUserIdMeta =
+      const VerificationMeta('deletedByAuthUserId');
+  @override
+  late final GeneratedColumn<String> deletedByAuthUserId =
+      GeneratedColumn<String>('deleted_by_auth_user_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _deletedByDeviceIdMeta =
+      const VerificationMeta('deletedByDeviceId');
+  @override
+  late final GeneratedColumn<String> deletedByDeviceId =
+      GeneratedColumn<String>('deleted_by_device_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _deletionSourceOperationIdMeta =
+      const VerificationMeta('deletionSourceOperationId');
+  @override
+  late final GeneratedColumn<String> deletionSourceOperationId =
+      GeneratedColumn<String>('deletion_source_operation_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtUtcMeta =
+      const VerificationMeta('updatedAtUtc');
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+      'updated_at_utc', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        localProductId,
+        businessId,
+        remoteProductId,
+        acknowledgedEntityVersion,
+        acknowledgedPayloadJson,
+        acknowledgedPayloadFingerprint,
+        acknowledgedServerModifiedAtUtc,
+        acknowledgedSourceOperationId,
+        acknowledgedActorAuthUserId,
+        acknowledgedDeviceId,
+        pendingOperationId,
+        projectionState,
+        tombstoneVersion,
+        deletedAtUtc,
+        deletedByAuthUserId,
+        deletedByDeviceId,
+        deletionSourceOperationId,
+        updatedAtUtc
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'product_catalog_sync_states';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<ProductCatalogSyncStateRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_product_id')) {
+      context.handle(
+          _localProductIdMeta,
+          localProductId.isAcceptableOrUnknown(
+              data['local_product_id']!, _localProductIdMeta));
+    } else if (isInserting) {
+      context.missing(_localProductIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('remote_product_id')) {
+      context.handle(
+          _remoteProductIdMeta,
+          remoteProductId.isAcceptableOrUnknown(
+              data['remote_product_id']!, _remoteProductIdMeta));
+    } else if (isInserting) {
+      context.missing(_remoteProductIdMeta);
+    }
+    if (data.containsKey('acknowledged_entity_version')) {
+      context.handle(
+          _acknowledgedEntityVersionMeta,
+          acknowledgedEntityVersion.isAcceptableOrUnknown(
+              data['acknowledged_entity_version']!,
+              _acknowledgedEntityVersionMeta));
+    }
+    if (data.containsKey('acknowledged_payload_json')) {
+      context.handle(
+          _acknowledgedPayloadJsonMeta,
+          acknowledgedPayloadJson.isAcceptableOrUnknown(
+              data['acknowledged_payload_json']!,
+              _acknowledgedPayloadJsonMeta));
+    }
+    if (data.containsKey('acknowledged_payload_fingerprint')) {
+      context.handle(
+          _acknowledgedPayloadFingerprintMeta,
+          acknowledgedPayloadFingerprint.isAcceptableOrUnknown(
+              data['acknowledged_payload_fingerprint']!,
+              _acknowledgedPayloadFingerprintMeta));
+    }
+    if (data.containsKey('acknowledged_server_modified_at_utc')) {
+      context.handle(
+          _acknowledgedServerModifiedAtUtcMeta,
+          acknowledgedServerModifiedAtUtc.isAcceptableOrUnknown(
+              data['acknowledged_server_modified_at_utc']!,
+              _acknowledgedServerModifiedAtUtcMeta));
+    }
+    if (data.containsKey('acknowledged_source_operation_id')) {
+      context.handle(
+          _acknowledgedSourceOperationIdMeta,
+          acknowledgedSourceOperationId.isAcceptableOrUnknown(
+              data['acknowledged_source_operation_id']!,
+              _acknowledgedSourceOperationIdMeta));
+    }
+    if (data.containsKey('acknowledged_actor_auth_user_id')) {
+      context.handle(
+          _acknowledgedActorAuthUserIdMeta,
+          acknowledgedActorAuthUserId.isAcceptableOrUnknown(
+              data['acknowledged_actor_auth_user_id']!,
+              _acknowledgedActorAuthUserIdMeta));
+    }
+    if (data.containsKey('acknowledged_device_id')) {
+      context.handle(
+          _acknowledgedDeviceIdMeta,
+          acknowledgedDeviceId.isAcceptableOrUnknown(
+              data['acknowledged_device_id']!, _acknowledgedDeviceIdMeta));
+    }
+    if (data.containsKey('pending_operation_id')) {
+      context.handle(
+          _pendingOperationIdMeta,
+          pendingOperationId.isAcceptableOrUnknown(
+              data['pending_operation_id']!, _pendingOperationIdMeta));
+    }
+    if (data.containsKey('projection_state')) {
+      context.handle(
+          _projectionStateMeta,
+          projectionState.isAcceptableOrUnknown(
+              data['projection_state']!, _projectionStateMeta));
+    } else if (isInserting) {
+      context.missing(_projectionStateMeta);
+    }
+    if (data.containsKey('tombstone_version')) {
+      context.handle(
+          _tombstoneVersionMeta,
+          tombstoneVersion.isAcceptableOrUnknown(
+              data['tombstone_version']!, _tombstoneVersionMeta));
+    }
+    if (data.containsKey('deleted_at_utc')) {
+      context.handle(
+          _deletedAtUtcMeta,
+          deletedAtUtc.isAcceptableOrUnknown(
+              data['deleted_at_utc']!, _deletedAtUtcMeta));
+    }
+    if (data.containsKey('deleted_by_auth_user_id')) {
+      context.handle(
+          _deletedByAuthUserIdMeta,
+          deletedByAuthUserId.isAcceptableOrUnknown(
+              data['deleted_by_auth_user_id']!, _deletedByAuthUserIdMeta));
+    }
+    if (data.containsKey('deleted_by_device_id')) {
+      context.handle(
+          _deletedByDeviceIdMeta,
+          deletedByDeviceId.isAcceptableOrUnknown(
+              data['deleted_by_device_id']!, _deletedByDeviceIdMeta));
+    }
+    if (data.containsKey('deletion_source_operation_id')) {
+      context.handle(
+          _deletionSourceOperationIdMeta,
+          deletionSourceOperationId.isAcceptableOrUnknown(
+              data['deletion_source_operation_id']!,
+              _deletionSourceOperationIdMeta));
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+          _updatedAtUtcMeta,
+          updatedAtUtc.isAcceptableOrUnknown(
+              data['updated_at_utc']!, _updatedAtUtcMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localProductId};
+  @override
+  ProductCatalogSyncStateRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProductCatalogSyncStateRow(
+      localProductId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_product_id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}business_id'])!,
+      remoteProductId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}remote_product_id'])!,
+      acknowledgedEntityVersion: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}acknowledged_entity_version']),
+      acknowledgedPayloadJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}acknowledged_payload_json']),
+      acknowledgedPayloadFingerprint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}acknowledged_payload_fingerprint']),
+      acknowledgedServerModifiedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}acknowledged_server_modified_at_utc']),
+      acknowledgedSourceOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}acknowledged_source_operation_id']),
+      acknowledgedActorAuthUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}acknowledged_actor_auth_user_id']),
+      acknowledgedDeviceId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}acknowledged_device_id']),
+      pendingOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}pending_operation_id']),
+      projectionState: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}projection_state'])!,
+      tombstoneVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}tombstone_version']),
+      deletedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}deleted_at_utc']),
+      deletedByAuthUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}deleted_by_auth_user_id']),
+      deletedByDeviceId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}deleted_by_device_id']),
+      deletionSourceOperationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}deletion_source_operation_id']),
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}updated_at_utc'])!,
+    );
+  }
+
+  @override
+  $ProductCatalogSyncStatesTable createAlias(String alias) {
+    return $ProductCatalogSyncStatesTable(attachedDatabase, alias);
+  }
+}
+
+class ProductCatalogSyncStateRow extends DataClass
+    implements Insertable<ProductCatalogSyncStateRow> {
+  final String localProductId;
+  final String businessId;
+  final String remoteProductId;
+  final int? acknowledgedEntityVersion;
+  final String? acknowledgedPayloadJson;
+  final String? acknowledgedPayloadFingerprint;
+  final DateTime? acknowledgedServerModifiedAtUtc;
+  final String? acknowledgedSourceOperationId;
+  final String? acknowledgedActorAuthUserId;
+  final String? acknowledgedDeviceId;
+  final String? pendingOperationId;
+  final String projectionState;
+  final int? tombstoneVersion;
+  final DateTime? deletedAtUtc;
+  final String? deletedByAuthUserId;
+  final String? deletedByDeviceId;
+  final String? deletionSourceOperationId;
+  final DateTime updatedAtUtc;
+  const ProductCatalogSyncStateRow(
+      {required this.localProductId,
+      required this.businessId,
+      required this.remoteProductId,
+      this.acknowledgedEntityVersion,
+      this.acknowledgedPayloadJson,
+      this.acknowledgedPayloadFingerprint,
+      this.acknowledgedServerModifiedAtUtc,
+      this.acknowledgedSourceOperationId,
+      this.acknowledgedActorAuthUserId,
+      this.acknowledgedDeviceId,
+      this.pendingOperationId,
+      required this.projectionState,
+      this.tombstoneVersion,
+      this.deletedAtUtc,
+      this.deletedByAuthUserId,
+      this.deletedByDeviceId,
+      this.deletionSourceOperationId,
+      required this.updatedAtUtc});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_product_id'] = Variable<String>(localProductId);
+    map['business_id'] = Variable<String>(businessId);
+    map['remote_product_id'] = Variable<String>(remoteProductId);
+    if (!nullToAbsent || acknowledgedEntityVersion != null) {
+      map['acknowledged_entity_version'] =
+          Variable<int>(acknowledgedEntityVersion);
+    }
+    if (!nullToAbsent || acknowledgedPayloadJson != null) {
+      map['acknowledged_payload_json'] =
+          Variable<String>(acknowledgedPayloadJson);
+    }
+    if (!nullToAbsent || acknowledgedPayloadFingerprint != null) {
+      map['acknowledged_payload_fingerprint'] =
+          Variable<String>(acknowledgedPayloadFingerprint);
+    }
+    if (!nullToAbsent || acknowledgedServerModifiedAtUtc != null) {
+      map['acknowledged_server_modified_at_utc'] =
+          Variable<DateTime>(acknowledgedServerModifiedAtUtc);
+    }
+    if (!nullToAbsent || acknowledgedSourceOperationId != null) {
+      map['acknowledged_source_operation_id'] =
+          Variable<String>(acknowledgedSourceOperationId);
+    }
+    if (!nullToAbsent || acknowledgedActorAuthUserId != null) {
+      map['acknowledged_actor_auth_user_id'] =
+          Variable<String>(acknowledgedActorAuthUserId);
+    }
+    if (!nullToAbsent || acknowledgedDeviceId != null) {
+      map['acknowledged_device_id'] = Variable<String>(acknowledgedDeviceId);
+    }
+    if (!nullToAbsent || pendingOperationId != null) {
+      map['pending_operation_id'] = Variable<String>(pendingOperationId);
+    }
+    map['projection_state'] = Variable<String>(projectionState);
+    if (!nullToAbsent || tombstoneVersion != null) {
+      map['tombstone_version'] = Variable<int>(tombstoneVersion);
+    }
+    if (!nullToAbsent || deletedAtUtc != null) {
+      map['deleted_at_utc'] = Variable<DateTime>(deletedAtUtc);
+    }
+    if (!nullToAbsent || deletedByAuthUserId != null) {
+      map['deleted_by_auth_user_id'] = Variable<String>(deletedByAuthUserId);
+    }
+    if (!nullToAbsent || deletedByDeviceId != null) {
+      map['deleted_by_device_id'] = Variable<String>(deletedByDeviceId);
+    }
+    if (!nullToAbsent || deletionSourceOperationId != null) {
+      map['deletion_source_operation_id'] =
+          Variable<String>(deletionSourceOperationId);
+    }
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    return map;
+  }
+
+  ProductCatalogSyncStatesCompanion toCompanion(bool nullToAbsent) {
+    return ProductCatalogSyncStatesCompanion(
+      localProductId: Value(localProductId),
+      businessId: Value(businessId),
+      remoteProductId: Value(remoteProductId),
+      acknowledgedEntityVersion:
+          acknowledgedEntityVersion == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedEntityVersion),
+      acknowledgedPayloadJson: acknowledgedPayloadJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(acknowledgedPayloadJson),
+      acknowledgedPayloadFingerprint:
+          acknowledgedPayloadFingerprint == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedPayloadFingerprint),
+      acknowledgedServerModifiedAtUtc:
+          acknowledgedServerModifiedAtUtc == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedServerModifiedAtUtc),
+      acknowledgedSourceOperationId:
+          acknowledgedSourceOperationId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedSourceOperationId),
+      acknowledgedActorAuthUserId:
+          acknowledgedActorAuthUserId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(acknowledgedActorAuthUserId),
+      acknowledgedDeviceId: acknowledgedDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(acknowledgedDeviceId),
+      pendingOperationId: pendingOperationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingOperationId),
+      projectionState: Value(projectionState),
+      tombstoneVersion: tombstoneVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tombstoneVersion),
+      deletedAtUtc: deletedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAtUtc),
+      deletedByAuthUserId: deletedByAuthUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedByAuthUserId),
+      deletedByDeviceId: deletedByDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedByDeviceId),
+      deletionSourceOperationId:
+          deletionSourceOperationId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletionSourceOperationId),
+      updatedAtUtc: Value(updatedAtUtc),
+    );
+  }
+
+  factory ProductCatalogSyncStateRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProductCatalogSyncStateRow(
+      localProductId: serializer.fromJson<String>(json['localProductId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      remoteProductId: serializer.fromJson<String>(json['remoteProductId']),
+      acknowledgedEntityVersion:
+          serializer.fromJson<int?>(json['acknowledgedEntityVersion']),
+      acknowledgedPayloadJson:
+          serializer.fromJson<String?>(json['acknowledgedPayloadJson']),
+      acknowledgedPayloadFingerprint:
+          serializer.fromJson<String?>(json['acknowledgedPayloadFingerprint']),
+      acknowledgedServerModifiedAtUtc: serializer
+          .fromJson<DateTime?>(json['acknowledgedServerModifiedAtUtc']),
+      acknowledgedSourceOperationId:
+          serializer.fromJson<String?>(json['acknowledgedSourceOperationId']),
+      acknowledgedActorAuthUserId:
+          serializer.fromJson<String?>(json['acknowledgedActorAuthUserId']),
+      acknowledgedDeviceId:
+          serializer.fromJson<String?>(json['acknowledgedDeviceId']),
+      pendingOperationId:
+          serializer.fromJson<String?>(json['pendingOperationId']),
+      projectionState: serializer.fromJson<String>(json['projectionState']),
+      tombstoneVersion: serializer.fromJson<int?>(json['tombstoneVersion']),
+      deletedAtUtc: serializer.fromJson<DateTime?>(json['deletedAtUtc']),
+      deletedByAuthUserId:
+          serializer.fromJson<String?>(json['deletedByAuthUserId']),
+      deletedByDeviceId:
+          serializer.fromJson<String?>(json['deletedByDeviceId']),
+      deletionSourceOperationId:
+          serializer.fromJson<String?>(json['deletionSourceOperationId']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localProductId': serializer.toJson<String>(localProductId),
+      'businessId': serializer.toJson<String>(businessId),
+      'remoteProductId': serializer.toJson<String>(remoteProductId),
+      'acknowledgedEntityVersion':
+          serializer.toJson<int?>(acknowledgedEntityVersion),
+      'acknowledgedPayloadJson':
+          serializer.toJson<String?>(acknowledgedPayloadJson),
+      'acknowledgedPayloadFingerprint':
+          serializer.toJson<String?>(acknowledgedPayloadFingerprint),
+      'acknowledgedServerModifiedAtUtc':
+          serializer.toJson<DateTime?>(acknowledgedServerModifiedAtUtc),
+      'acknowledgedSourceOperationId':
+          serializer.toJson<String?>(acknowledgedSourceOperationId),
+      'acknowledgedActorAuthUserId':
+          serializer.toJson<String?>(acknowledgedActorAuthUserId),
+      'acknowledgedDeviceId': serializer.toJson<String?>(acknowledgedDeviceId),
+      'pendingOperationId': serializer.toJson<String?>(pendingOperationId),
+      'projectionState': serializer.toJson<String>(projectionState),
+      'tombstoneVersion': serializer.toJson<int?>(tombstoneVersion),
+      'deletedAtUtc': serializer.toJson<DateTime?>(deletedAtUtc),
+      'deletedByAuthUserId': serializer.toJson<String?>(deletedByAuthUserId),
+      'deletedByDeviceId': serializer.toJson<String?>(deletedByDeviceId),
+      'deletionSourceOperationId':
+          serializer.toJson<String?>(deletionSourceOperationId),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+    };
+  }
+
+  ProductCatalogSyncStateRow copyWith(
+          {String? localProductId,
+          String? businessId,
+          String? remoteProductId,
+          Value<int?> acknowledgedEntityVersion = const Value.absent(),
+          Value<String?> acknowledgedPayloadJson = const Value.absent(),
+          Value<String?> acknowledgedPayloadFingerprint = const Value.absent(),
+          Value<DateTime?> acknowledgedServerModifiedAtUtc =
+              const Value.absent(),
+          Value<String?> acknowledgedSourceOperationId = const Value.absent(),
+          Value<String?> acknowledgedActorAuthUserId = const Value.absent(),
+          Value<String?> acknowledgedDeviceId = const Value.absent(),
+          Value<String?> pendingOperationId = const Value.absent(),
+          String? projectionState,
+          Value<int?> tombstoneVersion = const Value.absent(),
+          Value<DateTime?> deletedAtUtc = const Value.absent(),
+          Value<String?> deletedByAuthUserId = const Value.absent(),
+          Value<String?> deletedByDeviceId = const Value.absent(),
+          Value<String?> deletionSourceOperationId = const Value.absent(),
+          DateTime? updatedAtUtc}) =>
+      ProductCatalogSyncStateRow(
+        localProductId: localProductId ?? this.localProductId,
+        businessId: businessId ?? this.businessId,
+        remoteProductId: remoteProductId ?? this.remoteProductId,
+        acknowledgedEntityVersion: acknowledgedEntityVersion.present
+            ? acknowledgedEntityVersion.value
+            : this.acknowledgedEntityVersion,
+        acknowledgedPayloadJson: acknowledgedPayloadJson.present
+            ? acknowledgedPayloadJson.value
+            : this.acknowledgedPayloadJson,
+        acknowledgedPayloadFingerprint: acknowledgedPayloadFingerprint.present
+            ? acknowledgedPayloadFingerprint.value
+            : this.acknowledgedPayloadFingerprint,
+        acknowledgedServerModifiedAtUtc: acknowledgedServerModifiedAtUtc.present
+            ? acknowledgedServerModifiedAtUtc.value
+            : this.acknowledgedServerModifiedAtUtc,
+        acknowledgedSourceOperationId: acknowledgedSourceOperationId.present
+            ? acknowledgedSourceOperationId.value
+            : this.acknowledgedSourceOperationId,
+        acknowledgedActorAuthUserId: acknowledgedActorAuthUserId.present
+            ? acknowledgedActorAuthUserId.value
+            : this.acknowledgedActorAuthUserId,
+        acknowledgedDeviceId: acknowledgedDeviceId.present
+            ? acknowledgedDeviceId.value
+            : this.acknowledgedDeviceId,
+        pendingOperationId: pendingOperationId.present
+            ? pendingOperationId.value
+            : this.pendingOperationId,
+        projectionState: projectionState ?? this.projectionState,
+        tombstoneVersion: tombstoneVersion.present
+            ? tombstoneVersion.value
+            : this.tombstoneVersion,
+        deletedAtUtc:
+            deletedAtUtc.present ? deletedAtUtc.value : this.deletedAtUtc,
+        deletedByAuthUserId: deletedByAuthUserId.present
+            ? deletedByAuthUserId.value
+            : this.deletedByAuthUserId,
+        deletedByDeviceId: deletedByDeviceId.present
+            ? deletedByDeviceId.value
+            : this.deletedByDeviceId,
+        deletionSourceOperationId: deletionSourceOperationId.present
+            ? deletionSourceOperationId.value
+            : this.deletionSourceOperationId,
+        updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      );
+  ProductCatalogSyncStateRow copyWithCompanion(
+      ProductCatalogSyncStatesCompanion data) {
+    return ProductCatalogSyncStateRow(
+      localProductId: data.localProductId.present
+          ? data.localProductId.value
+          : this.localProductId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      remoteProductId: data.remoteProductId.present
+          ? data.remoteProductId.value
+          : this.remoteProductId,
+      acknowledgedEntityVersion: data.acknowledgedEntityVersion.present
+          ? data.acknowledgedEntityVersion.value
+          : this.acknowledgedEntityVersion,
+      acknowledgedPayloadJson: data.acknowledgedPayloadJson.present
+          ? data.acknowledgedPayloadJson.value
+          : this.acknowledgedPayloadJson,
+      acknowledgedPayloadFingerprint:
+          data.acknowledgedPayloadFingerprint.present
+              ? data.acknowledgedPayloadFingerprint.value
+              : this.acknowledgedPayloadFingerprint,
+      acknowledgedServerModifiedAtUtc:
+          data.acknowledgedServerModifiedAtUtc.present
+              ? data.acknowledgedServerModifiedAtUtc.value
+              : this.acknowledgedServerModifiedAtUtc,
+      acknowledgedSourceOperationId: data.acknowledgedSourceOperationId.present
+          ? data.acknowledgedSourceOperationId.value
+          : this.acknowledgedSourceOperationId,
+      acknowledgedActorAuthUserId: data.acknowledgedActorAuthUserId.present
+          ? data.acknowledgedActorAuthUserId.value
+          : this.acknowledgedActorAuthUserId,
+      acknowledgedDeviceId: data.acknowledgedDeviceId.present
+          ? data.acknowledgedDeviceId.value
+          : this.acknowledgedDeviceId,
+      pendingOperationId: data.pendingOperationId.present
+          ? data.pendingOperationId.value
+          : this.pendingOperationId,
+      projectionState: data.projectionState.present
+          ? data.projectionState.value
+          : this.projectionState,
+      tombstoneVersion: data.tombstoneVersion.present
+          ? data.tombstoneVersion.value
+          : this.tombstoneVersion,
+      deletedAtUtc: data.deletedAtUtc.present
+          ? data.deletedAtUtc.value
+          : this.deletedAtUtc,
+      deletedByAuthUserId: data.deletedByAuthUserId.present
+          ? data.deletedByAuthUserId.value
+          : this.deletedByAuthUserId,
+      deletedByDeviceId: data.deletedByDeviceId.present
+          ? data.deletedByDeviceId.value
+          : this.deletedByDeviceId,
+      deletionSourceOperationId: data.deletionSourceOperationId.present
+          ? data.deletionSourceOperationId.value
+          : this.deletionSourceOperationId,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductCatalogSyncStateRow(')
+          ..write('localProductId: $localProductId, ')
+          ..write('businessId: $businessId, ')
+          ..write('remoteProductId: $remoteProductId, ')
+          ..write('acknowledgedEntityVersion: $acknowledgedEntityVersion, ')
+          ..write('acknowledgedPayloadJson: $acknowledgedPayloadJson, ')
+          ..write(
+              'acknowledgedPayloadFingerprint: $acknowledgedPayloadFingerprint, ')
+          ..write(
+              'acknowledgedServerModifiedAtUtc: $acknowledgedServerModifiedAtUtc, ')
+          ..write(
+              'acknowledgedSourceOperationId: $acknowledgedSourceOperationId, ')
+          ..write('acknowledgedActorAuthUserId: $acknowledgedActorAuthUserId, ')
+          ..write('acknowledgedDeviceId: $acknowledgedDeviceId, ')
+          ..write('pendingOperationId: $pendingOperationId, ')
+          ..write('projectionState: $projectionState, ')
+          ..write('tombstoneVersion: $tombstoneVersion, ')
+          ..write('deletedAtUtc: $deletedAtUtc, ')
+          ..write('deletedByAuthUserId: $deletedByAuthUserId, ')
+          ..write('deletedByDeviceId: $deletedByDeviceId, ')
+          ..write('deletionSourceOperationId: $deletionSourceOperationId, ')
+          ..write('updatedAtUtc: $updatedAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      localProductId,
+      businessId,
+      remoteProductId,
+      acknowledgedEntityVersion,
+      acknowledgedPayloadJson,
+      acknowledgedPayloadFingerprint,
+      acknowledgedServerModifiedAtUtc,
+      acknowledgedSourceOperationId,
+      acknowledgedActorAuthUserId,
+      acknowledgedDeviceId,
+      pendingOperationId,
+      projectionState,
+      tombstoneVersion,
+      deletedAtUtc,
+      deletedByAuthUserId,
+      deletedByDeviceId,
+      deletionSourceOperationId,
+      updatedAtUtc);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProductCatalogSyncStateRow &&
+          other.localProductId == this.localProductId &&
+          other.businessId == this.businessId &&
+          other.remoteProductId == this.remoteProductId &&
+          other.acknowledgedEntityVersion == this.acknowledgedEntityVersion &&
+          other.acknowledgedPayloadJson == this.acknowledgedPayloadJson &&
+          other.acknowledgedPayloadFingerprint ==
+              this.acknowledgedPayloadFingerprint &&
+          other.acknowledgedServerModifiedAtUtc ==
+              this.acknowledgedServerModifiedAtUtc &&
+          other.acknowledgedSourceOperationId ==
+              this.acknowledgedSourceOperationId &&
+          other.acknowledgedActorAuthUserId ==
+              this.acknowledgedActorAuthUserId &&
+          other.acknowledgedDeviceId == this.acknowledgedDeviceId &&
+          other.pendingOperationId == this.pendingOperationId &&
+          other.projectionState == this.projectionState &&
+          other.tombstoneVersion == this.tombstoneVersion &&
+          other.deletedAtUtc == this.deletedAtUtc &&
+          other.deletedByAuthUserId == this.deletedByAuthUserId &&
+          other.deletedByDeviceId == this.deletedByDeviceId &&
+          other.deletionSourceOperationId == this.deletionSourceOperationId &&
+          other.updatedAtUtc == this.updatedAtUtc);
+}
+
+class ProductCatalogSyncStatesCompanion
+    extends UpdateCompanion<ProductCatalogSyncStateRow> {
+  final Value<String> localProductId;
+  final Value<String> businessId;
+  final Value<String> remoteProductId;
+  final Value<int?> acknowledgedEntityVersion;
+  final Value<String?> acknowledgedPayloadJson;
+  final Value<String?> acknowledgedPayloadFingerprint;
+  final Value<DateTime?> acknowledgedServerModifiedAtUtc;
+  final Value<String?> acknowledgedSourceOperationId;
+  final Value<String?> acknowledgedActorAuthUserId;
+  final Value<String?> acknowledgedDeviceId;
+  final Value<String?> pendingOperationId;
+  final Value<String> projectionState;
+  final Value<int?> tombstoneVersion;
+  final Value<DateTime?> deletedAtUtc;
+  final Value<String?> deletedByAuthUserId;
+  final Value<String?> deletedByDeviceId;
+  final Value<String?> deletionSourceOperationId;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> rowid;
+  const ProductCatalogSyncStatesCompanion({
+    this.localProductId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.remoteProductId = const Value.absent(),
+    this.acknowledgedEntityVersion = const Value.absent(),
+    this.acknowledgedPayloadJson = const Value.absent(),
+    this.acknowledgedPayloadFingerprint = const Value.absent(),
+    this.acknowledgedServerModifiedAtUtc = const Value.absent(),
+    this.acknowledgedSourceOperationId = const Value.absent(),
+    this.acknowledgedActorAuthUserId = const Value.absent(),
+    this.acknowledgedDeviceId = const Value.absent(),
+    this.pendingOperationId = const Value.absent(),
+    this.projectionState = const Value.absent(),
+    this.tombstoneVersion = const Value.absent(),
+    this.deletedAtUtc = const Value.absent(),
+    this.deletedByAuthUserId = const Value.absent(),
+    this.deletedByDeviceId = const Value.absent(),
+    this.deletionSourceOperationId = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProductCatalogSyncStatesCompanion.insert({
+    required String localProductId,
+    required String businessId,
+    required String remoteProductId,
+    this.acknowledgedEntityVersion = const Value.absent(),
+    this.acknowledgedPayloadJson = const Value.absent(),
+    this.acknowledgedPayloadFingerprint = const Value.absent(),
+    this.acknowledgedServerModifiedAtUtc = const Value.absent(),
+    this.acknowledgedSourceOperationId = const Value.absent(),
+    this.acknowledgedActorAuthUserId = const Value.absent(),
+    this.acknowledgedDeviceId = const Value.absent(),
+    this.pendingOperationId = const Value.absent(),
+    required String projectionState,
+    this.tombstoneVersion = const Value.absent(),
+    this.deletedAtUtc = const Value.absent(),
+    this.deletedByAuthUserId = const Value.absent(),
+    this.deletedByDeviceId = const Value.absent(),
+    this.deletionSourceOperationId = const Value.absent(),
+    required DateTime updatedAtUtc,
+    this.rowid = const Value.absent(),
+  })  : localProductId = Value(localProductId),
+        businessId = Value(businessId),
+        remoteProductId = Value(remoteProductId),
+        projectionState = Value(projectionState),
+        updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<ProductCatalogSyncStateRow> custom({
+    Expression<String>? localProductId,
+    Expression<String>? businessId,
+    Expression<String>? remoteProductId,
+    Expression<int>? acknowledgedEntityVersion,
+    Expression<String>? acknowledgedPayloadJson,
+    Expression<String>? acknowledgedPayloadFingerprint,
+    Expression<DateTime>? acknowledgedServerModifiedAtUtc,
+    Expression<String>? acknowledgedSourceOperationId,
+    Expression<String>? acknowledgedActorAuthUserId,
+    Expression<String>? acknowledgedDeviceId,
+    Expression<String>? pendingOperationId,
+    Expression<String>? projectionState,
+    Expression<int>? tombstoneVersion,
+    Expression<DateTime>? deletedAtUtc,
+    Expression<String>? deletedByAuthUserId,
+    Expression<String>? deletedByDeviceId,
+    Expression<String>? deletionSourceOperationId,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localProductId != null) 'local_product_id': localProductId,
+      if (businessId != null) 'business_id': businessId,
+      if (remoteProductId != null) 'remote_product_id': remoteProductId,
+      if (acknowledgedEntityVersion != null)
+        'acknowledged_entity_version': acknowledgedEntityVersion,
+      if (acknowledgedPayloadJson != null)
+        'acknowledged_payload_json': acknowledgedPayloadJson,
+      if (acknowledgedPayloadFingerprint != null)
+        'acknowledged_payload_fingerprint': acknowledgedPayloadFingerprint,
+      if (acknowledgedServerModifiedAtUtc != null)
+        'acknowledged_server_modified_at_utc': acknowledgedServerModifiedAtUtc,
+      if (acknowledgedSourceOperationId != null)
+        'acknowledged_source_operation_id': acknowledgedSourceOperationId,
+      if (acknowledgedActorAuthUserId != null)
+        'acknowledged_actor_auth_user_id': acknowledgedActorAuthUserId,
+      if (acknowledgedDeviceId != null)
+        'acknowledged_device_id': acknowledgedDeviceId,
+      if (pendingOperationId != null)
+        'pending_operation_id': pendingOperationId,
+      if (projectionState != null) 'projection_state': projectionState,
+      if (tombstoneVersion != null) 'tombstone_version': tombstoneVersion,
+      if (deletedAtUtc != null) 'deleted_at_utc': deletedAtUtc,
+      if (deletedByAuthUserId != null)
+        'deleted_by_auth_user_id': deletedByAuthUserId,
+      if (deletedByDeviceId != null) 'deleted_by_device_id': deletedByDeviceId,
+      if (deletionSourceOperationId != null)
+        'deletion_source_operation_id': deletionSourceOperationId,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProductCatalogSyncStatesCompanion copyWith(
+      {Value<String>? localProductId,
+      Value<String>? businessId,
+      Value<String>? remoteProductId,
+      Value<int?>? acknowledgedEntityVersion,
+      Value<String?>? acknowledgedPayloadJson,
+      Value<String?>? acknowledgedPayloadFingerprint,
+      Value<DateTime?>? acknowledgedServerModifiedAtUtc,
+      Value<String?>? acknowledgedSourceOperationId,
+      Value<String?>? acknowledgedActorAuthUserId,
+      Value<String?>? acknowledgedDeviceId,
+      Value<String?>? pendingOperationId,
+      Value<String>? projectionState,
+      Value<int?>? tombstoneVersion,
+      Value<DateTime?>? deletedAtUtc,
+      Value<String?>? deletedByAuthUserId,
+      Value<String?>? deletedByDeviceId,
+      Value<String?>? deletionSourceOperationId,
+      Value<DateTime>? updatedAtUtc,
+      Value<int>? rowid}) {
+    return ProductCatalogSyncStatesCompanion(
+      localProductId: localProductId ?? this.localProductId,
+      businessId: businessId ?? this.businessId,
+      remoteProductId: remoteProductId ?? this.remoteProductId,
+      acknowledgedEntityVersion:
+          acknowledgedEntityVersion ?? this.acknowledgedEntityVersion,
+      acknowledgedPayloadJson:
+          acknowledgedPayloadJson ?? this.acknowledgedPayloadJson,
+      acknowledgedPayloadFingerprint:
+          acknowledgedPayloadFingerprint ?? this.acknowledgedPayloadFingerprint,
+      acknowledgedServerModifiedAtUtc: acknowledgedServerModifiedAtUtc ??
+          this.acknowledgedServerModifiedAtUtc,
+      acknowledgedSourceOperationId:
+          acknowledgedSourceOperationId ?? this.acknowledgedSourceOperationId,
+      acknowledgedActorAuthUserId:
+          acknowledgedActorAuthUserId ?? this.acknowledgedActorAuthUserId,
+      acknowledgedDeviceId: acknowledgedDeviceId ?? this.acknowledgedDeviceId,
+      pendingOperationId: pendingOperationId ?? this.pendingOperationId,
+      projectionState: projectionState ?? this.projectionState,
+      tombstoneVersion: tombstoneVersion ?? this.tombstoneVersion,
+      deletedAtUtc: deletedAtUtc ?? this.deletedAtUtc,
+      deletedByAuthUserId: deletedByAuthUserId ?? this.deletedByAuthUserId,
+      deletedByDeviceId: deletedByDeviceId ?? this.deletedByDeviceId,
+      deletionSourceOperationId:
+          deletionSourceOperationId ?? this.deletionSourceOperationId,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localProductId.present) {
+      map['local_product_id'] = Variable<String>(localProductId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (remoteProductId.present) {
+      map['remote_product_id'] = Variable<String>(remoteProductId.value);
+    }
+    if (acknowledgedEntityVersion.present) {
+      map['acknowledged_entity_version'] =
+          Variable<int>(acknowledgedEntityVersion.value);
+    }
+    if (acknowledgedPayloadJson.present) {
+      map['acknowledged_payload_json'] =
+          Variable<String>(acknowledgedPayloadJson.value);
+    }
+    if (acknowledgedPayloadFingerprint.present) {
+      map['acknowledged_payload_fingerprint'] =
+          Variable<String>(acknowledgedPayloadFingerprint.value);
+    }
+    if (acknowledgedServerModifiedAtUtc.present) {
+      map['acknowledged_server_modified_at_utc'] =
+          Variable<DateTime>(acknowledgedServerModifiedAtUtc.value);
+    }
+    if (acknowledgedSourceOperationId.present) {
+      map['acknowledged_source_operation_id'] =
+          Variable<String>(acknowledgedSourceOperationId.value);
+    }
+    if (acknowledgedActorAuthUserId.present) {
+      map['acknowledged_actor_auth_user_id'] =
+          Variable<String>(acknowledgedActorAuthUserId.value);
+    }
+    if (acknowledgedDeviceId.present) {
+      map['acknowledged_device_id'] =
+          Variable<String>(acknowledgedDeviceId.value);
+    }
+    if (pendingOperationId.present) {
+      map['pending_operation_id'] = Variable<String>(pendingOperationId.value);
+    }
+    if (projectionState.present) {
+      map['projection_state'] = Variable<String>(projectionState.value);
+    }
+    if (tombstoneVersion.present) {
+      map['tombstone_version'] = Variable<int>(tombstoneVersion.value);
+    }
+    if (deletedAtUtc.present) {
+      map['deleted_at_utc'] = Variable<DateTime>(deletedAtUtc.value);
+    }
+    if (deletedByAuthUserId.present) {
+      map['deleted_by_auth_user_id'] =
+          Variable<String>(deletedByAuthUserId.value);
+    }
+    if (deletedByDeviceId.present) {
+      map['deleted_by_device_id'] = Variable<String>(deletedByDeviceId.value);
+    }
+    if (deletionSourceOperationId.present) {
+      map['deletion_source_operation_id'] =
+          Variable<String>(deletionSourceOperationId.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductCatalogSyncStatesCompanion(')
+          ..write('localProductId: $localProductId, ')
+          ..write('businessId: $businessId, ')
+          ..write('remoteProductId: $remoteProductId, ')
+          ..write('acknowledgedEntityVersion: $acknowledgedEntityVersion, ')
+          ..write('acknowledgedPayloadJson: $acknowledgedPayloadJson, ')
+          ..write(
+              'acknowledgedPayloadFingerprint: $acknowledgedPayloadFingerprint, ')
+          ..write(
+              'acknowledgedServerModifiedAtUtc: $acknowledgedServerModifiedAtUtc, ')
+          ..write(
+              'acknowledgedSourceOperationId: $acknowledgedSourceOperationId, ')
+          ..write('acknowledgedActorAuthUserId: $acknowledgedActorAuthUserId, ')
+          ..write('acknowledgedDeviceId: $acknowledgedDeviceId, ')
+          ..write('pendingOperationId: $pendingOperationId, ')
+          ..write('projectionState: $projectionState, ')
+          ..write('tombstoneVersion: $tombstoneVersion, ')
+          ..write('deletedAtUtc: $deletedAtUtc, ')
+          ..write('deletedByAuthUserId: $deletedByAuthUserId, ')
+          ..write('deletedByDeviceId: $deletedByDeviceId, ')
+          ..write('deletionSourceOperationId: $deletionSourceOperationId, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CustomerAccountEntriesTable extends CustomerAccountEntries
     with TableInfo<$CustomerAccountEntriesTable, CustomerAccountEntryRow> {
   @override
@@ -22798,6 +24168,10 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       $DurableInboxOperationsTable(this);
   late final $DurableSyncCheckpointsTable durableSyncCheckpoints =
       $DurableSyncCheckpointsTable(this);
+  late final $ProductCatalogScopeBindingsTable productCatalogScopeBindings =
+      $ProductCatalogScopeBindingsTable(this);
+  late final $ProductCatalogSyncStatesTable productCatalogSyncStates =
+      $ProductCatalogSyncStatesTable(this);
   late final $CustomerAccountEntriesTable customerAccountEntries =
       $CustomerAccountEntriesTable(this);
   late final $CustomerCollectionsTable customerCollections =
@@ -22919,6 +24293,12 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
       'CREATE INDEX durable_inbox_aggregate_idx ON durable_inbox_operations (business_id, aggregate_type, aggregate_id, server_occurred_at_utc, source_operation_id)');
   late final Index durableInboxConflictIdx = Index('durable_inbox_conflict_idx',
       'CREATE INDEX durable_inbox_conflict_idx ON durable_inbox_operations (conflict_id)');
+  late final Index productCatalogSyncStatesDispositionIdx = Index(
+      'product_catalog_sync_states_disposition_idx',
+      'CREATE INDEX product_catalog_sync_states_disposition_idx ON product_catalog_sync_states (business_id, projection_state, local_product_id)');
+  late final Index productCatalogSyncStatesRemoteIdx = Index(
+      'product_catalog_sync_states_remote_idx',
+      'CREATE UNIQUE INDEX product_catalog_sync_states_remote_idx ON product_catalog_sync_states (business_id, remote_product_id)');
   late final Index customerAccountEntriesCustomerTimestampIdx = Index(
       'customer_account_entries_customer_timestamp_idx',
       'CREATE INDEX customer_account_entries_customer_timestamp_idx ON customer_account_entries (customer_id, occurred_at, id)');
@@ -22992,6 +24372,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         durableConflicts,
         durableInboxOperations,
         durableSyncCheckpoints,
+        productCatalogScopeBindings,
+        productCatalogSyncStates,
         customerAccountEntries,
         customerCollections,
         customerAdvances,
@@ -23041,6 +24423,8 @@ abstract class _$FoundationDatabase extends GeneratedDatabase {
         durableInboxLeaseIdx,
         durableInboxAggregateIdx,
         durableInboxConflictIdx,
+        productCatalogSyncStatesDispositionIdx,
+        productCatalogSyncStatesRemoteIdx,
         customerAccountEntriesCustomerTimestampIdx,
         customerCollectionsCustomerTimestampIdx,
         customerAdvancesCustomerTimestampIdx,
@@ -23237,6 +24621,30 @@ typedef $$ProductsTableUpdateCompanionBuilder = ProductsCompanion Function({
   Value<int> rowid,
 });
 
+final class $$ProductsTableReferences
+    extends BaseReferences<_$FoundationDatabase, $ProductsTable, Product> {
+  $$ProductsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ProductCatalogSyncStatesTable,
+      List<ProductCatalogSyncStateRow>> _productCatalogSyncStatesRefsTable(
+          _$FoundationDatabase db) =>
+      MultiTypedResultKey.fromTable(db.productCatalogSyncStates,
+          aliasName: $_aliasNameGenerator(
+              db.products.id, db.productCatalogSyncStates.localProductId));
+
+  $$ProductCatalogSyncStatesTableProcessedTableManager
+      get productCatalogSyncStatesRefs {
+    final manager = $$ProductCatalogSyncStatesTableTableManager(
+            $_db, $_db.productCatalogSyncStates)
+        .filter((f) => f.localProductId.id($_item.id));
+
+    final cache =
+        $_typedResult.readTableOrNull(_productCatalogSyncStatesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
 class $$ProductsTableFilterComposer
     extends Composer<_$FoundationDatabase, $ProductsTable> {
   $$ProductsTableFilterComposer({
@@ -23289,6 +24697,29 @@ class $$ProductsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> productCatalogSyncStatesRefs(
+      Expression<bool> Function($$ProductCatalogSyncStatesTableFilterComposer f)
+          f) {
+    final $$ProductCatalogSyncStatesTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.productCatalogSyncStates,
+            getReferencedColumn: (t) => t.localProductId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$ProductCatalogSyncStatesTableFilterComposer(
+                  $db: $db,
+                  $table: $db.productCatalogSyncStates,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$ProductsTableOrderingComposer
@@ -23397,6 +24828,30 @@ class $$ProductsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> productCatalogSyncStatesRefs<T extends Object>(
+      Expression<T> Function(
+              $$ProductCatalogSyncStatesTableAnnotationComposer a)
+          f) {
+    final $$ProductCatalogSyncStatesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.productCatalogSyncStates,
+            getReferencedColumn: (t) => t.localProductId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$ProductCatalogSyncStatesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.productCatalogSyncStates,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$ProductsTableTableManager extends RootTableManager<
@@ -23408,9 +24863,9 @@ class $$ProductsTableTableManager extends RootTableManager<
     $$ProductsTableAnnotationComposer,
     $$ProductsTableCreateCompanionBuilder,
     $$ProductsTableUpdateCompanionBuilder,
-    (Product, BaseReferences<_$FoundationDatabase, $ProductsTable, Product>),
+    (Product, $$ProductsTableReferences),
     Product,
-    PrefetchHooks Function()> {
+    PrefetchHooks Function({bool productCatalogSyncStatesRefs})> {
   $$ProductsTableTableManager(_$FoundationDatabase db, $ProductsTable table)
       : super(TableManagerState(
           db: db,
@@ -23486,9 +24941,34 @@ class $$ProductsTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), $$ProductsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({productCatalogSyncStatesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (productCatalogSyncStatesRefs) db.productCatalogSyncStates
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (productCatalogSyncStatesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$ProductsTableReferences
+                            ._productCatalogSyncStatesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProductsTableReferences(db, table, p0)
+                                .productCatalogSyncStatesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.localProductId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
@@ -23501,9 +24981,9 @@ typedef $$ProductsTableProcessedTableManager = ProcessedTableManager<
     $$ProductsTableAnnotationComposer,
     $$ProductsTableCreateCompanionBuilder,
     $$ProductsTableUpdateCompanionBuilder,
-    (Product, BaseReferences<_$FoundationDatabase, $ProductsTable, Product>),
+    (Product, $$ProductsTableReferences),
     Product,
-    PrefetchHooks Function()>;
+    PrefetchHooks Function({bool productCatalogSyncStatesRefs})>;
 typedef $$RepositorySequencesTableCreateCompanionBuilder
     = RepositorySequencesCompanion Function({
   required String repository,
@@ -31388,6 +32868,709 @@ typedef $$DurableSyncCheckpointsTableProcessedTableManager
         ),
         DurableSyncCheckpointRow,
         PrefetchHooks Function()>;
+typedef $$ProductCatalogScopeBindingsTableCreateCompanionBuilder
+    = ProductCatalogScopeBindingsCompanion Function({
+  required String businessId,
+  required String authUserId,
+  required String role,
+  required DateTime verifiedAtUtc,
+  required bool isActive,
+  Value<int> rowid,
+});
+typedef $$ProductCatalogScopeBindingsTableUpdateCompanionBuilder
+    = ProductCatalogScopeBindingsCompanion Function({
+  Value<String> businessId,
+  Value<String> authUserId,
+  Value<String> role,
+  Value<DateTime> verifiedAtUtc,
+  Value<bool> isActive,
+  Value<int> rowid,
+});
+
+class $$ProductCatalogScopeBindingsTableFilterComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogScopeBindingsTable> {
+  $$ProductCatalogScopeBindingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get authUserId => $composableBuilder(
+      column: $table.authUserId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get role => $composableBuilder(
+      column: $table.role, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get verifiedAtUtc => $composableBuilder(
+      column: $table.verifiedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProductCatalogScopeBindingsTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogScopeBindingsTable> {
+  $$ProductCatalogScopeBindingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get authUserId => $composableBuilder(
+      column: $table.authUserId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get role => $composableBuilder(
+      column: $table.role, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get verifiedAtUtc => $composableBuilder(
+      column: $table.verifiedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProductCatalogScopeBindingsTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogScopeBindingsTable> {
+  $$ProductCatalogScopeBindingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get authUserId => $composableBuilder(
+      column: $table.authUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get verifiedAtUtc => $composableBuilder(
+      column: $table.verifiedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+}
+
+class $$ProductCatalogScopeBindingsTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $ProductCatalogScopeBindingsTable,
+    ProductCatalogScopeBindingRow,
+    $$ProductCatalogScopeBindingsTableFilterComposer,
+    $$ProductCatalogScopeBindingsTableOrderingComposer,
+    $$ProductCatalogScopeBindingsTableAnnotationComposer,
+    $$ProductCatalogScopeBindingsTableCreateCompanionBuilder,
+    $$ProductCatalogScopeBindingsTableUpdateCompanionBuilder,
+    (
+      ProductCatalogScopeBindingRow,
+      BaseReferences<_$FoundationDatabase, $ProductCatalogScopeBindingsTable,
+          ProductCatalogScopeBindingRow>
+    ),
+    ProductCatalogScopeBindingRow,
+    PrefetchHooks Function()> {
+  $$ProductCatalogScopeBindingsTableTableManager(
+      _$FoundationDatabase db, $ProductCatalogScopeBindingsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductCatalogScopeBindingsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductCatalogScopeBindingsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProductCatalogScopeBindingsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> businessId = const Value.absent(),
+            Value<String> authUserId = const Value.absent(),
+            Value<String> role = const Value.absent(),
+            Value<DateTime> verifiedAtUtc = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductCatalogScopeBindingsCompanion(
+            businessId: businessId,
+            authUserId: authUserId,
+            role: role,
+            verifiedAtUtc: verifiedAtUtc,
+            isActive: isActive,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String businessId,
+            required String authUserId,
+            required String role,
+            required DateTime verifiedAtUtc,
+            required bool isActive,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductCatalogScopeBindingsCompanion.insert(
+            businessId: businessId,
+            authUserId: authUserId,
+            role: role,
+            verifiedAtUtc: verifiedAtUtc,
+            isActive: isActive,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProductCatalogScopeBindingsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $ProductCatalogScopeBindingsTable,
+        ProductCatalogScopeBindingRow,
+        $$ProductCatalogScopeBindingsTableFilterComposer,
+        $$ProductCatalogScopeBindingsTableOrderingComposer,
+        $$ProductCatalogScopeBindingsTableAnnotationComposer,
+        $$ProductCatalogScopeBindingsTableCreateCompanionBuilder,
+        $$ProductCatalogScopeBindingsTableUpdateCompanionBuilder,
+        (
+          ProductCatalogScopeBindingRow,
+          BaseReferences<_$FoundationDatabase,
+              $ProductCatalogScopeBindingsTable, ProductCatalogScopeBindingRow>
+        ),
+        ProductCatalogScopeBindingRow,
+        PrefetchHooks Function()>;
+typedef $$ProductCatalogSyncStatesTableCreateCompanionBuilder
+    = ProductCatalogSyncStatesCompanion Function({
+  required String localProductId,
+  required String businessId,
+  required String remoteProductId,
+  Value<int?> acknowledgedEntityVersion,
+  Value<String?> acknowledgedPayloadJson,
+  Value<String?> acknowledgedPayloadFingerprint,
+  Value<DateTime?> acknowledgedServerModifiedAtUtc,
+  Value<String?> acknowledgedSourceOperationId,
+  Value<String?> acknowledgedActorAuthUserId,
+  Value<String?> acknowledgedDeviceId,
+  Value<String?> pendingOperationId,
+  required String projectionState,
+  Value<int?> tombstoneVersion,
+  Value<DateTime?> deletedAtUtc,
+  Value<String?> deletedByAuthUserId,
+  Value<String?> deletedByDeviceId,
+  Value<String?> deletionSourceOperationId,
+  required DateTime updatedAtUtc,
+  Value<int> rowid,
+});
+typedef $$ProductCatalogSyncStatesTableUpdateCompanionBuilder
+    = ProductCatalogSyncStatesCompanion Function({
+  Value<String> localProductId,
+  Value<String> businessId,
+  Value<String> remoteProductId,
+  Value<int?> acknowledgedEntityVersion,
+  Value<String?> acknowledgedPayloadJson,
+  Value<String?> acknowledgedPayloadFingerprint,
+  Value<DateTime?> acknowledgedServerModifiedAtUtc,
+  Value<String?> acknowledgedSourceOperationId,
+  Value<String?> acknowledgedActorAuthUserId,
+  Value<String?> acknowledgedDeviceId,
+  Value<String?> pendingOperationId,
+  Value<String> projectionState,
+  Value<int?> tombstoneVersion,
+  Value<DateTime?> deletedAtUtc,
+  Value<String?> deletedByAuthUserId,
+  Value<String?> deletedByDeviceId,
+  Value<String?> deletionSourceOperationId,
+  Value<DateTime> updatedAtUtc,
+  Value<int> rowid,
+});
+
+final class $$ProductCatalogSyncStatesTableReferences extends BaseReferences<
+    _$FoundationDatabase,
+    $ProductCatalogSyncStatesTable,
+    ProductCatalogSyncStateRow> {
+  $$ProductCatalogSyncStatesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProductsTable _localProductIdTable(_$FoundationDatabase db) =>
+      db.products.createAlias($_aliasNameGenerator(
+          db.productCatalogSyncStates.localProductId, db.products.id));
+
+  $$ProductsTableProcessedTableManager get localProductId {
+    final manager = $$ProductsTableTableManager($_db, $_db.products)
+        .filter((f) => f.id($_item.localProductId));
+    final item = $_typedResult.readTableOrNull(_localProductIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ProductCatalogSyncStatesTableFilterComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogSyncStatesTable> {
+  $$ProductCatalogSyncStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get remoteProductId => $composableBuilder(
+      column: $table.remoteProductId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get acknowledgedPayloadJson => $composableBuilder(
+      column: $table.acknowledgedPayloadJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get acknowledgedPayloadFingerprint =>
+      $composableBuilder(
+          column: $table.acknowledgedPayloadFingerprint,
+          builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get acknowledgedServerModifiedAtUtc =>
+      $composableBuilder(
+          column: $table.acknowledgedServerModifiedAtUtc,
+          builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get acknowledgedSourceOperationId => $composableBuilder(
+      column: $table.acknowledgedSourceOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get acknowledgedActorAuthUserId => $composableBuilder(
+      column: $table.acknowledgedActorAuthUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get acknowledgedDeviceId => $composableBuilder(
+      column: $table.acknowledgedDeviceId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pendingOperationId => $composableBuilder(
+      column: $table.pendingOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get projectionState => $composableBuilder(
+      column: $table.projectionState,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get tombstoneVersion => $composableBuilder(
+      column: $table.tombstoneVersion,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAtUtc => $composableBuilder(
+      column: $table.deletedAtUtc, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedByAuthUserId => $composableBuilder(
+      column: $table.deletedByAuthUserId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedByDeviceId => $composableBuilder(
+      column: $table.deletedByDeviceId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletionSourceOperationId => $composableBuilder(
+      column: $table.deletionSourceOperationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => ColumnFilters(column));
+
+  $$ProductsTableFilterComposer get localProductId {
+    final $$ProductsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.localProductId,
+        referencedTable: $db.products,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProductsTableFilterComposer(
+              $db: $db,
+              $table: $db.products,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProductCatalogSyncStatesTableOrderingComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogSyncStatesTable> {
+  $$ProductCatalogSyncStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get remoteProductId => $composableBuilder(
+      column: $table.remoteProductId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get acknowledgedPayloadJson => $composableBuilder(
+      column: $table.acknowledgedPayloadJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get acknowledgedPayloadFingerprint =>
+      $composableBuilder(
+          column: $table.acknowledgedPayloadFingerprint,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get acknowledgedServerModifiedAtUtc =>
+      $composableBuilder(
+          column: $table.acknowledgedServerModifiedAtUtc,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get acknowledgedSourceOperationId =>
+      $composableBuilder(
+          column: $table.acknowledgedSourceOperationId,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get acknowledgedActorAuthUserId => $composableBuilder(
+      column: $table.acknowledgedActorAuthUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get acknowledgedDeviceId => $composableBuilder(
+      column: $table.acknowledgedDeviceId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pendingOperationId => $composableBuilder(
+      column: $table.pendingOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get projectionState => $composableBuilder(
+      column: $table.projectionState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get tombstoneVersion => $composableBuilder(
+      column: $table.tombstoneVersion,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAtUtc => $composableBuilder(
+      column: $table.deletedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedByAuthUserId => $composableBuilder(
+      column: $table.deletedByAuthUserId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedByDeviceId => $composableBuilder(
+      column: $table.deletedByDeviceId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletionSourceOperationId => $composableBuilder(
+      column: $table.deletionSourceOperationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc,
+      builder: (column) => ColumnOrderings(column));
+
+  $$ProductsTableOrderingComposer get localProductId {
+    final $$ProductsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.localProductId,
+        referencedTable: $db.products,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProductsTableOrderingComposer(
+              $db: $db,
+              $table: $db.products,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProductCatalogSyncStatesTableAnnotationComposer
+    extends Composer<_$FoundationDatabase, $ProductCatalogSyncStatesTable> {
+  $$ProductCatalogSyncStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get businessId => $composableBuilder(
+      column: $table.businessId, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteProductId => $composableBuilder(
+      column: $table.remoteProductId, builder: (column) => column);
+
+  GeneratedColumn<int> get acknowledgedEntityVersion => $composableBuilder(
+      column: $table.acknowledgedEntityVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get acknowledgedPayloadJson => $composableBuilder(
+      column: $table.acknowledgedPayloadJson, builder: (column) => column);
+
+  GeneratedColumn<String> get acknowledgedPayloadFingerprint =>
+      $composableBuilder(
+          column: $table.acknowledgedPayloadFingerprint,
+          builder: (column) => column);
+
+  GeneratedColumn<DateTime> get acknowledgedServerModifiedAtUtc =>
+      $composableBuilder(
+          column: $table.acknowledgedServerModifiedAtUtc,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get acknowledgedSourceOperationId =>
+      $composableBuilder(
+          column: $table.acknowledgedSourceOperationId,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get acknowledgedActorAuthUserId => $composableBuilder(
+      column: $table.acknowledgedActorAuthUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get acknowledgedDeviceId => $composableBuilder(
+      column: $table.acknowledgedDeviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get pendingOperationId => $composableBuilder(
+      column: $table.pendingOperationId, builder: (column) => column);
+
+  GeneratedColumn<String> get projectionState => $composableBuilder(
+      column: $table.projectionState, builder: (column) => column);
+
+  GeneratedColumn<int> get tombstoneVersion => $composableBuilder(
+      column: $table.tombstoneVersion, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAtUtc => $composableBuilder(
+      column: $table.deletedAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedByAuthUserId => $composableBuilder(
+      column: $table.deletedByAuthUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedByDeviceId => $composableBuilder(
+      column: $table.deletedByDeviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get deletionSourceOperationId => $composableBuilder(
+      column: $table.deletionSourceOperationId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+      column: $table.updatedAtUtc, builder: (column) => column);
+
+  $$ProductsTableAnnotationComposer get localProductId {
+    final $$ProductsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.localProductId,
+        referencedTable: $db.products,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProductsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.products,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProductCatalogSyncStatesTableTableManager extends RootTableManager<
+    _$FoundationDatabase,
+    $ProductCatalogSyncStatesTable,
+    ProductCatalogSyncStateRow,
+    $$ProductCatalogSyncStatesTableFilterComposer,
+    $$ProductCatalogSyncStatesTableOrderingComposer,
+    $$ProductCatalogSyncStatesTableAnnotationComposer,
+    $$ProductCatalogSyncStatesTableCreateCompanionBuilder,
+    $$ProductCatalogSyncStatesTableUpdateCompanionBuilder,
+    (ProductCatalogSyncStateRow, $$ProductCatalogSyncStatesTableReferences),
+    ProductCatalogSyncStateRow,
+    PrefetchHooks Function({bool localProductId})> {
+  $$ProductCatalogSyncStatesTableTableManager(
+      _$FoundationDatabase db, $ProductCatalogSyncStatesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductCatalogSyncStatesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductCatalogSyncStatesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProductCatalogSyncStatesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> localProductId = const Value.absent(),
+            Value<String> businessId = const Value.absent(),
+            Value<String> remoteProductId = const Value.absent(),
+            Value<int?> acknowledgedEntityVersion = const Value.absent(),
+            Value<String?> acknowledgedPayloadJson = const Value.absent(),
+            Value<String?> acknowledgedPayloadFingerprint =
+                const Value.absent(),
+            Value<DateTime?> acknowledgedServerModifiedAtUtc =
+                const Value.absent(),
+            Value<String?> acknowledgedSourceOperationId = const Value.absent(),
+            Value<String?> acknowledgedActorAuthUserId = const Value.absent(),
+            Value<String?> acknowledgedDeviceId = const Value.absent(),
+            Value<String?> pendingOperationId = const Value.absent(),
+            Value<String> projectionState = const Value.absent(),
+            Value<int?> tombstoneVersion = const Value.absent(),
+            Value<DateTime?> deletedAtUtc = const Value.absent(),
+            Value<String?> deletedByAuthUserId = const Value.absent(),
+            Value<String?> deletedByDeviceId = const Value.absent(),
+            Value<String?> deletionSourceOperationId = const Value.absent(),
+            Value<DateTime> updatedAtUtc = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductCatalogSyncStatesCompanion(
+            localProductId: localProductId,
+            businessId: businessId,
+            remoteProductId: remoteProductId,
+            acknowledgedEntityVersion: acknowledgedEntityVersion,
+            acknowledgedPayloadJson: acknowledgedPayloadJson,
+            acknowledgedPayloadFingerprint: acknowledgedPayloadFingerprint,
+            acknowledgedServerModifiedAtUtc: acknowledgedServerModifiedAtUtc,
+            acknowledgedSourceOperationId: acknowledgedSourceOperationId,
+            acknowledgedActorAuthUserId: acknowledgedActorAuthUserId,
+            acknowledgedDeviceId: acknowledgedDeviceId,
+            pendingOperationId: pendingOperationId,
+            projectionState: projectionState,
+            tombstoneVersion: tombstoneVersion,
+            deletedAtUtc: deletedAtUtc,
+            deletedByAuthUserId: deletedByAuthUserId,
+            deletedByDeviceId: deletedByDeviceId,
+            deletionSourceOperationId: deletionSourceOperationId,
+            updatedAtUtc: updatedAtUtc,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String localProductId,
+            required String businessId,
+            required String remoteProductId,
+            Value<int?> acknowledgedEntityVersion = const Value.absent(),
+            Value<String?> acknowledgedPayloadJson = const Value.absent(),
+            Value<String?> acknowledgedPayloadFingerprint =
+                const Value.absent(),
+            Value<DateTime?> acknowledgedServerModifiedAtUtc =
+                const Value.absent(),
+            Value<String?> acknowledgedSourceOperationId = const Value.absent(),
+            Value<String?> acknowledgedActorAuthUserId = const Value.absent(),
+            Value<String?> acknowledgedDeviceId = const Value.absent(),
+            Value<String?> pendingOperationId = const Value.absent(),
+            required String projectionState,
+            Value<int?> tombstoneVersion = const Value.absent(),
+            Value<DateTime?> deletedAtUtc = const Value.absent(),
+            Value<String?> deletedByAuthUserId = const Value.absent(),
+            Value<String?> deletedByDeviceId = const Value.absent(),
+            Value<String?> deletionSourceOperationId = const Value.absent(),
+            required DateTime updatedAtUtc,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProductCatalogSyncStatesCompanion.insert(
+            localProductId: localProductId,
+            businessId: businessId,
+            remoteProductId: remoteProductId,
+            acknowledgedEntityVersion: acknowledgedEntityVersion,
+            acknowledgedPayloadJson: acknowledgedPayloadJson,
+            acknowledgedPayloadFingerprint: acknowledgedPayloadFingerprint,
+            acknowledgedServerModifiedAtUtc: acknowledgedServerModifiedAtUtc,
+            acknowledgedSourceOperationId: acknowledgedSourceOperationId,
+            acknowledgedActorAuthUserId: acknowledgedActorAuthUserId,
+            acknowledgedDeviceId: acknowledgedDeviceId,
+            pendingOperationId: pendingOperationId,
+            projectionState: projectionState,
+            tombstoneVersion: tombstoneVersion,
+            deletedAtUtc: deletedAtUtc,
+            deletedByAuthUserId: deletedByAuthUserId,
+            deletedByDeviceId: deletedByDeviceId,
+            deletionSourceOperationId: deletionSourceOperationId,
+            updatedAtUtc: updatedAtUtc,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ProductCatalogSyncStatesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({localProductId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (localProductId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.localProductId,
+                    referencedTable: $$ProductCatalogSyncStatesTableReferences
+                        ._localProductIdTable(db),
+                    referencedColumn: $$ProductCatalogSyncStatesTableReferences
+                        ._localProductIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ProductCatalogSyncStatesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$FoundationDatabase,
+        $ProductCatalogSyncStatesTable,
+        ProductCatalogSyncStateRow,
+        $$ProductCatalogSyncStatesTableFilterComposer,
+        $$ProductCatalogSyncStatesTableOrderingComposer,
+        $$ProductCatalogSyncStatesTableAnnotationComposer,
+        $$ProductCatalogSyncStatesTableCreateCompanionBuilder,
+        $$ProductCatalogSyncStatesTableUpdateCompanionBuilder,
+        (ProductCatalogSyncStateRow, $$ProductCatalogSyncStatesTableReferences),
+        ProductCatalogSyncStateRow,
+        PrefetchHooks Function({bool localProductId})>;
 typedef $$CustomerAccountEntriesTableCreateCompanionBuilder
     = CustomerAccountEntriesCompanion Function({
   required String id,
@@ -34365,6 +36548,13 @@ class $FoundationDatabaseManager {
   $$DurableSyncCheckpointsTableTableManager get durableSyncCheckpoints =>
       $$DurableSyncCheckpointsTableTableManager(
           _db, _db.durableSyncCheckpoints);
+  $$ProductCatalogScopeBindingsTableTableManager
+      get productCatalogScopeBindings =>
+          $$ProductCatalogScopeBindingsTableTableManager(
+              _db, _db.productCatalogScopeBindings);
+  $$ProductCatalogSyncStatesTableTableManager get productCatalogSyncStates =>
+      $$ProductCatalogSyncStatesTableTableManager(
+          _db, _db.productCatalogSyncStates);
   $$CustomerAccountEntriesTableTableManager get customerAccountEntries =>
       $$CustomerAccountEntriesTableTableManager(
           _db, _db.customerAccountEntries);

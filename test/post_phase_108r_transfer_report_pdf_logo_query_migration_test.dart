@@ -322,9 +322,9 @@ void main() {
       const target =
           'lib/features/financial_reports/transfer_report_screen.dart';
 
-      expect(featureSharedReferences, 133);
-      expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 151);
+      expect(featureSharedReferences, 132);
+      expect(locatorFiles, hasLength(35));
+      expect(allLibReferences, 155);
       expect(scopeConsumers, hasLength(18));
       expect(normalizedLocatorFiles, contains(target));
       expect(normalizedScopeFiles, contains(target));

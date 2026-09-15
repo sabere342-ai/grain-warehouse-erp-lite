@@ -1,5 +1,7 @@
 import 'package:grain_warehouse_erp_lite/app/app_repositories.dart';
 import 'package:grain_warehouse_erp_lite/application/application_boundary.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_contracts.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_coordinator.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/evaluate_trial_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_expense_command.dart';
 import 'package:grain_warehouse_erp_lite/application/commands/post_internal_transfer_command.dart';
@@ -18,6 +20,10 @@ import 'package:grain_warehouse_erp_lite/application/time/application_clock.dart
 import 'package:grain_warehouse_erp_lite/composition/legacy_application_dependency_bridge.dart';
 import 'package:grain_warehouse_erp_lite/core/auth/auth_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_controller.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/cloud_hybrid_product_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_read_repository.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_catalog_sync_store.dart';
+import 'package:grain_warehouse_erp_lite/core/catalog/drift_product_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/distributed_state/drift_durable_sync_store.dart';
 import 'package:grain_warehouse_erp_lite/core/persistence/foundation_database.dart';
 import 'package:grain_warehouse_erp_lite/core/expenses/drift_confirmed_expense_projection_writer.dart';
@@ -28,6 +34,7 @@ import 'package:grain_warehouse_erp_lite/core/financial_accounts/drift_internal_
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_cloud_session_adapter.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_expense_posting_gateway.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_internal_transfer_posting_gateway.dart';
+import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_product_catalog_gateways.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/supabase/supabase_runtime_config.dart';
 import 'package:grain_warehouse_erp_lite/infrastructure/local/file_device_identity_store.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -99,16 +106,6 @@ final class AppCompositionRoot {
     final businessIdentityController = BusinessIdentityController(
       repository: sharedBusinessIdentityRepository,
     );
-    if (activeSupabaseClient != null) {
-      final cloudAdapter = SupabaseCloudSessionAdapter(
-        activeSupabaseClient,
-        executionContexts: executionContextProvider,
-        deviceIdentity: deviceIdentity,
-        sessionIdGenerator: sharedSessionIdGenerator,
-      );
-      await cloudAdapter.initialize();
-      _cloudSessionAdapter = cloudAdapter;
-    }
     final financialAccountRepository =
         AppRepositories.financialAccountRepository;
     if (financialAccountRepository is! DriftFinancialAccountRepository) {
@@ -118,6 +115,64 @@ final class AppCompositionRoot {
       financialAccountRepository.database,
       clock: sharedClock,
     );
+    final productSyncStore =
+        DriftProductCatalogSyncStore(AppRepositories.database);
+    final ProductCatalogPushGateway productPushGateway =
+        activeSupabaseClient == null
+            ? const UnavailableProductCatalogPushGateway()
+            : SupabaseProductCatalogPushGateway(activeSupabaseClient);
+    final ProductCatalogPullGateway productPullGateway =
+        activeSupabaseClient == null
+            ? const UnavailableProductCatalogPullGateway()
+            : SupabaseProductCatalogPullGateway(activeSupabaseClient);
+    final productSyncCoordinator = ProductCatalogSyncCoordinator(
+      durableStore: durableSyncStore,
+      productStore: productSyncStore,
+      pushGateway: productPushGateway,
+      pullGateway: productPullGateway,
+      executionContexts: executionContextProvider,
+      clock: sharedClock,
+    );
+    final localProductRepository = AppRepositories.productRepository;
+    if (localProductRepository is! DriftProductRepository) {
+      throw StateError('Production product adapter is not durable.');
+    }
+    AppRepositories.configureProductCatalog(
+      productRepository: CloudHybridProductRepository(
+        localRepository: localProductRepository,
+        syncStore: productSyncStore,
+        durableStore: durableSyncStore,
+        executionContextProvider: executionContextProvider,
+        clock: sharedClock,
+        deviceIdentity: deviceIdentity,
+        cloudModeEnabled: activeSupabaseClient != null,
+        currentRemoteAuthUserId: () =>
+            activeSupabaseClient?.auth.currentUser?.id,
+        requestSync: productSyncCoordinator.synchronizeOnce,
+      ),
+      productCatalogReadRepository: DriftProductCatalogReadRepository(
+        AppRepositories.database,
+        clock: sharedClock,
+      ),
+    );
+    if (activeSupabaseClient != null) {
+      final cloudAdapter = SupabaseCloudSessionAdapter(
+        activeSupabaseClient,
+        executionContexts: executionContextProvider,
+        deviceIdentity: deviceIdentity,
+        sessionIdGenerator: sharedSessionIdGenerator,
+        onVerifiedBusiness: (context) async {
+          await productSyncStore.bindVerified(context, sharedClock.nowUtc());
+          try {
+            await productSyncCoordinator.synchronizeOnce();
+          } on Object {
+            // A verified session remains usable with durable offline work.
+          }
+        },
+      );
+      await cloudAdapter.initialize();
+      _cloudSessionAdapter = cloudAdapter;
+    }
     final attemptStore = DriftExpensePostingAttemptStore(
       AppRepositories.database,
       financialAccountRepository: financialAccountRepository,
@@ -164,6 +219,7 @@ final class AppCompositionRoot {
       businessContextProvider: businessContextProvider,
       financialAccountCloudLinkResolver: attemptStore,
       durableSyncStore: durableSyncStore,
+      productCatalogSyncCoordinator: productSyncCoordinator,
     );
     return ApplicationBoundary(
       dependencies: dependencies,

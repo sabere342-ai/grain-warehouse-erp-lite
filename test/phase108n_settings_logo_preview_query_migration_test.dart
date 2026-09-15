@@ -306,9 +306,9 @@ void main() {
       final normalizedScopeFiles =
           scopeConsumers.map((file) => _normalizedPath(file.path)).toSet();
 
-      expect(featureSharedReferences, 133);
-      expect(locatorFiles, hasLength(36));
-      expect(allLibReferences, 151);
+      expect(featureSharedReferences, 132);
+      expect(locatorFiles, hasLength(35));
+      expect(allLibReferences, 155);
       expect(scopeConsumers, hasLength(18));
       expect(
         normalizedLocatorFiles,

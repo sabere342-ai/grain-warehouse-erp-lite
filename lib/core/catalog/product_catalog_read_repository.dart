@@ -1,4 +1,5 @@
 import 'package:grain_warehouse_erp_lite/core/catalog/grain_unit.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_contracts.dart';
 
 final class ProductCatalogReadModel {
   const ProductCatalogReadModel({
@@ -13,6 +14,12 @@ final class ProductCatalogReadModel {
     required this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.cloudDisposition = ProductCloudDisposition.localOnly,
+    this.remoteProductId,
+    this.acknowledgedEntityVersion,
+    this.pendingOperationId,
+    this.lastSuccessfulPullAtUtc,
+    this.isStale = false,
   });
 
   final String id;
@@ -28,6 +35,16 @@ final class ProductCatalogReadModel {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final ProductCloudDisposition cloudDisposition;
+  final String? remoteProductId;
+  final int? acknowledgedEntityVersion;
+  final String? pendingOperationId;
+  final DateTime? lastSuccessfulPullAtUtc;
+  final bool isStale;
+
+  bool get hasUnresolvedMutation =>
+      pendingOperationId != null ||
+      cloudDisposition == ProductCloudDisposition.attentionRequired;
 }
 
 abstract interface class ProductCatalogReadRepository {

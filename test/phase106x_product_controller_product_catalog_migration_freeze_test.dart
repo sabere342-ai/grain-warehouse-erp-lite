@@ -193,13 +193,18 @@ void main() {
 
       expect(
         screen,
-        contains('ApplicationScope.of(context).queries.productCatalog'),
+        contains('queryHandler: application.queries.productCatalog'),
       );
       expect(
         screen,
         isNot(contains('AppRepositories.productCatalogReadRepository')),
       );
-      expect(screen, contains('repository: AppRepositories.productRepository'));
+      expect(
+        screen,
+        contains(
+          'repository: application.dependencies.repositories.productRepository',
+        ),
+      );
       expect(screen, contains('ProductCatalogReadModel? product'));
       expect(screen, contains('final ProductCatalogReadModel product;'));
     });

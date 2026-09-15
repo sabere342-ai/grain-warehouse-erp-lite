@@ -12,6 +12,7 @@ import 'package:grain_warehouse_erp_lite/core/business_identity/business_identit
 import 'package:grain_warehouse_erp_lite/core/business_identity/business_identity_repository.dart';
 import 'package:grain_warehouse_erp_lite/core/theme/theme_controller.dart';
 import 'package:grain_warehouse_erp_lite/core/trial/trial_service.dart';
+import 'package:grain_warehouse_erp_lite/application/catalog_sync/product_catalog_sync_coordinator.dart';
 
 final class LegacyApplicationDependencyBridge {
   const LegacyApplicationDependencyBridge._();
@@ -31,6 +32,7 @@ final class LegacyApplicationDependencyBridge {
     required FinancialAccountCloudLinkResolver
         financialAccountCloudLinkResolver,
     required DriftDurableSyncStore durableSyncStore,
+    required ProductCatalogSyncCoordinator productCatalogSyncCoordinator,
   }) {
     return ApplicationDependencies(
       repositories: ApplicationRepositoryDependencies(
@@ -39,6 +41,7 @@ final class LegacyApplicationDependencyBridge {
         documentHistoryRepository: AppRepositories.documentHistoryRepository,
         productCatalogReadRepository:
             AppRepositories.productCatalogReadRepository,
+        productRepository: AppRepositories.productRepository,
         inventoryRepository: AppRepositories.inventoryRepository,
         saleRepository: AppRepositories.saleRepository,
         expenseRepository: AppRepositories.expenseRepository,
@@ -52,6 +55,7 @@ final class LegacyApplicationDependencyBridge {
       ),
       services: ApplicationServiceDependencies(
         trialEvaluator: trialEvaluator,
+        productCatalogSyncCoordinator: productCatalogSyncCoordinator,
       ),
       runtime: ApplicationRuntimeDependencies(
         authController: authController,

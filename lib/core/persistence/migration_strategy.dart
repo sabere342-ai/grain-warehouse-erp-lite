@@ -8,6 +8,7 @@ MigrationStrategy foundationMigrationStrategy(FoundationDatabase database) {
       await migrator.createAll();
       await _createNegativeBalancePendingSignatureIndex(database);
       await _createBusinessWideCheckpointIdentityIndex(database);
+      await _createSingleActiveProductCatalogBindingIndex(database);
     },
     onUpgrade: (migrator, from, to) async {
       for (var version = from + 1; version <= to; version++) {
@@ -153,7 +154,20 @@ Map<int, _MigrationStep> _migrationSteps(FoundationDatabase database) => {
         await migrator.createTable(database.durableSyncCheckpoints);
         await _createBusinessWideCheckpointIdentityIndex(database);
       },
+      19: (migrator) async {
+        await migrator.createTable(database.productCatalogScopeBindings);
+        await migrator.createTable(database.productCatalogSyncStates);
+        await _createSingleActiveProductCatalogBindingIndex(database);
+      },
     };
+
+Future<void> _createSingleActiveProductCatalogBindingIndex(
+  FoundationDatabase database,
+) =>
+    database.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS product_catalog_one_active_binding_uq '
+      'ON product_catalog_scope_bindings ((1)) WHERE is_active = 1',
+    );
 
 Future<void> _createBusinessWideCheckpointIdentityIndex(
   FoundationDatabase database,

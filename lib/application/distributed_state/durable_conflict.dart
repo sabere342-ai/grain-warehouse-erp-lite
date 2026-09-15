@@ -17,6 +17,8 @@ enum DurableConflictClassification {
 
 enum DurableConflictResolutionState { unresolved, resolved }
 
+enum DurableConflictResolutionKind { acceptRemote, resubmitLocal }
+
 final class DurableConflictEvidence {
   DurableConflictEvidence({
     required this.conflictId,
@@ -103,6 +105,10 @@ final class DurableConflict {
     required this.createdAtUtc,
     required this.updatedAtUtc,
     required this.recordVersion,
+    this.resolutionKind,
+    this.resolutionOperationId,
+    this.resolverAuthUserId,
+    this.resolvedAtUtc,
   });
 
   final DurableConflictEvidence evidence;
@@ -110,6 +116,10 @@ final class DurableConflict {
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
   final int recordVersion;
+  final DurableConflictResolutionKind? resolutionKind;
+  final OperationId? resolutionOperationId;
+  final RemoteAuthUserId? resolverAuthUserId;
+  final DateTime? resolvedAtUtc;
 }
 
 final class DurableProjectionConflictException implements Exception {

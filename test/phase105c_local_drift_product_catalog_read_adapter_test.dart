@@ -209,7 +209,8 @@ void main() {
     expect(await fixture.database.readProbe('phase105c'), 'unchanged');
   });
 
-  test('adapter is wired only in composition and stays isolated from UI/cloud',
+  test(
+      'adapter is wired only in composition and stays isolated from UI/provider',
       () {
     const adapterPath =
         'lib/core/catalog/drift_product_catalog_read_repository.dart';
@@ -225,15 +226,18 @@ void main() {
         .map((file) => _relative(file.path))
         .toList();
 
-    expect(productionReferences, ['lib/app/app_repositories.dart']);
+    expect(productionReferences, [
+      'lib/app/app_repositories.dart',
+      'lib/composition/app_composition_root.dart',
+    ]);
     expect(adapter, contains('_database.selectOnly(products)'));
     expect(adapter, isNot(contains('.transaction(')));
     expect(adapter, isNot(contains('.into(')));
     expect(adapter, isNot(contains('.update(')));
     expect(adapter, isNot(contains('.delete(')));
     expect(adapter, isNot(contains('firebase')));
-    expect(adapter, isNot(contains('cloud')));
-    expect(adapter, isNot(matches(RegExp(r'\bsync\b'))));
+    expect(adapter, isNot(contains('Supabase')));
+    expect(adapter, contains('ProductCloudDisposition'));
   });
 
   test('unknown stored unit fails explicitly instead of inventing a fallback',

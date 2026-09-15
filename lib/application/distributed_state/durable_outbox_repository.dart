@@ -37,6 +37,14 @@ abstract interface class DurableOutboxRepository {
     String operationId, {
     required int expectedRecordVersion,
   });
+  Future<void> failOutboxPermanently(
+    DurableScope scope,
+    String operationId, {
+    required int expectedRecordVersion,
+    required String claimToken,
+    required DurableErrorClass errorClass,
+    required String errorCode,
+  });
   Future<int> recoverExpiredOutboxClaims(DateTime nowUtc);
   Future<DurableConflict> conflictOutbox(
     DurableScope scope,
